@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kerph - Project Designer</title>
+    <title>Kerph - Cut List Optimizer</title>
     <style>
         * {
             box-sizing: border-box;
@@ -54,10 +54,7 @@
             height: 123px;
         }
 
-        .logo-link {
-            display: block;
-            line-height: 0;
-        }
+        .logo-link { display: block; line-height: 0; }
 
         .logo-image {
             position: relative;
@@ -89,11 +86,7 @@
             gap: 16px;
         }
 
-        .header-field {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
+        .header-field { display: flex; flex-direction: column; gap: 4px; }
 
         .header-field-label {
             font-size: 10px;
@@ -203,11 +196,7 @@
             font-size: 32px;
         }
 
-        .header-sign-in {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
+        .header-sign-in { display: flex; align-items: center; gap: 4px; }
 
         .header-sign-in-input {
             width: 84px;
@@ -218,11 +207,7 @@
             font-weight: 600;
         }
 
-        .header-sign-in .mini-btn {
-            flex: none;
-            padding: 6px 10px;
-            font-size: 11px;
-        }
+        .header-sign-in .mini-btn { flex: none; padding: 6px 10px; font-size: 11px; }
 
         .mini-btn {
             flex: 1;
@@ -303,11 +288,7 @@
 
         .upgrade-nudge.visible { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
 
-        /* ---------- LAYOUT SKELETON ----------
-           Mirrors the sidebar + main-canvas structure of workshop-planner.html so the two
-           tools feel like the same product family. Nothing in here is wired up yet — this
-           is the organizational scaffold to build the real panel/board designer into,
-           discussed as its own multi-session feature, not a one-shot build. */
+        /* ---------- LAYOUT ---------- */
         #sidebar-panel {
             position: absolute;
             top: 150px;
@@ -327,7 +308,9 @@
             color: #6b7280;
             font-weight: 700;
             margin-bottom: 10px;
+            margin-top: 4px;
         }
+        .sidebar-title:first-child { margin-top: 0; }
 
         .empty-hint {
             font-size: 12px;
@@ -351,6 +334,8 @@
         .panel-item-actions { display: flex; gap: 6px; margin-top: 8px; }
         .panel-item-actions .mini-btn { flex: 1; padding: 6px 8px; font-size: 11px; }
 
+        .settings-row { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; }
+
         #canvas-area {
             position: absolute;
             top: 150px;
@@ -361,7 +346,7 @@
             padding: 40px;
         }
 
-        #cutListPreview { max-width: 900px; margin: 0 auto; }
+        #resultsWrap, #emptyOptimizerState { max-width: 980px; margin: 0 auto; }
 
         .placeholder-box {
             max-width: 420px;
@@ -389,7 +374,7 @@
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 16px;
-            margin-bottom: 8px;
+            margin-bottom: 24px;
         }
 
         .summary-card {
@@ -403,33 +388,46 @@
         .summary-value { font-size: 22px; font-weight: 800; color: #1e3a8a; }
         .summary-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; color: #6b7280; margin-top: 4px; font-weight: 700; }
 
-        .cutlist-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
+        .material-result-card {
             background-color: #ffffff;
             border: 1px solid #cbd5e1;
-            border-radius: 8px;
-            overflow: hidden;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
         }
 
-        .cutlist-table th, .cutlist-table td {
-            text-align: left;
-            padding: 10px 14px;
-            font-size: 13px;
-            border-bottom: 1px solid #e5e7eb;
+        .material-result-title { font-size: 15px; font-weight: 800; color: #0f172a; margin-bottom: 4px; }
+        .material-result-meta { font-size: 12px; color: #6b7280; margin-bottom: 14px; }
+
+        .oversized-warning {
+            font-size: 12px;
+            color: #b91c1c;
+            background-color: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: 6px;
+            padding: 8px 10px;
+            margin-bottom: 12px;
         }
 
-        .cutlist-table th {
-            background-color: #f9fafb;
+        .cut-diagram-block { margin-bottom: 16px; }
+        .cut-diagram-block:last-child { margin-bottom: 0; }
+
+        .cut-diagram-label {
             font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 0.04em;
-            color: #6b7280;
             font-weight: 700;
+            color: #4b5563;
+            margin-bottom: 6px;
         }
 
-        .cutlist-table tbody tr:last-child td { border-bottom: none; }
+        .cut-diagram-svg {
+            width: 100%;
+            max-width: 640px;
+            height: auto;
+            border-radius: 4px;
+            display: block;
+        }
+
+        .cut-diagram-linear { max-height: 40px; }
     </style>
 </head>
 <body>
@@ -441,12 +439,12 @@
                     <img src="logo.png" alt="Kerph Logo" class="logo-image">
                 </a>
             </div>
-            <div class="page-title">Project Designer</div>
+            <div class="page-title">Cut List Optimizer</div>
         </div>
         <div class="header-controls">
             <div class="header-field">
                 <label class="header-field-label">&nbsp;</label>
-                <a href="cutlist-optimizer.html" class="new-layout-btn new-layout-btn-secondary">Cut List Optimizer &#8594;</a>
+                <a href="project-designer.html" class="new-layout-btn new-layout-btn-secondary">&#8592; Project Designer</a>
             </div>
             <div class="header-field">
                 <label class="header-field-label">&nbsp;</label>
@@ -500,89 +498,90 @@
 
     <div class="upgrade-nudge" id="upgradeNudge"></div>
 
-    <div class="modal-overlay" id="panelModalOverlay" style="display:none;">
+    <div class="modal-overlay" id="partModalOverlay" style="display:none;">
         <div class="modal-box">
-            <div class="modal-title" id="panelModalTitle">Add Panel</div>
+            <div class="modal-title" id="partModalTitle">Add Part</div>
 
             <div class="header-field" style="width:100%;">
-                <label class="header-field-label" for="panelNameInput">Name</label>
-                <input type="text" class="input-box" id="panelNameInput" placeholder="e.g. Left Side Panel">
+                <label class="header-field-label" for="partNameInput">Name</label>
+                <input type="text" class="input-box" id="partNameInput" placeholder="e.g. Shelf">
             </div>
             <div style="display:flex; gap:8px; margin-top:10px;">
                 <div class="header-field" style="flex:1;">
-                    <label class="header-field-label" for="panelWidthInput">Width (in)</label>
-                    <input type="number" class="input-box" id="panelWidthInput" min="0.1" step="0.0625">
+                    <label class="header-field-label" for="partWidthInput">Width / Length (in)</label>
+                    <input type="number" class="input-box" id="partWidthInput" min="0.1" step="0.0625">
                 </div>
                 <div class="header-field" style="flex:1;">
-                    <label class="header-field-label" for="panelHeightInput">Height (in)</label>
-                    <input type="number" class="input-box" id="panelHeightInput" min="0.1" step="0.0625">
+                    <label class="header-field-label" for="partHeightInput">Height (in)</label>
+                    <input type="number" class="input-box" id="partHeightInput" min="0.1" step="0.0625">
                 </div>
             </div>
             <div style="display:flex; gap:8px; margin-top:10px;">
                 <div class="header-field" style="flex:1;">
-                    <label class="header-field-label" for="panelMaterialSelect">Material</label>
-                    <select class="select-box" id="panelMaterialSelect"></select>
+                    <label class="header-field-label" for="partMaterialSelect">Material</label>
+                    <select class="select-box" id="partMaterialSelect"></select>
                 </div>
                 <div class="header-field" style="flex:1;">
-                    <label class="header-field-label" for="panelThicknessInput">Thickness (in)</label>
-                    <input type="number" class="input-box" id="panelThicknessInput" min="0.1" step="0.0625">
+                    <label class="header-field-label" for="partThicknessInput">Thickness (in)</label>
+                    <input type="number" class="input-box" id="partThicknessInput" min="0.1" step="0.0625">
                 </div>
             </div>
             <div class="header-field" style="width:100%; margin-top:10px;">
-                <label class="header-field-label" for="panelQtyInput">Quantity</label>
-                <input type="number" class="input-box" id="panelQtyInput" min="1" step="1" value="1">
+                <label class="header-field-label" for="partQtyInput">Quantity</label>
+                <input type="number" class="input-box" id="partQtyInput" min="1" step="1" value="1">
             </div>
 
             <div class="modal-actions">
-                <button type="button" id="panelCancelBtn" class="mini-btn">Cancel</button>
-                <button type="button" id="panelSaveBtn" class="mini-btn modal-primary-btn">Save Panel</button>
+                <button type="button" id="partCancelBtn" class="mini-btn">Cancel</button>
+                <button type="button" id="partSaveBtn" class="mini-btn modal-primary-btn">Save Part</button>
             </div>
         </div>
     </div>
 
     <div id="sidebar-panel">
-        <div class="sidebar-title">Panels</div>
-        <div class="empty-hint" id="panelListEmptyHint">No panels yet. Add the boards this project needs — sides, shelves, doors — each with a width, height, thickness, and material.</div>
-        <div id="panelList"></div>
-        <button type="button" class="mini-btn" id="addPanelBtn" style="width:100%;">+ Add Panel</button>
+        <div class="sidebar-title">Parts</div>
+        <div class="empty-hint" id="partListEmptyHint">No parts yet. Add parts here, or design a project on the Project Designer page and send its panels over.</div>
+        <div id="partList"></div>
+        <button type="button" class="mini-btn" id="addPartBtn" style="width:100%;">+ Add Part</button>
+
+        <div class="sidebar-title" style="margin-top:20px;">Stock Settings</div>
+        <div class="settings-row">
+            <label class="header-field-label" for="sheetSizeSelect">Sheet Size</label>
+            <select class="select-box" id="sheetSizeSelect">
+                <option value="48x96" selected>4' x 8' (48in x 96in)</option>
+                <option value="48x48">4' x 4' (48in x 48in)</option>
+                <option value="24x48">2' x 4' (24in x 48in)</option>
+            </select>
+        </div>
+        <div class="settings-row">
+            <label class="header-field-label" for="boardLengthSelect">Board Length</label>
+            <select class="select-box" id="boardLengthSelect">
+                <option value="8">8 ft</option>
+                <option value="10" selected>10 ft</option>
+                <option value="12">12 ft</option>
+                <option value="16">16 ft</option>
+            </select>
+        </div>
+        <div class="settings-row">
+            <label class="header-field-label" for="kerfInput">Kerf Width (in)</label>
+            <input type="number" class="input-box" id="kerfInput" value="0.125" min="0" step="0.0625">
+        </div>
+
+        <button type="button" id="optimizeBtn" class="new-layout-btn" style="width:100%; margin-top:8px;">Optimize Cut List</button>
     </div>
 
     <div id="canvas-area">
-        <div class="placeholder-box" id="emptyProjectState">
-            <div class="placeholder-icon">&#128208;</div>
-            <div class="placeholder-title">Start your project</div>
-            <div class="placeholder-desc">Add panels on the left — sides, shelves, doors, whatever this piece needs — and a live cut list preview will build here as you go.</div>
+        <div class="placeholder-box" id="emptyOptimizerState">
+            <div class="placeholder-icon">&#9986;&#65039;</div>
+            <div class="placeholder-title">No cut list yet</div>
+            <div class="placeholder-desc">Add parts on the left, set your stock size, and click Optimize Cut List to see how they nest onto sheets and boards.</div>
         </div>
 
-        <div id="cutListPreview" style="display:none;">
-            <div class="preview-summary-grid">
-                <div class="summary-card">
-                    <div class="summary-value" id="summaryPanelCount">0</div>
-                    <div class="summary-label">Panels</div>
-                </div>
-                <div class="summary-card">
-                    <div class="summary-value" id="summarySheetArea">0 sq ft</div>
-                    <div class="summary-label">Sheet-Good Material</div>
-                </div>
-                <div class="summary-card">
-                    <div class="summary-value" id="summaryLinearLength">0 ft</div>
-                    <div class="summary-label">Linear Material</div>
-                </div>
-            </div>
-
-            <table class="cutlist-table">
-                <thead>
-                    <tr><th>Part</th><th>Dimensions</th><th>Material</th><th>Qty</th></tr>
-                </thead>
-                <tbody id="cutListTableBody"></tbody>
-            </table>
-
-            <button type="button" id="openFullCutListBtn" class="new-layout-btn" style="margin-top:20px;">Open Full Cut List Optimizer &#8594;</button>
-        </div>
+        <div id="resultsWrap" style="display:none;"></div>
     </div>
 
     <script>
-        /* ---------- SHARED STATE KEYS (must match workshop-planner.html / index.html exactly) ---------- */
+        /* ---------- SHARED STATE KEYS (must match workshop-planner.html / index.html / project-designer.html exactly) ---------- */
         const PLAN_KEY = 'kerphPlan';
         const ACCOUNT_KEY = 'kerphAccount';
         const AUTH_KEY = 'kerphSignedIn';
@@ -739,19 +738,14 @@
         initAccountPanel();
 
         /* ---------- DATA MODEL ----------
-           Each panel is a discrete board with real dimensions — a cut list is never "derived"
-           from anything ambiguous, it's just this array, formatted and grouped. Persisted to
-           localStorage so a project survives a reload; handed off wholesale to the Cut List
-           Optimizer (a separate page) via a different localStorage key when the user wants
-           the full nesting/optimization pass rather than just this grouped preview.
-
-           panels: [{ id, name, widthIn, heightIn, thicknessIn, material, qty }, ...]
-        */
-        const PANELS_KEY = 'kerphProjectPanels';
+           parts: [{ id, name, widthIn, heightIn, thicknessIn, material, qty }, ...]
+           Same shape Project Designer uses for its panels, so a handoff is a direct copy —
+           no conversion needed. For 'linear' materials, widthIn is read as the cut LENGTH
+           needed along the board (heightIn/thicknessIn describe the board's fixed profile
+           and aren't used by the packer). */
+        const PARTS_KEY = 'kerphCutListParts';
         const CUTLIST_HANDOFF_KEY = 'kerphCutListHandoff';
 
-        // Shared with cutlist-optimizer.html — 'sheet' materials get 2D-packed onto sheet
-        // goods, 'linear' materials get 1D-packed along board lengths.
         const MATERIALS = {
             'plywood-34': { label: '3/4" Plywood', type: 'sheet', thicknessIn: 0.75 },
             'plywood-12': { label: '1/2" Plywood', type: 'sheet', thicknessIn: 0.5 },
@@ -769,15 +763,27 @@
             return div.innerHTML;
         }
 
-        let panels = [];
-        try {
-            panels = JSON.parse(localStorage.getItem(PANELS_KEY)) || [];
-        } catch (e) {
-            panels = [];
+        let parts = [];
+        const handoff = localStorage.getItem(CUTLIST_HANDOFF_KEY);
+        if (handoff) {
+            try {
+                parts = JSON.parse(handoff) || [];
+                localStorage.setItem(PARTS_KEY, JSON.stringify(parts));
+                showToast(`Loaded ${parts.length} panel${parts.length === 1 ? '' : 's'} from Project Designer.`);
+            } catch (e) {
+                parts = [];
+            }
+            localStorage.removeItem(CUTLIST_HANDOFF_KEY);
+        } else {
+            try {
+                parts = JSON.parse(localStorage.getItem(PARTS_KEY)) || [];
+            } catch (e) {
+                parts = [];
+            }
         }
 
-        function savePanels() {
-            localStorage.setItem(PANELS_KEY, JSON.stringify(panels));
+        function saveParts() {
+            localStorage.setItem(PARTS_KEY, JSON.stringify(parts));
         }
 
         function populateMaterialSelect(select) {
@@ -790,65 +796,65 @@
             });
         }
 
-        let editingPanelId = null;
+        let editingPartId = null;
 
-        function openPanelModal(panel) {
-            editingPanelId = panel ? panel.id : null;
-            document.getElementById('panelModalTitle').textContent = panel ? 'Edit Panel' : 'Add Panel';
-            document.getElementById('panelNameInput').value = panel ? panel.name : '';
-            document.getElementById('panelWidthInput').value = panel ? panel.widthIn : '';
-            document.getElementById('panelHeightInput').value = panel ? panel.heightIn : '';
-            const material = panel ? panel.material : 'plywood-34';
-            document.getElementById('panelMaterialSelect').value = material;
-            document.getElementById('panelThicknessInput').value = panel ? panel.thicknessIn : MATERIALS[material].thicknessIn;
-            document.getElementById('panelQtyInput').value = panel ? panel.qty : 1;
-            document.getElementById('panelModalOverlay').style.display = 'flex';
-            document.getElementById('panelNameInput').focus();
+        function openPartModal(part) {
+            editingPartId = part ? part.id : null;
+            document.getElementById('partModalTitle').textContent = part ? 'Edit Part' : 'Add Part';
+            document.getElementById('partNameInput').value = part ? part.name : '';
+            document.getElementById('partWidthInput').value = part ? part.widthIn : '';
+            document.getElementById('partHeightInput').value = part ? part.heightIn : '';
+            const material = part ? part.material : 'plywood-34';
+            document.getElementById('partMaterialSelect').value = material;
+            document.getElementById('partThicknessInput').value = part ? part.thicknessIn : MATERIALS[material].thicknessIn;
+            document.getElementById('partQtyInput').value = part ? part.qty : 1;
+            document.getElementById('partModalOverlay').style.display = 'flex';
+            document.getElementById('partNameInput').focus();
         }
 
-        function closePanelModal() {
-            document.getElementById('panelModalOverlay').style.display = 'none';
-            editingPanelId = null;
+        function closePartModal() {
+            document.getElementById('partModalOverlay').style.display = 'none';
+            editingPartId = null;
         }
 
-        function savePanelFromModal() {
-            const name = document.getElementById('panelNameInput').value.trim();
-            const widthIn = parseFloat(document.getElementById('panelWidthInput').value);
-            const heightIn = parseFloat(document.getElementById('panelHeightInput').value);
-            const thicknessIn = parseFloat(document.getElementById('panelThicknessInput').value);
-            const material = document.getElementById('panelMaterialSelect').value;
-            const qty = Math.max(1, parseInt(document.getElementById('panelQtyInput').value, 10) || 1);
+        function savePartFromModal() {
+            const name = document.getElementById('partNameInput').value.trim();
+            const widthIn = parseFloat(document.getElementById('partWidthInput').value);
+            const heightIn = parseFloat(document.getElementById('partHeightInput').value);
+            const thicknessIn = parseFloat(document.getElementById('partThicknessInput').value);
+            const material = document.getElementById('partMaterialSelect').value;
+            const qty = Math.max(1, parseInt(document.getElementById('partQtyInput').value, 10) || 1);
 
-            if (!name) { showToast('Give this panel a name.'); return; }
+            if (!name) { showToast('Give this part a name.'); return; }
             if (!widthIn || !heightIn || !thicknessIn) { showToast('Width, height, and thickness must be greater than 0.'); return; }
 
-            if (editingPanelId) {
-                const existing = panels.find(p => p.id === editingPanelId);
+            if (editingPartId) {
+                const existing = parts.find(p => p.id === editingPartId);
                 if (existing) Object.assign(existing, { name, widthIn, heightIn, thicknessIn, material, qty });
             } else {
-                panels.push({
+                parts.push({
                     id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
                     name, widthIn, heightIn, thicknessIn, material, qty
                 });
             }
-            savePanels();
-            renderAll();
-            closePanelModal();
+            saveParts();
+            renderPartList();
+            closePartModal();
         }
 
-        function deletePanel(id) {
-            panels = panels.filter(p => p.id !== id);
-            savePanels();
-            renderAll();
+        function deletePart(id) {
+            parts = parts.filter(p => p.id !== id);
+            saveParts();
+            renderPartList();
         }
 
-        function renderPanelList() {
-            const container = document.getElementById('panelList');
-            const hint = document.getElementById('panelListEmptyHint');
+        function renderPartList() {
+            const container = document.getElementById('partList');
+            const hint = document.getElementById('partListEmptyHint');
             container.innerHTML = '';
-            hint.style.display = panels.length ? 'none' : 'block';
+            hint.style.display = parts.length ? 'none' : 'block';
 
-            panels.forEach(p => {
+            parts.forEach(p => {
                 const mat = MATERIALS[p.material] || MATERIALS.custom;
                 const item = document.createElement('div');
                 item.className = 'panel-item';
@@ -863,13 +869,13 @@
                 editBtn.type = 'button';
                 editBtn.className = 'mini-btn';
                 editBtn.textContent = 'Edit';
-                editBtn.addEventListener('click', () => openPanelModal(p));
+                editBtn.addEventListener('click', () => openPartModal(p));
 
                 const removeBtn = document.createElement('button');
                 removeBtn.type = 'button';
                 removeBtn.className = 'mini-btn danger';
                 removeBtn.textContent = 'Remove';
-                removeBtn.addEventListener('click', () => deletePanel(p.id));
+                removeBtn.addEventListener('click', () => deletePart(p.id));
 
                 actions.appendChild(editBtn);
                 actions.appendChild(removeBtn);
@@ -878,81 +884,262 @@
             });
         }
 
-        // Groups panels by identical width/height/thickness/material — the same aggregation
-        // a real cut list needs, since two panels with matching dimensions are cut from the
-        // same size blank regardless of what each is individually named.
-        function renderCutListPreview() {
-            const empty = document.getElementById('emptyProjectState');
-            const preview = document.getElementById('cutListPreview');
+        document.getElementById('addPartBtn').addEventListener('click', () => openPartModal(null));
+        document.getElementById('partCancelBtn').addEventListener('click', closePartModal);
+        document.getElementById('partSaveBtn').addEventListener('click', savePartFromModal);
 
-            if (!panels.length) {
-                empty.style.display = 'block';
-                preview.style.display = 'none';
-                return;
+        document.getElementById('partMaterialSelect').addEventListener('change', (e) => {
+            const mat = MATERIALS[e.target.value];
+            if (mat) document.getElementById('partThicknessInput').value = mat.thicknessIn;
+        });
+
+        populateMaterialSelect(document.getElementById('partMaterialSelect'));
+        renderPartList();
+
+        /* ---------- PACKING ALGORITHMS ----------
+           Real, functional heuristics (not a mockup) — not a globally-optimal nester (that's
+           an NP-hard bin-packing problem), but a genuinely useful first pass:
+           - Sheet goods: shelf packing (sort by longest side descending, fill left-to-right
+             shelves, wrap to a new shelf/sheet when out of room), with a same-item 90°
+             rotation check when it helps a piece fit.
+           - Linear stock: first-fit-decreasing along board length. */
+        function expandParts(list) {
+            const expanded = [];
+            list.forEach(p => {
+                for (let i = 0; i < p.qty; i++) expanded.push({ ...p });
+            });
+            return expanded;
+        }
+
+        function packSheets(rectList, sheetW, sheetH, kerf) {
+            const items = rectList.slice().sort((a, b) => Math.max(b.widthIn, b.heightIn) - Math.max(a.widthIn, a.heightIn));
+            const sheets = [];
+            const oversized = [];
+
+            function placeOnShelf(shelf, w, h, rotated, item) {
+                shelf.parts.push({ label: item.label, x: shelf.usedWidth, y: shelf.y, w, h, rotated });
+                shelf.usedWidth += w + kerf;
             }
-            empty.style.display = 'none';
-            preview.style.display = 'block';
 
-            const groups = {};
-            let sheetAreaSqFt = 0;
-            let linearLengthFt = 0;
-            let totalPanelCount = 0;
+            items.forEach(item => {
+                let placed = false;
 
-            panels.forEach(p => {
-                const mat = MATERIALS[p.material] || MATERIALS.custom;
-                const key = [p.widthIn, p.heightIn, p.thicknessIn, p.material].join('|');
-                if (!groups[key]) groups[key] = { ...p, qty: 0, names: new Set() };
-                groups[key].qty += p.qty;
-                groups[key].names.add(p.name);
+                for (let s = 0; s < sheets.length && !placed; s++) {
+                    const sheet = sheets[s];
+                    for (let sh = 0; sh < sheet.shelves.length && !placed; sh++) {
+                        const shelf = sheet.shelves[sh];
+                        const widthLeft = sheetW - shelf.usedWidth - (shelf.usedWidth > 0 ? kerf : 0);
+                        if (item.widthIn <= widthLeft && item.heightIn <= shelf.height) {
+                            placeOnShelf(shelf, item.widthIn, item.heightIn, false, item);
+                            placed = true;
+                        } else if (item.heightIn <= widthLeft && item.widthIn <= shelf.height) {
+                            placeOnShelf(shelf, item.heightIn, item.widthIn, true, item);
+                            placed = true;
+                        }
+                    }
+                    if (!placed) {
+                        const usedHeight = sheet.shelves.reduce((sum, s2) => sum + s2.height + kerf, 0);
+                        const heightLeft = sheetH - usedHeight;
+                        if (item.heightIn <= heightLeft && item.widthIn <= sheetW) {
+                            const shelf = { y: usedHeight, height: item.heightIn, usedWidth: 0, parts: [] };
+                            placeOnShelf(shelf, item.widthIn, item.heightIn, false, item);
+                            sheet.shelves.push(shelf);
+                            placed = true;
+                        } else if (item.widthIn <= heightLeft && item.heightIn <= sheetW) {
+                            const shelf = { y: usedHeight, height: item.widthIn, usedWidth: 0, parts: [] };
+                            placeOnShelf(shelf, item.heightIn, item.widthIn, true, item);
+                            sheet.shelves.push(shelf);
+                            placed = true;
+                        }
+                    }
+                }
 
-                totalPanelCount += p.qty;
-                if (mat.type === 'sheet') {
-                    sheetAreaSqFt += (p.widthIn * p.heightIn / 144) * p.qty;
-                } else {
-                    linearLengthFt += (p.widthIn / 12) * p.qty;
+                if (!placed) {
+                    const fitsNormal = item.widthIn <= sheetW && item.heightIn <= sheetH;
+                    const fitsRotated = item.heightIn <= sheetW && item.widthIn <= sheetH;
+                    if (!fitsNormal && !fitsRotated) {
+                        oversized.push(item);
+                        return;
+                    }
+                    const rotated = !fitsNormal && fitsRotated;
+                    const w = rotated ? item.heightIn : item.widthIn;
+                    const h = rotated ? item.widthIn : item.heightIn;
+                    const shelf = { y: 0, height: h, usedWidth: 0, parts: [] };
+                    placeOnShelf(shelf, w, h, rotated, item);
+                    sheets.push({ shelves: [shelf] });
                 }
             });
 
-            document.getElementById('summaryPanelCount').textContent = totalPanelCount;
-            document.getElementById('summarySheetArea').textContent = sheetAreaSqFt.toFixed(1) + ' sq ft';
-            document.getElementById('summaryLinearLength').textContent = linearLengthFt.toFixed(1) + ' ft';
+            return { sheets, oversized };
+        }
 
-            const tbody = document.getElementById('cutListTableBody');
-            tbody.innerHTML = '';
-            Object.values(groups).forEach(g => {
-                const mat = MATERIALS[g.material] || MATERIALS.custom;
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${escapeHtml(Array.from(g.names).join(', '))}</td>
-                    <td>${g.widthIn}" x ${g.heightIn}" x ${g.thicknessIn}"</td>
-                    <td>${escapeHtml(mat.label)}</td>
-                    <td>${g.qty}</td>
-                `;
-                tbody.appendChild(tr);
+        function packLinear(lenList, boardLen, kerf) {
+            const items = lenList.slice().sort((a, b) => b.lengthIn - a.lengthIn);
+            const boards = [];
+            const oversized = [];
+
+            items.forEach(item => {
+                if (item.lengthIn > boardLen) { oversized.push(item); return; }
+                let placed = false;
+                for (const board of boards) {
+                    const used = board.parts.reduce((sum, p) => sum + p.lengthIn + kerf, 0);
+                    if (boardLen - used >= item.lengthIn) {
+                        board.parts.push({ label: item.label, lengthIn: item.lengthIn, start: used });
+                        placed = true;
+                        break;
+                    }
+                }
+                if (!placed) {
+                    boards.push({ parts: [{ label: item.label, lengthIn: item.lengthIn, start: 0 }] });
+                }
             });
+
+            return { boards, oversized };
         }
 
-        function renderAll() {
-            renderPanelList();
-            renderCutListPreview();
+        /* ---------- RENDERING ---------- */
+        const PART_COLORS = ['#1e3a8a', '#0ea5e9', '#16a34a', '#d97706', '#dc2626', '#7c3aed', '#0891b2', '#be185d'];
+
+        function colorForLabel(label, labelColorMap) {
+            if (!labelColorMap[label]) {
+                labelColorMap[label] = PART_COLORS[Object.keys(labelColorMap).length % PART_COLORS.length];
+            }
+            return labelColorMap[label];
         }
 
-        document.getElementById('addPanelBtn').addEventListener('click', () => openPanelModal(null));
-        document.getElementById('panelCancelBtn').addEventListener('click', closePanelModal);
-        document.getElementById('panelSaveBtn').addEventListener('click', savePanelFromModal);
+        function buildSheetSvg(sheet, sheetW, sheetH, labelColorMap) {
+            let rects = '';
+            sheet.shelves.forEach(shelf => {
+                shelf.parts.forEach(p => {
+                    const color = colorForLabel(p.label, labelColorMap);
+                    rects += `<rect x="${p.x}" y="${p.y}" width="${p.w}" height="${p.h}" fill="${color}" fill-opacity="0.75" stroke="#0f172a" stroke-width="0.3"><title>${escapeHtml(p.label)} — ${p.w.toFixed(2)}" x ${p.h.toFixed(2)}"${p.rotated ? ' (rotated)' : ''}</title></rect>`;
+                });
+            });
+            return `<svg viewBox="0 0 ${sheetW} ${sheetH}" class="cut-diagram-svg"><rect x="0" y="0" width="${sheetW}" height="${sheetH}" fill="#f1f5f9" stroke="#94a3b8" stroke-width="0.5"/>${rects}</svg>`;
+        }
 
-        document.getElementById('panelMaterialSelect').addEventListener('change', (e) => {
-            const mat = MATERIALS[e.target.value];
-            if (mat) document.getElementById('panelThicknessInput').value = mat.thicknessIn;
-        });
+        function buildBoardSvg(board, boardLenIn, labelColorMap) {
+            const barHeight = 12;
+            let rects = '';
+            board.parts.forEach(p => {
+                const color = colorForLabel(p.label, labelColorMap);
+                rects += `<rect x="${p.start}" y="0" width="${p.lengthIn}" height="${barHeight}" fill="${color}" fill-opacity="0.75" stroke="#0f172a" stroke-width="0.3"><title>${escapeHtml(p.label)} — ${p.lengthIn.toFixed(2)}"</title></rect>`;
+            });
+            return `<svg viewBox="0 0 ${boardLenIn} ${barHeight}" class="cut-diagram-svg cut-diagram-linear"><rect x="0" y="0" width="${boardLenIn}" height="${barHeight}" fill="#f1f5f9" stroke="#94a3b8" stroke-width="0.5"/>${rects}</svg>`;
+        }
 
-        document.getElementById('openFullCutListBtn').addEventListener('click', () => {
-            localStorage.setItem(CUTLIST_HANDOFF_KEY, JSON.stringify(panels));
-            window.location.href = 'cutlist-optimizer.html';
-        });
+        function sheetWasteFraction(sheet, sheetW, sheetH) {
+            const used = sheet.shelves.reduce((sum, shelf) => sum + shelf.parts.reduce((s2, p) => s2 + p.w * p.h, 0), 0);
+            return 1 - (used / (sheetW * sheetH));
+        }
 
-        populateMaterialSelect(document.getElementById('panelMaterialSelect'));
-        renderAll();
+        function boardWasteFraction(board, boardLen, kerf) {
+            const used = board.parts.reduce((sum, p, i) => sum + p.lengthIn + (i > 0 ? kerf : 0), 0);
+            return 1 - (used / boardLen);
+        }
+
+        function runOptimization() {
+            if (!parts.length) {
+                showToast('Add parts before optimizing.');
+                return;
+            }
+
+            const [sheetW, sheetH] = document.getElementById('sheetSizeSelect').value.split('x').map(Number);
+            const boardLenFt = parseFloat(document.getElementById('boardLengthSelect').value);
+            const boardLenIn = boardLenFt * 12;
+            const kerf = parseFloat(document.getElementById('kerfInput').value) || 0.125;
+
+            const byMaterial = {};
+            parts.forEach(p => {
+                if (!byMaterial[p.material]) byMaterial[p.material] = [];
+                byMaterial[p.material].push(p);
+            });
+
+            const labelColorMap = {};
+            let totalSheets = 0;
+            let totalBoards = 0;
+            let cardsHtml = '';
+
+            Object.keys(byMaterial).forEach(materialKey => {
+                const mat = MATERIALS[materialKey] || MATERIALS.custom;
+                const group = byMaterial[materialKey];
+
+                if (mat.type === 'sheet') {
+                    const rects = expandParts(group).map(p => ({ widthIn: p.widthIn, heightIn: p.heightIn, label: p.name }));
+                    const { sheets, oversized } = packSheets(rects, sheetW, sheetH, kerf);
+                    totalSheets += sheets.length;
+
+                    const avgWaste = sheets.length
+                        ? (sheets.reduce((sum, s) => sum + sheetWasteFraction(s, sheetW, sheetH), 0) / sheets.length) * 100
+                        : 0;
+
+                    let diagramsHtml = sheets.map((sheet, i) => `
+                        <div class="cut-diagram-block">
+                            <div class="cut-diagram-label">Sheet ${i + 1} of ${sheets.length} &mdash; ${(sheetWasteFraction(sheet, sheetW, sheetH) * 100).toFixed(0)}% waste</div>
+                            ${buildSheetSvg(sheet, sheetW, sheetH, labelColorMap)}
+                        </div>
+                    `).join('');
+
+                    cardsHtml += `
+                        <div class="material-result-card">
+                            <div class="material-result-title">${escapeHtml(mat.label)} — ${sheets.length} sheet${sheets.length === 1 ? '' : 's'} (${sheetW}" x ${sheetH}")</div>
+                            <div class="material-result-meta">Average waste per sheet: ${avgWaste.toFixed(0)}%</div>
+                            ${oversized.length ? `<div class="oversized-warning">${oversized.length} part(s) are larger than the sheet size in both orientations and couldn't be placed: ${escapeHtml(oversized.map(o => o.label).join(', '))}</div>` : ''}
+                            ${diagramsHtml}
+                        </div>
+                    `;
+                } else {
+                    const lens = expandParts(group).map(p => ({ lengthIn: p.widthIn, label: p.name }));
+                    const { boards, oversized } = packLinear(lens, boardLenIn, kerf);
+                    totalBoards += boards.length;
+
+                    const avgWaste = boards.length
+                        ? (boards.reduce((sum, b) => sum + boardWasteFraction(b, boardLenIn, kerf), 0) / boards.length) * 100
+                        : 0;
+
+                    let diagramsHtml = boards.map((board, i) => `
+                        <div class="cut-diagram-block">
+                            <div class="cut-diagram-label">Board ${i + 1} of ${boards.length} &mdash; ${(boardWasteFraction(board, boardLenIn, kerf) * 100).toFixed(0)}% waste</div>
+                            ${buildBoardSvg(board, boardLenIn, labelColorMap)}
+                        </div>
+                    `).join('');
+
+                    cardsHtml += `
+                        <div class="material-result-card">
+                            <div class="material-result-title">${escapeHtml(mat.label)} — ${boards.length} board${boards.length === 1 ? '' : 's'} (${boardLenFt}ft)</div>
+                            <div class="material-result-meta">Average waste per board: ${avgWaste.toFixed(0)}%</div>
+                            ${oversized.length ? `<div class="oversized-warning">${oversized.length} part(s) are longer than the board length and couldn't be placed: ${escapeHtml(oversized.map(o => o.label).join(', '))}</div>` : ''}
+                            ${diagramsHtml}
+                        </div>
+                    `;
+                }
+            });
+
+            const totalPartCount = parts.reduce((sum, p) => sum + p.qty, 0);
+
+            document.getElementById('resultsWrap').innerHTML = `
+                <div class="preview-summary-grid">
+                    <div class="summary-card">
+                        <div class="summary-value">${totalPartCount}</div>
+                        <div class="summary-label">Total Parts</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-value">${totalSheets}</div>
+                        <div class="summary-label">Sheets Needed</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-value">${totalBoards}</div>
+                        <div class="summary-label">Boards Needed</div>
+                    </div>
+                </div>
+                ${cardsHtml}
+            `;
+
+            document.getElementById('emptyOptimizerState').style.display = 'none';
+            document.getElementById('resultsWrap').style.display = 'block';
+        }
+
+        document.getElementById('optimizeBtn').addEventListener('click', runOptimization);
     </script>
 
 </body>
