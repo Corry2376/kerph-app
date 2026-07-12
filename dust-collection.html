@@ -1,0 +1,1509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kerph - Dust Collection</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            background-color: #eef1f6;
+            color: #0f172a;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+        }
+
+        header {
+            background-color: #ffffff;
+            background-image:
+                linear-gradient(135deg, #ffffff 0%, #eef2ff 60%, #e0e7ff 100%),
+                repeating-linear-gradient(120deg, rgba(30, 58, 138, 0.04) 0px, rgba(30, 58, 138, 0.04) 2px, transparent 2px, transparent 14px);
+            border-bottom: 2px solid #1e3a8a;
+            padding: 10px 20px;
+            height: 150px;
+            width: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .brand-assembly { display: flex; align-items: center; gap: 15px; height: 100%; }
+
+        .logo-spotlight {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 382px;
+            height: 105px;
+        }
+
+        .logo-link { display: block; line-height: 0; }
+
+        .logo-image {
+            position: relative;
+            z-index: 1;
+            width: 382px;
+            height: 105px;
+            object-fit: contain;
+            border-radius: 4px;
+            filter: drop-shadow(0 12px 22px rgba(15, 23, 42, 0.4));
+            transition: transform 0.3s ease, filter 0.3s ease;
+        }
+
+        .logo-image:hover {
+            transform: scale(1.03);
+            filter: drop-shadow(0 18px 30px rgba(15, 23, 42, 0.5));
+        }
+
+        .page-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #1e3a8a;
+            padding-left: 16px;
+            border-left: 1px solid #cbd5e1;
+            white-space: nowrap;
+        }
+
+        .header-controls { display: flex; align-items: flex-start; gap: 16px; }
+        .header-field { display: flex; flex-direction: column; gap: 4px; }
+
+        .header-field-label {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #6b7280;
+        }
+
+        .new-layout-btn {
+            padding: 8px 14px;
+            border: none;
+            border-radius: 8px;
+            background-color: #1e3a8a;
+            color: #ffffff;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            white-space: nowrap;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .new-layout-btn:hover { background-color: #1e40af; }
+
+        .new-layout-btn-secondary {
+            background-color: #ffffff;
+            color: #1e3a8a;
+            border: 1px solid #cbd5e1;
+        }
+
+        .new-layout-btn-secondary:hover { background-color: #eef2ff; border-color: #2563eb; }
+
+        /* ---------- HEADER: SIGN-IN / ACCOUNT / PLAN (ubiquitous across all pages) ---------- */
+        .plan-badge-group { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
+
+        .plan-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: #4b5563;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 4px;
+        }
+
+        .plan-label abbr { cursor: help; text-decoration: none; }
+
+        .plan-select {
+            padding: 8px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            background-color: #ffffff;
+            font-size: 13px;
+            font-weight: 700;
+            color: #1e3a8a;
+            cursor: pointer;
+        }
+
+        .account-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px 6px 6px;
+            border: 1px solid #cbd5e1;
+            border-radius: 999px;
+            background-color: #ffffff;
+            font-size: 13px;
+            font-weight: 700;
+            color: #1e3a8a;
+            cursor: pointer;
+        }
+
+        .account-btn:hover { border-color: #1e3a8a; background-color: #eef2ff; }
+
+        .account-avatar {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background-color: #e0e7ff;
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .account-avatar-large {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            background-color: #e0e7ff;
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+        }
+
+        .header-sign-in { display: flex; align-items: center; gap: 4px; }
+
+        .header-sign-in-input {
+            width: 84px;
+            padding: 6px 8px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .header-sign-in .mini-btn { flex: none; padding: 6px 10px; font-size: 11px; }
+
+        .mini-btn {
+            flex: 1;
+            padding: 8px 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            background-color: #ffffff;
+            font-size: 12px;
+            font-weight: 700;
+            color: #1e3a8a;
+            cursor: pointer;
+        }
+
+        .mini-btn:hover { background-color: #eef2ff; border-color: #2563eb; }
+        .mini-btn.danger { color: #b91c1c; }
+        .mini-btn.danger:hover { background-color: #fef2f2; border-color: #b91c1c; }
+
+        .input-box { width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; font-weight: 600; }
+        .select-box { width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; font-weight: 600; background: #f8fafc; }
+
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background-color: rgba(15, 23, 42, 0.5);
+            z-index: 3000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-box {
+            background-color: #ffffff;
+            border-radius: 12px;
+            padding: 24px;
+            width: 320px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+        }
+
+        .modal-title { font-size: 16px; font-weight: 800; color: #0f172a; margin-bottom: 8px; }
+
+        .modal-warning {
+            font-size: 12px;
+            color: #b45309;
+            background-color: #fffbeb;
+            border: 1px solid #fde68a;
+            border-radius: 6px;
+            padding: 8px 10px;
+            margin-bottom: 16px;
+        }
+
+        .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+        .modal-actions .mini-btn { flex: 1; }
+
+        .modal-primary-btn {
+            background-color: #1e3a8a !important;
+            color: #ffffff !important;
+            border-color: #1e3a8a !important;
+        }
+
+        .upgrade-nudge {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background-color: #0f172a;
+            color: #ffffff;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 10px 12px 10px 18px;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease, transform 0.2s ease;
+            z-index: 2000;
+            max-width: 400px;
+        }
+
+        .upgrade-nudge.visible { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
+
+        /* ---------- SIDEBAR (Dust Collection catalog only) ---------- */
+        #sidebar-panel {
+            position: absolute;
+            top: 150px;
+            left: 0;
+            width: 310px;
+            height: calc(100vh - 150px);
+            background-color: #ffffff;
+            background-image: radial-gradient(circle at 1px 1px, rgba(15, 23, 42, 0.06) 1px, transparent 0);
+            background-size: 16px 16px;
+            border-right: 1px solid #cbd5e1;
+            padding: 20px;
+            z-index: 90;
+            overflow-y: auto;
+        }
+
+        .sidebar-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #6b7280;
+            font-weight: 700;
+            margin-bottom: 8px;
+            margin-top: 4px;
+        }
+
+        .empty-hint { font-size: 11px; color: #9ca3af; font-style: italic; padding: 6px 2px; }
+
+        .tool-box-item {
+            position: relative;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            background-color: #f9fafb;
+            border: 1px solid #cbd5e1;
+            border-left: 4px solid #cbd5e1;
+            padding: 10px 12px;
+            border-radius: 6px;
+            cursor: grab;
+            user-select: none;
+            margin-bottom: 8px;
+        }
+
+        .tool-box-item:hover {
+            border-color: #2563eb;
+            border-left-color: #2563eb;
+            background-color: #f0f4ff;
+        }
+
+        .tool-box-item.is-owned { border-left-color: #16a34a; background-color: #f0fdf4; }
+        .tool-box-item.is-wishlist { border-left-color: #d97706; background-color: #fffbeb; }
+
+        .tool-title { font-weight: 700; font-size: 13px; color: #0f172a; }
+        .tool-dims { font-size: 11px; color: #6b7280; margin-top: 1px; }
+
+        .tool-status-controls { display: flex; gap: 4px; flex-shrink: 0; }
+
+        .status-btn {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            border: 1px solid #cbd5e1;
+            background-color: #ffffff;
+            color: #9ca3af;
+            font-size: 11px;
+            line-height: 1;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .status-btn:hover { border-color: #2563eb; color: #2563eb; }
+        .owned-btn.active { background-color: #16a34a; border-color: #16a34a; color: #ffffff; }
+        .wishlist-btn.active { background-color: #d97706; border-color: #d97706; color: #ffffff; }
+
+        /* ---------- CANVAS ---------- */
+        #canvas-view-space {
+            position: absolute;
+            top: 150px;
+            left: 310px;
+            width: calc(100vw - 310px);
+            height: calc(100vh - 150px);
+            background-color: #163a68;
+            background-image:
+                repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.20) 0px, rgba(255, 255, 255, 0.20) 1.5px, transparent 1.5px, transparent 100px),
+                repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.20) 0px, rgba(255, 255, 255, 0.20) 1.5px, transparent 1.5px, transparent 100px),
+                repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.08) 0px, rgba(255, 255, 255, 0.08) 1px, transparent 1px, transparent 20px),
+                repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.08) 0px, rgba(255, 255, 255, 0.08) 1px, transparent 1px, transparent 20px);
+            overflow: hidden;
+            z-index: 10;
+        }
+
+        #canvas-scroll-area { position: absolute; top: 0; left: 0; right: 0; bottom: 0; overflow: auto; }
+
+        .workshop-grid-board {
+            background-color: #ffffff;
+            border: 3px solid #0f172a;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15);
+            position: absolute;
+            top: 80px;
+            left: 40px;
+            background-image:
+                linear-gradient(to right, #cbd5e1 1px, transparent 1px),
+                linear-gradient(to bottom, #cbd5e1 1px, transparent 1px);
+        }
+
+        .ruler { position: absolute; z-index: 4; }
+        .ruler-top { top: 60px; left: 40px; height: 18px; border-bottom: 2px solid #ffffff; }
+        .ruler-left { top: 80px; left: 16px; width: 18px; border-right: 2px solid #ffffff; }
+        .ruler-label-h { position: absolute; bottom: 7px; transform: translateX(-50%); }
+        .ruler-label-v { position: absolute; right: 7px; transform: translateY(-50%); }
+        .ruler-label { font-size: 10.5px; font-weight: 700; color: #ffffff; white-space: nowrap; }
+
+        .shape-overlay { position: absolute; inset: 0; pointer-events: none; z-index: 5; }
+        .shape-outline { fill: none; stroke: #1e3a8a; stroke-width: 3; }
+
+        .placed-tool-node {
+            position: absolute;
+            background-color: rgba(30, 58, 138, 0.08);
+            border: 2px solid #1e3a8a;
+            border-radius: 4px;
+            cursor: move;
+            user-select: none;
+            z-index: 500;
+        }
+
+        .placed-tool-node.blast-gate-node {
+            background-color: rgba(220, 38, 38, 0.15);
+            border: 2px solid #dc2626;
+            box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.25);
+        }
+
+        .placed-tool-node.selected-node { outline: 3px dashed #7c3aed; outline-offset: 2px; }
+
+        .placed-tool-node.reference-node {
+            opacity: 0.32;
+            cursor: default;
+            pointer-events: none;
+        }
+
+        .placed-cabinet-node {
+            background-color: rgba(180, 83, 9, 0.14);
+            border-color: #b45309;
+            color: #7c2d12;
+        }
+
+        .placed-cabinet-node.reference-node { opacity: 0.7; }
+
+        .node-content {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 11px;
+            font-weight: 700;
+            color: #0f172a;
+            line-height: 1.25;
+            overflow: hidden;
+            padding: 1px;
+            box-sizing: border-box;
+        }
+
+        .node-label { font-size: 11px; font-weight: 700; max-width: 100%; overflow-wrap: break-word; word-break: break-word; hyphens: auto; }
+        .node-dims { font-size: 9px; font-weight: 600; opacity: 0.75; max-width: 100%; white-space: nowrap; }
+
+        .rotate-handle {
+            position: absolute;
+            top: -24px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background-color: #ffffff;
+            border: 2px solid #1e3a8a;
+            cursor: grab;
+            z-index: 600;
+        }
+
+        .rotate-handle:active { cursor: grabbing; }
+        .rotate-handle::after {
+            content: '';
+            position: absolute;
+            top: 12px;
+            left: 50%;
+            width: 2px;
+            height: 10px;
+            background-color: #1e3a8a;
+            transform: translateX(-50%);
+        }
+
+        .rotate-readout {
+            position: absolute;
+            top: -46px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #1e3a8a;
+            color: #ffffff;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 4px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.1s ease;
+        }
+
+        .rotate-readout.visible { opacity: 1; }
+
+        .wall-feature-node {
+            position: absolute;
+            z-index: 400;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            font-size: 8px;
+            font-weight: 800;
+            color: #ffffff;
+            user-select: none;
+            border-radius: 2px;
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            pointer-events: none;
+        }
+
+        .wall-feature-node.wall-feature-door { background-color: #92400e; }
+        .wall-feature-node.wall-feature-window { background-color: #0ea5e9; }
+        .wall-feature-node.wall-feature-switch, .wall-feature-node.wall-feature-outlet { border-radius: 50%; }
+        .wall-feature-node.wall-feature-switch { background-color: #eab308; }
+        .wall-feature-node.wall-feature-outlet { background-color: #dc2626; }
+        .wall-feature-node.wall-feature-panel { background-color: #475569; }
+        .wall-feature-node.wall-feature-minisplit { background-color: #0891b2; }
+
+        .wall-feature-label {
+            position: absolute;
+            transform: translate(-50%, -100%);
+            font-size: 9px;
+            font-weight: 700;
+            color: #0f172a;
+            background-color: rgba(255, 255, 255, 0.9);
+            border: 1px solid #cbd5e1;
+            padding: 1px 5px;
+            border-radius: 3px;
+            white-space: nowrap;
+            pointer-events: none;
+            z-index: 401;
+        }
+
+        .placeholder-box { max-width: 460px; text-align: center; padding: 32px; margin: 100px auto 0; }
+        .placeholder-icon { font-size: 40px; margin-bottom: 16px; }
+        .placeholder-title { font-size: 18px; font-weight: 700; color: #0f172a; margin-bottom: 8px; }
+        .placeholder-desc { font-size: 13px; color: #6b7280; line-height: 1.6; }
+
+        /* ---------- FLOATING PANEL (Sizing Calculator) ---------- */
+        .floating-panel {
+            position: fixed;
+            width: 320px;
+            background-color: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            box-shadow: 0 12px 30px -8px rgba(15, 23, 42, 0.25);
+            padding: 16px;
+            z-index: 1500;
+            top: 166px;
+            right: 24px;
+        }
+
+        .floating-panel-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #1e3a8a;
+            font-weight: 700;
+            margin-bottom: 10px;
+            cursor: move;
+            user-select: none;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .floating-panel.collapsed .floating-panel-title { margin-bottom: 0; }
+        .floating-panel.collapsed .panel-body { display: none; }
+
+        .panel-toggle-chevron { font-size: 10px; color: #6b7280; transition: transform 0.15s ease; flex-shrink: 0; }
+        .floating-panel:not(.collapsed) .panel-toggle-chevron { transform: rotate(90deg); }
+
+        .calc-hint {
+            font-size: 11px;
+            color: #6b7280;
+            line-height: 1.5;
+            margin-bottom: 12px;
+        }
+
+        .calc-branch-row {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            background-color: #f9fafb;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            padding: 8px;
+            margin-bottom: 8px;
+        }
+
+        .calc-branch-row .dims-row { display: flex; gap: 6px; }
+        .calc-branch-row .dims-row > * { flex: 1; min-width: 0; }
+        .calc-branch-remove { align-self: flex-end; }
+
+        .calc-result-card {
+            background-color: #f0f9ff;
+            border: 1px solid #bae6fd;
+            border-radius: 6px;
+            padding: 10px;
+            margin-bottom: 8px;
+            font-size: 12px;
+        }
+
+        .calc-result-title { font-weight: 700; color: #0c4a6e; margin-bottom: 4px; }
+        .calc-result-line { color: #164e63; margin-top: 2px; }
+
+        .calc-result-card.warn { background-color: #fffbeb; border-color: #fde68a; }
+        .calc-result-card.warn .calc-result-title { color: #92400e; }
+        .calc-result-card.warn .calc-result-line { color: #92400e; }
+
+        .calc-result-card.danger { background-color: #fef2f2; border-color: #fecaca; }
+        .calc-result-card.danger .calc-result-title { color: #991b1b; }
+        .calc-result-card.danger .calc-result-line { color: #991b1b; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="brand-assembly">
+            <div class="logo-spotlight">
+                <a href="index.html" class="logo-link" title="Kerph Home">
+                    <img src="logo.png" alt="Kerph Logo" class="logo-image">
+                </a>
+            </div>
+            <div class="page-title">Dust Collection</div>
+        </div>
+        <div class="header-controls">
+            <div class="header-field">
+                <label class="header-field-label">&nbsp;</label>
+                <a href="workshop-planner.html" class="new-layout-btn new-layout-btn-secondary">&#8592; Workshop Layout Planner</a>
+            </div>
+        </div>
+        <div class="plan-badge-group">
+            <div class="header-sign-in" id="headerSignIn" title="Preview only — any username &amp; password signs you in locally in this browser.">
+                <input type="text" class="header-sign-in-input" id="headerSignInUsername" placeholder="Username" autocomplete="username">
+                <input type="password" class="header-sign-in-input" id="headerSignInPassword" placeholder="Password" autocomplete="current-password">
+                <button type="button" id="headerSignInBtn" class="mini-btn" title="Sign In">Sign In</button>
+            </div>
+            <button type="button" id="accountBtn" class="account-btn" title="Account Settings" style="display:none;">
+                <span class="account-avatar" id="accountAvatarPreview">&#128100;</span>
+                <span id="accountBtnLabel">Account</span>
+            </button>
+            <div>
+                <div class="plan-label"><abbr title="Simulates your subscription tier locally for previewing gated features. Real account billing isn't connected yet.">Plan Level ⓘ</abbr></div>
+                <select class="plan-select" id="planSelector">
+                    <option value="free">Free</option>
+                    <option value="pro">Pro</option>
+                    <option value="premier">Premier</option>
+                </select>
+            </div>
+        </div>
+    </header>
+
+    <div class="modal-overlay" id="accountModalOverlay" style="display:none;">
+        <div class="modal-box">
+            <div class="modal-title">Account Settings</div>
+            <div class="modal-warning">Saved locally in this browser only — real accounts, Google sign-in, and community features aren't connected yet.</div>
+
+            <div class="header-field" style="width:100%; margin-bottom:14px; display:flex; flex-direction:column; align-items:center;">
+                <div class="account-avatar-large" id="accountAvatarLarge">&#128100;</div>
+                <input type="file" id="accountAvatarInput" accept="image/*" style="display:none;">
+                <button type="button" id="accountAvatarBtn" class="mini-btn" style="margin-top:10px; flex:none;">Upload Photo</button>
+            </div>
+
+            <div class="header-field" style="width:100%;">
+                <label class="header-field-label" for="accountUsernameInput">Username</label>
+                <input type="text" class="input-box" id="accountUsernameInput" placeholder="Choose a username">
+            </div>
+
+            <div class="header-field" style="width:100%; margin-top:10px;">
+                <label class="header-field-label" for="accountUnitsSelect">Preferred Units</label>
+                <select class="select-box" id="accountUnitsSelect">
+                    <option value="imperial">Imperial (ft / in)</option>
+                    <option value="metric">Metric (m / cm)</option>
+                </select>
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" id="accountCancelBtn" class="mini-btn">Close</button>
+                <button type="button" id="accountSaveBtn" class="mini-btn modal-primary-btn">Save</button>
+            </div>
+            <button type="button" id="accountSignOutBtn" class="mini-btn danger" style="width:100%; margin-top:8px;">Sign Out</button>
+        </div>
+    </div>
+
+    <div class="upgrade-nudge" id="upgradeNudge"></div>
+
+    <div id="sidebar-panel">
+        <div class="sidebar-title">Drag Dust Collection Gear onto Grid</div>
+        <div class="empty-hint" style="margin-bottom:14px;">Everything else on the grid (tools, cabinets, walls) is shown for reference from your Workshop Layout Planner shop — only dust collection items are editable here.</div>
+
+        <div id="dustCategoryItems"></div>
+    </div>
+
+    <div id="canvas-view-space">
+        <div id="emptyShopState" class="placeholder-box" style="display:none;">
+            <div class="placeholder-icon">&#128168;</div>
+            <div class="placeholder-title">No shop layout yet</div>
+            <div class="placeholder-desc">Set up your shop's shape and dimensions in the <a href="workshop-planner.html">Workshop Layout Planner</a> first — this page builds dust collection on top of that same shop.</div>
+        </div>
+
+        <div id="canvas-scroll-area" style="display:none;">
+            <svg class="shape-overlay" id="shapeOverlay"></svg>
+            <div class="ruler ruler-top" id="rulerTop"></div>
+            <div class="ruler ruler-left" id="rulerLeft"></div>
+            <div class="workshop-grid-board" id="workshopBoard"></div>
+        </div>
+    </div>
+
+    <div class="floating-panel" id="calcPanel">
+        <div class="floating-panel-title" id="calcPanelHandle">Dust Collection Sizing Calculator <span class="panel-toggle-chevron">&#9656;</span></div>
+        <div class="panel-body">
+            <div class="calc-hint">Planning estimate, not an engineering guarantee — real static pressure depends on your exact hose/pipe, fittings, and collector's fan curve. Use it to sanity-check duct size and see roughly how much resistance a run adds.</div>
+
+            <div id="calcBranchList"></div>
+            <button type="button" id="calcAddBranchBtn" class="mini-btn" style="width:100%; margin-top:4px;">+ Add Branch</button>
+
+            <div style="margin-top:14px; display:flex; gap:8px;">
+                <div class="header-field" style="flex:1;">
+                    <label class="header-field-label" for="calcCollectorCfm">Collector Rated CFM</label>
+                    <input type="number" class="input-box" id="calcCollectorCfm" value="1100" min="1">
+                </div>
+                <div class="header-field" style="flex:1;">
+                    <label class="header-field-label" for="calcSystemLoss">System Loss Allowance (inWC)</label>
+                    <input type="number" class="input-box" id="calcSystemLoss" value="2.0" min="0" step="0.1">
+                </div>
+            </div>
+
+            <button type="button" id="calcRunBtn" class="mini-btn modal-primary-btn" style="width:100%; margin-top:10px;">Calculate</button>
+
+            <div id="calcResults" style="margin-top:12px;"></div>
+        </div>
+    </div>
+
+    <script>
+        /* ---------- SHARED STATE KEYS (must match the other pages exactly) ---------- */
+        const PLAN_KEY = 'kerphPlan';
+        const ACCOUNT_KEY = 'kerphAccount';
+        const AUTH_KEY = 'kerphSignedIn';
+        const TOOL_STATUS_KEY = 'kerphToolStatus';
+        const CURRENT_LAYOUT_KEY = 'kerphCurrentLayout';
+        const ppi = 30;
+
+        function showToast(message) {
+            const nudge = document.getElementById('upgradeNudge');
+            nudge.textContent = message;
+            nudge.classList.add('visible');
+            clearTimeout(showToast._timer);
+            showToast._timer = setTimeout(() => nudge.classList.remove('visible'), 3500);
+        }
+
+        function getPlan() { return localStorage.getItem(PLAN_KEY) || 'free'; }
+
+        function initPlanSelector() {
+            const select = document.getElementById('planSelector');
+            select.value = getPlan();
+            select.addEventListener('change', () => localStorage.setItem(PLAN_KEY, select.value));
+        }
+
+        function loadAccount() {
+            try { return JSON.parse(localStorage.getItem(ACCOUNT_KEY)) || {}; } catch (e) { return {}; }
+        }
+
+        function applyAvatarTo(el, dataUrl) {
+            if (dataUrl) { el.style.backgroundImage = `url(${dataUrl})`; el.textContent = ''; }
+            else { el.style.backgroundImage = ''; el.textContent = '\u{1F464}'; }
+        }
+
+        function renderAccountBadge() {
+            const acc = loadAccount();
+            document.getElementById('accountBtnLabel').textContent = acc.username || 'Account';
+            applyAvatarTo(document.getElementById('accountAvatarPreview'), acc.avatar);
+        }
+
+        function initAccountPanel() {
+            const btn = document.getElementById('accountBtn');
+            const overlay = document.getElementById('accountModalOverlay');
+            const cancelBtn = document.getElementById('accountCancelBtn');
+            const saveBtn = document.getElementById('accountSaveBtn');
+            const usernameInput = document.getElementById('accountUsernameInput');
+            const avatarInput = document.getElementById('accountAvatarInput');
+            const avatarBtn = document.getElementById('accountAvatarBtn');
+            const avatarLarge = document.getElementById('accountAvatarLarge');
+            const unitsSelect = document.getElementById('accountUnitsSelect');
+            let pendingAvatar = null;
+
+            btn.addEventListener('click', () => {
+                const acc = loadAccount();
+                usernameInput.value = acc.username || '';
+                pendingAvatar = acc.avatar || null;
+                applyAvatarTo(avatarLarge, pendingAvatar);
+                unitsSelect.value = localStorage.getItem('kerphUnitSystem') || 'imperial';
+                overlay.style.display = 'flex';
+            });
+
+            avatarBtn.addEventListener('click', () => avatarInput.click());
+            avatarInput.addEventListener('change', () => {
+                const file = avatarInput.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = () => { pendingAvatar = reader.result; applyAvatarTo(avatarLarge, pendingAvatar); };
+                reader.readAsDataURL(file);
+            });
+
+            cancelBtn.addEventListener('click', () => { overlay.style.display = 'none'; });
+
+            saveBtn.addEventListener('click', () => {
+                const username = usernameInput.value.trim();
+                if (!username) { showToast('Enter a username to save your profile.'); return; }
+                localStorage.setItem(ACCOUNT_KEY, JSON.stringify({ username, avatar: pendingAvatar }));
+                localStorage.setItem('kerphUnitSystem', unitsSelect.value);
+                renderAccountBadge();
+                overlay.style.display = 'none';
+                showToast('Profile saved locally.');
+            });
+
+            document.getElementById('accountSignOutBtn').addEventListener('click', () => { overlay.style.display = 'none'; signOut(); });
+            renderAccountBadge();
+        }
+
+        function isSignedIn() { return localStorage.getItem(AUTH_KEY) === 'true'; }
+
+        function updateHeaderSignInState() {
+            const signedIn = isSignedIn();
+            document.getElementById('headerSignIn').style.display = signedIn ? 'none' : 'flex';
+            document.getElementById('accountBtn').style.display = signedIn ? 'flex' : 'none';
+        }
+
+        function completeSignIn(username) {
+            localStorage.setItem(AUTH_KEY, 'true');
+            const acc = loadAccount();
+            acc.username = username;
+            localStorage.setItem(ACCOUNT_KEY, JSON.stringify(acc));
+            renderAccountBadge();
+            updateHeaderSignInState();
+        }
+
+        function signOut() { localStorage.removeItem(AUTH_KEY); updateHeaderSignInState(); }
+
+        function initHeaderSignIn() {
+            const usernameInput = document.getElementById('headerSignInUsername');
+            const passwordInput = document.getElementById('headerSignInPassword');
+            const signInBtn = document.getElementById('headerSignInBtn');
+
+            function attemptSignIn() {
+                const username = usernameInput.value.trim();
+                const password = passwordInput.value;
+                if (!username || !password) { showToast('Enter a username and password to sign in.'); return; }
+                completeSignIn(username);
+                usernameInput.value = '';
+                passwordInput.value = '';
+            }
+
+            signInBtn.addEventListener('click', attemptSignIn);
+            [usernameInput, passwordInput].forEach(input => {
+                input.addEventListener('keydown', (e) => { if (e.key === 'Enter') attemptSignIn(); });
+            });
+            updateHeaderSignInState();
+        }
+
+        function loadToolStatuses() {
+            try { return JSON.parse(localStorage.getItem(TOOL_STATUS_KEY)) || {}; } catch (e) { return {}; }
+        }
+
+        function saveToolStatuses(statuses) { localStorage.setItem(TOOL_STATUS_KEY, JSON.stringify(statuses)); }
+
+        function getItemCategory() { return 'Dust Collection'; }
+
+        function applyStatusToItem(item, entry) {
+            const ownedBtn = item.querySelector('.owned-btn');
+            const wishlistBtn = item.querySelector('.wishlist-btn');
+            item.classList.remove('is-owned', 'is-wishlist');
+            ownedBtn.classList.remove('active');
+            wishlistBtn.classList.remove('active');
+            if (entry && entry.status === 'owned') { item.classList.add('is-owned'); ownedBtn.classList.add('active'); }
+            else if (entry && entry.status === 'wishlist') { item.classList.add('is-wishlist'); wishlistBtn.classList.add('active'); }
+        }
+
+        function wireToolStatusItem(item, statuses) {
+            const ownedBtn = item.querySelector('.owned-btn');
+            const wishlistBtn = item.querySelector('.wishlist-btn');
+            const name = item.getAttribute('data-name');
+            applyStatusToItem(item, statuses[name]);
+
+            ownedBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const existing = statuses[name];
+                if (existing && existing.status === 'owned') delete statuses[name];
+                else statuses[name] = {
+                    status: 'owned', nickname: (existing && existing.nickname) || '',
+                    widthFt: parseFloat(item.getAttribute('data-width')) || null,
+                    lengthFt: parseFloat(item.getAttribute('data-length')) || null,
+                    heightFt: parseFloat(item.getAttribute('data-height')) || null,
+                    category: getItemCategory()
+                };
+                applyStatusToItem(item, statuses[name]);
+                saveToolStatuses(statuses);
+            });
+
+            wishlistBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const existing = statuses[name];
+                if (existing && existing.status === 'wishlist') delete statuses[name];
+                else statuses[name] = {
+                    status: 'wishlist',
+                    widthFt: parseFloat(item.getAttribute('data-width')) || null,
+                    lengthFt: parseFloat(item.getAttribute('data-length')) || null,
+                    heightFt: parseFloat(item.getAttribute('data-height')) || null,
+                    category: getItemCategory()
+                };
+                applyStatusToItem(item, statuses[name]);
+                saveToolStatuses(statuses);
+            });
+        }
+
+        /* ---------- DUST COLLECTION CATALOG (same items as Workshop Layout Planner) ---------- */
+        const DUST_CATALOG = [
+            { name: 'JET DC-1100VX', title: 'JET DC-1100VX-CK Dust Collector', width: 2.2, length: 2.2, height: 7.2 },
+            { name: 'Oneida Super Dust Deputy XL', title: 'Oneida Super Dust Deputy XL Cyclone', width: 1.5, length: 1.5, height: 2.8 },
+            { name: '4in Dust Duct 2ft', title: '4" Dust Duct (2ft run)', width: 0.35, length: 2.0, height: 7.0 },
+            { name: '4in Dust Duct 4ft', title: '4" Dust Duct (4ft run)', width: 0.35, length: 4.0, height: 7.0 },
+            { name: '4in Dust Duct 8ft', title: '4" Dust Duct (8ft run)', width: 0.35, length: 8.0, height: 7.0 },
+            { name: '6in Dust Duct 2ft', title: '6" Dust Duct (2ft run)', width: 0.5, length: 2.0, height: 7.0 },
+            { name: '6in Dust Duct 4ft', title: '6" Dust Duct (4ft run)', width: 0.5, length: 4.0, height: 7.0 },
+            { name: '6in Dust Duct 8ft', title: '6" Dust Duct (8ft run)', width: 0.5, length: 8.0, height: 7.0 },
+            { name: 'Blast Gate', title: '4" Blast Gate', width: 0.5, length: 0.5, height: 7.0 }
+        ];
+
+        function renderCatalog() {
+            const container = document.getElementById('dustCategoryItems');
+            const statuses = loadToolStatuses();
+            DUST_CATALOG.forEach(spec => {
+                const item = document.createElement('div');
+                item.className = 'tool-box-item';
+                item.draggable = true;
+                item.dataset.layer = 'dust-collection';
+                item.setAttribute('data-width', spec.width);
+                item.setAttribute('data-length', spec.length);
+                item.setAttribute('data-height', spec.height);
+                item.setAttribute('data-name', spec.name);
+                item.innerHTML = `
+                    <div><div class="tool-title">${spec.title}</div><div class="tool-dims">${spec.width}' x ${spec.length}' Footprint</div></div>
+                    <div class="tool-status-controls">
+                        <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
+                        <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
+                    </div>
+                `;
+                container.appendChild(item);
+                wireToolStatusItem(item, statuses);
+                wireToolDragStart(item);
+            });
+        }
+
+        /* ---------- SHARED LAYOUT (read shop shape + all nodes; only dust-collection is editable) ---------- */
+        let sharedLayout = null;
+        let shopWidthFeet = 20;
+        let shopLengthFeet = 24;
+        let shopScale = 1;
+        let shapeModeIsCustom = false;
+        let shapePoints = [];
+        let internalDragData = null;
+        let selectedNode = null;
+        let clipboardDescriptor = null;
+        const board = document.getElementById('workshopBoard');
+
+        function selectNode(el) {
+            if (selectedNode === el) return;
+            if (selectedNode) selectedNode.classList.remove('selected-node');
+            selectedNode = el;
+            if (selectedNode) selectedNode.classList.add('selected-node');
+        }
+        function clearSelection() { selectNode(null); }
+
+        function buildPlacedNodeContent(el, displayName, displayDims) {
+            el.dataset.displayName = displayName;
+            el.dataset.displayDims = displayDims || '';
+            el.innerHTML = `<div class="node-content"><span class="node-label"></span>${displayDims ? '<span class="node-dims"></span>' : ''}</div>`;
+            el.querySelector('.node-label').textContent = displayName;
+            if (displayDims) el.querySelector('.node-dims').textContent = displayDims;
+        }
+
+        function getRotatedAabb(wPx, hPx, angleDeg) {
+            const rad = angleDeg * Math.PI / 180;
+            const visualW = Math.abs(wPx * Math.cos(rad)) + Math.abs(hPx * Math.sin(rad));
+            const visualH = Math.abs(wPx * Math.sin(rad)) + Math.abs(hPx * Math.cos(rad));
+            return { visualW, visualH };
+        }
+
+        function makeElementInteractive(el, wPx, hPx) {
+            let activeDrag = false, moved = false;
+            let startMouseX = 0, startMouseY = 0, startLeft = 0, startTop = 0;
+
+            el.addEventListener('mousedown', (e) => {
+                activeDrag = true;
+                moved = false;
+                startMouseX = e.clientX;
+                startMouseY = e.clientY;
+                startLeft = el.offsetLeft;
+                startTop = el.offsetTop;
+                e.stopPropagation();
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (!activeDrag) return;
+                moved = true;
+                const deltaX = e.clientX - startMouseX;
+                const deltaY = e.clientY - startMouseY;
+                let targetX = startLeft + deltaX;
+                let targetY = startTop + deltaY;
+                const snapInterval = shopScale * ppi;
+                targetX = Math.round(targetX / snapInterval) * snapInterval;
+                targetY = Math.round(targetY / snapInterval) * snapInterval;
+
+                const currentWPx = parseFloat(el.style.width) || wPx;
+                const currentHPx = parseFloat(el.style.height) || hPx;
+                const angle = parseFloat(el.dataset.rotation) || 0;
+                const { visualW, visualH } = getRotatedAabb(currentWPx, currentHPx, angle);
+                const minX = (visualW - currentWPx) / 2;
+                const maxX = board.clientWidth - (visualW + currentWPx) / 2;
+                const minY = (visualH - currentHPx) / 2;
+                const maxY = board.clientHeight - (visualH + currentHPx) / 2;
+                targetX = Math.max(minX, Math.min(targetX, maxX));
+                targetY = Math.max(minY, Math.min(targetY, maxY));
+
+                el.style.left = targetX + 'px';
+                el.style.top = targetY + 'px';
+            });
+
+            document.addEventListener('mouseup', () => {
+                if (activeDrag && !moved) selectNode(el);
+                if (activeDrag && moved) saveDustCollectionChanges();
+                activeDrag = false;
+            });
+        }
+
+        function makeElementRotatable(el) {
+            if (!el.dataset.rotation) el.dataset.rotation = '0';
+            const handle = document.createElement('div');
+            handle.className = 'rotate-handle';
+            const readout = document.createElement('div');
+            readout.className = 'rotate-readout';
+            readout.innerText = (el.dataset.rotation || '0') + '°';
+            el.appendChild(readout);
+            el.appendChild(handle);
+
+            let rotating = false, centerX = 0, centerY = 0;
+            handle.addEventListener('mousedown', (e) => {
+                rotating = true;
+                const rect = el.getBoundingClientRect();
+                centerX = rect.left + rect.width / 2;
+                centerY = rect.top + rect.height / 2;
+                readout.classList.add('visible');
+                e.preventDefault();
+                e.stopPropagation();
+            });
+            document.addEventListener('mousemove', (e) => {
+                if (!rotating) return;
+                const dx = e.clientX - centerX, dy = e.clientY - centerY;
+                let angle = Math.atan2(dy, dx) * (180 / Math.PI) + 90;
+                angle = Math.round(angle / 5) * 5;
+                angle = ((angle % 360) + 360) % 360;
+                el.style.transform = `rotate(${angle}deg)`;
+                el.dataset.rotation = angle;
+                readout.innerText = `${angle}°`;
+            });
+            document.addEventListener('mouseup', () => {
+                if (!rotating) return;
+                rotating = false;
+                readout.classList.remove('visible');
+                saveDustCollectionChanges();
+            });
+        }
+
+        // Same descriptor shape serializeCurrentLayout() uses on the Workshop Layout Planner,
+        // so nodes round-trip identically between the two pages.
+        function createPlacedNodeFromDescriptor(t, interactive) {
+            const el = document.createElement('div');
+            el.className = 'placed-tool-node';
+            if (t.cabType) el.classList.add('placed-cabinet-node', 'cabinet-' + t.cabType);
+            if (t.label === 'Blast Gate') el.classList.add('blast-gate-node');
+            el.dataset.height = t.physicalHeight || '';
+            el.dataset.layer = t.layer || (t.cabType ? 'cabinets' : 'tools');
+            el.style.width = t.width + 'px';
+            el.style.height = t.height + 'px';
+            el.style.left = t.left + 'px';
+            el.style.top = t.top + 'px';
+            el.dataset.toolName = t.label;
+            buildPlacedNodeContent(el, t.displayName || t.label, t.displayDims || '');
+            if (t.rotation) {
+                el.style.transform = `rotate(${t.rotation}deg)`;
+                el.dataset.rotation = t.rotation;
+            }
+            if (interactive) {
+                makeElementInteractive(el, t.width, t.height);
+                makeElementRotatable(el);
+            } else {
+                el.classList.add('reference-node');
+                if (t.rotation) {
+                    // Reference nodes skip makeElementRotatable, so bake the readout-free
+                    // rotation in directly rather than leaving an inert rotate handle behind.
+                }
+            }
+            return el;
+        }
+
+        function nodeToDescriptor(node) {
+            return {
+                label: node.dataset.toolName || '',
+                displayName: node.dataset.displayName || node.dataset.toolName || '',
+                displayDims: node.dataset.displayDims || '',
+                left: parseFloat(node.style.left) || 0,
+                top: parseFloat(node.style.top) || 0,
+                width: parseFloat(node.style.width) || 0,
+                height: parseFloat(node.style.height) || 0,
+                rotation: parseFloat(node.dataset.rotation) || 0,
+                cabType: node.dataset.cabType || null,
+                physicalHeight: node.dataset.height || null,
+                layer: 'dust-collection'
+            };
+        }
+
+        // Persists dust-collection node changes back into the same kerphCurrentLayout object
+        // the Workshop Layout Planner reads — every other node type is left exactly as loaded
+        // since this page can't edit them.
+        function saveDustCollectionChanges() {
+            if (!sharedLayout) return;
+            const otherTools = (sharedLayout.tools || []).filter(t => t.layer !== 'dust-collection');
+            const dcTools = Array.from(document.querySelectorAll('.placed-tool-node[data-layer="dust-collection"]')).map(nodeToDescriptor);
+            sharedLayout.tools = [...otherTools, ...dcTools];
+            localStorage.setItem(CURRENT_LAYOUT_KEY, JSON.stringify(sharedLayout));
+        }
+
+        function updateBoardSize() {
+            board.style.width = (shopLengthFeet * ppi) + 'px';
+            board.style.height = (shopWidthFeet * ppi) + 'px';
+            const bgSize = shopScale * ppi;
+            board.style.backgroundSize = `${bgSize}px ${bgSize}px`;
+            board.style.clipPath = shapeModeIsCustom && shapePoints.length
+                ? `padding-box polygon(${shapePoints.map(p => `${p.x}px ${p.y}px`).join(', ')})`
+                : '';
+            renderRulers();
+            renderShapeOutline();
+        }
+
+        function renderRulers() {
+            const hRuler = document.getElementById('rulerTop');
+            const vRuler = document.getElementById('rulerLeft');
+            hRuler.innerHTML = '';
+            hRuler.style.width = (shopLengthFeet * ppi) + 'px';
+            for (let ft = 0; ft <= shopLengthFeet + 0.001; ft += shopScale) {
+                if (Math.abs(ft - Math.round(ft)) < 0.001) {
+                    const label = document.createElement('span');
+                    label.className = 'ruler-label ruler-label-h';
+                    label.style.left = (ft * ppi) + 'px';
+                    label.textContent = Math.round(ft);
+                    hRuler.appendChild(label);
+                }
+            }
+            vRuler.innerHTML = '';
+            vRuler.style.height = (shopWidthFeet * ppi) + 'px';
+            for (let ft = 0; ft <= shopWidthFeet + 0.001; ft += shopScale) {
+                if (Math.abs(ft - Math.round(ft)) < 0.001) {
+                    const label = document.createElement('span');
+                    label.className = 'ruler-label ruler-label-v';
+                    label.style.top = (ft * ppi) + 'px';
+                    label.textContent = Math.round(ft);
+                    vRuler.appendChild(label);
+                }
+            }
+        }
+
+        function renderShapeOutline() {
+            const svg = document.getElementById('shapeOverlay');
+            svg.setAttribute('width', board.clientWidth);
+            svg.setAttribute('height', board.clientHeight);
+            svg.innerHTML = '';
+            if (shapeModeIsCustom && shapePoints.length) {
+                const polygon = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+                polygon.setAttribute('points', shapePoints.map(p => `${p.x},${p.y}`).join(' '));
+                polygon.setAttribute('class', 'shape-outline');
+                svg.appendChild(polygon);
+            }
+        }
+
+        function renderWallFeaturesReadOnly(wallFeatures) {
+            document.querySelectorAll('.wall-feature-node, .wall-feature-label').forEach(n => n.remove());
+            (wallFeatures || []).forEach(f => {
+                const lenPx = f.lengthFt * ppi;
+                const thickPx = f.thicknessFt * ppi;
+                const el = document.createElement('div');
+                el.className = `wall-feature-node wall-feature-${f.type}`;
+                el.style.width = lenPx + 'px';
+                el.style.height = thickPx + 'px';
+                el.style.left = (f.x - lenPx / 2) + 'px';
+                el.style.top = (f.y - thickPx / 2) + 'px';
+                el.style.transform = `rotate(${f.angle}deg)`;
+                const marks = { door: 'D', window: 'W', switch: 'S', outlet: 'O', panel: 'E', minisplit: 'M' };
+                el.innerText = marks[f.type] || '?';
+                board.appendChild(el);
+
+                const labelEl = document.createElement('div');
+                labelEl.className = 'wall-feature-label';
+                labelEl.textContent = f.widthIn ? `${f.label} (${Math.round(f.widthIn)}")` : f.label;
+                labelEl.style.left = f.x + 'px';
+                labelEl.style.top = (f.y - thickPx / 2 - 4) + 'px';
+                board.appendChild(labelEl);
+            });
+        }
+
+        function renderFromSharedLayout() {
+            document.querySelectorAll('.placed-tool-node').forEach(n => n.remove());
+            (sharedLayout.tools || []).forEach(t => {
+                const interactive = t.layer === 'dust-collection';
+                board.appendChild(createPlacedNodeFromDescriptor(t, interactive));
+            });
+            renderWallFeaturesReadOnly(sharedLayout.wallFeatures);
+        }
+
+        function loadSharedLayout() {
+            const raw = localStorage.getItem(CURRENT_LAYOUT_KEY);
+            const emptyState = document.getElementById('emptyShopState');
+            const scrollArea = document.getElementById('canvas-scroll-area');
+            if (!raw) {
+                emptyState.style.display = 'block';
+                scrollArea.style.display = 'none';
+                return;
+            }
+            try {
+                sharedLayout = JSON.parse(raw);
+            } catch (e) {
+                emptyState.style.display = 'block';
+                scrollArea.style.display = 'none';
+                return;
+            }
+            emptyState.style.display = 'none';
+            scrollArea.style.display = 'block';
+
+            shopWidthFeet = parseFloat(sharedLayout.widthFeet) || 20;
+            shopLengthFeet = parseFloat(sharedLayout.lengthFeet) || 24;
+            shopScale = parseFloat(sharedLayout.scale) || 1;
+            shapeModeIsCustom = sharedLayout.shapeMode === 'custom' && sharedLayout.shapePoints && sharedLayout.shapePoints.length >= 3;
+            shapePoints = shapeModeIsCustom ? sharedLayout.shapePoints : [];
+
+            updateBoardSize();
+            renderFromSharedLayout();
+        }
+
+        /* ---------- DRAG-AND-DROP (dust-collection catalog only) ---------- */
+        function wireToolDragStart(item) {
+            item.addEventListener('dragstart', (e) => {
+                e.dataTransfer.setData('text/plain', 'active');
+                internalDragData = {
+                    name: item.getAttribute('data-name'),
+                    width: parseFloat(item.getAttribute('data-width')),
+                    length: parseFloat(item.getAttribute('data-length')),
+                    height: parseFloat(item.getAttribute('data-height')) || null,
+                    layer: 'dust-collection'
+                };
+            });
+        }
+
+        function initDragAndDropEngine() {
+            document.getElementById('canvas-scroll-area').addEventListener('click', (e) => {
+                if (e.target.id === 'canvas-scroll-area') clearSelection();
+            });
+
+            board.addEventListener('click', (e) => { if (e.target === board) clearSelection(); });
+            board.addEventListener('dragover', (e) => e.preventDefault());
+
+            board.addEventListener('drop', (e) => {
+                e.preventDefault();
+                if (!internalDragData || !sharedLayout) return;
+
+                const rect = board.getBoundingClientRect();
+                const mouseX = e.clientX - rect.left;
+                const mouseY = e.clientY - rect.top;
+                const toolW = internalDragData.length * ppi;
+                const toolH = internalDragData.width * ppi;
+                const snapInterval = shopScale * ppi;
+
+                let snapX = Math.round((mouseX - toolW / 2) / snapInterval) * snapInterval;
+                let snapY = Math.round((mouseY - toolH / 2) / snapInterval) * snapInterval;
+                snapX = Math.max(0, Math.min(snapX, board.clientWidth - toolW));
+                snapY = Math.max(0, Math.min(snapY, board.clientHeight - toolH));
+
+                const descriptor = {
+                    label: internalDragData.name,
+                    displayName: internalDragData.name,
+                    displayDims: `${internalDragData.width.toFixed(1)}' x ${internalDragData.length.toFixed(1)}'`,
+                    left: snapX, top: snapY, width: toolW, height: toolH,
+                    rotation: 0, cabType: null, physicalHeight: internalDragData.height, layer: 'dust-collection'
+                };
+                const node = createPlacedNodeFromDescriptor(descriptor, true);
+                board.appendChild(node);
+                selectNode(node);
+                internalDragData = null;
+                saveDustCollectionChanges();
+            });
+        }
+
+        /* ---------- SELECT / DELETE / COPY-PASTE (dust-collection nodes only) ---------- */
+        document.addEventListener('keydown', (e) => {
+            const tag = (e.target && e.target.tagName) || '';
+            if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+            const key = e.key.toLowerCase();
+
+            if ((e.key === 'Delete' || e.key === 'Backspace') && selectedNode) {
+                e.preventDefault();
+                selectedNode.remove();
+                selectedNode = null;
+                saveDustCollectionChanges();
+            } else if ((e.ctrlKey || e.metaKey) && key === 'c' && selectedNode) {
+                e.preventDefault();
+                clipboardDescriptor = nodeToDescriptor(selectedNode);
+            } else if ((e.ctrlKey || e.metaKey) && key === 'v' && clipboardDescriptor) {
+                e.preventDefault();
+                const t = { ...clipboardDescriptor };
+                t.left = Math.max(0, Math.min(t.left + 20, board.clientWidth - t.width));
+                t.top = Math.max(0, Math.min(t.top + 20, board.clientHeight - t.height));
+                const node = createPlacedNodeFromDescriptor(t, true);
+                board.appendChild(node);
+                selectNode(node);
+                saveDustCollectionChanges();
+            }
+        });
+
+        // Picks up shape/other-layer changes made on the Workshop Layout Planner in another
+        // tab. A tab actively editing dust collection here always wins for its own writes
+        // since those are saved synchronously on every change, not on a timer.
+        window.addEventListener('storage', (e) => {
+            if (e.key === CURRENT_LAYOUT_KEY) loadSharedLayout();
+        });
+
+        /* ---------- SIZING CALCULATOR ----------
+           Rule-of-thumb planning math (~4000 FPM target conveying velocity, simplified
+           per-foot and per-elbow static pressure loss factors). Not a substitute for a real
+           system design — real losses depend on your exact hose/pipe and the collector's fan
+           curve, which this tool doesn't have data for. */
+        const TOOL_CFM_PRESETS = {
+            'Table Saw': 350, 'Bandsaw': 400, 'Jointer': 400, 'Planer': 600,
+            'Router Table': 350, 'Miter/Crosscut Saw': 350, 'Disc/Belt Sander': 400,
+            'Drum Sander': 800, 'CNC Router': 400, 'Lathe': 350, 'Custom': 350
+        };
+
+        function addCalcBranchRow(preset) {
+            const list = document.getElementById('calcBranchList');
+            const row = document.createElement('div');
+            row.className = 'calc-branch-row';
+
+            const toolSelect = document.createElement('select');
+            toolSelect.className = 'select-box calc-tool-select';
+            Object.keys(TOOL_CFM_PRESETS).forEach(name => {
+                const opt = document.createElement('option');
+                opt.value = name;
+                opt.textContent = name;
+                toolSelect.appendChild(opt);
+            });
+            toolSelect.value = preset || 'Table Saw';
+
+            const dimsRow = document.createElement('div');
+            dimsRow.className = 'dims-row';
+
+            const cfmWrap = document.createElement('div');
+            cfmWrap.innerHTML = '<label class="header-field-label">CFM</label>';
+            const cfmInput = document.createElement('input');
+            cfmInput.type = 'number';
+            cfmInput.className = 'input-box calc-cfm-input';
+            cfmInput.value = TOOL_CFM_PRESETS[toolSelect.value];
+            cfmWrap.appendChild(cfmInput);
+
+            const lenWrap = document.createElement('div');
+            lenWrap.innerHTML = '<label class="header-field-label">Run (ft)</label>';
+            const lenInput = document.createElement('input');
+            lenInput.type = 'number';
+            lenInput.className = 'input-box calc-len-input';
+            lenInput.value = 10;
+            lenWrap.appendChild(lenInput);
+
+            const elbowWrap = document.createElement('div');
+            elbowWrap.innerHTML = '<label class="header-field-label">Elbows</label>';
+            const elbowInput = document.createElement('input');
+            elbowInput.type = 'number';
+            elbowInput.className = 'input-box calc-elbow-input';
+            elbowInput.value = 2;
+            elbowInput.min = 0;
+            elbowWrap.appendChild(elbowInput);
+
+            dimsRow.appendChild(cfmWrap);
+            dimsRow.appendChild(lenWrap);
+            dimsRow.appendChild(elbowWrap);
+
+            toolSelect.addEventListener('change', () => { cfmInput.value = TOOL_CFM_PRESETS[toolSelect.value]; });
+
+            const removeBtn = document.createElement('button');
+            removeBtn.type = 'button';
+            removeBtn.className = 'mini-btn danger calc-branch-remove';
+            removeBtn.textContent = 'Remove';
+            removeBtn.style.padding = '4px 8px';
+            removeBtn.style.fontSize = '10px';
+            removeBtn.addEventListener('click', () => row.remove());
+
+            row.appendChild(toolSelect);
+            row.appendChild(dimsRow);
+            row.appendChild(removeBtn);
+            list.appendChild(row);
+        }
+
+        function recommendDiameter(cfm) {
+            // ~4000 FPM target conveying velocity for chip collection.
+            const areaSqFt = cfm / 4000;
+            const diameterIn = Math.sqrt(areaSqFt * 4 / Math.PI) * 12;
+            return diameterIn <= 4.5 ? 4 : 6;
+        }
+
+        function estimateDuctLoss(diameterIn, lengthFt, elbows) {
+            const lossPerFt = diameterIn === 4 ? 0.02 : 0.01;
+            const elbowEquivFt = diameterIn === 4 ? 6 : 9;
+            return (lengthFt + elbows * elbowEquivFt) * lossPerFt;
+        }
+
+        function runCalculator() {
+            const rows = document.querySelectorAll('.calc-branch-row');
+            if (!rows.length) { showToast('Add at least one branch to calculate.'); return; }
+
+            const systemLoss = parseFloat(document.getElementById('calcSystemLoss').value) || 0;
+            const collectorCfm = parseFloat(document.getElementById('calcCollectorCfm').value) || 0;
+            const resultsEl = document.getElementById('calcResults');
+            resultsEl.innerHTML = '';
+            let worstSp = 0;
+
+            rows.forEach(row => {
+                const toolName = row.querySelector('.calc-tool-select').value;
+                const cfm = parseFloat(row.querySelector('.calc-cfm-input').value) || 0;
+                const lengthFt = parseFloat(row.querySelector('.calc-len-input').value) || 0;
+                const elbows = parseFloat(row.querySelector('.calc-elbow-input').value) || 0;
+
+                const diameter = recommendDiameter(cfm);
+                const ductLoss = estimateDuctLoss(diameter, lengthFt, elbows);
+                const totalSp = ductLoss + systemLoss;
+                worstSp = Math.max(worstSp, totalSp);
+
+                let cls = '', verdict = 'Should perform close to rated CFM.';
+                if (totalSp > 7) { cls = 'danger'; verdict = 'High resistance — a single-stage collector will likely struggle. Shorten the run, cut elbows, or upsize to 6" duct.'; }
+                else if (totalSp > 4) { cls = 'warn'; verdict = 'Moderate resistance — expect somewhat reduced CFM from rated.'; }
+
+                const card = document.createElement('div');
+                card.className = 'calc-result-card ' + cls;
+                card.innerHTML = `
+                    <div class="calc-result-title">${toolName} — recommend ${diameter}" duct</div>
+                    <div class="calc-result-line">${cfm} CFM at ~4000 FPM needs about ${diameter}" diameter.</div>
+                    <div class="calc-result-line">Estimated static pressure: ~${totalSp.toFixed(1)}" WC (${ductLoss.toFixed(1)}" duct + ${systemLoss.toFixed(1)}" system).</div>
+                    <div class="calc-result-line">${verdict}</div>
+                `;
+                resultsEl.appendChild(card);
+            });
+
+            const summary = document.createElement('div');
+            summary.className = 'calc-result-card' + (worstSp > 7 ? ' danger' : worstSp > 4 ? ' warn' : '');
+            summary.innerHTML = `<div class="calc-result-title">System summary</div><div class="calc-result-line">Worst-case branch static pressure ~${worstSp.toFixed(1)}" WC against a ${collectorCfm} CFM rated collector. Real delivered CFM will be lower than rated once static pressure rises — this is a planning estimate, not a fan-curve calculation.</div>`;
+            resultsEl.appendChild(summary);
+        }
+
+        function initCalculator() {
+            document.getElementById('calcAddBranchBtn').addEventListener('click', () => addCalcBranchRow());
+            document.getElementById('calcRunBtn').addEventListener('click', runCalculator);
+            addCalcBranchRow('Table Saw');
+        }
+
+        function makeDraggable(panel, handle, onClick) {
+            let dragging = false, moved = false;
+            let startX = 0, startY = 0, startLeft = 0, startTop = 0;
+            handle.addEventListener('mousedown', (e) => {
+                dragging = true;
+                moved = false;
+                const rect = panel.getBoundingClientRect();
+                startX = e.clientX; startY = e.clientY; startLeft = rect.left; startTop = rect.top;
+                e.preventDefault();
+            });
+            document.addEventListener('mousemove', (e) => {
+                if (!dragging) return;
+                const dx = e.clientX - startX, dy = e.clientY - startY;
+                if (!moved) {
+                    if (Math.abs(dx) < 3 && Math.abs(dy) < 3) return;
+                    moved = true;
+                    panel.style.right = 'auto';
+                    panel.style.left = startLeft + 'px';
+                    panel.style.top = startTop + 'px';
+                }
+                let newLeft = Math.max(0, Math.min(startLeft + dx, window.innerWidth - panel.offsetWidth));
+                let newTop = Math.max(0, Math.min(startTop + dy, window.innerHeight - panel.offsetHeight));
+                panel.style.left = newLeft + 'px';
+                panel.style.top = newTop + 'px';
+            });
+            document.addEventListener('mouseup', () => {
+                if (dragging && !moved && onClick) onClick();
+                dragging = false;
+            });
+        }
+
+        initPlanSelector();
+        initHeaderSignIn();
+        initAccountPanel();
+        renderCatalog();
+        initDragAndDropEngine();
+        loadSharedLayout();
+        initCalculator();
+        makeDraggable(document.getElementById('calcPanel'), document.getElementById('calcPanelHandle'), () => {
+            document.getElementById('calcPanel').classList.toggle('collapsed');
+        });
+        document.getElementById('calcPanel').classList.add('collapsed');
+    </script>
+
+</body>
+</html>

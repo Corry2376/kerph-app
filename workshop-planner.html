@@ -153,6 +153,8 @@
             font-weight: 700;
             cursor: pointer;
             white-space: nowrap;
+            text-decoration: none;
+            display: inline-block;
         }
 
         .new-layout-btn:hover {
@@ -1328,6 +1330,7 @@
                 <div style="display:flex; flex-direction:column; gap:6px;">
                     <button type="button" id="newLayoutBtn" class="new-layout-btn">+ New Shop Layout</button>
                     <button type="button" id="editLayoutBtn" class="new-layout-btn new-layout-btn-secondary">Edit Shop Settings</button>
+                    <a href="dust-collection.html" class="new-layout-btn new-layout-btn-secondary" style="text-align:center;">Dust Collection &#8594;</a>
                 </div>
             </div>
 
@@ -1488,12 +1491,7 @@
     </div>
 
     <div id="sidebar-panel">
-        <div class="tool-search-wrap">
-            <input type="text" class="input-box" id="toolSearchInput" placeholder="&#128269; Search tools...">
-        </div>
-
         <div class="sidebar-title">Drag Machinery onto Grid</div>
-        <div class="empty-hint" id="toolSearchEmptyHint" style="display:none;">No tools match your search.</div>
 
         <details class="tool-category" id="myToolsCategory" open>
             <summary class="category-header">
@@ -1504,6 +1502,11 @@
                 <div class="empty-hint" id="myToolsEmptyHint">Mark a tool as owned (&#10003;) to see it here.</div>
             </div>
         </details>
+
+        <div class="tool-search-wrap">
+            <input type="text" class="input-box" id="toolSearchInput" placeholder="&#128269; Search tools...">
+        </div>
+        <div class="empty-hint" id="toolSearchEmptyHint" style="display:none;">No tools match your search.</div>
 
         <details class="tool-category" id="customToolsCategory">
             <summary class="category-header">
@@ -4848,6 +4851,7 @@
                     updateWorkshopGridSize();
                     showToast('Shop settings updated.');
                 }
+                if (typeof autosaveCurrentLayout === 'function') autosaveCurrentLayout();
                 closeModal();
             });
 
@@ -4959,7 +4963,38 @@
         initNewLayoutModal();
         initUnitToggle();
         initToolSearch();
-        updateWorkshopGridSize();
+
+        /* ---------- CURRENT LAYOUT AUTOSAVE (cross-page sync) ----------
+           The live, unsaved board state is continuously mirrored into localStorage under
+           kerphCurrentLayout — separate from the named kerphSavedLayouts (Pro) system — so
+           other pages that work against the same shop (e.g. the Dust Collection page) can
+           read and write the same layout without a real backend. On load, this restores
+           whatever was last on the board instead of always starting from a blank rectangle,
+           which is also what makes edits made on another page (dust collection items placed
+           there) show up here on next visit. */
+        const CURRENT_LAYOUT_KEY = 'kerphCurrentLayout';
+
+        function autosaveCurrentLayout() {
+            try {
+                localStorage.setItem(CURRENT_LAYOUT_KEY, JSON.stringify(serializeCurrentLayout('Current Layout')));
+            } catch (e) {
+                // localStorage can throw (quota, private browsing) — autosave is best-effort.
+            }
+        }
+
+        const savedCurrentLayout = localStorage.getItem(CURRENT_LAYOUT_KEY);
+        if (savedCurrentLayout) {
+            try {
+                applyLayoutState(JSON.parse(savedCurrentLayout));
+            } catch (e) {
+                updateWorkshopGridSize();
+            }
+        } else {
+            updateWorkshopGridSize();
+        }
+
+        setInterval(autosaveCurrentLayout, 2000);
+        window.addEventListener('beforeunload', autosaveCurrentLayout);
     </script>
 </body>
 </html>
