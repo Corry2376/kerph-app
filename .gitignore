@@ -1,0 +1,2 @@
+# Local-only Claude Code settings (machine-specific permission allowlist)
+.claude/settings.local.json
