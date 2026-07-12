@@ -1734,7 +1734,7 @@
 
         <details class="tool-category">
             <summary class="category-header">
-                <span class="category-header-left">Dust Collection <span class="category-count">9</span></span>
+                <span class="category-header-left">Dust Collection <span class="category-count">11</span></span>
                 <span class="category-chevron">&#9656;</span>
             </summary>
             <div class="category-items">
@@ -1796,6 +1796,20 @@
                 </div>
                 <div class="tool-box-item" draggable="true" data-layer="dust-collection" data-width="0.5" data-length="0.5" data-height="7.0" data-name="Blast Gate">
                     <div><div class="tool-title">4" Blast Gate</div><div class="tool-dims">0.5' x 0.5' Footprint</div></div>
+                    <div class="tool-status-controls">
+                        <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
+                        <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
+                    </div>
+                </div>
+                <div class="tool-box-item" draggable="true" data-layer="dust-collection" data-width="0.6" data-length="0.6" data-height="7.0" data-name="4in Duct Elbow">
+                    <div><div class="tool-title">4" Duct Elbow (90&deg;)</div><div class="tool-dims">0.6' x 0.6' Footprint</div></div>
+                    <div class="tool-status-controls">
+                        <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
+                        <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
+                    </div>
+                </div>
+                <div class="tool-box-item" draggable="true" data-layer="dust-collection" data-width="0.8" data-length="0.8" data-height="7.0" data-name="6in Duct Elbow">
+                    <div><div class="tool-title">6" Duct Elbow (90&deg;)</div><div class="tool-dims">0.8' x 0.8' Footprint</div></div>
                     <div class="tool-status-controls">
                         <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
                         <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
@@ -2131,6 +2145,29 @@
         </div>
     </div>
 
+    <div class="modal-overlay" id="outletHeightModalOverlay" style="display:none;">
+        <div class="modal-box">
+            <div class="modal-title">Outlet Height</div>
+            <div class="modal-warning">How high on the wall should this outlet be mounted?</div>
+
+            <div class="header-field" style="width:100%;">
+                <label class="header-field-label" for="outletHeightInput">Height (in, from floor)</label>
+                <input type="number" class="input-box" id="outletHeightInput" value="18" min="0">
+            </div>
+            <div class="header-compound-row" style="margin-top:8px; flex-wrap:wrap; gap:6px;">
+                <button type="button" class="mini-btn outlet-height-preset" data-height="12" style="flex:none;">12" Floor</button>
+                <button type="button" class="mini-btn outlet-height-preset" data-height="18" style="flex:none;">18" Standard</button>
+                <button type="button" class="mini-btn outlet-height-preset" data-height="42" style="flex:none;">42" Counter</button>
+                <button type="button" class="mini-btn outlet-height-preset" data-height="66" style="flex:none;">66" High</button>
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" id="outletHeightCancelBtn" class="mini-btn">Cancel</button>
+                <button type="button" id="outletHeightConfirmBtn" class="mini-btn modal-primary-btn">Place Outlet</button>
+            </div>
+        </div>
+    </div>
+
     <div class="upgrade-nudge" id="upgradeNudge"></div>
     <div class="tool-preview-popover" id="toolPreviewPopover"></div>
 
@@ -2291,7 +2328,10 @@
                 const toolH = internalDragData.width * ppi;
 
                 const scaleMultiplier = parseFloat(document.getElementById('inputScale').value) || 1.0;
-                const snapInterval = scaleMultiplier * ppi;
+                // Dust collection items (ducts especially) need much finer placement than the
+                // shop's coarse grid scale to route cleanly between fixed points — the shop's
+                // 1ft+ grid made every run jump between a few fixed spots instead of gliding.
+                const snapInterval = internalDragData.layer === 'dust-collection' ? (ppi / 6) : (scaleMultiplier * ppi);
 
                 // Enforces snapping alignment parameters
                 let snapX = Math.round((mouseX - toolW / 2) / snapInterval) * snapInterval;
@@ -2479,7 +2519,7 @@
                 let targetX = startLeft + deltaX;
                 let targetY = startTop + deltaY;
                 const currentMultiplier = parseFloat(document.getElementById('inputScale').value) || 1.0;
-                const currentSnap = currentMultiplier * ppi;
+                const currentSnap = el.dataset.layer === 'dust-collection' ? (ppi / 6) : (currentMultiplier * ppi);
                 targetX = Math.round(targetX / currentSnap) * currentSnap;
                 targetY = Math.round(targetY / currentSnap) * currentSnap;
 
@@ -3900,6 +3940,8 @@
             '6in Dust Duct 4ft': { power: 'N/A', voltage: 'N/A', weight: '~3 lbs' },
             '6in Dust Duct 8ft': { power: 'N/A', voltage: 'N/A', weight: '~6 lbs' },
             'Blast Gate': { power: 'N/A', voltage: 'N/A', weight: '~1 lb' },
+            '4in Duct Elbow': { power: 'N/A', voltage: 'N/A', weight: '~1 lb' },
+            '6in Duct Elbow': { power: 'N/A', voltage: 'N/A', weight: '~1.5 lbs' },
             'LED Shop Light 4ft': { power: '40W', voltage: '110V', weight: '~6 lbs' },
             'High Bay LED Fixture': { power: '150W', voltage: '110V / 220V', weight: '~12 lbs' },
             'Adjustable Task Light': { power: '10W', voltage: '110V', weight: '~3 lbs' },
@@ -4430,6 +4472,15 @@
             return null;
         }
 
+        // Shared by renderWallFeatures/positionWallFeatureEl/attachWallFeatureInteractions's
+        // tooltip — a door/window shows its width, an outlet additionally shows its mounting
+        // height once set (see the height-confirmation modal in the outlet placement flow).
+        function wallFeatureLabelText(f) {
+            let text = f.widthIn ? `${f.label} (${Math.round(f.widthIn)}")` : f.label;
+            if (f.type === 'outlet' && f.mountHeightIn) text += ` @ ${f.mountHeightIn}"`;
+            return text;
+        }
+
         function renderWallFeatures() {
             document.querySelectorAll('.wall-feature-node, .wall-feature-label').forEach(n => n.remove());
             wallFeatures.forEach(f => {
@@ -4452,7 +4503,7 @@
                 labelEl.dataset.id = f.id;
                 labelEl.style.left = f.x + 'px';
                 labelEl.style.top = (f.y - thickPx / 2 - 4) + 'px';
-                labelEl.textContent = f.widthIn ? `${f.label} (${Math.round(f.widthIn)}")` : f.label;
+                labelEl.textContent = wallFeatureLabelText(f);
                 board.appendChild(labelEl);
 
                 attachWallFeatureInteractions(el, f);
@@ -4481,7 +4532,7 @@
             if (labelEl) {
                 labelEl.style.left = f.x + 'px';
                 labelEl.style.top = (f.y - thickPx / 2 - 4) + 'px';
-                labelEl.textContent = f.widthIn ? `${f.label} (${Math.round(f.widthIn)}")` : f.label;
+                labelEl.textContent = wallFeatureLabelText(f);
             }
         }
 
@@ -4541,7 +4592,7 @@
                 renderWallFeatures();
             });
 
-            el.title = f.label + (f.widthIn ? ` (${Math.round(f.widthIn)}")` : '') + ' — drag to move, click to remove';
+            el.title = wallFeatureLabelText(f) + ' — drag to move, click to remove';
         }
 
         // Grabbing an end of a door/window bar and dragging changes its length while the
@@ -4713,16 +4764,59 @@
                     }
                 }
 
-                pushUndoSnapshot();
-                wallFeatures.push({
-                    id: Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
-                    type, x: placeX, y: placeY, angle: clamped.angle,
-                    lengthFt, thicknessFt, label, voltage, widthIn
-                });
-                renderWallFeatures();
+                if (type === 'outlet') {
+                    // Height is asked for in a popup rather than baked into the placement
+                    // fields, so it's captured right at the moment/location an outlet is
+                    // actually being placed. Placement doesn't finalize until confirmed there.
+                    openOutletHeightModal({ type, placeX, placeY, angle: clamped.angle, lengthFt, thicknessFt, label, voltage, widthIn });
+                    return;
+                }
+
+                finalizeWallFeaturePlacement({ type, placeX, placeY, angle: clamped.angle, lengthFt, thicknessFt, label, voltage, widthIn });
             });
 
             setActiveTab('door');
+        }
+
+        function finalizeWallFeaturePlacement(p, mountHeightIn) {
+            pushUndoSnapshot();
+            wallFeatures.push({
+                id: Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
+                type: p.type, x: p.placeX, y: p.placeY, angle: p.angle,
+                lengthFt: p.lengthFt, thicknessFt: p.thicknessFt, label: p.label, voltage: p.voltage, widthIn: p.widthIn,
+                mountHeightIn: mountHeightIn || null
+            });
+            renderWallFeatures();
+        }
+
+        let pendingOutletPlacement = null;
+
+        function openOutletHeightModal(placement) {
+            pendingOutletPlacement = placement;
+            document.getElementById('outletHeightInput').value = 18;
+            document.getElementById('outletHeightModalOverlay').style.display = 'flex';
+        }
+
+        function initOutletHeightModal() {
+            const overlay = document.getElementById('outletHeightModalOverlay');
+            const input = document.getElementById('outletHeightInput');
+
+            document.getElementById('outletHeightCancelBtn').addEventListener('click', () => {
+                overlay.style.display = 'none';
+                pendingOutletPlacement = null;
+            });
+
+            document.querySelectorAll('.outlet-height-preset').forEach(btn => {
+                btn.addEventListener('click', () => { input.value = btn.dataset.height; });
+            });
+
+            document.getElementById('outletHeightConfirmBtn').addEventListener('click', () => {
+                if (!pendingOutletPlacement) { overlay.style.display = 'none'; return; }
+                const heightIn = parseFloat(input.value) || 18;
+                finalizeWallFeaturePlacement(pendingOutletPlacement, heightIn);
+                pendingOutletPlacement = null;
+                overlay.style.display = 'none';
+            });
         }
 
         // onClick (optional) fires on a genuine click — mousedown+mouseup with no real
@@ -4960,6 +5054,7 @@
         initCabinetBuilder();
         initMeasureTool();
         initWallFeatures();
+        initOutletHeightModal();
         initDraggablePanels();
         initNewLayoutModal();
         initUnitToggle();
