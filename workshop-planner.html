@@ -1337,6 +1337,14 @@
 
             <div class="header-divider"></div>
 
+            <div class="header-field header-field-narrow">
+                <label class="header-field-label" for="layoutTypeSelect">Save As <span class="pro-badge">PRO</span></label>
+                <select class="select-box pro-feature" id="layoutTypeSelect">
+                    <option value="workshop">Workshop</option>
+                    <option value="dust-collection">Dust Collection</option>
+                    <option value="lighting">Lighting</option>
+                </select>
+            </div>
             <div class="header-field header-field-wide">
                 <label class="header-field-label" for="layoutNameInput">Layout Name <span class="pro-badge">PRO</span></label>
                 <div class="header-compound-row">
@@ -3306,12 +3314,14 @@
             renderAccountBadge();
             updateHeaderSignInState();
             applyPlanGating();
+            if (typeof renderSavedLayoutsPicker === 'function') renderSavedLayoutsPicker();
         }
 
         function signOut() {
             localStorage.removeItem(AUTH_KEY);
             updateHeaderSignInState();
             applyPlanGating();
+            if (typeof renderSavedLayoutsPicker === 'function') renderSavedLayoutsPicker();
         }
 
         function initHeaderSignIn() {
@@ -3848,21 +3858,31 @@
             updateUndoRedoButtons();
         }
 
+        // Layout type is a label on top of the same full-shop snapshot every save already
+        // takes (shape + every layer) — not a separate smaller save. What differs is what
+        // happens on *load*: a Workshop-type save replaces the whole board like it always
+        // has, but a Dust Collection/Lighting-type save only swaps in that one layer's items,
+        // leaving the rest of the shop (and everything else on the board) untouched. That's
+        // what lets someone keep several dust-collection layouts for the same shop and swap
+        // between them without disturbing their tool placement.
+        const LAYOUT_TYPE_LABELS = { workshop: 'Workshop', 'dust-collection': 'Dust Collection', lighting: 'Lighting' };
+
         function renderSavedLayoutsPicker() {
             const field = document.getElementById('savedLayoutsField');
             const select = document.getElementById('savedLayoutsSelect');
             const layouts = loadLayouts();
 
-            if (!layouts.length) {
+            if (!isSignedIn() || !layouts.length) {
                 field.style.display = 'none';
                 return;
             }
 
             field.style.display = 'block';
             const previousValue = select.value;
-            select.innerHTML = layouts.slice().reverse().map(l =>
-                `<option value="${l.id}">${escapeHtml(l.name)}</option>`
-            ).join('');
+            select.innerHTML = layouts.slice().reverse().map(l => {
+                const typeLabel = LAYOUT_TYPE_LABELS[l.layoutType] || LAYOUT_TYPE_LABELS.workshop;
+                return `<option value="${l.id}">[${typeLabel}] ${escapeHtml(l.name)}</option>`;
+            }).join('');
 
             if (layouts.some(l => l.id === previousValue)) {
                 select.value = previousValue;
@@ -3871,16 +3891,33 @@
             }
         }
 
+        // Swaps in just one layer's items from a saved snapshot (Dust Collection/Lighting
+        // type loads) instead of replacing the whole board — everything else already on the
+        // grid, including other layers' items, the shop shape, and wall features, is left
+        // exactly as it was.
+        function mergeLoadLayerLayout(layout, layerName) {
+            pushUndoSnapshot();
+            document.querySelectorAll(`.placed-tool-node[data-layer="${layerName}"]`).forEach(n => n.remove());
+            (layout.tools || []).filter(t => (t.layer || 'tools') === layerName).forEach(t => {
+                board.appendChild(createPlacedNodeFromDescriptor(t));
+            });
+            applyLayerVisibility();
+            showToast(`Loaded "${layout.name}" — ${LAYOUT_TYPE_LABELS[layerName] || layerName} layer only.`);
+        }
+
         function initSavedLayouts() {
             const saveBtn = document.getElementById('saveLayoutBtn');
             const nameInput = document.getElementById('layoutNameInput');
+            const typeSelect = document.getElementById('layoutTypeSelect');
             const select = document.getElementById('savedLayoutsSelect');
 
             saveBtn.addEventListener('click', () => {
                 if (!requireProAccess('Saved shop layouts are a Pro feature.')) return;
                 const name = nameInput.value.trim() || `Shop Layout ${new Date().toLocaleString()}`;
                 const layouts = loadLayouts();
-                layouts.push(serializeCurrentLayout(name));
+                const layout = serializeCurrentLayout(name);
+                layout.layoutType = typeSelect.value;
+                layouts.push(layout);
                 persistLayouts(layouts);
                 nameInput.value = '';
                 renderSavedLayoutsPicker();
@@ -3891,9 +3928,13 @@
             document.getElementById('loadLayoutBtn').addEventListener('click', () => {
                 const layouts = loadLayouts();
                 const layout = layouts.find(l => l.id === select.value);
-                if (layout) {
+                if (!layout) return;
+                const type = layout.layoutType || 'workshop';
+                if (type === 'workshop') {
                     pushUndoSnapshot();
                     restoreLayout(layout);
+                } else {
+                    mergeLoadLayerLayout(layout, type);
                 }
             });
 
