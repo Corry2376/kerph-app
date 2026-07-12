@@ -412,6 +412,15 @@
             box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.25);
         }
 
+        .placed-tool-node.elbow-node {
+            background-color: transparent;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M4,36 A32,32 0 0 1 36,4' stroke='%231e3a8a' stroke-width='9' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+            background-size: 80% 80%;
+            background-repeat: no-repeat;
+            background-position: center;
+            border: 1px dashed #94a3b8;
+        }
+
         .placed-tool-node.selected-node { outline: 3px dashed #7c3aed; outline-offset: 2px; }
 
         .placed-tool-node.reference-node {
@@ -447,6 +456,7 @@
 
         .node-label { font-size: 11px; font-weight: 700; max-width: 100%; overflow-wrap: break-word; word-break: break-word; hyphens: auto; }
         .node-dims { font-size: 9px; font-weight: 600; opacity: 0.75; max-width: 100%; white-space: nowrap; }
+        .node-rename-input { width: 90%; font-size: 11px; font-weight: 700; text-align: center; border: 1px solid #2563eb; border-radius: 3px; padding: 1px 3px; background-color: #ffffff; color: #0f172a; }
 
         .rotate-handle {
             position: absolute;
@@ -1037,6 +1047,42 @@
             return { visualW, visualH };
         }
 
+        // Renames one specific placed instance, independent of any catalog-level nickname.
+        function startRenamePlacedNode(el) {
+            const labelEl = el.querySelector('.node-label');
+            if (!labelEl || el.querySelector('.node-rename-input')) return;
+            const current = el.dataset.displayName || labelEl.textContent;
+
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'node-rename-input';
+            input.value = current;
+            input.setAttribute('draggable', 'false');
+            input.addEventListener('mousedown', (e) => e.stopPropagation());
+            input.addEventListener('click', (e) => e.stopPropagation());
+            input.addEventListener('dblclick', (e) => e.stopPropagation());
+
+            labelEl.style.display = 'none';
+            labelEl.insertAdjacentElement('beforebegin', input);
+            input.focus();
+            input.select();
+
+            function commit() {
+                const val = input.value.trim() || current;
+                el.dataset.displayName = val;
+                labelEl.textContent = val;
+                labelEl.style.display = '';
+                input.remove();
+                saveDustCollectionChanges();
+            }
+
+            input.addEventListener('blur', commit);
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') { e.preventDefault(); input.blur(); }
+                if (e.key === 'Escape') { input.value = current; input.blur(); }
+            });
+        }
+
         function makeElementInteractive(el, wPx, hPx) {
             let activeDrag = false, moved = false;
             let startMouseX = 0, startMouseY = 0, startLeft = 0, startTop = 0;
@@ -1049,6 +1095,11 @@
                 startLeft = el.offsetLeft;
                 startTop = el.offsetTop;
                 e.stopPropagation();
+            });
+
+            el.addEventListener('dblclick', (e) => {
+                e.stopPropagation();
+                startRenamePlacedNode(el);
             });
 
             document.addEventListener('mousemove', (e) => {
@@ -1132,6 +1183,7 @@
             el.className = 'placed-tool-node';
             if (t.cabType) el.classList.add('placed-cabinet-node', 'cabinet-' + t.cabType);
             if (t.label === 'Blast Gate') el.classList.add('blast-gate-node');
+            if (t.label === '4in Duct Elbow' || t.label === '6in Duct Elbow') el.classList.add('elbow-node');
             el.dataset.height = t.physicalHeight || '';
             el.dataset.layer = t.layer || (t.cabType ? 'cabinets' : 'tools');
             el.style.width = t.width + 'px';
