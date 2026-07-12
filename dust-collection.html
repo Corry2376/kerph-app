@@ -812,12 +812,31 @@
         <div class="panel-body">
             <div class="calc-hint">Planning estimate, not an engineering guarantee — real static pressure depends on your exact hose/pipe, fittings, and collector's fan curve. Use it to sanity-check duct size and see roughly how much resistance a run adds.</div>
 
+            <button type="button" id="calcAutoFillBtn" class="mini-btn" style="width:100%; margin-bottom:10px;">&#9889; Auto-Fill Branches from Layout</button>
+
             <div id="calcBranchList"></div>
             <button type="button" id="calcAddBranchBtn" class="mini-btn" style="width:100%; margin-top:4px;">+ Add Branch</button>
 
-            <div style="margin-top:14px; display:flex; gap:8px;">
+            <div class="sidebar-title" style="margin-top:14px;">Main Trunk (collector to first branch)</div>
+            <div class="dims-row" style="display:flex; gap:6px;">
                 <div class="header-field" style="flex:1;">
-                    <label class="header-field-label" for="calcCollectorCfm">Collector Rated CFM</label>
+                    <label class="header-field-label" for="calcMainLen">Run (ft)</label>
+                    <input type="number" class="input-box" id="calcMainLen" value="8" min="0">
+                </div>
+                <div class="header-field" style="flex:1;">
+                    <label class="header-field-label" for="calcMainElbows">Elbows</label>
+                    <input type="number" class="input-box" id="calcMainElbows" value="1" min="0">
+                </div>
+            </div>
+
+            <div class="sidebar-title" style="margin-top:14px;">Collector</div>
+            <div class="header-field" style="width:100%;">
+                <label class="header-field-label" for="calcCollectorModel">Model</label>
+                <select class="select-box" id="calcCollectorModel"></select>
+            </div>
+            <div style="margin-top:8px; display:flex; gap:8px;">
+                <div class="header-field" style="flex:1;">
+                    <label class="header-field-label" for="calcCollectorCfm">Rated CFM</label>
                     <input type="number" class="input-box" id="calcCollectorCfm" value="1100" min="1">
                 </div>
                 <div class="header-field" style="flex:1;">
@@ -1773,51 +1792,229 @@
             return (lengthFt + elbows * elbowEquivFt) * lossPerFt;
         }
 
+        // Rough planning-only material cost, not a real quote — no tax, hardware, hangers,
+        // flex-vs-rigid pricing differences, or labor.
+        const DUCT_COST_PER_FT = { 4: 3.5, 6: 5.5 };
+        const ELBOW_COST = { 4: 12, 6: 18 };
+
+        // Approximate CFM-vs-static-pressure curves (CFM at inWC), read off commonly-cited
+        // hobbyist figures for these models — not manufacturer-verified data. "Custom" skips
+        // the curve entirely and just uses the flat rated CFM number, same as before.
+        const COLLECTOR_PRESETS = {
+            custom: { label: 'Custom (enter CFM manually)', rated: 1100, curve: null },
+            'jet-dc1100vx': { label: 'JET DC-1100VX (1.5HP)', rated: 1100, curve: [[0, 1100], [2, 850], [4, 650], [6, 450], [8, 250]] },
+            'grizzly-g0548z': { label: 'Grizzly G0548Z (2HP)', rated: 1180, curve: [[0, 1180], [2, 950], [4, 720], [6, 500], [8, 300]] },
+            'oneida-v-system-3hp': { label: 'Oneida V-System 3HP', rated: 1750, curve: [[0, 1750], [2, 1500], [4, 1250], [6, 1000], [8, 750]] },
+            'harbor-freight-2hp': { label: 'Harbor Freight 2HP', rated: 1550, curve: [[0, 1550], [2, 1150], [4, 800], [6, 500], [8, 250]] }
+        };
+
+        function interpolateCollectorCfm(curve, sp) {
+            if (!curve || !curve.length) return null;
+            if (sp <= curve[0][0]) return curve[0][1];
+            if (sp >= curve[curve.length - 1][0]) return curve[curve.length - 1][1];
+            for (let i = 0; i < curve.length - 1; i++) {
+                const [sp1, cfm1] = curve[i];
+                const [sp2, cfm2] = curve[i + 1];
+                if (sp >= sp1 && sp <= sp2) {
+                    const t = (sp - sp1) / (sp2 - sp1);
+                    return cfm1 + t * (cfm2 - cfm1);
+                }
+            }
+            return curve[curve.length - 1][1];
+        }
+
+        function initCollectorPresets() {
+            const select = document.getElementById('calcCollectorModel');
+            Object.keys(COLLECTOR_PRESETS).forEach(key => {
+                const opt = document.createElement('option');
+                opt.value = key;
+                opt.textContent = COLLECTOR_PRESETS[key].label;
+                select.appendChild(opt);
+            });
+            select.value = 'jet-dc1100vx';
+
+            const cfmInput = document.getElementById('calcCollectorCfm');
+            function applyPreset() {
+                const preset = COLLECTOR_PRESETS[select.value];
+                cfmInput.value = preset.rated;
+                cfmInput.disabled = select.value !== 'custom';
+            }
+            select.addEventListener('change', applyPreset);
+            applyPreset();
+        }
+
         function runCalculator() {
             const rows = document.querySelectorAll('.calc-branch-row');
             if (!rows.length) { showToast('Add at least one branch to calculate.'); return; }
 
             const systemLoss = parseFloat(document.getElementById('calcSystemLoss').value) || 0;
             const collectorCfm = parseFloat(document.getElementById('calcCollectorCfm').value) || 0;
+            const collectorPreset = COLLECTOR_PRESETS[document.getElementById('calcCollectorModel').value];
+            const mainLenFt = parseFloat(document.getElementById('calcMainLen').value) || 0;
+            const mainElbows = parseFloat(document.getElementById('calcMainElbows').value) || 0;
+
             const resultsEl = document.getElementById('calcResults');
             resultsEl.innerHTML = '';
+
+            const branchData = Array.from(rows).map(row => ({
+                toolName: row.querySelector('.calc-tool-select').value,
+                cfm: parseFloat(row.querySelector('.calc-cfm-input').value) || 0,
+                lengthFt: parseFloat(row.querySelector('.calc-len-input').value) || 0,
+                elbows: parseFloat(row.querySelector('.calc-elbow-input').value) || 0
+            }));
+
+            // The main trunk carries whichever single branch is open at a time (blast gates
+            // isolate branches in a typical single-stage hobby-shop system), so it needs to be
+            // sized for the LARGEST branch's CFM, not the sum of every branch.
+            const maxBranchCfm = Math.max(...branchData.map(b => b.cfm));
+            const mainDiameter = recommendDiameter(maxBranchCfm);
+            const mainLoss = estimateDuctLoss(mainDiameter, mainLenFt, mainElbows);
+
+            let totalCost = mainLenFt * DUCT_COST_PER_FT[mainDiameter] + mainElbows * ELBOW_COST[mainDiameter];
             let worstSp = 0;
+            let worstDeliveredCfm = Infinity;
+            let anyDelivered = false;
 
-            rows.forEach(row => {
-                const toolName = row.querySelector('.calc-tool-select').value;
-                const cfm = parseFloat(row.querySelector('.calc-cfm-input').value) || 0;
-                const lengthFt = parseFloat(row.querySelector('.calc-len-input').value) || 0;
-                const elbows = parseFloat(row.querySelector('.calc-elbow-input').value) || 0;
-
-                const diameter = recommendDiameter(cfm);
-                const ductLoss = estimateDuctLoss(diameter, lengthFt, elbows);
-                const totalSp = ductLoss + systemLoss;
+            branchData.forEach(b => {
+                const diameter = recommendDiameter(b.cfm);
+                const ductLoss = estimateDuctLoss(diameter, b.lengthFt, b.elbows);
+                const totalSp = ductLoss + mainLoss + systemLoss;
                 worstSp = Math.max(worstSp, totalSp);
+                totalCost += b.lengthFt * DUCT_COST_PER_FT[diameter] + b.elbows * ELBOW_COST[diameter];
 
-                let cls = '', verdict = 'Should perform close to rated CFM.';
-                if (totalSp > 7) { cls = 'danger'; verdict = 'High resistance — a single-stage collector will likely struggle. Shorten the run, cut elbows, or upsize to 6" duct.'; }
-                else if (totalSp > 4) { cls = 'warn'; verdict = 'Moderate resistance — expect somewhat reduced CFM from rated.'; }
+                const deliveredCfm = collectorPreset && collectorPreset.curve
+                    ? interpolateCollectorCfm(collectorPreset.curve, totalSp)
+                    : null;
+
+                let cls = '', verdict;
+                if (deliveredCfm !== null) {
+                    anyDelivered = true;
+                    worstDeliveredCfm = Math.min(worstDeliveredCfm, deliveredCfm);
+                    const pct = (deliveredCfm / b.cfm) * 100;
+                    if (deliveredCfm < b.cfm * 0.7) { cls = 'danger'; verdict = `At this resistance, the ${collectorPreset.label} delivers only ~${Math.round(deliveredCfm)} CFM (~${Math.round(pct)}% of the ${b.cfm} CFM this tool needs) — undersized for this run.`; }
+                    else if (deliveredCfm < b.cfm) { cls = 'warn'; verdict = `Delivers ~${Math.round(deliveredCfm)} CFM (~${Math.round(pct)}% of the ${b.cfm} CFM needed) — workable but tight.`; }
+                    else { verdict = `Delivers ~${Math.round(deliveredCfm)} CFM, comfortably above the ${b.cfm} CFM this tool needs.`; }
+                } else {
+                    if (totalSp > 7) { cls = 'danger'; verdict = 'High resistance — a single-stage collector will likely struggle. Shorten the run, cut elbows, or upsize to 6" duct.'; }
+                    else if (totalSp > 4) { cls = 'warn'; verdict = 'Moderate resistance — expect somewhat reduced CFM from rated.'; }
+                    else { verdict = 'Should perform close to rated CFM.'; }
+                }
+
+                let mainWarning = '';
+                if (diameter > mainDiameter) {
+                    mainWarning = `<div class="calc-result-line" style="color:#b91c1c; font-weight:700;">&#9888; This branch alone needs ${diameter}" duct, larger than the ${mainDiameter}" main trunk below — upsize the main.</div>`;
+                }
 
                 const card = document.createElement('div');
                 card.className = 'calc-result-card ' + cls;
                 card.innerHTML = `
-                    <div class="calc-result-title">${toolName} — recommend ${diameter}" duct</div>
-                    <div class="calc-result-line">${cfm} CFM at ~4000 FPM needs about ${diameter}" diameter.</div>
-                    <div class="calc-result-line">Estimated static pressure: ~${totalSp.toFixed(1)}" WC (${ductLoss.toFixed(1)}" duct + ${systemLoss.toFixed(1)}" system).</div>
+                    <div class="calc-result-title">${b.toolName} — recommend ${diameter}" duct</div>
+                    <div class="calc-result-line">${b.cfm} CFM at ~4000 FPM needs about ${diameter}" diameter.</div>
+                    <div class="calc-result-line">Estimated static pressure: ~${totalSp.toFixed(1)}" WC (${ductLoss.toFixed(1)}" branch + ${mainLoss.toFixed(1)}" main + ${systemLoss.toFixed(1)}" system).</div>
                     <div class="calc-result-line">${verdict}</div>
+                    ${mainWarning}
                 `;
                 resultsEl.appendChild(card);
             });
 
             const summary = document.createElement('div');
             summary.className = 'calc-result-card' + (worstSp > 7 ? ' danger' : worstSp > 4 ? ' warn' : '');
-            summary.innerHTML = `<div class="calc-result-title">System summary</div><div class="calc-result-line">Worst-case branch static pressure ~${worstSp.toFixed(1)}" WC against a ${collectorCfm} CFM rated collector. Real delivered CFM will be lower than rated once static pressure rises — this is a planning estimate, not a fan-curve calculation.</div>`;
+            summary.innerHTML = `
+                <div class="calc-result-title">System summary</div>
+                <div class="calc-result-line">Main trunk: recommend ${mainDiameter}" duct (sized for the largest branch, ${maxBranchCfm} CFM).</div>
+                <div class="calc-result-line">Worst-case branch static pressure ~${worstSp.toFixed(1)}" WC against a ${collectorCfm} CFM rated collector.${anyDelivered ? ` Estimated worst-case delivered CFM: ~${Math.round(worstDeliveredCfm)}.` : ' Real delivered CFM will be lower than rated once static pressure rises — pick a collector model above for a fan-curve estimate instead of just the flat rating.'}</div>
+                <div class="calc-result-line">Estimated material cost: ~$${Math.round(totalCost)} (duct + elbows for the main trunk and all branches — blast gates, the collector itself, and labor aren't included).</div>
+            `;
             resultsEl.appendChild(summary);
+        }
+
+        // Traces the connected dust-collection ductwork already placed on the grid, from the
+        // collector out to each blast gate, following duct/elbow segments whose bounding boxes
+        // are touching (or nearly so). This is a proximity heuristic, not exact endpoint/
+        // rotation geometry — it works best with axis-aligned runs placed end-to-end, which is
+        // the common case. Not a substitute for measuring a real run, but a solid starting point.
+        function getNodeBoxFt(node) {
+            const leftFt = parseFloat(node.style.left) / ppi;
+            const topFt = parseFloat(node.style.top) / ppi;
+            const wFt = parseFloat(node.style.width) / ppi;
+            const hFt = parseFloat(node.style.height) / ppi;
+            return { x1: leftFt, y1: topFt, x2: leftFt + wFt, y2: topFt + hFt, lengthFt: Math.max(wFt, hFt) };
+        }
+
+        function boxesNearlyTouch(a, b, tolFt) {
+            return !(a.x2 + tolFt < b.x1 || b.x2 + tolFt < a.x1 || a.y2 + tolFt < b.y1 || b.y2 + tolFt < a.y1);
+        }
+
+        function traceDuctworkFromLayout() {
+            const nodes = Array.from(document.querySelectorAll('.placed-tool-node[data-layer="dust-collection"]'));
+            if (!nodes.length) return [];
+
+            const collectorNode = nodes.find(n => {
+                const name = n.dataset.toolName || '';
+                return name.includes('DC-1100VX') || name.includes('Dust Deputy');
+            });
+            if (!collectorNode) return [];
+
+            const blastGates = nodes.filter(n => n.dataset.toolName === 'Blast Gate');
+            if (!blastGates.length) return [];
+
+            const TOL_FT = 0.5;
+            const boxes = new Map(nodes.map(n => [n, getNodeBoxFt(n)]));
+            const neighbors = (node) => nodes.filter(other => other !== node && boxesNearlyTouch(boxes.get(node), boxes.get(other), TOL_FT));
+
+            const results = [];
+            blastGates.forEach(gate => {
+                const visited = new Set([gate]);
+                const queue = [{ node: gate, path: [] }];
+                let found = null;
+                while (queue.length) {
+                    const { node, path } = queue.shift();
+                    if (node === collectorNode) { found = path; break; }
+                    neighbors(node).forEach(n => {
+                        if (!visited.has(n)) {
+                            visited.add(n);
+                            queue.push({ node: n, path: [...path, n] });
+                        }
+                    });
+                }
+                if (!found) return;
+
+                let lengthFt = 0, elbows = 0;
+                found.forEach(n => {
+                    if (n === collectorNode) return;
+                    const name = n.dataset.toolName || '';
+                    if (name.includes('Elbow')) elbows += 1;
+                    else if (name.includes('Duct')) lengthFt += boxes.get(n).lengthFt;
+                });
+
+                results.push({ lengthFt: Math.round(lengthFt * 10) / 10, elbows });
+            });
+
+            return results;
+        }
+
+        function autoFillBranchesFromLayout() {
+            const traced = traceDuctworkFromLayout();
+            if (!traced.length) {
+                showToast('No connected duct run found — place a dust collector, ducts, and at least one blast gate on the grid, with the ducts touching end-to-end.');
+                return;
+            }
+            document.getElementById('calcBranchList').innerHTML = '';
+            traced.forEach(t => {
+                addCalcBranchRow('Custom');
+                const rows = document.querySelectorAll('.calc-branch-row');
+                const row = rows[rows.length - 1];
+                row.querySelector('.calc-len-input').value = t.lengthFt;
+                row.querySelector('.calc-elbow-input').value = t.elbows;
+            });
+            showToast(`Traced ${traced.length} branch${traced.length === 1 ? '' : 'es'} from the layout — pick the right tool for each, then Calculate.`);
         }
 
         function initCalculator() {
             document.getElementById('calcAddBranchBtn').addEventListener('click', () => addCalcBranchRow());
             document.getElementById('calcRunBtn').addEventListener('click', runCalculator);
+            document.getElementById('calcAutoFillBtn').addEventListener('click', autoFillBranchesFromLayout);
+            initCollectorPresets();
             addCalcBranchRow('Table Saw');
         }
 
