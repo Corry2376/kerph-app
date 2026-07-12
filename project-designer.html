@@ -491,6 +491,14 @@
                 <input type="text" class="input-box" id="accountUsernameInput" placeholder="Choose a username">
             </div>
 
+            <div class="header-field" style="width:100%; margin-top:10px;">
+                <label class="header-field-label" for="accountUnitsSelect">Preferred Units</label>
+                <select class="select-box" id="accountUnitsSelect">
+                    <option value="imperial">Imperial (ft / in)</option>
+                    <option value="metric">Metric (m / cm)</option>
+                </select>
+            </div>
+
             <div class="modal-actions">
                 <button type="button" id="accountCancelBtn" class="mini-btn">Close</button>
                 <button type="button" id="accountSaveBtn" class="mini-btn modal-primary-btn">Save</button>
@@ -641,6 +649,7 @@
             const avatarInput = document.getElementById('accountAvatarInput');
             const avatarBtn = document.getElementById('accountAvatarBtn');
             const avatarLarge = document.getElementById('accountAvatarLarge');
+            const unitsSelect = document.getElementById('accountUnitsSelect');
             let pendingAvatar = null;
 
             btn.addEventListener('click', () => {
@@ -648,6 +657,7 @@
                 usernameInput.value = acc.username || '';
                 pendingAvatar = acc.avatar || null;
                 applyAvatarTo(avatarLarge, pendingAvatar);
+                unitsSelect.value = localStorage.getItem('kerphUnitSystem') || 'imperial';
                 overlay.style.display = 'flex';
             });
 
@@ -673,6 +683,7 @@
                     return;
                 }
                 localStorage.setItem(ACCOUNT_KEY, JSON.stringify({ username, avatar: pendingAvatar }));
+                localStorage.setItem('kerphUnitSystem', unitsSelect.value);
                 renderAccountBadge();
                 overlay.style.display = 'none';
                 showToast('Profile saved locally.');

@@ -1417,6 +1417,14 @@
                 <input type="text" class="input-box" id="accountUsernameInput" placeholder="Choose a username">
             </div>
 
+            <div class="header-field" style="width:100%; margin-top:10px;">
+                <label class="header-field-label" for="accountUnitsSelect">Preferred Units</label>
+                <select class="select-box" id="accountUnitsSelect">
+                    <option value="imperial">Imperial (ft / in)</option>
+                    <option value="metric">Metric (m / cm)</option>
+                </select>
+            </div>
+
             <div class="modal-actions">
                 <button type="button" id="accountCancelBtn" class="mini-btn">Close</button>
                 <button type="button" id="accountSaveBtn" class="mini-btn modal-primary-btn">Save</button>
@@ -3179,6 +3187,7 @@
             const avatarInput = document.getElementById('accountAvatarInput');
             const avatarBtn = document.getElementById('accountAvatarBtn');
             const avatarLarge = document.getElementById('accountAvatarLarge');
+            const unitsSelect = document.getElementById('accountUnitsSelect');
             let pendingAvatar = null;
 
             btn.addEventListener('click', () => {
@@ -3186,6 +3195,7 @@
                 usernameInput.value = acc.username || '';
                 pendingAvatar = acc.avatar || null;
                 applyAvatarTo(avatarLarge, pendingAvatar);
+                unitsSelect.value = unitSystem;
                 overlay.style.display = 'flex';
             });
 
@@ -3211,6 +3221,7 @@
                     return;
                 }
                 localStorage.setItem(ACCOUNT_KEY, JSON.stringify({ username, avatar: pendingAvatar }));
+                switchUnitSystem(unitsSelect.value);
                 renderAccountBadge();
                 overlay.style.display = 'none';
                 showToast('Profile saved locally.');
@@ -4867,6 +4878,22 @@
             metricBtn.classList.toggle('active', isMetric);
         }
 
+        // Hoisted out of initUnitToggle() so the Account Settings modal's "Preferred Units"
+        // field (the account-level default) can switch the live unit system the same way the
+        // New Layout modal's toggle buttons do, rather than duplicating this conversion logic.
+        function switchUnitSystem(newUnit) {
+            if (newUnit === unitSystem) return;
+            const widthInput = document.getElementById('inputWidth');
+            const lengthInput = document.getElementById('inputLength');
+            const currentWidthFt = getShopWidthFeet();
+            const currentLengthFt = getShopLengthFeet();
+            unitSystem = newUnit;
+            localStorage.setItem('kerphUnitSystem', unitSystem);
+            widthInput.value = feetToDisplay(currentWidthFt);
+            lengthInput.value = feetToDisplay(currentLengthFt);
+            applyUnitLabels();
+        }
+
         function initUnitToggle() {
             const widthInput = document.getElementById('inputWidth');
             const lengthInput = document.getElementById('inputLength');
@@ -4879,19 +4906,8 @@
                 lengthInput.value = feetToDisplay(parseFloat(lengthInput.value) || 24);
             }
 
-            function switchUnit(newUnit) {
-                if (newUnit === unitSystem) return;
-                const currentWidthFt = getShopWidthFeet();
-                const currentLengthFt = getShopLengthFeet();
-                unitSystem = newUnit;
-                localStorage.setItem('kerphUnitSystem', unitSystem);
-                widthInput.value = feetToDisplay(currentWidthFt);
-                lengthInput.value = feetToDisplay(currentLengthFt);
-                applyUnitLabels();
-            }
-
-            document.getElementById('unitImperialBtn').addEventListener('click', () => switchUnit('imperial'));
-            document.getElementById('unitMetricBtn').addEventListener('click', () => switchUnit('metric'));
+            document.getElementById('unitImperialBtn').addEventListener('click', () => switchUnitSystem('imperial'));
+            document.getElementById('unitMetricBtn').addEventListener('click', () => switchUnitSystem('metric'));
 
             applyUnitLabels();
         }
