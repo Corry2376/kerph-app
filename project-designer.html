@@ -26,8 +26,8 @@
                 linear-gradient(135deg, #ffffff 0%, #eef2ff 60%, #e0e7ff 100%),
                 repeating-linear-gradient(120deg, rgba(30, 58, 138, 0.04) 0px, rgba(30, 58, 138, 0.04) 2px, transparent 2px, transparent 14px);
             border-bottom: 2px solid #1e3a8a;
-            padding: 0 24px;
-            height: 70px;
+            padding: 10px 20px;
+            height: 150px;
             width: 100%;
             position: absolute;
             top: 0;
@@ -38,21 +38,41 @@
             justify-content: space-between;
         }
 
-        .header-left {
+        .brand-assembly {
             display: flex;
             align-items: center;
-            gap: 16px;
+            gap: 15px;
+            height: 100%;
         }
 
-        .home-link {
+        .logo-spotlight {
+            position: relative;
             display: flex;
             align-items: center;
+            justify-content: center;
+            width: 449px;
+            height: 123px;
+        }
+
+        .logo-link {
+            display: block;
+            line-height: 0;
         }
 
         .logo-image {
-            height: 46px;
-            width: auto;
+            position: relative;
+            z-index: 1;
+            width: 449px;
+            height: 123px;
             object-fit: contain;
+            border-radius: 4px;
+            filter: drop-shadow(0 12px 22px rgba(15, 23, 42, 0.4));
+            transition: transform 0.3s ease, filter 0.3s ease;
+        }
+
+        .logo-image:hover {
+            transform: scale(1.03);
+            filter: drop-shadow(0 18px 30px rgba(15, 23, 42, 0.5));
         }
 
         .page-title {
@@ -63,19 +83,224 @@
             border-left: 1px solid #cbd5e1;
         }
 
-        .nav-link {
-            font-size: 12px;
-            font-weight: 700;
-            color: #4b5563;
-            text-decoration: none;
-            padding: 8px 12px;
-            border-radius: 8px;
+        .header-controls {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
         }
 
-        .nav-link:hover {
-            background-color: #eef2ff;
-            color: #1e3a8a;
+        .header-field {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
         }
+
+        .header-field-label {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #6b7280;
+        }
+
+        .new-layout-btn {
+            padding: 8px 14px;
+            border: none;
+            border-radius: 8px;
+            background-color: #1e3a8a;
+            color: #ffffff;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            white-space: nowrap;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .new-layout-btn:hover { background-color: #1e40af; }
+
+        .new-layout-btn-secondary {
+            background-color: #ffffff;
+            color: #1e3a8a;
+            border: 1px solid #cbd5e1;
+        }
+
+        .new-layout-btn-secondary:hover {
+            background-color: #eef2ff;
+            border-color: #2563eb;
+        }
+
+        /* ---------- HEADER: SIGN-IN / ACCOUNT / PLAN (ubiquitous across all pages) ---------- */
+        .plan-badge-group {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 10px;
+        }
+
+        .plan-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: #4b5563;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 4px;
+        }
+
+        .plan-label abbr { cursor: help; text-decoration: none; }
+
+        .plan-select {
+            padding: 8px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            background-color: #ffffff;
+            font-size: 13px;
+            font-weight: 700;
+            color: #1e3a8a;
+            cursor: pointer;
+        }
+
+        .account-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px 6px 6px;
+            border: 1px solid #cbd5e1;
+            border-radius: 999px;
+            background-color: #ffffff;
+            font-size: 13px;
+            font-weight: 700;
+            color: #1e3a8a;
+            cursor: pointer;
+        }
+
+        .account-btn:hover { border-color: #1e3a8a; background-color: #eef2ff; }
+
+        .account-avatar {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background-color: #e0e7ff;
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .account-avatar-large {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            background-color: #e0e7ff;
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+        }
+
+        .header-sign-in {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .header-sign-in-input {
+            width: 84px;
+            padding: 6px 8px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .header-sign-in .mini-btn {
+            flex: none;
+            padding: 6px 10px;
+            font-size: 11px;
+        }
+
+        .mini-btn {
+            flex: 1;
+            padding: 8px 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            background-color: #ffffff;
+            font-size: 12px;
+            font-weight: 700;
+            color: #1e3a8a;
+            cursor: pointer;
+        }
+
+        .mini-btn:hover { background-color: #eef2ff; border-color: #2563eb; }
+        .mini-btn.danger { color: #b91c1c; }
+        .mini-btn.danger:hover { background-color: #fef2f2; border-color: #b91c1c; }
+
+        .input-box { width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; font-weight: 600; }
+
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background-color: rgba(15, 23, 42, 0.5);
+            z-index: 3000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-box {
+            background-color: #ffffff;
+            border-radius: 12px;
+            padding: 24px;
+            width: 320px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+        }
+
+        .modal-title { font-size: 16px; font-weight: 800; color: #0f172a; margin-bottom: 8px; }
+
+        .modal-warning {
+            font-size: 12px;
+            color: #b45309;
+            background-color: #fffbeb;
+            border: 1px solid #fde68a;
+            border-radius: 6px;
+            padding: 8px 10px;
+            margin-bottom: 16px;
+        }
+
+        .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+        .modal-actions .mini-btn { flex: 1; }
+
+        .modal-primary-btn {
+            background-color: #1e3a8a !important;
+            color: #ffffff !important;
+            border-color: #1e3a8a !important;
+        }
+
+        .upgrade-nudge {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background-color: #0f172a;
+            color: #ffffff;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 10px 12px 10px 18px;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease, transform 0.2s ease;
+            z-index: 2000;
+            max-width: 400px;
+        }
+
+        .upgrade-nudge.visible { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
 
         /* ---------- LAYOUT SKELETON ----------
            Mirrors the sidebar + main-canvas structure of workshop-planner.html so the two
@@ -84,10 +309,10 @@
            discussed as its own multi-session feature, not a one-shot build. */
         #sidebar-panel {
             position: absolute;
-            top: 70px;
+            top: 150px;
             left: 0;
             width: 300px;
-            height: calc(100vh - 70px);
+            height: calc(100vh - 150px);
             background-color: #ffffff;
             border-right: 1px solid #cbd5e1;
             padding: 20px;
@@ -111,7 +336,7 @@
             margin-bottom: 16px;
         }
 
-        .mini-btn {
+        .panel-add-btn {
             width: 100%;
             padding: 10px;
             border: 1px solid #cbd5e1;
@@ -125,10 +350,10 @@
 
         #canvas-area {
             position: absolute;
-            top: 70px;
+            top: 150px;
             left: 300px;
             width: calc(100vw - 300px);
-            height: calc(100vh - 70px);
+            height: calc(100vh - 150px);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -140,10 +365,7 @@
             padding: 32px;
         }
 
-        .placeholder-icon {
-            font-size: 40px;
-            margin-bottom: 16px;
-        }
+        .placeholder-icon { font-size: 40px; margin-bottom: 16px; }
 
         .placeholder-title {
             font-size: 18px;
@@ -162,20 +384,72 @@
 <body>
 
     <header>
-        <div class="header-left">
-            <a href="index.html" class="home-link" title="Kerph Home">
-                <img src="logo.png" alt="Kerph Logo" class="logo-image">
-            </a>
+        <div class="brand-assembly">
+            <div class="logo-spotlight">
+                <a href="index.html" class="logo-link" title="Kerph Home">
+                    <img src="logo.png" alt="Kerph Logo" class="logo-image">
+                </a>
+            </div>
             <div class="page-title">Project Designer</div>
         </div>
-        <a href="workshop-planner.html" class="nav-link">Workshop Layout Planner &#8594;</a>
+        <div class="header-controls">
+            <div class="header-field">
+                <label class="header-field-label">&nbsp;</label>
+                <a href="workshop-planner.html" class="new-layout-btn new-layout-btn-secondary">Workshop Layout Planner &#8594;</a>
+            </div>
+        </div>
+        <div class="plan-badge-group">
+            <div class="header-sign-in" id="headerSignIn" title="Preview only — any username &amp; password signs you in locally in this browser.">
+                <input type="text" class="header-sign-in-input" id="headerSignInUsername" placeholder="Username" autocomplete="username">
+                <input type="password" class="header-sign-in-input" id="headerSignInPassword" placeholder="Password" autocomplete="current-password">
+                <button type="button" id="headerSignInBtn" class="mini-btn" title="Sign In">Sign In</button>
+            </div>
+            <button type="button" id="accountBtn" class="account-btn" title="Account Settings" style="display:none;">
+                <span class="account-avatar" id="accountAvatarPreview">&#128100;</span>
+                <span id="accountBtnLabel">Account</span>
+            </button>
+            <div>
+                <div class="plan-label"><abbr title="Simulates your subscription tier locally for previewing gated features. Real account billing isn't connected yet.">Plan Level ⓘ</abbr></div>
+                <select class="plan-select" id="planSelector">
+                    <option value="free">Free</option>
+                    <option value="pro">Pro</option>
+                    <option value="premier">Premier</option>
+                </select>
+            </div>
+        </div>
     </header>
+
+    <div class="modal-overlay" id="accountModalOverlay" style="display:none;">
+        <div class="modal-box">
+            <div class="modal-title">Account Settings</div>
+            <div class="modal-warning">Saved locally in this browser only — real accounts, Google sign-in, and community features aren't connected yet.</div>
+
+            <div class="header-field" style="width:100%; margin-bottom:14px; display:flex; flex-direction:column; align-items:center;">
+                <div class="account-avatar-large" id="accountAvatarLarge">&#128100;</div>
+                <input type="file" id="accountAvatarInput" accept="image/*" style="display:none;">
+                <button type="button" id="accountAvatarBtn" class="mini-btn" style="margin-top:10px; flex:none;">Upload Photo</button>
+            </div>
+
+            <div class="header-field" style="width:100%;">
+                <label class="header-field-label" for="accountUsernameInput">Username</label>
+                <input type="text" class="input-box" id="accountUsernameInput" placeholder="Choose a username">
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" id="accountCancelBtn" class="mini-btn">Close</button>
+                <button type="button" id="accountSaveBtn" class="mini-btn modal-primary-btn">Save</button>
+            </div>
+            <button type="button" id="accountSignOutBtn" class="mini-btn danger" style="width:100%; margin-top:8px;">Sign Out</button>
+        </div>
+    </div>
+
+    <div class="upgrade-nudge" id="upgradeNudge"></div>
 
     <div id="sidebar-panel">
         <div class="sidebar-title">Panels</div>
         <div class="empty-hint" id="panelListEmptyHint">No panels yet. This is where individual boards (sides, shelves, panels — each with a width, height, thickness, and material) will be defined and listed.</div>
         <div id="panelList"></div>
-        <button type="button" class="mini-btn" id="addPanelBtn" disabled>+ Add Panel (coming soon)</button>
+        <button type="button" class="panel-add-btn" id="addPanelBtn" disabled>+ Add Panel (coming soon)</button>
     </div>
 
     <div id="canvas-area">
@@ -187,6 +461,162 @@
     </div>
 
     <script>
+        /* ---------- SHARED STATE KEYS (must match workshop-planner.html / index.html exactly) ---------- */
+        const PLAN_KEY = 'kerphPlan';
+        const ACCOUNT_KEY = 'kerphAccount';
+        const AUTH_KEY = 'kerphSignedIn';
+
+        function showToast(message) {
+            const nudge = document.getElementById('upgradeNudge');
+            nudge.textContent = message;
+            nudge.classList.add('visible');
+            clearTimeout(showToast._timer);
+            showToast._timer = setTimeout(() => nudge.classList.remove('visible'), 3500);
+        }
+
+        function getPlan() {
+            return localStorage.getItem(PLAN_KEY) || 'free';
+        }
+
+        function initPlanSelector() {
+            const select = document.getElementById('planSelector');
+            select.value = getPlan();
+            select.addEventListener('change', () => {
+                localStorage.setItem(PLAN_KEY, select.value);
+            });
+        }
+
+        function loadAccount() {
+            try {
+                return JSON.parse(localStorage.getItem(ACCOUNT_KEY)) || {};
+            } catch (e) {
+                return {};
+            }
+        }
+
+        function applyAvatarTo(el, dataUrl) {
+            if (dataUrl) {
+                el.style.backgroundImage = `url(${dataUrl})`;
+                el.textContent = '';
+            } else {
+                el.style.backgroundImage = '';
+                el.textContent = '\u{1F464}';
+            }
+        }
+
+        function renderAccountBadge() {
+            const acc = loadAccount();
+            document.getElementById('accountBtnLabel').textContent = acc.username || 'Account';
+            applyAvatarTo(document.getElementById('accountAvatarPreview'), acc.avatar);
+        }
+
+        function initAccountPanel() {
+            const btn = document.getElementById('accountBtn');
+            const overlay = document.getElementById('accountModalOverlay');
+            const cancelBtn = document.getElementById('accountCancelBtn');
+            const saveBtn = document.getElementById('accountSaveBtn');
+            const usernameInput = document.getElementById('accountUsernameInput');
+            const avatarInput = document.getElementById('accountAvatarInput');
+            const avatarBtn = document.getElementById('accountAvatarBtn');
+            const avatarLarge = document.getElementById('accountAvatarLarge');
+            let pendingAvatar = null;
+
+            btn.addEventListener('click', () => {
+                const acc = loadAccount();
+                usernameInput.value = acc.username || '';
+                pendingAvatar = acc.avatar || null;
+                applyAvatarTo(avatarLarge, pendingAvatar);
+                overlay.style.display = 'flex';
+            });
+
+            avatarBtn.addEventListener('click', () => avatarInput.click());
+
+            avatarInput.addEventListener('change', () => {
+                const file = avatarInput.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = () => {
+                    pendingAvatar = reader.result;
+                    applyAvatarTo(avatarLarge, pendingAvatar);
+                };
+                reader.readAsDataURL(file);
+            });
+
+            cancelBtn.addEventListener('click', () => { overlay.style.display = 'none'; });
+
+            saveBtn.addEventListener('click', () => {
+                const username = usernameInput.value.trim();
+                if (!username) {
+                    showToast('Enter a username to save your profile.');
+                    return;
+                }
+                localStorage.setItem(ACCOUNT_KEY, JSON.stringify({ username, avatar: pendingAvatar }));
+                renderAccountBadge();
+                overlay.style.display = 'none';
+                showToast('Profile saved locally.');
+            });
+
+            document.getElementById('accountSignOutBtn').addEventListener('click', () => {
+                overlay.style.display = 'none';
+                signOut();
+            });
+
+            renderAccountBadge();
+        }
+
+        function isSignedIn() {
+            return localStorage.getItem(AUTH_KEY) === 'true';
+        }
+
+        function updateHeaderSignInState() {
+            const signedIn = isSignedIn();
+            document.getElementById('headerSignIn').style.display = signedIn ? 'none' : 'flex';
+            document.getElementById('accountBtn').style.display = signedIn ? 'flex' : 'none';
+        }
+
+        function completeSignIn(username) {
+            localStorage.setItem(AUTH_KEY, 'true');
+            const acc = loadAccount();
+            acc.username = username;
+            localStorage.setItem(ACCOUNT_KEY, JSON.stringify(acc));
+            renderAccountBadge();
+            updateHeaderSignInState();
+        }
+
+        function signOut() {
+            localStorage.removeItem(AUTH_KEY);
+            updateHeaderSignInState();
+        }
+
+        function initHeaderSignIn() {
+            const usernameInput = document.getElementById('headerSignInUsername');
+            const passwordInput = document.getElementById('headerSignInPassword');
+            const signInBtn = document.getElementById('headerSignInBtn');
+
+            function attemptSignIn() {
+                const username = usernameInput.value.trim();
+                const password = passwordInput.value;
+                if (!username || !password) {
+                    showToast('Enter a username and password to sign in.');
+                    return;
+                }
+                completeSignIn(username);
+                usernameInput.value = '';
+                passwordInput.value = '';
+            }
+
+            signInBtn.addEventListener('click', attemptSignIn);
+            [usernameInput, passwordInput].forEach(input => {
+                input.addEventListener('keydown', (e) => { if (e.key === 'Enter') attemptSignIn(); });
+            });
+
+            updateHeaderSignInState();
+        }
+
+        initPlanSelector();
+        initHeaderSignIn();
+        initAccountPanel();
+
         /* ---------- DATA MODEL (scaffold only — not yet wired to any UI) ----------
            Mirrors the shape used by the tool-database guide's cut-list discussion: each
            panel is a discrete board with real dimensions, so a cut list is never "derived"

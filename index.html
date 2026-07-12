@@ -37,10 +37,41 @@
             justify-content: space-between;
         }
 
+        .brand-assembly {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            height: 100%;
+        }
+
+        .logo-spotlight {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 449px;
+            height: 123px;
+        }
+
+        .logo-link {
+            display: block;
+            line-height: 0;
+        }
+
         .logo-image {
-            height: 90px;
-            width: auto;
+            position: relative;
+            z-index: 1;
+            width: 449px;
+            height: 123px;
             object-fit: contain;
+            border-radius: 4px;
+            filter: drop-shadow(0 12px 22px rgba(15, 23, 42, 0.4));
+            transition: transform 0.3s ease, filter 0.3s ease;
+        }
+
+        .logo-image:hover {
+            transform: scale(1.03);
+            filter: drop-shadow(0 18px 30px rgba(15, 23, 42, 0.5));
         }
 
         .plan-badge-group {
@@ -427,7 +458,13 @@
 <body>
 
     <header>
-        <img src="logo.png" alt="Kerph Logo" class="logo-image">
+        <div class="brand-assembly">
+            <div class="logo-spotlight">
+                <a href="index.html" class="logo-link" title="Kerph Home">
+                    <img src="logo.png" alt="Kerph Logo" class="logo-image">
+                </a>
+            </div>
+        </div>
 
         <div class="plan-badge-group">
             <div class="header-sign-in" id="headerSignIn" title="Preview only — any username &amp; password signs you in locally in this browser.">

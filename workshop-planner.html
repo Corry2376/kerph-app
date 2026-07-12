@@ -314,6 +314,14 @@
             filter: drop-shadow(0 18px 30px rgba(15, 23, 42, 0.5));
         }
 
+        .page-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #1e3a8a;
+            padding-left: 16px;
+            border-left: 1px solid #cbd5e1;
+        }
+
         /* FIXED STRUCTURE SIDEBAR */
         #sidebar-panel {
             position: absolute;
@@ -1054,6 +1062,14 @@
             background-color: #dc2626;
         }
 
+        .wall-feature-node.wall-feature-panel {
+            background-color: #475569;
+        }
+
+        .wall-feature-node.wall-feature-minisplit {
+            background-color: #0891b2;
+        }
+
         .wf-resize-handle {
             position: absolute;
             top: 50%;
@@ -1093,6 +1109,17 @@
             cursor: move;
             user-select: none;
             z-index: 500;
+        }
+
+        .placed-tool-node.blast-gate-node {
+            background-color: rgba(220, 38, 38, 0.15);
+            border: 2px solid #dc2626;
+            box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.25);
+        }
+
+        .placed-tool-node.selected-node {
+            outline: 3px dashed #7c3aed;
+            outline-offset: 2px;
         }
 
         /* Overflow clipping lives on this inner wrapper, not .placed-tool-node itself —
@@ -1292,15 +1319,15 @@
                     <img src="logo.png" alt="Kerph Logo" class="logo-image">
                 </a>
             </div>
+            <div class="page-title">Workshop Layout Planner</div>
         </div>
         <div class="header-controls">
             <div class="header-field">
                 <label class="header-field-label">&nbsp;</label>
-                <button type="button" id="newLayoutBtn" class="new-layout-btn">+ New Shop Layout</button>
-            </div>
-            <div class="header-field">
-                <label class="header-field-label">&nbsp;</label>
-                <button type="button" id="editLayoutBtn" class="new-layout-btn new-layout-btn-secondary">Edit Shop Settings</button>
+                <div style="display:flex; flex-direction:column; gap:6px;">
+                    <button type="button" id="newLayoutBtn" class="new-layout-btn">+ New Shop Layout</button>
+                    <button type="button" id="editLayoutBtn" class="new-layout-btn new-layout-btn-secondary">Edit Shop Settings</button>
+                </div>
             </div>
 
             <div class="header-divider"></div>
@@ -1694,7 +1721,7 @@
 
         <details class="tool-category">
             <summary class="category-header">
-                <span class="category-header-left">Dust Collection <span class="category-count">4</span></span>
+                <span class="category-header-left">Dust Collection <span class="category-count">9</span></span>
                 <span class="category-chevron">&#9656;</span>
             </summary>
             <div class="category-items">
@@ -1712,8 +1739,43 @@
                         <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
                     </div>
                 </div>
-                <div class="tool-box-item" draggable="true" data-layer="dust-collection" data-width="0.35" data-length="4.0" data-height="7.0" data-name="4in Dust Duct Run">
-                    <div><div class="tool-title">4" Dust Duct (4ft run)</div><div class="tool-dims">0.4' x 4.0' Footprint</div></div>
+                <div class="tool-box-item" draggable="true" data-layer="dust-collection" data-width="0.35" data-length="2.0" data-height="7.0" data-name="4in Dust Duct 2ft">
+                    <div><div class="tool-title">4" Dust Duct (2ft run)</div><div class="tool-dims">0.35' x 2.0' Footprint</div></div>
+                    <div class="tool-status-controls">
+                        <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
+                        <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
+                    </div>
+                </div>
+                <div class="tool-box-item" draggable="true" data-layer="dust-collection" data-width="0.35" data-length="4.0" data-height="7.0" data-name="4in Dust Duct 4ft">
+                    <div><div class="tool-title">4" Dust Duct (4ft run)</div><div class="tool-dims">0.35' x 4.0' Footprint</div></div>
+                    <div class="tool-status-controls">
+                        <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
+                        <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
+                    </div>
+                </div>
+                <div class="tool-box-item" draggable="true" data-layer="dust-collection" data-width="0.35" data-length="8.0" data-height="7.0" data-name="4in Dust Duct 8ft">
+                    <div><div class="tool-title">4" Dust Duct (8ft run)</div><div class="tool-dims">0.35' x 8.0' Footprint</div></div>
+                    <div class="tool-status-controls">
+                        <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
+                        <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
+                    </div>
+                </div>
+                <div class="tool-box-item" draggable="true" data-layer="dust-collection" data-width="0.5" data-length="2.0" data-height="7.0" data-name="6in Dust Duct 2ft">
+                    <div><div class="tool-title">6" Dust Duct (2ft run)</div><div class="tool-dims">0.5' x 2.0' Footprint</div></div>
+                    <div class="tool-status-controls">
+                        <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
+                        <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
+                    </div>
+                </div>
+                <div class="tool-box-item" draggable="true" data-layer="dust-collection" data-width="0.5" data-length="4.0" data-height="7.0" data-name="6in Dust Duct 4ft">
+                    <div><div class="tool-title">6" Dust Duct (4ft run)</div><div class="tool-dims">0.5' x 4.0' Footprint</div></div>
+                    <div class="tool-status-controls">
+                        <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
+                        <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
+                    </div>
+                </div>
+                <div class="tool-box-item" draggable="true" data-layer="dust-collection" data-width="0.5" data-length="8.0" data-height="7.0" data-name="6in Dust Duct 8ft">
+                    <div><div class="tool-title">6" Dust Duct (8ft run)</div><div class="tool-dims">0.5' x 8.0' Footprint</div></div>
                     <div class="tool-status-controls">
                         <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
                         <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
@@ -1807,7 +1869,7 @@
 
         <details class="tool-category">
             <summary class="category-header">
-                <span class="category-header-left">Tool Storage <span class="category-count">7</span></span>
+                <span class="category-header-left">Tool Storage <span class="category-count">8</span></span>
                 <span class="category-chevron">&#9656;</span>
             </summary>
             <div class="category-items">
@@ -1855,6 +1917,13 @@
                 </div>
                 <div class="tool-box-item" draggable="true" data-width="6.5" data-length="2.1" data-height="3.5" data-name="Snap-on KRL1023 Classic 78">
                     <div><div class="tool-title">Snap-on KRL1023 Classic 78" Roll Cab</div><div class="tool-dims">6.5' x 2.1' Footprint</div></div>
+                    <div class="tool-status-controls">
+                        <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
+                        <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
+                    </div>
+                </div>
+                <div class="tool-box-item" draggable="true" data-width="1.7" data-length="0.85" data-height="0.85" data-name="Portable Steel Toolbox">
+                    <div><div class="tool-title">20" Portable Steel Toolbox</div><div class="tool-dims">1.7' x 0.85' Footprint</div></div>
                     <div class="tool-status-controls">
                         <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
                         <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
@@ -1960,6 +2029,8 @@
             <button type="button" class="wf-tab" data-wf-type="window">🪟 Window</button>
             <button type="button" class="wf-tab" data-wf-type="switch">💡 Switch</button>
             <button type="button" class="wf-tab" data-wf-type="outlet">🔌 Outlet</button>
+            <button type="button" class="wf-tab" data-wf-type="panel">⚡ Panel</button>
+            <button type="button" class="wf-tab" data-wf-type="minisplit">❄️ Mini-Split</button>
         </div>
 
         <div class="wf-fields" id="wfFieldsDoor">
@@ -2019,6 +2090,30 @@
             </select>
         </div>
 
+        <div class="wf-fields" id="wfFieldsPanel" style="display:none;">
+            <label class="header-field-label" for="wfPanelLabel">Label (optional)</label>
+            <input type="text" class="input-box" id="wfPanelLabel" placeholder="e.g. Main Panel">
+            <label class="header-field-label" for="wfPanelAmperage" style="margin-top:8px;">Amperage</label>
+            <select class="select-box" id="wfPanelAmperage">
+                <option value="100">100A</option>
+                <option value="125">125A</option>
+                <option value="200" selected>200A</option>
+                <option value="400">400A</option>
+            </select>
+        </div>
+
+        <div class="wf-fields" id="wfFieldsMinisplit" style="display:none;">
+            <label class="header-field-label" for="wfMinisplitLabel">Label (optional)</label>
+            <input type="text" class="input-box" id="wfMinisplitLabel" placeholder="e.g. Shop Mini-Split">
+            <label class="header-field-label" for="wfMinisplitBtu" style="margin-top:8px;">Size</label>
+            <select class="select-box" id="wfMinisplitBtu">
+                <option value="9000">9,000 BTU</option>
+                <option value="12000" selected>12,000 BTU</option>
+                <option value="18000">18,000 BTU</option>
+                <option value="24000">24,000 BTU</option>
+            </select>
+        </div>
+
         <button type="button" id="wfPlaceBtn" class="mini-btn" style="width:100%; margin-top:10px;">Click Grid to Place Door</button>
         </div>
     </div>
@@ -2058,6 +2153,25 @@
         }
 
         let internalDragData = null;
+
+        /* ---------- SELECTION / DELETE / COPY-PASTE for placed tools, cabinets, and shapes ----
+           Placed nodes have no JS state array of their own (the DOM IS the model — see
+           serializeCurrentLayout), so selection is just a reference to the live element and
+           copy/paste works by re-deriving the same descriptor shape serializeCurrentLayout
+           uses, then reconstructing a node the same way applyLayoutState does. */
+        let selectedNode = null;
+        let clipboardDescriptor = null;
+
+        function selectNode(el) {
+            if (selectedNode === el) return;
+            if (selectedNode) selectedNode.classList.remove('selected-node');
+            selectedNode = el;
+            if (selectedNode) selectedNode.classList.add('selected-node');
+        }
+
+        function clearSelection() {
+            selectNode(null);
+        }
 
         function updateWorkshopGridSize() {
             const widthFeet = getShopWidthFeet() || 20;
@@ -2141,6 +2255,11 @@
         function initDragAndDropEngine() {
             document.querySelectorAll('.tool-box-item').forEach(wireToolDragStart);
 
+            // Clicking empty grid space deselects whatever placed node was selected.
+            board.addEventListener('click', (e) => {
+                if (e.target === board) clearSelection();
+            });
+
             board.addEventListener('dragover', (e) => {
                 e.preventDefault();
             });
@@ -2198,6 +2317,7 @@
                 toolNode.style.left = snapX + 'px';
                 toolNode.style.top = snapY + 'px';
                 toolNode.dataset.toolName = internalDragData.name;
+                if (internalDragData.name === 'Blast Gate') toolNode.classList.add('blast-gate-node');
 
                 let displayName = internalDragData.name;
                 let displayDims;
@@ -2323,6 +2443,7 @@
 
         function makeElementInteractive(el, wPx, hPx) {
             let activeDrag = false;
+            let moved = false;
             let startMouseX = 0;
             let startMouseY = 0;
             let startLeft = 0;
@@ -2330,6 +2451,7 @@
             el.addEventListener('mousedown', (e) => {
                 pushUndoSnapshot();
                 activeDrag = true;
+                moved = false;
                 startMouseX = e.clientX;
                 startMouseY = e.clientY;
                 startLeft = el.offsetLeft;
@@ -2338,6 +2460,7 @@
             });
             document.addEventListener('mousemove', (e) => {
                 if (!activeDrag) return;
+                moved = true;
                 const deltaX = e.clientX - startMouseX;
                 const deltaY = e.clientY - startMouseY;
                 let targetX = startLeft + deltaX;
@@ -2390,6 +2513,7 @@
                 el.style.top = targetY + 'px';
             });
             document.addEventListener('mouseup', () => {
+                if (activeDrag && !moved) selectNode(el);
                 activeDrag = false;
             });
         }
@@ -3474,6 +3598,71 @@
         // Shared by both "load a saved layout" and undo/redo — reconstructs the board from a
         // serializeCurrentLayout()-shaped object. restoreLayout() wraps this with a toast;
         // undo/redo call it directly since a toast on every Ctrl+Z would be noisy.
+        // Builds a live placed-tool-node from the same descriptor shape serializeCurrentLayout()
+        // produces (label/displayName/displayDims/left/top/width/height/rotation/cabType/
+        // physicalHeight/layer) — shared by loading a saved/undo layout and by pasting a copy,
+        // so both reconstruct nodes identically (correct drag/rotate/resize wiring, correct
+        // blast-gate styling) instead of drifting out of sync.
+        function createPlacedNodeFromDescriptor(t) {
+            const toolNode = document.createElement('div');
+            toolNode.className = 'placed-tool-node';
+            if (t.cabType) {
+                toolNode.classList.add('placed-cabinet-node', 'cabinet-' + t.cabType);
+                toolNode.dataset.cabType = t.cabType;
+            }
+            if (t.label === 'Blast Gate') toolNode.classList.add('blast-gate-node');
+            toolNode.dataset.height = t.physicalHeight || '';
+            toolNode.dataset.layer = t.layer || (t.cabType ? 'cabinets' : 'tools');
+            toolNode.style.width = t.width + 'px';
+            toolNode.style.height = t.height + 'px';
+            toolNode.style.left = t.left + 'px';
+            toolNode.style.top = t.top + 'px';
+            toolNode.dataset.toolName = t.label;
+            buildPlacedNodeContent(toolNode, t.displayName || t.label, t.displayDims || '');
+            makeElementInteractive(toolNode, t.width, t.height);
+            makeElementRotatable(toolNode);
+            if (t.cabType) makeElementResizable(toolNode);
+            if (t.rotation) {
+                toolNode.style.transform = `rotate(${t.rotation}deg)`;
+                toolNode.dataset.rotation = t.rotation;
+                const readout = toolNode.querySelector('.rotate-readout');
+                if (readout) readout.innerText = `${t.rotation}°`;
+            }
+            return toolNode;
+        }
+
+        // Reads a live placed node back into the same descriptor shape, for copy/paste.
+        function nodeToDescriptor(node) {
+            return {
+                label: node.dataset.toolName || '',
+                displayName: node.dataset.displayName || node.dataset.toolName || '',
+                displayDims: node.dataset.displayDims || '',
+                left: parseFloat(node.style.left) || 0,
+                top: parseFloat(node.style.top) || 0,
+                width: parseFloat(node.style.width) || 0,
+                height: parseFloat(node.style.height) || 0,
+                rotation: parseFloat(node.dataset.rotation) || 0,
+                cabType: node.dataset.cabType || null,
+                physicalHeight: node.dataset.height || null,
+                layer: node.dataset.layer || 'tools'
+            };
+        }
+
+        // Pastes a copy of whatever descriptor is on the clipboard, offset from the original
+        // so it doesn't land exactly on top of it, then selects the new copy.
+        function pasteClipboardNode() {
+            if (!clipboardDescriptor) return;
+            pushUndoSnapshot();
+            const t = { ...clipboardDescriptor };
+            const offset = 20;
+            t.left = Math.max(0, Math.min(t.left + offset, board.clientWidth - t.width));
+            t.top = Math.max(0, Math.min(t.top + offset, board.clientHeight - t.height));
+            const node = createPlacedNodeFromDescriptor(t);
+            board.appendChild(node);
+            applyLayerVisibility();
+            selectNode(node);
+        }
+
         function applyLayoutState(layout) {
             clearBoardTools();
 
@@ -3499,30 +3688,7 @@
             }
 
             (layout.tools || []).forEach(t => {
-                const toolNode = document.createElement('div');
-                toolNode.className = 'placed-tool-node';
-                if (t.cabType) {
-                    toolNode.classList.add('placed-cabinet-node', 'cabinet-' + t.cabType);
-                    toolNode.dataset.cabType = t.cabType;
-                }
-                toolNode.dataset.height = t.physicalHeight || '';
-                toolNode.dataset.layer = t.layer || (t.cabType ? 'cabinets' : 'tools');
-                toolNode.style.width = t.width + 'px';
-                toolNode.style.height = t.height + 'px';
-                toolNode.style.left = t.left + 'px';
-                toolNode.style.top = t.top + 'px';
-                toolNode.dataset.toolName = t.label;
-                buildPlacedNodeContent(toolNode, t.displayName || t.label, t.displayDims || '');
-                makeElementInteractive(toolNode, t.width, t.height);
-                makeElementRotatable(toolNode);
-                if (t.cabType) makeElementResizable(toolNode);
-                if (t.rotation) {
-                    toolNode.style.transform = `rotate(${t.rotation}deg)`;
-                    toolNode.dataset.rotation = t.rotation;
-                    const readout = toolNode.querySelector('.rotate-readout');
-                    if (readout) readout.innerText = `${t.rotation}°`;
-                }
-                board.appendChild(toolNode);
+                board.appendChild(createPlacedNodeFromDescriptor(t));
             });
 
             if (typeof renderWallFeatures === 'function') {
@@ -3609,6 +3775,17 @@
                 } else if ((e.ctrlKey || e.metaKey) && (key === 'y' || (key === 'z' && e.shiftKey))) {
                     e.preventDefault();
                     performRedo();
+                } else if ((e.key === 'Delete' || e.key === 'Backspace') && selectedNode) {
+                    e.preventDefault();
+                    pushUndoSnapshot();
+                    selectedNode.remove();
+                    selectedNode = null;
+                } else if ((e.ctrlKey || e.metaKey) && key === 'c' && selectedNode) {
+                    e.preventDefault();
+                    clipboardDescriptor = nodeToDescriptor(selectedNode);
+                } else if ((e.ctrlKey || e.metaKey) && key === 'v' && clipboardDescriptor) {
+                    e.preventDefault();
+                    pasteClipboardNode();
                 }
             });
 
@@ -3700,7 +3877,12 @@
             'Bosch GTS1041A': { power: '15A', voltage: '120V', weight: '~13 lbs + stand' },
             'JET DC-1100VX': { power: '1.5 HP', voltage: '110V / 220V', weight: '~230 lbs' },
             'Oneida Super Dust Deputy XL': { power: 'Passive cyclone', voltage: 'N/A', weight: '~25 lbs' },
-            '4in Dust Duct Run': { power: 'N/A', voltage: 'N/A', weight: '~2 lbs per run' },
+            '4in Dust Duct 2ft': { power: 'N/A', voltage: 'N/A', weight: '~1 lb' },
+            '4in Dust Duct 4ft': { power: 'N/A', voltage: 'N/A', weight: '~2 lbs' },
+            '4in Dust Duct 8ft': { power: 'N/A', voltage: 'N/A', weight: '~4 lbs' },
+            '6in Dust Duct 2ft': { power: 'N/A', voltage: 'N/A', weight: '~1.5 lbs' },
+            '6in Dust Duct 4ft': { power: 'N/A', voltage: 'N/A', weight: '~3 lbs' },
+            '6in Dust Duct 8ft': { power: 'N/A', voltage: 'N/A', weight: '~6 lbs' },
             'Blast Gate': { power: 'N/A', voltage: 'N/A', weight: '~1 lb' },
             'LED Shop Light 4ft': { power: '40W', voltage: '110V', weight: '~6 lbs' },
             'High Bay LED Fixture': { power: '150W', voltage: '110V / 220V', weight: '~12 lbs' },
@@ -3715,7 +3897,8 @@
             'Kobalt 41in Rolling Chest': { power: 'N/A', voltage: 'N/A', weight: '~230 lbs empty' },
             'US General 56in Roller Cabinet': { power: 'N/A', voltage: 'N/A', weight: '~340 lbs empty' },
             'Husky 52in Mobile Workbench': { power: 'N/A', voltage: 'N/A', weight: '~300 lbs empty' },
-            'Snap-on KRL1023 Classic 78': { power: 'N/A', voltage: 'N/A', weight: '~700 lbs empty' }
+            'Snap-on KRL1023 Classic 78': { power: 'N/A', voltage: 'N/A', weight: '~700 lbs empty' },
+            'Portable Steel Toolbox': { power: 'N/A', voltage: 'N/A', weight: '~15 lbs empty' }
         };
 
         const CATEGORY_ICONS = {
@@ -4148,8 +4331,8 @@
         };
 
         const POINT_FEATURE_SIZE_FT = 0.35;
-        const WALL_FEATURE_MARKS = { door: 'D', window: 'W', switch: 'S', outlet: 'O' };
-        const WALL_FEATURE_NAMES = { door: 'Door', window: 'Window', switch: 'Switch', outlet: 'Outlet' };
+        const WALL_FEATURE_MARKS = { door: 'D', window: 'W', switch: 'S', outlet: 'O', panel: 'E', minisplit: 'M' };
+        const WALL_FEATURE_NAMES = { door: 'Door', window: 'Window', switch: 'Switch', outlet: 'Outlet', panel: 'Electrical Panel', minisplit: 'Mini-Split' };
 
         function getWallSegments() {
             let points;
@@ -4486,6 +4669,16 @@
                     thicknessFt = POINT_FEATURE_SIZE_FT;
                     voltage = document.getElementById('wfOutletVoltage').value;
                     label = document.getElementById('wfOutletLabel').value.trim() || `${voltage}V Outlet`;
+                } else if (type === 'panel') {
+                    lengthFt = 1.2;
+                    thicknessFt = 0.3;
+                    const amps = document.getElementById('wfPanelAmperage').value;
+                    label = document.getElementById('wfPanelLabel').value.trim() || `${amps}A Panel`;
+                } else if (type === 'minisplit') {
+                    lengthFt = 2.7;
+                    thicknessFt = 0.7;
+                    const btu = document.getElementById('wfMinisplitBtu').value;
+                    label = document.getElementById('wfMinisplitLabel').value.trim() || `Mini-Split (${parseInt(btu, 10).toLocaleString()} BTU)`;
                 }
 
                 const clamped = clampToWallBounds(snapped, lengthFt * ppi);
