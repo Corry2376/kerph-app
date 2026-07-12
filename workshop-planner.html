@@ -2770,7 +2770,18 @@
                 if (existing && existing.status === 'owned') {
                     delete statuses[name];
                 } else {
-                    statuses[name] = { status: 'owned', nickname: (existing && existing.nickname) || '' };
+                    // widthFt/lengthFt/heightFt/category are denormalized copies of the
+                    // catalog data, saved here (not just the status) so other pages — the
+                    // home page's My Tools/Wishlist list, specifically — can show real specs
+                    // without needing their own copy of the full tool catalog.
+                    statuses[name] = {
+                        status: 'owned',
+                        nickname: (existing && existing.nickname) || '',
+                        widthFt: parseFloat(item.getAttribute('data-width')) || null,
+                        lengthFt: parseFloat(item.getAttribute('data-length')) || null,
+                        heightFt: parseFloat(item.getAttribute('data-height')) || null,
+                        category: getItemCategory(item)
+                    };
                 }
                 applyStatusToItem(item, nicknameInput, statuses[name]);
                 saveToolStatuses(statuses);
@@ -2782,7 +2793,13 @@
                 if (existing && existing.status === 'wishlist') {
                     delete statuses[name];
                 } else {
-                    statuses[name] = { status: 'wishlist' };
+                    statuses[name] = {
+                        status: 'wishlist',
+                        widthFt: parseFloat(item.getAttribute('data-width')) || null,
+                        lengthFt: parseFloat(item.getAttribute('data-length')) || null,
+                        heightFt: parseFloat(item.getAttribute('data-height')) || null,
+                        category: getItemCategory(item)
+                    };
                 }
                 applyStatusToItem(item, nicknameInput, statuses[name]);
                 saveToolStatuses(statuses);
