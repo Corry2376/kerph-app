@@ -872,6 +872,15 @@
         }
 
         .measure-btn:hover { background-color: #eef2ff; border-color: #2563eb; }
+
+        .zoom-level-display {
+            font-size: 11px;
+            font-weight: 700;
+            color: #1e3a8a;
+            min-width: 38px;
+            text-align: center;
+            cursor: help;
+        }
         .measure-btn:disabled { opacity: 0.4; cursor: not-allowed; background-color: #ffffff; }
         .measure-btn:disabled:hover { border-color: #cbd5e1; }
 
@@ -2075,6 +2084,10 @@
         <button type="button" id="measureToggleBtn" class="measure-btn" title="Click and drag on the grid to measure a distance">📏 Measure</button>
         <button type="button" id="undoBtn" class="measure-btn" title="Undo (Ctrl+Z)" disabled>&#8630; Undo</button>
         <button type="button" id="measureClearBtn" class="measure-btn" title="Clear all measurements" style="display:none;">Clear</button>
+        <button type="button" id="zoomOutBtn" class="measure-btn" title="Zoom out">&#8722;</button>
+        <span class="zoom-level-display" id="zoomLevelDisplay" title="Ctrl+scroll to zoom">100%</span>
+        <button type="button" id="zoomInBtn" class="measure-btn" title="Zoom in">&#43;</button>
+        <button type="button" id="zoomResetBtn" class="measure-btn" title="Reset zoom to 100%">Reset</button>
     </div>
 
     <div class="floating-panel layers-panel collapsed" id="layersPanel">
@@ -2215,7 +2228,7 @@
 
     <script>
         const board = document.getElementById('workshopBoard');
-        const ppi = 30; // 30 pixels equals 1 standard foot
+        let ppi = 30; // pixels per foot at 100% zoom — a live variable so zoom can scale it
 
         /* ---------- UNITS (imperial/metric) ----------
            Canonical internal storage is always FEET, since ppi is feet-based and that math
@@ -2315,6 +2328,72 @@
                     label.textContent = Math.round(ft);
                     vRuler.appendChild(label);
                 }
+            }
+        }
+
+        /* ---------- ZOOM ----------
+           Rather than a CSS transform (which would require every mouse-position calculation
+           in the file to divide by a scale factor), zoom works by treating ppi itself as the
+           thing that changes: updateWorkshopGridSize()/renderRulers() already re-derive the
+           board size, grid background, and rulers purely from ppi and the shop's real-world
+           feet dimensions, so those need no changes at all. The only state that's stored as
+           raw pixels tied to the ppi at the time it was set — placed nodes' left/top/width/
+           height, wall features' x/y, custom shape points, and measurement line endpoints —
+           gets proportionally rescaled by the ratio between old and new ppi. Every other piece
+           of code (drag, snap, rotate, resize, wall-feature placement) already reads ppi live,
+           so it keeps working unmodified once ppi itself has changed. */
+        const BASE_PPI = 30;
+        let zoomLevel = 1;
+
+        function applyZoom(newZoomLevel) {
+            newZoomLevel = Math.max(0.5, Math.min(3, newZoomLevel));
+            const newPpi = BASE_PPI * newZoomLevel;
+            if (Math.abs(newPpi - ppi) < 0.001) return;
+
+            const scaleFactor = newPpi / ppi;
+            ppi = newPpi;
+            zoomLevel = newZoomLevel;
+
+            document.querySelectorAll('.placed-tool-node').forEach(el => {
+                el.style.left = (parseFloat(el.style.left) * scaleFactor) + 'px';
+                el.style.top = (parseFloat(el.style.top) * scaleFactor) + 'px';
+                el.style.width = (parseFloat(el.style.width) * scaleFactor) + 'px';
+                el.style.height = (parseFloat(el.style.height) * scaleFactor) + 'px';
+            });
+
+            if (typeof wallFeatures !== 'undefined') {
+                wallFeatures.forEach(f => { f.x *= scaleFactor; f.y *= scaleFactor; });
+            }
+
+            if (typeof measurements !== 'undefined') {
+                measurements.forEach(m => { m.x1 *= scaleFactor; m.y1 *= scaleFactor; m.x2 *= scaleFactor; m.y2 *= scaleFactor; });
+            }
+
+            if (typeof shapeMode !== 'undefined' && shapeMode === 'custom' && shapePoints.length) {
+                shapePoints = shapePoints.map(p => ({ x: p.x * scaleFactor, y: p.y * scaleFactor }));
+                if (typeof applyCustomShape === 'function') applyCustomShape();
+            }
+
+            updateWorkshopGridSize();
+            if (typeof renderWallFeatures === 'function') renderWallFeatures();
+            if (typeof renderMeasurements === 'function') renderMeasurements();
+
+            const display = document.getElementById('zoomLevelDisplay');
+            if (display) display.textContent = Math.round(zoomLevel * 100) + '%';
+        }
+
+        function initZoomControls() {
+            document.getElementById('zoomInBtn').addEventListener('click', () => applyZoom(zoomLevel + 0.25));
+            document.getElementById('zoomOutBtn').addEventListener('click', () => applyZoom(zoomLevel - 0.25));
+            document.getElementById('zoomResetBtn').addEventListener('click', () => applyZoom(1));
+
+            const viewport = document.getElementById('canvas-view-space');
+            if (viewport) {
+                viewport.addEventListener('wheel', (e) => {
+                    if (!e.ctrlKey) return;
+                    e.preventDefault();
+                    applyZoom(zoomLevel + (e.deltaY < 0 ? 0.1 : -0.1));
+                }, { passive: false });
             }
         }
 
@@ -3697,15 +3776,22 @@
             return div.innerHTML;
         }
 
+        // Every stored pixel value (tool positions, wall-feature positions, shape points) is
+        // always normalized to the 100%-zoom (BASE_PPI) baseline here, regardless of the
+        // current live zoom level — otherwise a layout saved/autosaved while zoomed in would
+        // come back distorted when later restored at a different zoom. createPlacedNodeFrom-
+        // Descriptor() is the one place that converts this normalized space back to whatever
+        // ppi is live at restore time.
         function serializeCurrentLayout(name) {
+            const normFactor = BASE_PPI / ppi;
             const tools = Array.from(document.querySelectorAll('.placed-tool-node')).map(node => ({
                 label: node.dataset.toolName || '',
                 displayName: node.dataset.displayName || node.dataset.toolName || '',
                 displayDims: node.dataset.displayDims || '',
-                left: parseFloat(node.style.left) || 0,
-                top: parseFloat(node.style.top) || 0,
-                width: parseFloat(node.style.width) || 0,
-                height: parseFloat(node.style.height) || 0,
+                left: (parseFloat(node.style.left) || 0) * normFactor,
+                top: (parseFloat(node.style.top) || 0) * normFactor,
+                width: (parseFloat(node.style.width) || 0) * normFactor,
+                height: (parseFloat(node.style.height) || 0) * normFactor,
                 rotation: parseFloat(node.dataset.rotation) || 0,
                 cabType: node.dataset.cabType || null,
                 // physicalHeight is the object's real-world vertical height in feet (for future 3D),
@@ -3713,6 +3799,10 @@
                 physicalHeight: node.dataset.height || null,
                 layer: node.dataset.layer || 'tools'
             }));
+
+            const normalizedWallFeatures = (typeof wallFeatures !== 'undefined' ? wallFeatures : [])
+                .map(f => ({ ...f, x: f.x * normFactor, y: f.y * normFactor }));
+            const normalizedShapePoints = shapePoints.map(p => ({ x: p.x * normFactor, y: p.y * normFactor }));
 
             return {
                 id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
@@ -3723,9 +3813,9 @@
                 scale: document.getElementById('inputScale').value,
                 unitSystem: unitSystem,
                 shapeMode: shapeMode,
-                shapePoints: shapePoints,
+                shapePoints: normalizedShapePoints,
                 tools: tools,
-                wallFeatures: typeof wallFeatures !== 'undefined' ? wallFeatures : []
+                wallFeatures: normalizedWallFeatures
             };
         }
 
@@ -3745,7 +3835,11 @@
         // physicalHeight/layer) — shared by loading a saved/undo layout and by pasting a copy,
         // so both reconstruct nodes identically (correct drag/rotate/resize wiring, correct
         // blast-gate styling) instead of drifting out of sync.
+        // t.left/top/width/height are always in the BASE_PPI-normalized space serialize/
+        // nodeToDescriptor produce — converted here to whatever ppi is live right now, so a
+        // restored/pasted node always lands correctly regardless of the current zoom level.
         function createPlacedNodeFromDescriptor(t) {
+            const zoomFactor = ppi / BASE_PPI;
             const toolNode = document.createElement('div');
             toolNode.className = 'placed-tool-node';
             if (t.cabType) {
@@ -3756,13 +3850,15 @@
             if (t.label === '4in Duct Elbow' || t.label === '6in Duct Elbow') toolNode.classList.add('elbow-node');
             toolNode.dataset.height = t.physicalHeight || '';
             toolNode.dataset.layer = t.layer || (t.cabType ? 'cabinets' : 'tools');
-            toolNode.style.width = t.width + 'px';
-            toolNode.style.height = t.height + 'px';
-            toolNode.style.left = t.left + 'px';
-            toolNode.style.top = t.top + 'px';
+            const w = t.width * zoomFactor;
+            const h = t.height * zoomFactor;
+            toolNode.style.width = w + 'px';
+            toolNode.style.height = h + 'px';
+            toolNode.style.left = (t.left * zoomFactor) + 'px';
+            toolNode.style.top = (t.top * zoomFactor) + 'px';
             toolNode.dataset.toolName = t.label;
             buildPlacedNodeContent(toolNode, t.displayName || t.label, t.displayDims || '');
-            makeElementInteractive(toolNode, t.width, t.height);
+            makeElementInteractive(toolNode, w, h);
             makeElementRotatable(toolNode);
             if (t.cabType) makeElementResizable(toolNode);
             if (t.rotation) {
@@ -3774,16 +3870,18 @@
             return toolNode;
         }
 
-        // Reads a live placed node back into the same descriptor shape, for copy/paste.
+        // Reads a live placed node back into the same descriptor shape, for copy/paste —
+        // normalized to BASE_PPI so it's consistent with createPlacedNodeFromDescriptor's input.
         function nodeToDescriptor(node) {
+            const normFactor = BASE_PPI / ppi;
             return {
                 label: node.dataset.toolName || '',
                 displayName: node.dataset.displayName || node.dataset.toolName || '',
                 displayDims: node.dataset.displayDims || '',
-                left: parseFloat(node.style.left) || 0,
-                top: parseFloat(node.style.top) || 0,
-                width: parseFloat(node.style.width) || 0,
-                height: parseFloat(node.style.height) || 0,
+                left: (parseFloat(node.style.left) || 0) * normFactor,
+                top: (parseFloat(node.style.top) || 0) * normFactor,
+                width: (parseFloat(node.style.width) || 0) * normFactor,
+                height: (parseFloat(node.style.height) || 0) * normFactor,
                 rotation: parseFloat(node.dataset.rotation) || 0,
                 cabType: node.dataset.cabType || null,
                 physicalHeight: node.dataset.height || null,
@@ -3792,14 +3890,17 @@
         }
 
         // Pastes a copy of whatever descriptor is on the clipboard, offset from the original
-        // so it doesn't land exactly on top of it, then selects the new copy.
+        // so it doesn't land exactly on top of it, then selects the new copy. The offset and
+        // board bounds are done in the same normalized space as the descriptor itself.
         function pasteClipboardNode() {
             if (!clipboardDescriptor) return;
             pushUndoSnapshot();
             const t = { ...clipboardDescriptor };
             const offset = 20;
-            t.left = Math.max(0, Math.min(t.left + offset, board.clientWidth - t.width));
-            t.top = Math.max(0, Math.min(t.top + offset, board.clientHeight - t.height));
+            const normBoardW = board.clientWidth * (BASE_PPI / ppi);
+            const normBoardH = board.clientHeight * (BASE_PPI / ppi);
+            t.left = Math.max(0, Math.min(t.left + offset, normBoardW - t.width));
+            t.top = Math.max(0, Math.min(t.top + offset, normBoardH - t.height));
             const node = createPlacedNodeFromDescriptor(t);
             board.appendChild(node);
             applyLayerVisibility();
@@ -3822,8 +3923,12 @@
             document.getElementById('inputLength').disabled = false;
             updateWorkshopGridSize();
 
+            // Stored shapePoints/wallFeatures positions are normalized to BASE_PPI (see
+            // serializeCurrentLayout) — convert to whatever ppi is live right now.
+            const zoomFactor = ppi / BASE_PPI;
+
             if (layout.shapeMode === 'custom' && layout.shapePoints && layout.shapePoints.length >= 3) {
-                shapePoints = layout.shapePoints;
+                shapePoints = layout.shapePoints.map(p => ({ x: p.x * zoomFactor, y: p.y * zoomFactor }));
                 shapeMode = 'custom';
                 applyCustomShape();
             } else {
@@ -3835,7 +3940,7 @@
             });
 
             if (typeof renderWallFeatures === 'function') {
-                wallFeatures = (layout.wallFeatures || []).map(f => ({ ...f }));
+                wallFeatures = (layout.wallFeatures || []).map(f => ({ ...f, x: f.x * zoomFactor, y: f.y * zoomFactor }));
                 renderWallFeatures();
             }
 
@@ -5173,6 +5278,7 @@
         initMeasureTool();
         initWallFeatures();
         initOutletHeightModal();
+        initZoomControls();
         document.getElementById('pageNavSelect').addEventListener('change', (e) => { window.location.href = e.target.value; });
         initDraggablePanels();
         initNewLayoutModal();

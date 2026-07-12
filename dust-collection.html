@@ -581,6 +581,40 @@
         .panel-toggle-chevron { font-size: 10px; color: #6b7280; transition: transform 0.15s ease; flex-shrink: 0; }
         .floating-panel:not(.collapsed) .panel-toggle-chevron { transform: rotate(90deg); }
 
+        .zoom-toolbar {
+            position: fixed;
+            top: 153px;
+            left: 320px;
+            z-index: 1500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .zoom-btn {
+            padding: 4px 12px;
+            line-height: 1.1;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            background-color: #ffffff;
+            font-size: 12px;
+            font-weight: 700;
+            color: #1e3a8a;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(15, 23, 42, 0.12);
+        }
+
+        .zoom-btn:hover { background-color: #eef2ff; border-color: #2563eb; }
+
+        .zoom-level-display {
+            font-size: 11px;
+            font-weight: 700;
+            color: #1e3a8a;
+            min-width: 38px;
+            text-align: center;
+            cursor: help;
+        }
+
         .calc-hint {
             font-size: 11px;
             color: #6b7280;
@@ -709,6 +743,13 @@
         <div id="dustCategoryItems"></div>
     </div>
 
+    <div class="zoom-toolbar" id="zoomToolbar">
+        <button type="button" id="zoomOutBtn" class="zoom-btn" title="Zoom out">&#8722;</button>
+        <span class="zoom-level-display" id="zoomLevelDisplay" title="Ctrl+scroll to zoom">100%</span>
+        <button type="button" id="zoomInBtn" class="zoom-btn" title="Zoom in">&#43;</button>
+        <button type="button" id="zoomResetBtn" class="zoom-btn" title="Reset zoom to 100%">Reset</button>
+    </div>
+
     <div id="canvas-view-space">
         <div id="emptyShopState" class="placeholder-box" style="display:none;">
             <div class="placeholder-icon">&#128168;</div>
@@ -798,7 +839,9 @@
         const AUTH_KEY = 'kerphSignedIn';
         const TOOL_STATUS_KEY = 'kerphToolStatus';
         const CURRENT_LAYOUT_KEY = 'kerphCurrentLayout';
-        const ppi = 30;
+        const BASE_PPI = 30;
+        let ppi = 30;
+        let zoomLevel = 1;
 
         function showToast(message) {
             const nudge = document.getElementById('upgradeNudge');
@@ -1178,7 +1221,11 @@
 
         // Same descriptor shape serializeCurrentLayout() uses on the Workshop Layout Planner,
         // so nodes round-trip identically between the two pages.
+        // t.left/top/width/height are always in BASE_PPI-normalized space (see
+        // nodeToDescriptor and the shared kerphCurrentLayout format) — converted here to
+        // whatever ppi is live right now, so a node always lands correctly regardless of zoom.
         function createPlacedNodeFromDescriptor(t, interactive) {
+            const zoomFactor = ppi / BASE_PPI;
             const el = document.createElement('div');
             el.className = 'placed-tool-node';
             if (t.cabType) el.classList.add('placed-cabinet-node', 'cabinet-' + t.cabType);
@@ -1186,10 +1233,12 @@
             if (t.label === '4in Duct Elbow' || t.label === '6in Duct Elbow') el.classList.add('elbow-node');
             el.dataset.height = t.physicalHeight || '';
             el.dataset.layer = t.layer || (t.cabType ? 'cabinets' : 'tools');
-            el.style.width = t.width + 'px';
-            el.style.height = t.height + 'px';
-            el.style.left = t.left + 'px';
-            el.style.top = t.top + 'px';
+            const w = t.width * zoomFactor;
+            const h = t.height * zoomFactor;
+            el.style.width = w + 'px';
+            el.style.height = h + 'px';
+            el.style.left = (t.left * zoomFactor) + 'px';
+            el.style.top = (t.top * zoomFactor) + 'px';
             el.dataset.toolName = t.label;
             buildPlacedNodeContent(el, t.displayName || t.label, t.displayDims || '');
             if (t.rotation) {
@@ -1197,7 +1246,7 @@
                 el.dataset.rotation = t.rotation;
             }
             if (interactive) {
-                makeElementInteractive(el, t.width, t.height);
+                makeElementInteractive(el, w, h);
                 makeElementRotatable(el);
             } else {
                 el.classList.add('reference-node');
@@ -1209,15 +1258,19 @@
             return el;
         }
 
+        // Reads a live placed node back into the shared descriptor shape, normalized to
+        // BASE_PPI so it's consistent with createPlacedNodeFromDescriptor's expected input
+        // (and with what Workshop Layout Planner writes to the same shared layout).
         function nodeToDescriptor(node) {
+            const normFactor = BASE_PPI / ppi;
             return {
                 label: node.dataset.toolName || '',
                 displayName: node.dataset.displayName || node.dataset.toolName || '',
                 displayDims: node.dataset.displayDims || '',
-                left: parseFloat(node.style.left) || 0,
-                top: parseFloat(node.style.top) || 0,
-                width: parseFloat(node.style.width) || 0,
-                height: parseFloat(node.style.height) || 0,
+                left: (parseFloat(node.style.left) || 0) * normFactor,
+                top: (parseFloat(node.style.top) || 0) * normFactor,
+                width: (parseFloat(node.style.width) || 0) * normFactor,
+                height: (parseFloat(node.style.height) || 0) * normFactor,
                 rotation: parseFloat(node.dataset.rotation) || 0,
                 cabType: node.dataset.cabType || null,
                 physicalHeight: node.dataset.height || null,
@@ -1288,6 +1341,54 @@
             }
         }
 
+        /* ---------- ZOOM (same approach as Workshop Layout Planner: ppi is a live variable,
+           updateBoardSize()/renderRulers() already re-derive purely from ppi + real-world feet
+           dimensions, so only the raw-pixel state — placed nodes, wall features, shape points —
+           needs proportional rescaling when ppi changes). ---------- */
+        function applyZoom(newZoomLevel) {
+            newZoomLevel = Math.max(0.5, Math.min(3, newZoomLevel));
+            const newPpi = BASE_PPI * newZoomLevel;
+            if (Math.abs(newPpi - ppi) < 0.001) return;
+
+            const scaleFactor = newPpi / ppi;
+            ppi = newPpi;
+            zoomLevel = newZoomLevel;
+
+            document.querySelectorAll('.placed-tool-node').forEach(el => {
+                el.style.left = (parseFloat(el.style.left) * scaleFactor) + 'px';
+                el.style.top = (parseFloat(el.style.top) * scaleFactor) + 'px';
+                el.style.width = (parseFloat(el.style.width) * scaleFactor) + 'px';
+                el.style.height = (parseFloat(el.style.height) * scaleFactor) + 'px';
+            });
+
+            wallFeatures.forEach(f => { f.x *= scaleFactor; f.y *= scaleFactor; });
+
+            if (shapeModeIsCustom && shapePoints.length) {
+                shapePoints = shapePoints.map(p => ({ x: p.x * scaleFactor, y: p.y * scaleFactor }));
+            }
+
+            updateBoardSize();
+            renderWallFeaturesFromShared();
+
+            const display = document.getElementById('zoomLevelDisplay');
+            if (display) display.textContent = Math.round(zoomLevel * 100) + '%';
+        }
+
+        function initZoomControls() {
+            document.getElementById('zoomInBtn').addEventListener('click', () => applyZoom(zoomLevel + 0.25));
+            document.getElementById('zoomOutBtn').addEventListener('click', () => applyZoom(zoomLevel - 0.25));
+            document.getElementById('zoomResetBtn').addEventListener('click', () => applyZoom(1));
+
+            const viewport = document.getElementById('canvas-view-space');
+            if (viewport) {
+                viewport.addEventListener('wheel', (e) => {
+                    if (!e.ctrlKey) return;
+                    e.preventDefault();
+                    applyZoom(zoomLevel + (e.deltaY < 0 ? 0.1 : -0.1));
+                }, { passive: false });
+            }
+        }
+
         // Outlets are the one wall-feature type this page can also place/remove (they matter
         // for both dust collector power and, eventually, lighting circuits) — every other
         // type (door/window/switch/panel/minisplit) is shown for reference only, unchanged
@@ -1296,7 +1397,8 @@
 
         function saveWallFeatureChanges() {
             if (!sharedLayout) return;
-            sharedLayout.wallFeatures = wallFeatures;
+            const normFactor = BASE_PPI / ppi;
+            sharedLayout.wallFeatures = wallFeatures.map(f => ({ ...f, x: f.x * normFactor, y: f.y * normFactor }));
             localStorage.setItem(CURRENT_LAYOUT_KEY, JSON.stringify(sharedLayout));
         }
 
@@ -1348,7 +1450,9 @@
                 const interactive = t.layer === 'dust-collection';
                 board.appendChild(createPlacedNodeFromDescriptor(t, interactive));
             });
-            wallFeatures = sharedLayout.wallFeatures || [];
+            // wallFeatures x/y are stored BASE_PPI-normalized, same as tools.
+            const zoomFactor = ppi / BASE_PPI;
+            wallFeatures = (sharedLayout.wallFeatures || []).map(f => ({ ...f, x: f.x * zoomFactor, y: f.y * zoomFactor }));
             renderWallFeaturesFromShared();
         }
 
@@ -1375,7 +1479,9 @@
             shopLengthFeet = parseFloat(sharedLayout.lengthFeet) || 24;
             shopScale = parseFloat(sharedLayout.scale) || 1;
             shapeModeIsCustom = sharedLayout.shapeMode === 'custom' && sharedLayout.shapePoints && sharedLayout.shapePoints.length >= 3;
-            shapePoints = shapeModeIsCustom ? sharedLayout.shapePoints : [];
+            // shapePoints are stored BASE_PPI-normalized, same as tools/wallFeatures.
+            const shapeZoomFactor = ppi / BASE_PPI;
+            shapePoints = shapeModeIsCustom ? sharedLayout.shapePoints.map(p => ({ x: p.x * shapeZoomFactor, y: p.y * shapeZoomFactor })) : [];
 
             updateBoardSize();
             renderFromSharedLayout();
@@ -1527,11 +1633,14 @@
                 snapX = Math.max(0, Math.min(snapX, board.clientWidth - toolW));
                 snapY = Math.max(0, Math.min(snapY, board.clientHeight - toolH));
 
+                // Snapping happens in live-zoom pixels above; the descriptor itself is stored
+                // BASE_PPI-normalized (createPlacedNodeFromDescriptor converts it right back).
+                const normFactor = BASE_PPI / ppi;
                 const descriptor = {
                     label: internalDragData.name,
                     displayName: internalDragData.name,
                     displayDims: `${internalDragData.width.toFixed(1)}' x ${internalDragData.length.toFixed(1)}'`,
-                    left: snapX, top: snapY, width: toolW, height: toolH,
+                    left: snapX * normFactor, top: snapY * normFactor, width: toolW * normFactor, height: toolH * normFactor,
                     rotation: 0, cabType: null, physicalHeight: internalDragData.height, layer: 'dust-collection'
                 };
                 const node = createPlacedNodeFromDescriptor(descriptor, true);
@@ -1559,8 +1668,10 @@
             } else if ((e.ctrlKey || e.metaKey) && key === 'v' && clipboardDescriptor) {
                 e.preventDefault();
                 const t = { ...clipboardDescriptor };
-                t.left = Math.max(0, Math.min(t.left + 20, board.clientWidth - t.width));
-                t.top = Math.max(0, Math.min(t.top + 20, board.clientHeight - t.height));
+                const normBoardW = board.clientWidth * (BASE_PPI / ppi);
+                const normBoardH = board.clientHeight * (BASE_PPI / ppi);
+                t.left = Math.max(0, Math.min(t.left + 20, normBoardW - t.width));
+                t.top = Math.max(0, Math.min(t.top + 20, normBoardH - t.height));
                 const node = createPlacedNodeFromDescriptor(t, true);
                 board.appendChild(node);
                 selectNode(node);
@@ -1750,6 +1861,7 @@
         loadSharedLayout();
         initOutletHeightModal();
         initOutletPanel();
+        initZoomControls();
         initCalculator();
         makeDraggable(document.getElementById('calcPanel'), document.getElementById('calcPanelHandle'), () => {
             document.getElementById('calcPanel').classList.toggle('collapsed');
