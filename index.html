@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kerph - Workshop &amp; Project Tools</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            background-color: #eef1f6;
+            color: #0f172a;
+            min-height: 100vh;
+        }
+
+        header {
+            background-color: #ffffff;
+            background-image:
+                linear-gradient(135deg, #ffffff 0%, #eef2ff 60%, #e0e7ff 100%),
+                repeating-linear-gradient(120deg, rgba(30, 58, 138, 0.04) 0px, rgba(30, 58, 138, 0.04) 2px, transparent 2px, transparent 14px);
+            border-bottom: 2px solid #1e3a8a;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        .logo-image {
+            height: 90px;
+            width: auto;
+            object-fit: contain;
+        }
+
+        main {
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 56px 24px 80px;
+        }
+
+        .intro-title {
+            font-size: 28px;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 8px;
+        }
+
+        .intro-subtitle {
+            font-size: 15px;
+            color: #4b5563;
+            margin-bottom: 40px;
+            max-width: 640px;
+            line-height: 1.5;
+        }
+
+        .tool-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .tool-card {
+            display: block;
+            background-color: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 14px;
+            padding: 24px;
+            text-decoration: none;
+            color: inherit;
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
+            transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+        }
+
+        .tool-card:hover {
+            border-color: #1e3a8a;
+            box-shadow: 0 12px 24px -8px rgba(30, 58, 138, 0.25);
+            transform: translateY(-2px);
+        }
+
+        .tool-card-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            background-color: #e0e7ff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            margin-bottom: 16px;
+        }
+
+        .tool-card-title {
+            font-size: 17px;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tool-card-desc {
+            font-size: 13px;
+            color: #6b7280;
+            line-height: 1.5;
+        }
+
+        .badge-new {
+            background-color: #16a34a;
+            color: #ffffff;
+            font-size: 9px;
+            font-weight: 700;
+            padding: 2px 7px;
+            border-radius: 999px;
+            letter-spacing: 0.03em;
+            vertical-align: middle;
+        }
+
+        .tool-card-placeholder {
+            opacity: 0.55;
+            cursor: default;
+        }
+
+        .tool-card-placeholder:hover {
+            border-color: #cbd5e1;
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
+            transform: none;
+        }
+
+        .badge-soon {
+            background-color: #9ca3af;
+            color: #ffffff;
+            font-size: 9px;
+            font-weight: 700;
+            padding: 2px 7px;
+            border-radius: 999px;
+            letter-spacing: 0.03em;
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <img src="logo.png" alt="Kerph Logo" class="logo-image">
+    </header>
+
+    <main>
+        <div class="intro-title">Workshop &amp; project tools</div>
+        <div class="intro-subtitle">Pick a tool to get started. More will show up here over time.</div>
+
+        <div class="tool-grid">
+            <a href="workshop-planner.html" class="tool-card">
+                <div class="tool-card-icon">&#128736;</div>
+                <div class="tool-card-title">Workshop layout planner</div>
+                <div class="tool-card-desc">Lay out your shop floor to scale — tools, cabinets, dust collection, and lighting, all placed and sized for real.</div>
+            </a>
+
+            <a href="project-designer.html" class="tool-card">
+                <div class="tool-card-icon">&#128208;</div>
+                <div class="tool-card-title">Project designer <span class="badge-new">New</span></div>
+                <div class="tool-card-desc">Design a piece from individual panels and boards, and get an automatically generated cut list.</div>
+            </a>
+
+            <div class="tool-card tool-card-placeholder">
+                <div class="tool-card-icon">&#128736;</div>
+                <div class="tool-card-title">More tools <span class="badge-soon">Coming soon</span></div>
+                <div class="tool-card-desc">This page is set up to grow — new tools will show up here as they're built.</div>
+            </div>
+        </div>
+    </main>
+
+</body>
+</html>

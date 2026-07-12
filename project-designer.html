@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kerph - Project Designer</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            background-color: #eef1f6;
+            color: #0f172a;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+        }
+
+        header {
+            background-color: #ffffff;
+            background-image:
+                linear-gradient(135deg, #ffffff 0%, #eef2ff 60%, #e0e7ff 100%),
+                repeating-linear-gradient(120deg, rgba(30, 58, 138, 0.04) 0px, rgba(30, 58, 138, 0.04) 2px, transparent 2px, transparent 14px);
+            border-bottom: 2px solid #1e3a8a;
+            padding: 0 24px;
+            height: 70px;
+            width: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .home-link {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo-image {
+            height: 46px;
+            width: auto;
+            object-fit: contain;
+        }
+
+        .page-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #1e3a8a;
+            padding-left: 16px;
+            border-left: 1px solid #cbd5e1;
+        }
+
+        .nav-link {
+            font-size: 12px;
+            font-weight: 700;
+            color: #4b5563;
+            text-decoration: none;
+            padding: 8px 12px;
+            border-radius: 8px;
+        }
+
+        .nav-link:hover {
+            background-color: #eef2ff;
+            color: #1e3a8a;
+        }
+
+        /* ---------- LAYOUT SKELETON ----------
+           Mirrors the sidebar + main-canvas structure of workshop-planner.html so the two
+           tools feel like the same product family. Nothing in here is wired up yet — this
+           is the organizational scaffold to build the real panel/board designer into,
+           discussed as its own multi-session feature, not a one-shot build. */
+        #sidebar-panel {
+            position: absolute;
+            top: 70px;
+            left: 0;
+            width: 300px;
+            height: calc(100vh - 70px);
+            background-color: #ffffff;
+            border-right: 1px solid #cbd5e1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .sidebar-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #6b7280;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .empty-hint {
+            font-size: 12px;
+            color: #9ca3af;
+            font-style: italic;
+            line-height: 1.5;
+            margin-bottom: 16px;
+        }
+
+        .mini-btn {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            background-color: #f9fafb;
+            font-size: 12px;
+            font-weight: 700;
+            color: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        #canvas-area {
+            position: absolute;
+            top: 70px;
+            left: 300px;
+            width: calc(100vw - 300px);
+            height: calc(100vh - 70px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .placeholder-box {
+            max-width: 420px;
+            text-align: center;
+            padding: 32px;
+        }
+
+        .placeholder-icon {
+            font-size: 40px;
+            margin-bottom: 16px;
+        }
+
+        .placeholder-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 8px;
+        }
+
+        .placeholder-desc {
+            font-size: 13px;
+            color: #6b7280;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-left">
+            <a href="index.html" class="home-link" title="Kerph Home">
+                <img src="logo.png" alt="Kerph Logo" class="logo-image">
+            </a>
+            <div class="page-title">Project Designer</div>
+        </div>
+        <a href="workshop-planner.html" class="nav-link">Workshop Layout Planner &#8594;</a>
+    </header>
+
+    <div id="sidebar-panel">
+        <div class="sidebar-title">Panels</div>
+        <div class="empty-hint" id="panelListEmptyHint">No panels yet. This is where individual boards (sides, shelves, panels — each with a width, height, thickness, and material) will be defined and listed.</div>
+        <div id="panelList"></div>
+        <button type="button" class="mini-btn" id="addPanelBtn" disabled>+ Add Panel (coming soon)</button>
+    </div>
+
+    <div id="canvas-area">
+        <div class="placeholder-box">
+            <div class="placeholder-icon">&#128208;</div>
+            <div class="placeholder-title">Project designer — coming soon</div>
+            <div class="placeholder-desc">This is where a project gets assembled from the panels defined on the left, with a live preview and an automatically generated cut list.</div>
+        </div>
+    </div>
+
+    <script>
+        /* ---------- DATA MODEL (scaffold only — not yet wired to any UI) ----------
+           Mirrors the shape used by the tool-database guide's cut-list discussion: each
+           panel is a discrete board with real dimensions, so a cut list is never "derived"
+           from anything ambiguous — it's just this array, formatted.
+
+           panels: [{
+               id: string,
+               name: string,          // e.g. "Left side panel"
+               widthIn: number,
+               heightIn: number,
+               thicknessIn: number,
+               material: string,      // e.g. "3/4in Plywood"
+               qty: number,
+               x, y, z: number        // position once assembly/placement exists
+           }, ...]
+        */
+        let panels = [];
+
+        // TODO: renderPanelList() — draw `panels` into #panelList, same list-item pattern
+        // as workshop-planner.html's tool-box-item cards.
+
+        // TODO: renderCanvas() — live preview of the assembled project. Likely a Three.js
+        // scene per the CAD-scope discussion (simple box geometry per panel, not full CAD).
+
+        // TODO: generateCutList() — group `panels` by identical dimensions/material/thickness
+        // (same aggregation the mockup preview showed), output the cut list table.
+    </script>
+
+</body>
+</html>
