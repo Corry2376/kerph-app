@@ -317,14 +317,19 @@
             filter: drop-shadow(0 18px 30px rgba(15, 23, 42, 0.5));
         }
 
-        .page-title {
+        .page-title-select {
             font-size: 15px;
             font-weight: 700;
             color: #1e3a8a;
-            padding-left: 16px;
+            padding: 6px 6px 6px 16px;
+            border: none;
             border-left: 1px solid #cbd5e1;
+            background-color: transparent;
+            cursor: pointer;
             white-space: nowrap;
         }
+
+        .page-title-select:hover { background-color: #eef2ff; border-radius: 4px; }
 
         /* FIXED STRUCTURE SIDEBAR */
         #sidebar-panel {
@@ -1323,7 +1328,13 @@
                     <img src="logo.png" alt="Kerph Logo" class="logo-image">
                 </a>
             </div>
-            <div class="page-title">Workshop Layout Planner</div>
+            <select class="page-title-select" id="pageNavSelect">
+                <option value="index.html">Home</option>
+                <option value="workshop-planner.html" selected>Workshop Layout Planner</option>
+                <option value="project-designer.html">Project Designer</option>
+                <option value="cutlist-optimizer.html">Cut List Optimizer</option>
+                <option value="dust-collection.html">Dust Collection</option>
+            </select>
         </div>
         <div class="header-controls">
             <div class="header-field">
@@ -5096,6 +5107,7 @@
         initMeasureTool();
         initWallFeatures();
         initOutletHeightModal();
+        document.getElementById('pageNavSelect').addEventListener('change', (e) => { window.location.href = e.target.value; });
         initDraggablePanels();
         initNewLayoutModal();
         initUnitToggle();
