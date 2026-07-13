@@ -496,20 +496,24 @@
 
         /* Band thickness is tuned per size class so the fitting's drawn "pipe" reads at the
            same real thickness as the straight duct it connects to. */
+        /* Arc is centered on the bottom-left corner so the band crosses the left edge at
+           its exact midpoint and the bottom edge at its exact midpoint — those two points
+           are this piece's connection ports (see DUCT_PORTS). */
         .placed-tool-node.elbow-node.fitting-4in {
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M4,40 A36,36 0 0 1 40,4 L17,4 A13,13 0 0 0 4,17 Z' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5'/%3E%3C/svg%3E");
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M0,8.5 A31.5,31.5 0 0 1 31.5,40 L8.5,40 A8.5,8.5 0 0 0 0,31.5 Z' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5'/%3E%3C/svg%3E");
         }
 
         .placed-tool-node.elbow-node.fitting-6in {
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M4,40 A36,36 0 0 1 40,4 L15,4 A11,11 0 0 0 4,15 Z' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5'/%3E%3C/svg%3E");
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M0,7.5 A32.5,32.5 0 0 1 32.5,40 L7.5,40 A7.5,7.5 0 0 0 0,32.5 Z' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5'/%3E%3C/svg%3E");
         }
 
+        /* Branch rects rotate exactly 45deg to land on this piece's branch ports. */
         .placed-tool-node.y-joint-node.fitting-4in {
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect x='10' y='18' width='20' height='22' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5'/%3E%3Crect x='10' y='0' width='20' height='26' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5' transform='rotate(-32 20 20)'/%3E%3Crect x='10' y='0' width='20' height='26' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5' transform='rotate(32 20 20)'/%3E%3C/svg%3E");
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect x='10' y='18' width='20' height='22' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5'/%3E%3Crect x='10' y='0' width='20' height='26' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5' transform='rotate(-45 20 20)'/%3E%3Crect x='10' y='0' width='20' height='26' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5' transform='rotate(45 20 20)'/%3E%3C/svg%3E");
         }
 
         .placed-tool-node.y-joint-node.fitting-6in {
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect x='9' y='18' width='22' height='22' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5'/%3E%3Crect x='9' y='0' width='22' height='26' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5' transform='rotate(-32 20 20)'/%3E%3Crect x='9' y='0' width='22' height='26' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5' transform='rotate(32 20 20)'/%3E%3C/svg%3E");
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect x='9' y='18' width='22' height='22' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5'/%3E%3Crect x='9' y='0' width='22' height='26' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5' transform='rotate(-45 20 20)'/%3E%3Crect x='9' y='0' width='22' height='26' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5' transform='rotate(45 20 20)'/%3E%3C/svg%3E");
         }
 
         .placed-tool-node.t-joint-node.fitting-4in {
@@ -1311,6 +1315,122 @@
             return best;
         }
 
+        // ---------- MAGNETIC PORT SNAPPING (duct / elbow / T-joint / Y-joint / blast gate) ----------
+        // Same system as Workshop Layout Planner — see the comment there for the full design
+        // rationale. Every flow-through fitting has "ports" (a point + facing direction) in
+        // local fractional coordinates; a piece dropped or dragged near a compatible port
+        // rotates and repositions so the two ports coincide and face each other exactly.
+        const DUCT_PORTS = {
+            duct: [{ fx: 0, fy: 0.5, angle: 180 }, { fx: 1, fy: 0.5, angle: 0 }],
+            blastgate: [{ fx: 0, fy: 0.5, angle: 180 }, { fx: 1, fy: 0.5, angle: 0 }],
+            elbow: [{ fx: 0, fy: 0.5, angle: 180 }, { fx: 0.5, fy: 1, angle: 90 }],
+            tjoint: [{ fx: 0, fy: 0.5, angle: 180 }, { fx: 1, fy: 0.5, angle: 0 }, { fx: 0.5, fy: 1, angle: 90 }],
+            yjoint: [{ fx: 0.5, fy: 1, angle: 90 }, { fx: 0.8536, fy: 0.1464, angle: 315 }, { fx: 0.1464, fy: 0.1464, angle: 225 }]
+        };
+
+        function getPortItemType(name) {
+            if (!name) return null;
+            if (name === 'Blast Gate' || name === '6in Blast Gate') return 'blastgate';
+            if (name.includes('Duct Elbow')) return 'elbow';
+            if (name.includes('Y-Joint')) return 'yjoint';
+            if (name.includes('T-Joint')) return 'tjoint';
+            if (name.includes('Dust Duct')) return 'duct';
+            return null;
+        }
+
+        function getDuctSizeClass(name) {
+            return name && name.startsWith('6in') ? '6in' : '4in';
+        }
+
+        function getWorldPorts(type, left, top, w, h, rotationDeg) {
+            const localPorts = DUCT_PORTS[type];
+            if (!localPorts) return [];
+            const cx = left + w / 2, cy = top + h / 2;
+            const rad = rotationDeg * Math.PI / 180;
+            const cos = Math.cos(rad), sin = Math.sin(rad);
+            return localPorts.map(p => {
+                const rx = p.fx * w - w / 2;
+                const ry = p.fy * h - h / 2;
+                return {
+                    x: cx + (rx * cos - ry * sin),
+                    y: cy + (rx * sin + ry * cos),
+                    angle: (p.angle + rotationDeg + 360) % 360
+                };
+            });
+        }
+
+        const PORT_SNAP_PX = 18;
+
+        function findPortSnap(type, sizeClass, left, top, w, h, rotationDeg, excludeEl) {
+            const candidatePorts = getWorldPorts(type, left, top, w, h, rotationDeg);
+            if (!candidatePorts.length) return null;
+
+            const others = Array.from(document.querySelectorAll('.placed-tool-node'))
+                .filter(el => el !== excludeEl)
+                .map(el => ({ el, type: getPortItemType(el.dataset.toolName), sizeClass: getDuctSizeClass(el.dataset.toolName) }))
+                .filter(o => o.type && o.sizeClass === sizeClass);
+
+            let best = null, bestDist = PORT_SNAP_PX;
+            others.forEach(o => {
+                const oLeft = parseFloat(o.el.style.left), oTop = parseFloat(o.el.style.top);
+                const oW = parseFloat(o.el.style.width), oH = parseFloat(o.el.style.height);
+                const oRotation = parseFloat(o.el.dataset.rotation) || 0;
+                const targetPorts = getWorldPorts(o.type, oLeft, oTop, oW, oH, oRotation);
+                candidatePorts.forEach((cp, ci) => {
+                    targetPorts.forEach(tp => {
+                        const d = Math.hypot(cp.x - tp.x, cp.y - tp.y);
+                        if (d < bestDist) { bestDist = d; best = { candidateIndex: ci, target: tp }; }
+                    });
+                });
+            });
+            if (!best) return null;
+
+            const desiredAngle = (best.target.angle + 180) % 360;
+            const currentAngle = candidatePorts[best.candidateIndex].angle;
+            const newRotation = (rotationDeg + (desiredAngle - currentAngle) + 360) % 360;
+
+            const rotatedPorts = getWorldPorts(type, left, top, w, h, newRotation);
+            const snappedPort = rotatedPorts[best.candidateIndex];
+            return {
+                left: left + (best.target.x - snappedPort.x),
+                top: top + (best.target.y - snappedPort.y),
+                rotation: newRotation
+            };
+        }
+
+        // Applies whichever snap rule fits a dust-collection node — port snapping for
+        // flow-through fittings, centerline alignment for brackets.
+        function applyDustCollectionSnap(el) {
+            const name = el.dataset.toolName;
+            if (!name) return;
+            const left = parseFloat(el.style.left), top = parseFloat(el.style.top);
+            const w = parseFloat(el.style.width), h = parseFloat(el.style.height);
+
+            if (name.includes('Pipe Bracket')) {
+                const alignment = findNearbyDuctAlignment(left + w / 2, top + h / 2);
+                if (!alignment) return;
+                if (alignment.axis === 'y') el.style.top = (alignment.value - h / 2) + 'px';
+                else el.style.left = (alignment.value - w / 2) + 'px';
+                el.style.transform = `rotate(${alignment.rotation}deg)`;
+                el.dataset.rotation = alignment.rotation;
+                const readout = el.querySelector('.rotate-readout');
+                if (readout) readout.innerText = `${alignment.rotation}°`;
+                return;
+            }
+
+            const type = getPortItemType(name);
+            if (!type) return;
+            const rotation = parseFloat(el.dataset.rotation) || 0;
+            const snap = findPortSnap(type, getDuctSizeClass(name), left, top, w, h, rotation, el);
+            if (!snap) return;
+            el.style.left = snap.left + 'px';
+            el.style.top = snap.top + 'px';
+            el.style.transform = `rotate(${snap.rotation}deg)`;
+            el.dataset.rotation = snap.rotation;
+            const readout = el.querySelector('.rotate-readout');
+            if (readout) readout.innerText = `${Math.round(snap.rotation)}°`;
+        }
+
         function getRotatedAabb(wPx, hPx, angleDeg) {
             const rad = angleDeg * Math.PI / 180;
             const visualW = Math.abs(wPx * Math.cos(rad)) + Math.abs(hPx * Math.sin(rad));
@@ -1404,7 +1524,10 @@
 
             document.addEventListener('mouseup', () => {
                 if (activeDrag && !moved) selectNode(el);
-                if (activeDrag && moved) saveDustCollectionChanges();
+                if (activeDrag && moved) {
+                    applyDustCollectionSnap(el);
+                    saveDustCollectionChanges();
+                }
                 activeDrag = false;
             });
         }
@@ -1905,23 +2028,6 @@
                 snapX = Math.max(0, Math.min(snapX, board.clientWidth - toolW));
                 snapY = Math.max(0, Math.min(snapY, board.clientHeight - toolH));
 
-                // Blast gates/brackets need to land exactly centered on the duct they attach
-                // to — a nearby duct magnetically pulls the item onto its exact centerline
-                // + matching rotation, same as Workshop Layout Planner.
-                let fittingRotation = 0;
-                if (internalDragData.name === 'Blast Gate' || internalDragData.name === '6in Blast Gate' ||
-                    internalDragData.name.includes('Pipe Bracket')) {
-                    const alignment = findNearbyDuctAlignment(mouseX, mouseY);
-                    if (alignment) {
-                        if (alignment.axis === 'y') {
-                            snapY = alignment.value - toolH / 2;
-                        } else {
-                            snapX = alignment.value - toolW / 2;
-                        }
-                        fittingRotation = alignment.rotation;
-                    }
-                }
-
                 // Snapping happens in live-zoom pixels above; the descriptor itself is stored
                 // BASE_PPI-normalized (createPlacedNodeFromDescriptor converts it right back).
                 const normFactor = BASE_PPI / ppi;
@@ -1930,9 +2036,10 @@
                     displayName: internalDragData.name,
                     displayDims: `${internalDragData.width.toFixed(1)}' x ${internalDragData.length.toFixed(1)}'`,
                     left: snapX * normFactor, top: snapY * normFactor, width: toolW * normFactor, height: toolH * normFactor,
-                    rotation: fittingRotation, cabType: null, physicalHeight: internalDragData.height, layer: 'dust-collection'
+                    rotation: 0, cabType: null, physicalHeight: internalDragData.height, layer: 'dust-collection'
                 };
                 const node = createPlacedNodeFromDescriptor(descriptor, true);
+                applyDustCollectionSnap(node);
                 board.appendChild(node);
                 selectNode(node);
                 internalDragData = null;

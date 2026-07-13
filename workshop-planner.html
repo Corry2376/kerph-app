@@ -1290,20 +1290,27 @@
         /* Band thickness is tuned per size class so the fitting's drawn "pipe" reads at the
            same real thickness as the straight duct it connects to (4in duct thickness/box
            ratio differs from 6in's, so one fixed SVG can't match both). */
+        /* Arc is centered on the bottom-left corner so the band crosses the left edge at
+           its exact midpoint and the bottom edge at its exact midpoint — those two points
+           are this piece's connection ports (see DUCT_PORTS), so the drawn pipe now lines
+           up exactly with where a duct magnetically snaps onto it. */
         .placed-tool-node.elbow-node.fitting-4in {
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M4,40 A36,36 0 0 1 40,4 L17,4 A13,13 0 0 0 4,17 Z' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5'/%3E%3C/svg%3E");
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M0,8.5 A31.5,31.5 0 0 1 31.5,40 L8.5,40 A8.5,8.5 0 0 0 0,31.5 Z' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5'/%3E%3C/svg%3E");
         }
 
         .placed-tool-node.elbow-node.fitting-6in {
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M4,40 A36,36 0 0 1 40,4 L15,4 A11,11 0 0 0 4,15 Z' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5'/%3E%3C/svg%3E");
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M0,7.5 A32.5,32.5 0 0 1 32.5,40 L7.5,40 A7.5,7.5 0 0 0 0,32.5 Z' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5'/%3E%3C/svg%3E");
         }
 
+        /* Branch rects rotate exactly 45deg (not an arbitrary angle) so their outer tips
+           land precisely on this piece's branch ports (see DUCT_PORTS' yjoint entries),
+           which are themselves defined by rotating (0.5,0) 45deg around the (0.5,0.5) pivot. */
         .placed-tool-node.y-joint-node.fitting-4in {
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect x='10' y='18' width='20' height='22' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5'/%3E%3Crect x='10' y='0' width='20' height='26' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5' transform='rotate(-32 20 20)'/%3E%3Crect x='10' y='0' width='20' height='26' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5' transform='rotate(32 20 20)'/%3E%3C/svg%3E");
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect x='10' y='18' width='20' height='22' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5'/%3E%3Crect x='10' y='0' width='20' height='26' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5' transform='rotate(-45 20 20)'/%3E%3Crect x='10' y='0' width='20' height='26' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5' transform='rotate(45 20 20)'/%3E%3C/svg%3E");
         }
 
         .placed-tool-node.y-joint-node.fitting-6in {
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect x='9' y='18' width='22' height='22' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5'/%3E%3Crect x='9' y='0' width='22' height='26' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5' transform='rotate(-32 20 20)'/%3E%3Crect x='9' y='0' width='22' height='26' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5' transform='rotate(32 20 20)'/%3E%3C/svg%3E");
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect x='9' y='18' width='22' height='22' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5'/%3E%3Crect x='9' y='0' width='22' height='26' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5' transform='rotate(-45 20 20)'/%3E%3Crect x='9' y='0' width='22' height='26' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5' transform='rotate(45 20 20)'/%3E%3C/svg%3E");
         }
 
         .placed-tool-node.t-joint-node.fitting-4in {
@@ -2783,6 +2790,139 @@
             return best;
         }
 
+        // ---------- MAGNETIC PORT SNAPPING (duct / elbow / T-joint / Y-joint / blast gate) ----------
+        // Every flow-through dust-collection fitting has one or more "ports" — a point on its
+        // boundary plus the direction airflow exits there, defined in local fractional
+        // coordinates (0-1 of the item's own unrotated width/height) so they work at any size
+        // or zoom. Dragging a piece near another compatible piece's port rotates AND
+        // repositions it so the two ports land exactly on top of each other, facing one
+        // another — real end-to-end connection, not just a nearest-grid-line snap. Pipe
+        // brackets are deliberately excluded: they clamp perpendicular across a duct rather
+        // than connecting end-to-end, so they keep using the centerline alignment above.
+        const DUCT_PORTS = {
+            duct: [{ fx: 0, fy: 0.5, angle: 180 }, { fx: 1, fy: 0.5, angle: 0 }],
+            blastgate: [{ fx: 0, fy: 0.5, angle: 180 }, { fx: 1, fy: 0.5, angle: 0 }],
+            elbow: [{ fx: 0, fy: 0.5, angle: 180 }, { fx: 0.5, fy: 1, angle: 90 }],
+            tjoint: [{ fx: 0, fy: 0.5, angle: 180 }, { fx: 1, fy: 0.5, angle: 0 }, { fx: 0.5, fy: 1, angle: 90 }],
+            yjoint: [{ fx: 0.5, fy: 1, angle: 90 }, { fx: 0.8536, fy: 0.1464, angle: 315 }, { fx: 0.1464, fy: 0.1464, angle: 225 }]
+        };
+
+        function getPortItemType(name) {
+            if (!name) return null;
+            if (name === 'Blast Gate' || name === '6in Blast Gate') return 'blastgate';
+            if (name.includes('Duct Elbow')) return 'elbow';
+            if (name.includes('Y-Joint')) return 'yjoint';
+            if (name.includes('T-Joint')) return 'tjoint';
+            if (name.includes('Dust Duct')) return 'duct';
+            return null;
+        }
+
+        function getDuctSizeClass(name) {
+            return name && name.startsWith('6in') ? '6in' : '4in';
+        }
+
+        // Ports of a fitting placed at (left, top, w, h) and rotated rotationDeg, in board
+        // (world) pixel coordinates.
+        function getWorldPorts(type, left, top, w, h, rotationDeg) {
+            const localPorts = DUCT_PORTS[type];
+            if (!localPorts) return [];
+            const cx = left + w / 2, cy = top + h / 2;
+            const rad = rotationDeg * Math.PI / 180;
+            const cos = Math.cos(rad), sin = Math.sin(rad);
+            return localPorts.map(p => {
+                const rx = p.fx * w - w / 2;
+                const ry = p.fy * h - h / 2;
+                return {
+                    x: cx + (rx * cos - ry * sin),
+                    y: cy + (rx * sin + ry * cos),
+                    angle: (p.angle + rotationDeg + 360) % 360
+                };
+            });
+        }
+
+        const PORT_SNAP_PX = 18;
+
+        // Finds the nearest compatible port (same size class) on another placed fitting
+        // within range of any of this fitting's own ports, and returns the {left, top,
+        // rotation} it should snap to so the two ports coincide and face each other — or
+        // null if nothing is close enough. excludeEl lets an already-placed node dragged
+        // during repositioning skip matching against itself.
+        function findPortSnap(type, sizeClass, left, top, w, h, rotationDeg, excludeEl) {
+            const candidatePorts = getWorldPorts(type, left, top, w, h, rotationDeg);
+            if (!candidatePorts.length) return null;
+
+            const others = Array.from(document.querySelectorAll('.placed-tool-node'))
+                .filter(el => el !== excludeEl)
+                .map(el => ({ el, type: getPortItemType(el.dataset.toolName), sizeClass: getDuctSizeClass(el.dataset.toolName) }))
+                .filter(o => o.type && o.sizeClass === sizeClass);
+
+            let best = null, bestDist = PORT_SNAP_PX;
+            others.forEach(o => {
+                const oLeft = parseFloat(o.el.style.left), oTop = parseFloat(o.el.style.top);
+                const oW = parseFloat(o.el.style.width), oH = parseFloat(o.el.style.height);
+                const oRotation = parseFloat(o.el.dataset.rotation) || 0;
+                const targetPorts = getWorldPorts(o.type, oLeft, oTop, oW, oH, oRotation);
+                candidatePorts.forEach((cp, ci) => {
+                    targetPorts.forEach(tp => {
+                        const d = Math.hypot(cp.x - tp.x, cp.y - tp.y);
+                        if (d < bestDist) { bestDist = d; best = { candidateIndex: ci, target: tp }; }
+                    });
+                });
+            });
+            if (!best) return null;
+
+            // Rotate the candidate so its chosen port points the opposite way from the
+            // target port (flow into flow, like two pipe ends facing each other), then
+            // translate so the two ports land on exactly the same point.
+            const desiredAngle = (best.target.angle + 180) % 360;
+            const currentAngle = candidatePorts[best.candidateIndex].angle;
+            const newRotation = (rotationDeg + (desiredAngle - currentAngle) + 360) % 360;
+
+            const rotatedPorts = getWorldPorts(type, left, top, w, h, newRotation);
+            const snappedPort = rotatedPorts[best.candidateIndex];
+            return {
+                left: left + (best.target.x - snappedPort.x),
+                top: top + (best.target.y - snappedPort.y),
+                rotation: newRotation
+            };
+        }
+
+        // Applies whichever snap rule fits a dust-collection node — port snapping for
+        // flow-through fittings, centerline alignment for brackets — after it's dropped
+        // into place. Shared by the initial drag-and-drop placement and by repositioning
+        // an already-placed node, so alignment isn't a one-shot thing you can only get
+        // right on first placement.
+        function applyDustCollectionSnap(el) {
+            const name = el.dataset.toolName;
+            if (!name) return;
+            const left = parseFloat(el.style.left), top = parseFloat(el.style.top);
+            const w = parseFloat(el.style.width), h = parseFloat(el.style.height);
+
+            if (name.includes('Pipe Bracket')) {
+                const alignment = findNearbyDuctAlignment(left + w / 2, top + h / 2);
+                if (!alignment) return;
+                if (alignment.axis === 'y') el.style.top = (alignment.value - h / 2) + 'px';
+                else el.style.left = (alignment.value - w / 2) + 'px';
+                el.style.transform = `rotate(${alignment.rotation}deg)`;
+                el.dataset.rotation = alignment.rotation;
+                const readout = el.querySelector('.rotate-readout');
+                if (readout) readout.innerText = `${alignment.rotation}°`;
+                return;
+            }
+
+            const type = getPortItemType(name);
+            if (!type) return;
+            const rotation = parseFloat(el.dataset.rotation) || 0;
+            const snap = findPortSnap(type, getDuctSizeClass(name), left, top, w, h, rotation, el);
+            if (!snap) return;
+            el.style.left = snap.left + 'px';
+            el.style.top = snap.top + 'px';
+            el.style.transform = `rotate(${snap.rotation}deg)`;
+            el.dataset.rotation = snap.rotation;
+            const readout = el.querySelector('.rotate-readout');
+            if (readout) readout.innerText = `${Math.round(snap.rotation)}°`;
+        }
+
         function buildPlacedNodeContent(el, displayName, displayDims) {
             el.dataset.displayName = displayName;
             el.dataset.displayDims = displayDims || '';
@@ -2878,23 +3018,6 @@
                 snapX = Math.max(0, Math.min(snapX, board.clientWidth - toolW));
                 snapY = Math.max(0, Math.min(snapY, board.clientHeight - toolH));
 
-                // Blast gates/brackets need to land exactly centered on the duct they attach
-                // to — mouse precision alone was never reliable for that, so a nearby duct
-                // magnetically pulls the item onto its exact centerline + matching rotation.
-                let fittingRotation = null;
-                if (internalDragData.name === 'Blast Gate' || internalDragData.name === '6in Blast Gate' ||
-                    internalDragData.name.includes('Pipe Bracket')) {
-                    const alignment = findNearbyDuctAlignment(mouseX, mouseY);
-                    if (alignment) {
-                        if (alignment.axis === 'y') {
-                            snapY = alignment.value - toolH / 2;
-                        } else {
-                            snapX = alignment.value - toolW / 2;
-                        }
-                        fittingRotation = alignment.rotation;
-                    }
-                }
-
                 if (internalDragData.cabType) {
                     const testRect = rectFromCenter(snapX + toolW / 2, snapY + toolH / 2, toolW, toolH, 0);
                     if (overlapsProtectedItem(testRect, null, null)) {
@@ -2950,12 +3073,7 @@
                 makeElementInteractive(toolNode, toolW, toolH);
                 makeElementRotatable(toolNode);
                 if (internalDragData.cabType) makeElementResizable(toolNode);
-                if (fittingRotation) {
-                    toolNode.style.transform = `rotate(${fittingRotation}deg)`;
-                    toolNode.dataset.rotation = fittingRotation;
-                    const readout = toolNode.querySelector('.rotate-readout');
-                    if (readout) readout.innerText = `${fittingRotation}°`;
-                }
+                if (internalDragData.layer === 'dust-collection') applyDustCollectionSnap(toolNode);
                 board.appendChild(toolNode);
                 internalDragData = null;
                 applyLayerVisibility();
@@ -3170,6 +3288,7 @@
             });
             document.addEventListener('mouseup', () => {
                 if (activeDrag && !moved) selectNode(el);
+                if (activeDrag && moved && el.dataset.layer === 'dust-collection') applyDustCollectionSnap(el);
                 activeDrag = false;
             });
         }
