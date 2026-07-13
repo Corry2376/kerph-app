@@ -2567,6 +2567,31 @@
             }
         }
 
+        // Tool Storage catalog items whose label should read "longways" along the box's long
+        // axis instead of wrapping horizontally — several of these render taller than they
+        // are wide (a rolling cabinet's real footprint ends up narrow-and-tall on the grid),
+        // which crams 2 lines of text into a narrow width. Swapping the content box's layout
+        // dimensions before rotating -90deg is the standard trick for text that has to fit a
+        // box rotated from its natural reading orientation.
+        const TOOLBOX_NAMES = new Set([
+            'Milwaukee PACKOUT Rolling Box', 'DEWALT TOUGHSYSTEM 2.0', 'Craftsman 26in Rolling Cabinet',
+            'Kobalt 41in Rolling Chest', 'US General 56in Roller Cabinet', 'Husky 52in Mobile Workbench',
+            'Snap-on KRL1023 Classic 78', 'Husky 72in Tool Chest Combo'
+        ]);
+
+        function applyVerticalLabelIfNarrow(toolNode, name, wPx, hPx) {
+            if (!TOOLBOX_NAMES.has(name) || hPx <= wPx) return;
+            const content = toolNode.querySelector('.node-content');
+            if (!content) return;
+            content.style.inset = 'auto';
+            content.style.left = '50%';
+            content.style.top = '50%';
+            content.style.width = hPx + 'px';
+            content.style.height = wPx + 'px';
+            content.style.transform = 'translate(-50%, -50%) rotate(-90deg)';
+            toolNode.classList.add('vertical-label');
+        }
+
         function initDragAndDropEngine() {
             document.querySelectorAll('.tool-box-item').forEach(wireToolDragStart);
 
@@ -2655,6 +2680,7 @@
                     displayDims = `${internalDragData.width.toFixed(1)}' x ${internalDragData.length.toFixed(1)}'`;
                 }
                 buildPlacedNodeContent(toolNode, displayName, displayDims);
+                applyVerticalLabelIfNarrow(toolNode, internalDragData.name, toolW, toolH);
 
                 makeElementInteractive(toolNode, toolW, toolH);
                 makeElementRotatable(toolNode);
@@ -4000,6 +4026,7 @@
             toolNode.style.top = (t.top * zoomFactor) + 'px';
             toolNode.dataset.toolName = t.label;
             buildPlacedNodeContent(toolNode, t.displayName || t.label, t.displayDims || '');
+            applyVerticalLabelIfNarrow(toolNode, t.label, w, h);
             makeElementInteractive(toolNode, w, h);
             makeElementRotatable(toolNode);
             if (t.cabType) makeElementResizable(toolNode);
