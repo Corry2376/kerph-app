@@ -458,13 +458,27 @@
             box-shadow: inset 0 0 0 2px rgba(220, 38, 38, 0.25);
         }
 
-        .placed-tool-node.blast-gate-node .node-label {
-            font-size: 8px;
-            letter-spacing: -0.2px;
-        }
-
-        .placed-tool-node.blast-gate-node .node-dims {
-            display: none;
+        /* Side flag label — for footprints too small to hold readable text inside themselves
+           (blast gates, brackets), the label lives just outside the node's own box instead. */
+        .node-content.flag-content {
+            position: absolute;
+            inset: auto;
+            left: 100%;
+            top: 50%;
+            transform: translateY(-50%);
+            margin-left: 4px;
+            width: max-content;
+            max-width: 100px;
+            height: auto;
+            overflow: visible;
+            background-color: rgba(255, 255, 255, 0.92);
+            border: 1px solid #cbd5e1;
+            border-radius: 3px;
+            padding: 1px 5px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+            z-index: 550;
+            font-size: 9px;
+            white-space: nowrap;
         }
 
         .placed-tool-node.pipe-node {
@@ -480,16 +494,30 @@
             background-size: 100% 100%;
         }
 
-        .placed-tool-node.elbow-node {
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M4,38 A34,34 0 0 1 38,4 L24,4 A20,20 0 0 0 4,24 Z' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5'/%3E%3C/svg%3E");
+        /* Band thickness is tuned per size class so the fitting's drawn "pipe" reads at the
+           same real thickness as the straight duct it connects to. */
+        .placed-tool-node.elbow-node.fitting-4in {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M4,40 A36,36 0 0 1 40,4 L17,4 A13,13 0 0 0 4,17 Z' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5'/%3E%3C/svg%3E");
         }
 
-        .placed-tool-node.y-joint-node {
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect x='13' y='18' width='14' height='22' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5'/%3E%3Crect x='13' y='0' width='14' height='26' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5' transform='rotate(-32 20 20)'/%3E%3Crect x='13' y='0' width='14' height='26' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5' transform='rotate(32 20 20)'/%3E%3C/svg%3E");
+        .placed-tool-node.elbow-node.fitting-6in {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M4,40 A36,36 0 0 1 40,4 L15,4 A11,11 0 0 0 4,15 Z' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5'/%3E%3C/svg%3E");
         }
 
-        .placed-tool-node.t-joint-node {
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M0,13 L40,13 L40,27 L27,27 L27,40 L13,40 L13,27 L0,27 Z' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5'/%3E%3C/svg%3E");
+        .placed-tool-node.y-joint-node.fitting-4in {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect x='10' y='18' width='20' height='22' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5'/%3E%3Crect x='10' y='0' width='20' height='26' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5' transform='rotate(-32 20 20)'/%3E%3Crect x='10' y='0' width='20' height='26' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5' transform='rotate(32 20 20)'/%3E%3C/svg%3E");
+        }
+
+        .placed-tool-node.y-joint-node.fitting-6in {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect x='9' y='18' width='22' height='22' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5'/%3E%3Crect x='9' y='0' width='22' height='26' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5' transform='rotate(-32 20 20)'/%3E%3Crect x='9' y='0' width='22' height='26' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5' transform='rotate(32 20 20)'/%3E%3C/svg%3E");
+        }
+
+        .placed-tool-node.t-joint-node.fitting-4in {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M0,10 L40,10 L40,30 L30,30 L30,40 L10,40 L10,30 L0,30 Z' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5'/%3E%3C/svg%3E");
+        }
+
+        .placed-tool-node.t-joint-node.fitting-6in {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M0,9 L40,9 L40,31 L31,31 L31,40 L9,40 L9,31 L0,31 Z' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5'/%3E%3C/svg%3E");
         }
 
         .placed-tool-node.bracket-node {
@@ -1138,7 +1166,7 @@
                     { name: '4in Duct Elbow', title: '4" Duct Elbow (90°)', width: 0.6, length: 0.6, height: 7.0 },
                     { name: '4in Duct Y-Joint', title: '4" Duct Y-Joint', width: 0.7, length: 0.7, height: 7.0 },
                     { name: '4in Duct T-Joint', title: '4" Duct T-Joint', width: 0.7, length: 0.7, height: 7.0 },
-                    { name: '4in Pipe Bracket', title: '4" Pipe Bracket', width: 0.4, length: 0.15, height: 7.0 },
+                    { name: '4in Pipe Bracket', title: '4" Pipe Bracket', width: 0.5, length: 0.15, height: 7.0 },
                     { name: 'Blast Gate', title: '4" Blast Gate', width: 0.35, length: 0.5, height: 7.0 }
                 ]
             },
@@ -1153,7 +1181,7 @@
                     { name: '6in Duct Elbow', title: '6" Duct Elbow (90°)', width: 0.8, length: 0.8, height: 7.0 },
                     { name: '6in Duct Y-Joint', title: '6" Duct Y-Joint', width: 0.9, length: 0.9, height: 7.0 },
                     { name: '6in Duct T-Joint', title: '6" Duct T-Joint', width: 0.9, length: 0.9, height: 7.0 },
-                    { name: '6in Pipe Bracket', title: '6" Pipe Bracket', width: 0.55, length: 0.15, height: 7.0 },
+                    { name: '6in Pipe Bracket', title: '6" Pipe Bracket', width: 0.7, length: 0.15, height: 7.0 },
                     { name: '6in Blast Gate', title: '6" Blast Gate', width: 0.5, length: 0.6, height: 7.0 }
                 ]
             }
@@ -1224,28 +1252,62 @@
         function buildPlacedNodeContent(el, displayName, displayDims) {
             el.dataset.displayName = displayName;
             el.dataset.displayDims = displayDims || '';
-            el.innerHTML = `<div class="node-content"><span class="node-label"></span>${displayDims ? '<span class="node-dims"></span>' : ''}</div>`;
+            // Blast gates/brackets are too small a footprint to hold readable text inside
+            // themselves — .flag-content is styled to sit just outside the node as a small
+            // tag instead (see CSS), rather than clipped/shrunk to fit inside the icon.
+            const useFlag = el.classList.contains('blast-gate-node') || el.classList.contains('bracket-node');
+            el.innerHTML = `<div class="node-content${useFlag ? ' flag-content' : ''}"><span class="node-label"></span>${(displayDims && !useFlag) ? '<span class="node-dims"></span>' : ''}</div>`;
             el.querySelector('.node-label').textContent = displayName;
-            if (displayDims) el.querySelector('.node-dims').textContent = displayDims;
+            if (displayDims && !useFlag) el.querySelector('.node-dims').textContent = displayDims;
         }
 
         // Tags a placed dust-collection node with the class(es) that give it its "pipe
         // material" look — same convention as Workshop Layout Planner's version, so nodes
         // look identical on both pages.
         function applyDustCollectionNodeStyling(toolNode, name) {
+            const sizeClass = name.startsWith('6in') ? 'fitting-6in' : 'fitting-4in';
             if (name === 'Blast Gate' || name === '6in Blast Gate') {
                 toolNode.classList.add('blast-gate-node');
             } else if (name.includes('Duct Elbow')) {
-                toolNode.classList.add('pipe-node', 'elbow-node');
+                toolNode.classList.add('pipe-node', 'elbow-node', sizeClass);
             } else if (name.includes('Y-Joint')) {
-                toolNode.classList.add('pipe-node', 'y-joint-node');
+                toolNode.classList.add('pipe-node', 'y-joint-node', sizeClass);
             } else if (name.includes('T-Joint')) {
-                toolNode.classList.add('pipe-node', 't-joint-node');
+                toolNode.classList.add('pipe-node', 't-joint-node', sizeClass);
             } else if (name.includes('Pipe Bracket')) {
                 toolNode.classList.add('bracket-node');
             } else if (name.includes('Dust Duct')) {
                 toolNode.classList.add('pipe-node');
             }
+        }
+
+        // Same magnetic duct-centerline snap as Workshop Layout Planner — see comment there.
+        const DUCT_ALIGN_SNAP_PX = 20;
+
+        function findNearbyDuctAlignment(mouseX, mouseY) {
+            const ducts = Array.from(document.querySelectorAll('.placed-tool-node.pipe-node'))
+                .filter(el => !el.classList.contains('elbow-node') && !el.classList.contains('y-joint-node') && !el.classList.contains('t-joint-node'));
+            let best = null, bestDist = DUCT_ALIGN_SNAP_PX;
+            ducts.forEach(el => {
+                const rotation = ((parseFloat(el.dataset.rotation) || 0) % 180 + 180) % 180;
+                const isHorizontal = rotation < 1 || rotation > 179;
+                const isVertical = Math.abs(rotation - 90) < 1;
+                if (!isHorizontal && !isVertical) return;
+                const left = parseFloat(el.style.left), top = parseFloat(el.style.top);
+                const w = parseFloat(el.style.width), h = parseFloat(el.style.height);
+                if (isHorizontal) {
+                    if (mouseX < left - 10 || mouseX > left + w + 10) return;
+                    const centerY = top + h / 2;
+                    const d = Math.abs(mouseY - centerY);
+                    if (d < bestDist) { bestDist = d; best = { axis: 'y', value: centerY, rotation: 0 }; }
+                } else {
+                    if (mouseY < top - 10 || mouseY > top + h + 10) return;
+                    const centerX = left + w / 2;
+                    const d = Math.abs(mouseX - centerX);
+                    if (d < bestDist) { bestDist = d; best = { axis: 'x', value: centerX, rotation: 90 }; }
+                }
+            });
+            return best;
         }
 
         function getRotatedAabb(wPx, hPx, angleDeg) {
@@ -1842,18 +1904,32 @@
                 snapX = Math.max(0, Math.min(snapX, board.clientWidth - toolW));
                 snapY = Math.max(0, Math.min(snapY, board.clientHeight - toolH));
 
+                // Blast gates/brackets need to land exactly centered on the duct they attach
+                // to — a nearby duct magnetically pulls the item onto its exact centerline
+                // + matching rotation, same as Workshop Layout Planner.
+                let fittingRotation = 0;
+                if (internalDragData.name === 'Blast Gate' || internalDragData.name === '6in Blast Gate' ||
+                    internalDragData.name.includes('Pipe Bracket')) {
+                    const alignment = findNearbyDuctAlignment(mouseX, mouseY);
+                    if (alignment) {
+                        if (alignment.axis === 'y') {
+                            snapY = alignment.value - toolH / 2;
+                        } else {
+                            snapX = alignment.value - toolW / 2;
+                        }
+                        fittingRotation = alignment.rotation;
+                    }
+                }
+
                 // Snapping happens in live-zoom pixels above; the descriptor itself is stored
                 // BASE_PPI-normalized (createPlacedNodeFromDescriptor converts it right back).
                 const normFactor = BASE_PPI / ppi;
-                // Full "Blast Gate" text can't fit inside a footprint this small —
-                // abbreviate so it's actually legible instead of clipped.
-                const isBlastGate = internalDragData.name === 'Blast Gate' || internalDragData.name === '6in Blast Gate';
                 const descriptor = {
                     label: internalDragData.name,
-                    displayName: isBlastGate ? 'BG' : internalDragData.name,
+                    displayName: internalDragData.name,
                     displayDims: `${internalDragData.width.toFixed(1)}' x ${internalDragData.length.toFixed(1)}'`,
                     left: snapX * normFactor, top: snapY * normFactor, width: toolW * normFactor, height: toolH * normFactor,
-                    rotation: 0, cabType: null, physicalHeight: internalDragData.height, layer: 'dust-collection'
+                    rotation: fittingRotation, cabType: null, physicalHeight: internalDragData.height, layer: 'dust-collection'
                 };
                 const node = createPlacedNodeFromDescriptor(descriptor, true);
                 board.appendChild(node);
