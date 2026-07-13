@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kerph - Find a Builder</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            background-color: #eef1f6;
+            color: #0f172a;
+            min-height: 100vh;
+            width: 100vw;
+        }
+
+        header {
+            background-color: #ffffff;
+            background-image:
+                linear-gradient(135deg, #ffffff 0%, #eef2ff 60%, #e0e7ff 100%),
+                repeating-linear-gradient(120deg, rgba(30, 58, 138, 0.04) 0px, rgba(30, 58, 138, 0.04) 2px, transparent 2px, transparent 14px);
+            border-bottom: 2px solid #1e3a8a;
+            border-top: 3px solid #b23b3b;
+            padding: 10px 20px;
+            height: 150px;
+            width: 100%;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .brand-assembly { display: flex; align-items: center; gap: 15px; height: 100%; flex-shrink: 0; }
+        .logo-spotlight { position: relative; display: flex; align-items: center; justify-content: center; width: 382px; height: 105px; }
+        .logo-link { display: block; line-height: 0; }
+        .logo-image {
+            position: relative;
+            z-index: 1;
+            width: 382px;
+            height: 105px;
+            object-fit: contain;
+            border-radius: 4px;
+            filter: drop-shadow(0 12px 22px rgba(15, 23, 42, 0.4));
+            transition: transform 0.3s ease, filter 0.3s ease;
+        }
+        .logo-image:hover { transform: scale(1.03); filter: drop-shadow(0 18px 30px rgba(15, 23, 42, 0.5)); }
+
+        .page-title-select {
+            font-size: 15px;
+            font-weight: 700;
+            color: #1e3a8a;
+            padding: 6px 6px 6px 16px;
+            border: none;
+            border-left: 1px solid #cbd5e1;
+            background-color: transparent;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .page-title-select:hover { background-color: #eef2ff; border-radius: 4px; }
+
+        .header-field-label {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #6b7280;
+        }
+
+        .plan-badge-group { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; flex-shrink: 0; }
+        .plan-label { font-size: 11px; font-weight: 700; color: #4b5563; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+        .plan-label abbr { cursor: help; text-decoration: none; }
+        .plan-select {
+            padding: 8px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            background-color: #ffffff;
+            font-size: 13px;
+            font-weight: 700;
+            color: #1e3a8a;
+            cursor: pointer;
+        }
+
+        .account-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px 6px 6px;
+            border: 1px solid #cbd5e1;
+            border-radius: 999px;
+            background-color: #ffffff;
+            font-size: 13px;
+            font-weight: 700;
+            color: #1e3a8a;
+            cursor: pointer;
+        }
+        .account-btn:hover { border-color: #1e3a8a; background-color: #eef2ff; }
+
+        .account-avatar {
+            width: 26px; height: 26px; border-radius: 50%;
+            background-color: #e0e7ff; background-size: cover; background-position: center;
+            display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0;
+        }
+        .account-avatar-large {
+            width: 72px; height: 72px; border-radius: 50%;
+            background-color: #e0e7ff; background-size: cover; background-position: center;
+            display: flex; align-items: center; justify-content: center; font-size: 32px;
+        }
+
+        .header-sign-in { display: flex; align-items: center; gap: 4px; }
+        .header-sign-in-input { width: 84px; padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 11px; font-weight: 600; }
+        .header-sign-in .mini-btn { flex: none; padding: 6px 10px; font-size: 11px; }
+
+        .mini-btn {
+            flex: 1;
+            padding: 8px 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            background-color: #ffffff;
+            font-size: 12px;
+            font-weight: 700;
+            color: #1e3a8a;
+            cursor: pointer;
+        }
+        .mini-btn:hover { background-color: #eef2ff; border-color: #2563eb; }
+        .mini-btn.danger { color: #b91c1c; }
+        .mini-btn.danger:hover { background-color: #fef2f2; border-color: #b91c1c; }
+
+        .input-box { width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; font-weight: 600; }
+        .select-box { width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; font-weight: 600; background: #f8fafc; }
+
+        .modal-overlay { position: fixed; inset: 0; background-color: rgba(15, 23, 42, 0.5); z-index: 3000; display: flex; align-items: center; justify-content: center; }
+        .modal-box { background-color: #ffffff; border-radius: 12px; padding: 24px; width: 320px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4); }
+        .modal-title { font-size: 16px; font-weight: 800; color: #0f172a; margin-bottom: 8px; }
+        .modal-warning { font-size: 12px; color: #b45309; background-color: #fffbeb; border: 1px solid #fde68a; border-radius: 6px; padding: 8px 10px; margin-bottom: 16px; }
+        .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+        .modal-actions .mini-btn { flex: 1; }
+        .modal-primary-btn { background-color: #1e3a8a !important; color: #ffffff !important; border-color: #1e3a8a !important; }
+
+        .upgrade-nudge {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background-color: #0f172a;
+            color: #ffffff;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 10px 12px 10px 18px;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease, transform 0.2s ease;
+            z-index: 2000;
+            max-width: 400px;
+        }
+        .upgrade-nudge.visible { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
+
+        /* ---------- PAGE CONTENT ---------- */
+        main {
+            max-width: 720px;
+            margin: 0 auto;
+            padding: 48px 24px 80px;
+        }
+
+        .finder-eyebrow {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #b23b3b;
+            margin-bottom: 8px;
+        }
+
+        .finder-title { font-size: 28px; font-weight: 800; color: #0f172a; margin-bottom: 10px; }
+        .finder-subtitle { font-size: 14.5px; color: #4b5563; line-height: 1.6; margin-bottom: 32px; max-width: 60ch; }
+
+        .finder-card {
+            background-color: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 14px;
+            padding: 28px;
+            box-shadow: 0 12px 30px -12px rgba(15, 23, 42, 0.15);
+        }
+
+        .finder-row { display: flex; gap: 10px; align-items: flex-end; }
+        .finder-row .header-field { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+        #zipInput { font-size: 16px; letter-spacing: 0.02em; }
+        #zipSearchBtn {
+            flex: none;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            background-color: #1e3a8a;
+            color: #ffffff;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        #zipSearchBtn:hover { background-color: #1e40af; }
+
+        .zip-error { font-size: 12px; color: #b91c1c; margin-top: 6px; min-height: 16px; }
+
+        .category-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #6b7280; margin: 22px 0 10px; }
+        .category-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+        .category-chip {
+            padding: 8px 14px;
+            border: 1px solid #cbd5e1;
+            border-radius: 999px;
+            background-color: #f8fafc;
+            font-size: 12.5px;
+            font-weight: 600;
+            color: #1e3a8a;
+            cursor: pointer;
+        }
+        .category-chip:hover { background-color: #eef2ff; border-color: #2563eb; }
+
+        .finder-secondary {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .finder-secondary-text { font-size: 12px; color: #6b7280; }
+        .finder-secondary a {
+            font-size: 12.5px;
+            font-weight: 700;
+            color: #1e3a8a;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+        .finder-secondary a:hover { text-decoration: underline; }
+
+        .why-note {
+            margin-top: 24px;
+            font-size: 12px;
+            color: #6b7280;
+            line-height: 1.6;
+            background-color: rgba(30, 58, 138, 0.05);
+            border: 1px solid #dbe4ef;
+            border-left: 3px solid #1e3a8a;
+            border-radius: 8px;
+            padding: 12px 14px;
+        }
+        .why-note b { color: #1e293b; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="brand-assembly">
+            <div class="logo-spotlight">
+                <a href="index.html" class="logo-link" title="Kerph Home">
+                    <img src="logo.png" alt="Kerph Logo" class="logo-image">
+                </a>
+            </div>
+            <select class="page-title-select" id="pageNavSelect">
+                <option value="index.html">Home</option>
+                <option value="workshop-planner.html">Workshop Layout Planner</option>
+                <option value="project-designer.html">Project Designer</option>
+                <option value="cutlist-optimizer.html">Cut List Optimizer</option>
+                <option value="dust-collection.html">Dust Collection</option>
+                <option value="find-a-builder.html" selected>Find a Builder</option>
+            </select>
+        </div>
+        <div class="plan-badge-group">
+            <div class="header-sign-in" id="headerSignIn" title="Preview only — any username &amp; password signs you in locally in this browser.">
+                <input type="text" class="header-sign-in-input" id="headerSignInUsername" placeholder="Username" autocomplete="username">
+                <input type="password" class="header-sign-in-input" id="headerSignInPassword" placeholder="Password" autocomplete="current-password">
+                <button type="button" id="headerSignInBtn" class="mini-btn" title="Sign In">Sign In</button>
+            </div>
+            <button type="button" id="accountBtn" class="account-btn" title="Account Settings" style="display:none;">
+                <span class="account-avatar" id="accountAvatarPreview">&#128100;</span>
+                <span id="accountBtnLabel">Account</span>
+            </button>
+            <div>
+                <div class="plan-label"><abbr title="Simulates your subscription tier locally for previewing gated features. Real account billing isn't connected yet.">Plan Level ⓘ</abbr></div>
+                <select class="plan-select" id="planSelector">
+                    <option value="free">Free</option>
+                    <option value="pro">Pro</option>
+                    <option value="premier">Premier</option>
+                </select>
+            </div>
+        </div>
+    </header>
+
+    <div class="modal-overlay" id="accountModalOverlay" style="display:none;">
+        <div class="modal-box">
+            <div class="modal-title">Account Settings</div>
+            <div class="modal-warning">Saved locally in this browser only — real accounts, Google sign-in, and community features aren't connected yet.</div>
+
+            <div class="header-field" style="width:100%; margin-bottom:14px; display:flex; flex-direction:column; align-items:center;">
+                <div class="account-avatar-large" id="accountAvatarLarge">&#128100;</div>
+                <input type="file" id="accountAvatarInput" accept="image/*" style="display:none;">
+                <button type="button" id="accountAvatarBtn" class="mini-btn" style="margin-top:10px; flex:none;">Upload Photo</button>
+            </div>
+
+            <div class="header-field" style="width:100%;">
+                <label class="header-field-label" for="accountUsernameInput">Username</label>
+                <input type="text" class="input-box" id="accountUsernameInput" placeholder="Choose a username">
+            </div>
+
+            <div class="header-field" style="width:100%; margin-top:10px;">
+                <label class="header-field-label" for="accountUnitsSelect">Preferred Units</label>
+                <select class="select-box" id="accountUnitsSelect">
+                    <option value="imperial">Imperial (ft / in)</option>
+                    <option value="metric">Metric (m / cm)</option>
+                </select>
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" id="accountCancelBtn" class="mini-btn">Close</button>
+                <button type="button" id="accountSaveBtn" class="mini-btn modal-primary-btn">Save</button>
+            </div>
+            <button type="button" id="accountSignOutBtn" class="mini-btn danger" style="width:100%; margin-top:8px;">Sign Out</button>
+        </div>
+    </div>
+
+    <div class="upgrade-nudge" id="upgradeNudge"></div>
+
+    <main>
+        <div class="finder-eyebrow">Resource &middot; not a Kerph directory</div>
+        <div class="finder-title">Find a pole barn / post-frame builder</div>
+        <div class="finder-subtitle">Designed your shop — now find someone to build it. Enter a zip code and we'll hand you straight to Google Maps, filtered to builders near you, with real ratings and reviews.</div>
+
+        <div class="finder-card">
+            <div class="finder-row">
+                <div class="header-field">
+                    <label class="header-field-label" for="zipInput">ZIP Code</label>
+                    <input type="text" class="input-box" id="zipInput" placeholder="e.g. 46601" inputmode="numeric" maxlength="5">
+                </div>
+                <button type="button" id="zipSearchBtn">Search Builders</button>
+            </div>
+            <div class="zip-error" id="zipError"></div>
+
+            <div class="category-label">Or search a more specific term near that zip</div>
+            <div class="category-chips" id="categoryChips">
+                <button type="button" class="category-chip" data-term="pole barn builders">Pole Barn Builders</button>
+                <button type="button" class="category-chip" data-term="post frame construction contractors">Post-Frame Contractors</button>
+                <button type="button" class="category-chip" data-term="metal building contractors">Metal Building Contractors</button>
+                <button type="button" class="category-chip" data-term="barndominium builders">Barndominium Builders</button>
+                <button type="button" class="category-chip" data-term="ag building contractors">Ag Building Contractors</button>
+            </div>
+
+            <div class="finder-secondary">
+                <span class="finder-secondary-text">Want reviews, forums, and price discussion beyond Maps listings?</span>
+                <a id="webSearchLink" href="#" target="_blank" rel="noopener">Search the web &#8594;</a>
+            </div>
+        </div>
+
+        <div class="why-note">
+            <b>Why we link out instead of hosting our own list:</b> Google Maps' listings, ratings, and reviews stay current on their own — a directory we maintained ourselves would go stale and risks pointing you to bad contact info. This always shows real, live listings for your area.
+        </div>
+    </main>
+
+    <script>
+        /* ---------- SHARED STATE KEYS (must match workshop-planner.html / index.html exactly) ---------- */
+        const PLAN_KEY = 'kerphPlan';
+        const ACCOUNT_KEY = 'kerphAccount';
+        const AUTH_KEY = 'kerphSignedIn';
+
+        function showToast(message) {
+            const nudge = document.getElementById('upgradeNudge');
+            nudge.textContent = message;
+            nudge.classList.add('visible');
+            clearTimeout(showToast._timer);
+            showToast._timer = setTimeout(() => nudge.classList.remove('visible'), 3500);
+        }
+
+        function getPlan() { return localStorage.getItem(PLAN_KEY) || 'free'; }
+
+        function initPlanSelector() {
+            const select = document.getElementById('planSelector');
+            select.value = getPlan();
+            select.addEventListener('change', () => { localStorage.setItem(PLAN_KEY, select.value); });
+        }
+
+        function loadAccount() {
+            try { return JSON.parse(localStorage.getItem(ACCOUNT_KEY)) || {}; } catch (e) { return {}; }
+        }
+
+        function applyAvatarTo(el, dataUrl) {
+            if (dataUrl) { el.style.backgroundImage = `url(${dataUrl})`; el.textContent = ''; }
+            else { el.style.backgroundImage = ''; el.textContent = '\u{1F464}'; }
+        }
+
+        function renderAccountBadge() {
+            const acc = loadAccount();
+            document.getElementById('accountBtnLabel').textContent = acc.username || 'Account';
+            applyAvatarTo(document.getElementById('accountAvatarPreview'), acc.avatar);
+        }
+
+        function initAccountPanel() {
+            const btn = document.getElementById('accountBtn');
+            const overlay = document.getElementById('accountModalOverlay');
+            const cancelBtn = document.getElementById('accountCancelBtn');
+            const saveBtn = document.getElementById('accountSaveBtn');
+            const usernameInput = document.getElementById('accountUsernameInput');
+            const avatarInput = document.getElementById('accountAvatarInput');
+            const avatarBtn = document.getElementById('accountAvatarBtn');
+            const avatarLarge = document.getElementById('accountAvatarLarge');
+            const unitsSelect = document.getElementById('accountUnitsSelect');
+            let pendingAvatar = null;
+
+            btn.addEventListener('click', () => {
+                const acc = loadAccount();
+                usernameInput.value = acc.username || '';
+                pendingAvatar = acc.avatar || null;
+                applyAvatarTo(avatarLarge, pendingAvatar);
+                unitsSelect.value = localStorage.getItem('kerphUnitSystem') || 'imperial';
+                overlay.style.display = 'flex';
+            });
+
+            avatarBtn.addEventListener('click', () => avatarInput.click());
+            avatarInput.addEventListener('change', () => {
+                const file = avatarInput.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = () => { pendingAvatar = reader.result; applyAvatarTo(avatarLarge, pendingAvatar); };
+                reader.readAsDataURL(file);
+            });
+
+            cancelBtn.addEventListener('click', () => { overlay.style.display = 'none'; });
+
+            saveBtn.addEventListener('click', () => {
+                const username = usernameInput.value.trim();
+                if (!username) { showToast('Enter a username to save your profile.'); return; }
+                localStorage.setItem(ACCOUNT_KEY, JSON.stringify({ username, avatar: pendingAvatar }));
+                localStorage.setItem('kerphUnitSystem', unitsSelect.value);
+                renderAccountBadge();
+                overlay.style.display = 'none';
+                showToast('Profile saved locally.');
+            });
+
+            document.getElementById('accountSignOutBtn').addEventListener('click', () => { overlay.style.display = 'none'; signOut(); });
+
+            renderAccountBadge();
+        }
+
+        function isSignedIn() { return localStorage.getItem(AUTH_KEY) === 'true'; }
+
+        function updateHeaderSignInState() {
+            const signedIn = isSignedIn();
+            document.getElementById('headerSignIn').style.display = signedIn ? 'none' : 'flex';
+            document.getElementById('accountBtn').style.display = signedIn ? 'flex' : 'none';
+        }
+
+        function completeSignIn(username) {
+            localStorage.setItem(AUTH_KEY, 'true');
+            const acc = loadAccount();
+            acc.username = username;
+            localStorage.setItem(ACCOUNT_KEY, JSON.stringify(acc));
+            renderAccountBadge();
+            updateHeaderSignInState();
+        }
+
+        function signOut() { localStorage.removeItem(AUTH_KEY); updateHeaderSignInState(); }
+
+        function initHeaderSignIn() {
+            const usernameInput = document.getElementById('headerSignInUsername');
+            const passwordInput = document.getElementById('headerSignInPassword');
+            const signInBtn = document.getElementById('headerSignInBtn');
+
+            function attemptSignIn() {
+                const username = usernameInput.value.trim();
+                const password = passwordInput.value;
+                if (!username || !password) { showToast('Enter a username and password to sign in.'); return; }
+                completeSignIn(username);
+                usernameInput.value = '';
+                passwordInput.value = '';
+            }
+
+            signInBtn.addEventListener('click', attemptSignIn);
+            [usernameInput, passwordInput].forEach(input => {
+                input.addEventListener('keydown', (e) => { if (e.key === 'Enter') attemptSignIn(); });
+            });
+
+            updateHeaderSignInState();
+        }
+
+        /* ---------- BUILDER FINDER ---------- */
+        function isValidZip(zip) {
+            return /^\d{5}$/.test(zip);
+        }
+
+        function mapsSearchUrl(term, zip) {
+            return 'https://www.google.com/maps/search/' + encodeURIComponent(term + ' near ' + zip);
+        }
+
+        function webSearchUrl(term, zip) {
+            return 'https://www.google.com/search?q=' + encodeURIComponent(term + ' near ' + zip + ' reviews');
+        }
+
+        function currentZip() {
+            return document.getElementById('zipInput').value.trim();
+        }
+
+        function initBuilderFinder() {
+            const zipInput = document.getElementById('zipInput');
+            const zipError = document.getElementById('zipError');
+            const searchBtn = document.getElementById('zipSearchBtn');
+            const webLink = document.getElementById('webSearchLink');
+
+            function runSearch(term) {
+                const zip = currentZip();
+                if (!isValidZip(zip)) {
+                    zipError.textContent = 'Enter a valid 5-digit ZIP code first.';
+                    zipInput.focus();
+                    return;
+                }
+                zipError.textContent = '';
+                window.open(mapsSearchUrl(term, zip), '_blank', 'noopener');
+            }
+
+            searchBtn.addEventListener('click', () => runSearch('pole barn builders'));
+            zipInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') runSearch('pole barn builders'); });
+            zipInput.addEventListener('input', () => {
+                zipInput.value = zipInput.value.replace(/\D/g, '').slice(0, 5);
+                zipError.textContent = '';
+            });
+
+            document.querySelectorAll('.category-chip').forEach(chip => {
+                chip.addEventListener('click', () => runSearch(chip.getAttribute('data-term')));
+            });
+
+            webLink.addEventListener('click', (e) => {
+                const zip = currentZip();
+                if (!isValidZip(zip)) {
+                    e.preventDefault();
+                    zipError.textContent = 'Enter a valid 5-digit ZIP code first.';
+                    zipInput.focus();
+                    return;
+                }
+                webLink.href = webSearchUrl('pole barn builders', zip);
+            });
+        }
+
+        document.getElementById('pageNavSelect').addEventListener('change', (e) => { window.location.href = e.target.value; });
+        initPlanSelector();
+        initHeaderSignIn();
+        initAccountPanel();
+        initBuilderFinder();
+    </script>
+</body>
+</html>
