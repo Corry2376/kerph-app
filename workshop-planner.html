@@ -1245,6 +1245,15 @@
             box-shadow: inset 0 0 0 2px rgba(220, 38, 38, 0.25);
         }
 
+        /* Lets the "Hide Labels" toolbar button clear every dust-collection label at once —
+           straight ducts/elbows/joints via .node-content, blast gates/brackets via their
+           .flag-content variant of the same element. */
+        body.hide-dc-labels .pipe-node .node-content,
+        body.hide-dc-labels .blast-gate-node .node-content,
+        body.hide-dc-labels .bracket-node .node-content {
+            display: none;
+        }
+
         /* Blast gates are too small a footprint to hold the full name + dims legibly —
            the label is abbreviated to "BG" at creation time; this just sizes it to fit. */
         /* Side flag label — for footprints too small to hold readable text inside themselves
@@ -1302,15 +1311,17 @@
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M0,7.5 A32.5,32.5 0 0 1 32.5,40 L7.5,40 A7.5,7.5 0 0 0 0,32.5 Z' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5'/%3E%3C/svg%3E");
         }
 
-        /* Branch rects rotate exactly 45deg (not an arbitrary angle) so their outer tips
-           land precisely on this piece's branch ports (see DUCT_PORTS' yjoint entries),
-           which are themselves defined by rotating (0.5,0) 45deg around the (0.5,0.5) pivot. */
+        /* One single mitered outline (not 3 overlapping rects) so there's no internal seam
+           line — the trunk and two 45deg branches are properly outset from a shared pivot,
+           with a quadratic-curve fillet (control point = the pivot itself) smoothing each
+           inner armpit into a rounded casting-like joint instead of a sharp notch. Branch
+           tips land exactly on this piece's ports (see DUCT_PORTS' yjoint entries). */
         .placed-tool-node.y-joint-node.fitting-4in {
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect x='10' y='18' width='20' height='22' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5'/%3E%3Crect x='10' y='0' width='20' height='26' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5' transform='rotate(-45 20 20)'/%3E%3Crect x='10' y='0' width='20' height='26' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5' transform='rotate(45 20 20)'/%3E%3C/svg%3E");
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M10,40 L10,20 Q20,20 12.93,27.07 L-1.21,12.93 L12.93,-1.21 L27.07,12.93 Q20,20 12.93,12.93 L27.07,-1.21 L41.21,12.93 L27.07,27.07 Q20,20 30,20 L30,40 Z' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5' stroke-linejoin='round'/%3E%3C/svg%3E");
         }
 
         .placed-tool-node.y-joint-node.fitting-6in {
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect x='9' y='18' width='22' height='22' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5'/%3E%3Crect x='9' y='0' width='22' height='26' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5' transform='rotate(-45 20 20)'/%3E%3Crect x='9' y='0' width='22' height='26' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5' transform='rotate(45 20 20)'/%3E%3C/svg%3E");
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M9,40 L9,20 Q20,20 12.22,27.78 L-1.92,13.64 L13.64,-1.92 L27.78,12.22 Q20,20 12.22,12.22 L26.36,-1.92 L41.92,13.64 L27.78,27.78 Q20,20 31,20 L31,40 Z' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5' stroke-linejoin='round'/%3E%3C/svg%3E");
         }
 
         .placed-tool-node.t-joint-node.fitting-4in {
@@ -2391,6 +2402,7 @@
         <span class="zoom-level-display" id="zoomLevelDisplay" title="Ctrl+scroll to zoom">100%</span>
         <button type="button" id="zoomInBtn" class="measure-btn" title="Zoom in">&#43;</button>
         <button type="button" id="zoomResetBtn" class="measure-btn" title="Reset zoom to 100%">Reset</button>
+        <button type="button" id="hideDcLabelsBtn" class="measure-btn" title="Hide the text labels on dust collection ducts/fittings so you can see the pure shapes">&#127991;&#65039; Hide Labels</button>
     </div>
 
     <div class="floating-panel layers-panel collapsed" id="layersPanel">
@@ -2737,6 +2749,25 @@
                     applyZoom(zoomLevel + (e.deltaY < 0 ? 0.1 : -0.1));
                 }, { passive: false });
             }
+        }
+
+        // Toggles a body-level class that hides every dust-collection label at once (see the
+        // .hide-dc-labels CSS), so the pure duct/fitting shapes are easy to inspect. Persisted
+        // so it stays put across reloads and matches whatever dust-collection.html has set.
+        function initHideDcLabels() {
+            const KEY = 'kerphHideDcLabels';
+            const btn = document.getElementById('hideDcLabelsBtn');
+            function apply() {
+                const hidden = localStorage.getItem(KEY) === 'true';
+                document.body.classList.toggle('hide-dc-labels', hidden);
+                btn.classList.toggle('active', hidden);
+                btn.innerHTML = hidden ? '&#127991;&#65039; Show Labels' : '&#127991;&#65039; Hide Labels';
+            }
+            btn.addEventListener('click', () => {
+                localStorage.setItem(KEY, (localStorage.getItem(KEY) !== 'true').toString());
+                apply();
+            });
+            apply();
         }
 
         function wireToolDragStart(item) {
@@ -5991,6 +6022,10 @@
                     panel.style.right = 'auto';
                     panel.style.left = startLeft + 'px';
                     panel.style.top = startTop + 'px';
+                    // A genuine drag (not just a click-to-toggle) takes this panel out of
+                    // the auto-stack for good — otherwise the next expand/collapse elsewhere
+                    // would yank it back to its stacked slot, fighting the user's placement.
+                    panel.dataset.userPositioned = 'true';
                 }
                 let newLeft = startLeft + dx;
                 let newTop = startTop + dy;
@@ -6007,14 +6042,18 @@
         }
 
         function toggleCollapsedPanel(panel) {
-            return () => panel.classList.toggle('collapsed');
+            return () => {
+                panel.classList.toggle('collapsed');
+                arrangeFloatingPanels();
+            };
         }
 
         // Stacks the right-side panels snugly, one under the next, based on their actual
-        // (collapsed, at this point) rendered height rather than a guessed pixel value —
-        // avoids the old fixed top:630px leaving a large dead gap under a now-short
-        // collapsed panel. Runs once at init; dragging or expanding/collapsing afterward is
-        // left alone rather than fighting the user's own arrangement.
+        // rendered height right now — so expanding a panel above pushes the ones below it
+        // down instead of them sitting frozen at their original (collapsed) position and
+        // overlapping. Re-run on every expand/collapse, not just at init. A panel the user
+        // has manually dragged (dataset.userPositioned) is left alone and skipped — it's no
+        // longer part of the auto-stack, so it doesn't consume vertical space in it either.
         function arrangeFloatingPanels() {
             const panels = [
                 document.getElementById('cabinetPanel'),
@@ -6025,6 +6064,7 @@
             const gap = 10;
             let currentTop = 166;
             panels.forEach(panel => {
+                if (panel.dataset.userPositioned === 'true') return;
                 panel.style.top = currentTop + 'px';
                 panel.style.right = '24px';
                 panel.style.left = 'auto';
@@ -6046,6 +6086,7 @@
             makeDraggable(electricalPanel, document.getElementById('electricalPanelHandle'), () => {
                 electricalPanel.classList.toggle('collapsed');
                 if (!electricalPanel.classList.contains('collapsed')) renderElectricalPanel();
+                arrangeFloatingPanels();
             });
 
             arrangeFloatingPanels();
@@ -6205,6 +6246,7 @@
         initInternalWallDrawing();
         initOutletHeightModal();
         initZoomControls();
+        initHideDcLabels();
         initElectricalPanel();
         document.getElementById('pageNavSelect').addEventListener('change', (e) => { window.location.href = e.target.value; });
         initDraggablePanels();

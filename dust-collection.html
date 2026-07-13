@@ -458,6 +458,13 @@
             box-shadow: inset 0 0 0 2px rgba(220, 38, 38, 0.25);
         }
 
+        /* Lets the "Hide Labels" toolbar button clear every dust-collection label at once. */
+        body.hide-dc-labels .pipe-node .node-content,
+        body.hide-dc-labels .blast-gate-node .node-content,
+        body.hide-dc-labels .bracket-node .node-content {
+            display: none;
+        }
+
         /* Side flag label — for footprints too small to hold readable text inside themselves
            (blast gates, brackets), the label lives just outside the node's own box instead. */
         .node-content.flag-content {
@@ -507,13 +514,14 @@
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M0,7.5 A32.5,32.5 0 0 1 32.5,40 L7.5,40 A7.5,7.5 0 0 0 0,32.5 Z' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5'/%3E%3C/svg%3E");
         }
 
-        /* Branch rects rotate exactly 45deg to land on this piece's branch ports. */
+        /* One single mitered outline (not 3 overlapping rects) so there's no internal seam
+           line — see the identical comment in Workshop Layout Planner for the geometry. */
         .placed-tool-node.y-joint-node.fitting-4in {
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect x='10' y='18' width='20' height='22' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5'/%3E%3Crect x='10' y='0' width='20' height='26' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5' transform='rotate(-45 20 20)'/%3E%3Crect x='10' y='0' width='20' height='26' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5' transform='rotate(45 20 20)'/%3E%3C/svg%3E");
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M10,40 L10,20 Q20,20 12.93,27.07 L-1.21,12.93 L12.93,-1.21 L27.07,12.93 Q20,20 12.93,12.93 L27.07,-1.21 L41.21,12.93 L27.07,27.07 Q20,20 30,20 L30,40 Z' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5' stroke-linejoin='round'/%3E%3C/svg%3E");
         }
 
         .placed-tool-node.y-joint-node.fitting-6in {
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect x='9' y='18' width='22' height='22' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5'/%3E%3Crect x='9' y='0' width='22' height='26' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5' transform='rotate(-45 20 20)'/%3E%3Crect x='9' y='0' width='22' height='26' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5' transform='rotate(45 20 20)'/%3E%3C/svg%3E");
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M9,40 L9,20 Q20,20 12.22,27.78 L-1.92,13.64 L13.64,-1.92 L27.78,12.22 Q20,20 12.22,12.22 L26.36,-1.92 L41.92,13.64 L27.78,27.78 Q20,20 31,20 L31,40 Z' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5' stroke-linejoin='round'/%3E%3C/svg%3E");
         }
 
         .placed-tool-node.t-joint-node.fitting-4in {
@@ -729,6 +737,7 @@
         }
 
         .zoom-btn:hover { background-color: #eef2ff; border-color: #2563eb; }
+        .zoom-btn.active { background-color: #db2777; border-color: #db2777; color: #ffffff; }
 
         .zoom-level-display {
             font-size: 11px;
@@ -867,6 +876,7 @@
         <span class="zoom-level-display" id="zoomLevelDisplay" title="Ctrl+scroll to zoom">100%</span>
         <button type="button" id="zoomInBtn" class="zoom-btn" title="Zoom in">&#43;</button>
         <button type="button" id="zoomResetBtn" class="zoom-btn" title="Reset zoom to 100%">Reset</button>
+        <button type="button" id="hideDcLabelsBtn" class="zoom-btn" title="Hide the text labels on ducts/fittings so you can see the pure shapes">&#127991;&#65039; Hide Labels</button>
     </div>
 
     <div id="canvas-view-space">
@@ -1741,6 +1751,24 @@
             }
         }
 
+        // Toggles a body-level class that hides every dust-collection label at once — same
+        // key as Workshop Layout Planner, so the setting matches across both pages.
+        function initHideDcLabels() {
+            const KEY = 'kerphHideDcLabels';
+            const btn = document.getElementById('hideDcLabelsBtn');
+            function apply() {
+                const hidden = localStorage.getItem(KEY) === 'true';
+                document.body.classList.toggle('hide-dc-labels', hidden);
+                btn.classList.toggle('active', hidden);
+                btn.innerHTML = hidden ? '&#127991;&#65039; Show Labels' : '&#127991;&#65039; Hide Labels';
+            }
+            btn.addEventListener('click', () => {
+                localStorage.setItem(KEY, (localStorage.getItem(KEY) !== 'true').toString());
+                apply();
+            });
+            apply();
+        }
+
         // Outlets are the one wall-feature type this page can also place/remove (they matter
         // for both dust collector power and, eventually, lighting circuits) — every other
         // type (door/window/switch/panel/minisplit) is shown for reference only, unchanged
@@ -2436,6 +2464,7 @@
         initOutletHeightModal();
         initOutletPanel();
         initZoomControls();
+        initHideDcLabels();
         initCalculator();
         makeDraggable(document.getElementById('calcPanel'), document.getElementById('calcPanelHandle'), () => {
             document.getElementById('calcPanel').classList.toggle('collapsed');
