@@ -1093,6 +1093,20 @@
             background-color: #475569;
         }
 
+        /* Freely-drawn interior walls — styled like the shop's own boundary wall (solid dark
+           bar) rather than the colorful point/bar markers used for doors, outlets, etc. */
+        .internal-wall-node {
+            position: absolute;
+            background-color: #334155;
+            z-index: 60;
+            cursor: pointer;
+        }
+
+        .internal-wall-node.wall-preview {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
         .wall-feature-node.wall-feature-minisplit {
             background-color: #0891b2;
         }
@@ -2238,6 +2252,7 @@
             <button type="button" class="wf-tab" data-wf-type="outlet">🔌 Outlet</button>
             <button type="button" class="wf-tab" data-wf-type="panel">⚡ Panel</button>
             <button type="button" class="wf-tab" data-wf-type="minisplit">❄️ Mini-Split</button>
+            <button type="button" class="wf-tab" data-wf-type="wall">🧱 Wall</button>
         </div>
 
         <div class="wf-fields" id="wfFieldsDoor">
@@ -2319,6 +2334,14 @@
                 <option value="18000">18,000 BTU</option>
                 <option value="24000">24,000 BTU</option>
             </select>
+        </div>
+
+        <div class="wf-fields" id="wfFieldsWall" style="display:none;">
+            <label class="header-field-label" for="wfWallLabel">Label (optional)</label>
+            <input type="text" class="input-box" id="wfWallLabel" placeholder="e.g. Finishing Room Wall">
+            <label class="header-field-label" for="wfWallThickness" style="margin-top:8px;">Thickness (in)</label>
+            <input type="number" class="input-box" id="wfWallThickness" value="4.5" min="1">
+            <div class="shape-hint" style="margin-top:8px; margin-bottom:0;">Click and drag on the grid to draw a wall from one point to another — snaps to 15&deg; angles. Click a placed wall to remove it.</div>
         </div>
 
         <button type="button" id="wfPlaceBtn" class="mini-btn" style="width:100%; margin-top:10px;">Click Grid to Place Door</button>
@@ -2490,6 +2513,10 @@
                 wallFeatures.forEach(f => { f.x *= scaleFactor; f.y *= scaleFactor; });
             }
 
+            if (typeof internalWalls !== 'undefined') {
+                internalWalls.forEach(w => { w.x1 *= scaleFactor; w.y1 *= scaleFactor; w.x2 *= scaleFactor; w.y2 *= scaleFactor; });
+            }
+
             if (typeof measurements !== 'undefined') {
                 measurements.forEach(m => { m.x1 *= scaleFactor; m.y1 *= scaleFactor; m.x2 *= scaleFactor; m.y2 *= scaleFactor; });
             }
@@ -2501,6 +2528,7 @@
 
             updateWorkshopGridSize();
             if (typeof renderWallFeatures === 'function') renderWallFeatures();
+            if (typeof renderInternalWalls === 'function') renderInternalWalls();
             if (typeof renderMeasurements === 'function') renderMeasurements();
 
             const display = document.getElementById('zoomLevelDisplay');
@@ -3972,6 +4000,8 @@
             const normalizedWallFeatures = (typeof wallFeatures !== 'undefined' ? wallFeatures : [])
                 .map(f => ({ ...f, x: f.x * normFactor, y: f.y * normFactor }));
             const normalizedShapePoints = shapePoints.map(p => ({ x: p.x * normFactor, y: p.y * normFactor }));
+            const normalizedInternalWalls = (typeof internalWalls !== 'undefined' ? internalWalls : [])
+                .map(w => ({ ...w, x1: w.x1 * normFactor, y1: w.y1 * normFactor, x2: w.x2 * normFactor, y2: w.y2 * normFactor }));
 
             return {
                 id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
@@ -3984,7 +4014,8 @@
                 shapeMode: shapeMode,
                 shapePoints: normalizedShapePoints,
                 tools: tools,
-                wallFeatures: normalizedWallFeatures
+                wallFeatures: normalizedWallFeatures,
+                internalWalls: normalizedInternalWalls
             };
         }
 
@@ -3993,6 +4024,10 @@
             if (typeof wallFeatures !== 'undefined') {
                 wallFeatures = [];
                 if (typeof renderWallFeatures === 'function') renderWallFeatures();
+            }
+            if (typeof internalWalls !== 'undefined') {
+                internalWalls = [];
+                if (typeof renderInternalWalls === 'function') renderInternalWalls();
             }
         }
 
@@ -4111,6 +4146,15 @@
             if (typeof renderWallFeatures === 'function') {
                 wallFeatures = (layout.wallFeatures || []).map(f => ({ ...f, x: f.x * zoomFactor, y: f.y * zoomFactor }));
                 renderWallFeatures();
+            }
+
+            if (typeof renderInternalWalls === 'function') {
+                internalWalls = (layout.internalWalls || []).map(w => ({
+                    ...w,
+                    x1: w.x1 * zoomFactor, y1: w.y1 * zoomFactor,
+                    x2: w.x2 * zoomFactor, y2: w.y2 * zoomFactor
+                }));
+                renderInternalWalls();
             }
 
             if (typeof applyLayerVisibility === 'function') applyLayerVisibility();
@@ -4777,6 +4821,126 @@
         let wallFeatures = [];
         let currentWfType = 'door';
 
+        /* ---------- INTERNAL (INTERIOR) WALLS ----------
+           Structurally different from the point/bar features above — these aren't snapped to
+           the shop's boundary at all, they're freely drawn anywhere inside it via click-drag,
+           so they get their own array/render path rather than being shoehorned into
+           wallFeatures' boundary-snapping model. */
+        let internalWalls = [];
+        let wallDrawStart = null;
+
+        function renderInternalWalls() {
+            document.querySelectorAll('.internal-wall-node:not(.wall-preview)').forEach(n => n.remove());
+            internalWalls.forEach(w => {
+                const dx = w.x2 - w.x1, dy = w.y2 - w.y1;
+                const lengthPx = Math.hypot(dx, dy);
+                const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+                const thicknessPx = w.thicknessFt * ppi;
+                const cx = (w.x1 + w.x2) / 2, cy = (w.y1 + w.y2) / 2;
+
+                const el = document.createElement('div');
+                el.className = 'internal-wall-node';
+                el.dataset.id = w.id;
+                el.style.width = lengthPx + 'px';
+                el.style.height = thicknessPx + 'px';
+                el.style.left = (cx - lengthPx / 2) + 'px';
+                el.style.top = (cy - thicknessPx / 2) + 'px';
+                el.style.transform = `rotate(${angle}deg)`;
+                el.title = (w.label || 'Interior Wall') + ' — click to remove';
+                board.appendChild(el);
+
+                el.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    pushUndoSnapshot();
+                    internalWalls = internalWalls.filter(x => x.id !== w.id);
+                    renderInternalWalls();
+                });
+            });
+        }
+
+        function renderWallDrawPreview(start, end, thicknessFt) {
+            let el = document.getElementById('wallDrawPreview');
+            if (!el) {
+                el = document.createElement('div');
+                el.id = 'wallDrawPreview';
+                el.className = 'internal-wall-node wall-preview';
+                board.appendChild(el);
+            }
+            const dx = end.x - start.x, dy = end.y - start.y;
+            const lengthPx = Math.hypot(dx, dy);
+            const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+            const thicknessPx = thicknessFt * ppi;
+            const cx = (start.x + end.x) / 2, cy = (start.y + end.y) / 2;
+            el.style.width = lengthPx + 'px';
+            el.style.height = thicknessPx + 'px';
+            el.style.left = (cx - lengthPx / 2) + 'px';
+            el.style.top = (cy - thicknessPx / 2) + 'px';
+            el.style.transform = `rotate(${angle}deg)`;
+        }
+
+        function clearWallDrawPreview() {
+            const el = document.getElementById('wallDrawPreview');
+            if (el) el.remove();
+        }
+
+        // Snaps the free end of an in-progress wall to the nearest 15deg angle from the start
+        // point, and its length to the current grid scale, so walls come out clean.
+        function snapWallEndpoint(start, x, y) {
+            const dx = x - start.x, dy = y - start.y;
+            const dist = Math.hypot(dx, dy);
+            if (dist < 1) return { x, y };
+            let angle = Math.atan2(dy, dx) * (180 / Math.PI);
+            angle = Math.round(angle / 15) * 15;
+            const rad = angle * Math.PI / 180;
+            const scaleMultiplier = parseFloat(document.getElementById('inputScale').value) || 1.0;
+            const snapInterval = scaleMultiplier * ppi;
+            const snappedDist = Math.round(dist / snapInterval) * snapInterval || snapInterval;
+            return { x: start.x + Math.cos(rad) * snappedDist, y: start.y + Math.sin(rad) * snappedDist };
+        }
+
+        function initInternalWallDrawing() {
+            board.addEventListener('mousedown', (e) => {
+                if (wallFeatureMode !== 'wall') return;
+                if (e.target.closest('.placed-tool-node') || e.target.closest('.wall-feature-node') || e.target.closest('.internal-wall-node')) return;
+                const rect = board.getBoundingClientRect();
+                wallDrawStart = { x: e.clientX - rect.left - board.clientLeft, y: e.clientY - rect.top - board.clientTop };
+                e.preventDefault();
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (!wallDrawStart) return;
+                const rect = board.getBoundingClientRect();
+                const x = e.clientX - rect.left - board.clientLeft;
+                const y = e.clientY - rect.top - board.clientTop;
+                const thicknessIn = parseFloat(document.getElementById('wfWallThickness').value) || 4.5;
+                const snapped = snapWallEndpoint(wallDrawStart, x, y);
+                renderWallDrawPreview(wallDrawStart, snapped, thicknessIn / 12);
+            });
+
+            document.addEventListener('mouseup', (e) => {
+                if (!wallDrawStart) return;
+                const rect = board.getBoundingClientRect();
+                const x = e.clientX - rect.left - board.clientLeft;
+                const y = e.clientY - rect.top - board.clientTop;
+                const snapped = snapWallEndpoint(wallDrawStart, x, y);
+                clearWallDrawPreview();
+
+                const lengthPx = Math.hypot(snapped.x - wallDrawStart.x, snapped.y - wallDrawStart.y);
+                if (lengthPx > 10) {
+                    pushUndoSnapshot();
+                    const thicknessIn = parseFloat(document.getElementById('wfWallThickness').value) || 4.5;
+                    const label = document.getElementById('wfWallLabel').value.trim();
+                    internalWalls.push({
+                        id: Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
+                        x1: wallDrawStart.x, y1: wallDrawStart.y, x2: snapped.x, y2: snapped.y,
+                        thicknessFt: thicknessIn / 12, label
+                    });
+                    renderInternalWalls();
+                }
+                wallDrawStart = null;
+            });
+        }
+
         const DOOR_PRESETS = {
             'standard-32': 32,
             'standard-36': 36,
@@ -4793,7 +4957,7 @@
 
         const POINT_FEATURE_SIZE_FT = 0.35;
         const WALL_FEATURE_MARKS = { door: 'D', window: 'W', switch: 'S', outlet: 'O', panel: 'E', minisplit: 'M' };
-        const WALL_FEATURE_NAMES = { door: 'Door', window: 'Window', switch: 'Switch', outlet: 'Outlet', panel: 'Electrical Panel', minisplit: 'Mini-Split' };
+        const WALL_FEATURE_NAMES = { door: 'Door', window: 'Window', switch: 'Switch', outlet: 'Outlet', panel: 'Electrical Panel', minisplit: 'Mini-Split', wall: 'Wall' };
 
         function getWallSegments() {
             let points;
@@ -5109,7 +5273,7 @@
             });
 
             board.addEventListener('click', (e) => {
-                if (!wallFeatureMode) return;
+                if (!wallFeatureMode || wallFeatureMode === 'wall') return;
                 if (e.target.closest('.placed-tool-node') || e.target.closest('.wall-feature-node')) return;
                 const rect = board.getBoundingClientRect();
                 const x = e.clientX - rect.left - board.clientLeft;
@@ -5457,6 +5621,7 @@
         initCabinetBuilder();
         initMeasureTool();
         initWallFeatures();
+        initInternalWallDrawing();
         initOutletHeightModal();
         initZoomControls();
         document.getElementById('pageNavSelect').addEventListener('change', (e) => { window.location.href = e.target.value; });
