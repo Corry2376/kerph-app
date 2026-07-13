@@ -1115,6 +1115,15 @@
             pointer-events: none;
         }
 
+        /* Square cap at each wall endpoint — fills the notch/gap that a plain rectangle-per-
+           segment renderer leaves wherever two walls join at an angle. */
+        .internal-wall-joint {
+            position: absolute;
+            background-color: #334155;
+            z-index: 60;
+            pointer-events: none;
+        }
+
         .wall-feature-node.wall-feature-minisplit {
             background-color: #0891b2;
         }
@@ -1163,7 +1172,21 @@
         .placed-tool-node.blast-gate-node {
             background-color: rgba(220, 38, 38, 0.15);
             border: 2px solid #dc2626;
-            box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.25);
+            /* inset, not outset — an outward box-shadow extends past the node's actual box
+               (box-sizing:border-box doesn't contain shadows), which made the gate visually
+               overhang the duct it's supposed to sit flush against even when widths matched. */
+            box-shadow: inset 0 0 0 2px rgba(220, 38, 38, 0.25);
+        }
+
+        /* Blast gates are too small a footprint to hold the full name + dims legibly —
+           the label is abbreviated to "BG" at creation time; this just sizes it to fit. */
+        .placed-tool-node.blast-gate-node .node-label {
+            font-size: 8px;
+            letter-spacing: -0.2px;
+        }
+
+        .placed-tool-node.blast-gate-node .node-dims {
+            display: none;
         }
 
         /* Shared "pipe material" look for straight ducts and every fitting (elbow/Y/T), so
@@ -1173,24 +1196,26 @@
             border: 1px solid #64748b;
         }
 
+        /* Filled with the same pipe gray/slate as .pipe-node (not just an outline) so these
+           read as solid duct material with a silhouette, rather than a thin decorative line. */
         .placed-tool-node.elbow-node,
         .placed-tool-node.y-joint-node,
         .placed-tool-node.t-joint-node {
             background-repeat: no-repeat;
             background-position: center;
-            background-size: 80% 80%;
+            background-size: 100% 100%;
         }
 
         .placed-tool-node.elbow-node {
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M4,36 A32,32 0 0 1 36,4' stroke='%2364748b' stroke-width='9' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M4,38 A34,34 0 0 1 38,4 L24,4 A20,20 0 0 0 4,24 Z' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5'/%3E%3C/svg%3E");
         }
 
         .placed-tool-node.y-joint-node {
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M20,38 L20,22 M20,22 L4,4 M20,22 L36,4' stroke='%2364748b' stroke-width='8' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect x='13' y='18' width='14' height='22' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5'/%3E%3Crect x='13' y='0' width='14' height='26' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5' transform='rotate(-32 20 20)'/%3E%3Crect x='13' y='0' width='14' height='26' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5' transform='rotate(32 20 20)'/%3E%3C/svg%3E");
         }
 
         .placed-tool-node.t-joint-node {
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M4,20 L36,20 M20,20 L20,38' stroke='%2364748b' stroke-width='8' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M0,13 L40,13 L40,27 L27,27 L27,40 L13,40 L13,27 L0,27 Z' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5'/%3E%3C/svg%3E");
         }
 
         .placed-tool-node.bracket-node {
@@ -1426,7 +1451,6 @@
                 <div style="display:flex; flex-direction:column; gap:6px;">
                     <button type="button" id="newLayoutBtn" class="new-layout-btn">+ New Shop Layout</button>
                     <button type="button" id="editLayoutBtn" class="new-layout-btn new-layout-btn-secondary">Edit Shop Settings</button>
-                    <a href="dust-collection.html" class="new-layout-btn new-layout-btn-secondary" style="text-align:center;">Dust Collection &#8594;</a>
                 </div>
             </div>
 
@@ -1918,8 +1942,8 @@
                                 <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
                             </div>
                         </div>
-                        <div class="tool-box-item" draggable="true" data-layer="dust-collection" data-width="0.15" data-length="0.3" data-height="7.0" data-name="4in Pipe Bracket">
-                            <div><div class="tool-title">4" Pipe Bracket</div><div class="tool-dims">0.15' x 0.3' Footprint</div></div>
+                        <div class="tool-box-item" draggable="true" data-layer="dust-collection" data-width="0.4" data-length="0.15" data-height="7.0" data-name="4in Pipe Bracket">
+                            <div><div class="tool-title">4" Pipe Bracket</div><div class="tool-dims">0.4' x 0.15' Footprint</div></div>
                             <div class="tool-status-controls">
                                 <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
                                 <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
@@ -1997,8 +2021,8 @@
                                 <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
                             </div>
                         </div>
-                        <div class="tool-box-item" draggable="true" data-layer="dust-collection" data-width="0.15" data-length="0.35" data-height="7.0" data-name="6in Pipe Bracket">
-                            <div><div class="tool-title">6" Pipe Bracket</div><div class="tool-dims">0.15' x 0.35' Footprint</div></div>
+                        <div class="tool-box-item" draggable="true" data-layer="dust-collection" data-width="0.55" data-length="0.15" data-height="7.0" data-name="6in Pipe Bracket">
+                            <div><div class="tool-title">6" Pipe Bracket</div><div class="tool-dims">0.55' x 0.15' Footprint</div></div>
                             <div class="tool-status-controls">
                                 <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
                                 <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
@@ -2712,6 +2736,10 @@
                     const entry = statuses[internalDragData.name];
                     if (entry && entry.status === 'owned' && entry.nickname) {
                         displayName = entry.nickname;
+                    } else if (internalDragData.name === 'Blast Gate' || internalDragData.name === '6in Blast Gate') {
+                        // Full "Blast Gate" text can't fit inside a footprint this small —
+                        // abbreviate so it's actually legible instead of clipped.
+                        displayName = 'BG';
                     }
                     displayDims = `${internalDragData.width.toFixed(1)}' x ${internalDragData.length.toFixed(1)}'`;
                 }
@@ -4838,7 +4866,7 @@
         let wallDrawStart = null;
 
         function renderInternalWalls() {
-            document.querySelectorAll('.internal-wall-node:not(.wall-preview)').forEach(n => n.remove());
+            document.querySelectorAll('.internal-wall-node:not(.wall-preview), .internal-wall-joint').forEach(n => n.remove());
             internalWalls.forEach(w => {
                 const dx = w.x2 - w.x1, dy = w.y2 - w.y1;
                 const lengthPx = Math.hypot(dx, dy);
@@ -4862,6 +4890,20 @@
                     pushUndoSnapshot();
                     internalWalls = internalWalls.filter(x => x.id !== w.id);
                     renderInternalWalls();
+                });
+
+                // Square end-caps at both endpoints, sized to this wall's own thickness. A
+                // plain rectangle-per-segment renderer leaves a notch/gap wherever two walls
+                // meet at an angle (or a bare diagonal end where a wall dead-ends) — these
+                // caps fill that in so joints/ends read as continuous, connected wall.
+                [[w.x1, w.y1], [w.x2, w.y2]].forEach(([px, py]) => {
+                    const cap = document.createElement('div');
+                    cap.className = 'internal-wall-joint';
+                    cap.style.width = thicknessPx + 'px';
+                    cap.style.height = thicknessPx + 'px';
+                    cap.style.left = (px - thicknessPx / 2) + 'px';
+                    cap.style.top = (py - thicknessPx / 2) + 'px';
+                    board.appendChild(cap);
                 });
             });
         }
@@ -4891,9 +4933,29 @@
             if (el) el.remove();
         }
 
-        // Snaps the free end of an in-progress wall to the nearest 15deg angle from the start
-        // point, and its length to the current grid scale, so walls come out clean.
+        // Within this many px, a click/drag endpoint snaps onto an existing wall's endpoint
+        // instead of wherever the mouse actually is — without this, connecting a new wall to
+        // a previous one requires pixel-perfect mouse placement, so joints end up with tiny
+        // gaps or overlaps even when the user is clearly aiming to connect them.
+        const WALL_JOIN_SNAP_PX = 14;
+
+        function snapToExistingWallEndpoint(x, y) {
+            let best = null, bestDist = WALL_JOIN_SNAP_PX;
+            internalWalls.forEach(w => {
+                [[w.x1, w.y1], [w.x2, w.y2]].forEach(([px, py]) => {
+                    const d = Math.hypot(px - x, py - y);
+                    if (d < bestDist) { bestDist = d; best = { x: px, y: py }; }
+                });
+            });
+            return best;
+        }
+
+        // Snaps the free end of an in-progress wall to a nearby existing wall's endpoint first
+        // (so walls actually connect), otherwise to the nearest 15deg angle from the start
+        // point with its length snapped to the current grid scale, so walls come out clean.
         function snapWallEndpoint(start, x, y) {
+            const existing = snapToExistingWallEndpoint(x, y);
+            if (existing) return existing;
             const dx = x - start.x, dy = y - start.y;
             const dist = Math.hypot(dx, dy);
             if (dist < 1) return { x, y };
@@ -4911,7 +4973,9 @@
                 if (wallFeatureMode !== 'wall') return;
                 if (e.target.closest('.placed-tool-node') || e.target.closest('.wall-feature-node') || e.target.closest('.internal-wall-node')) return;
                 const rect = board.getBoundingClientRect();
-                wallDrawStart = { x: e.clientX - rect.left - board.clientLeft, y: e.clientY - rect.top - board.clientTop };
+                const rawX = e.clientX - rect.left - board.clientLeft;
+                const rawY = e.clientY - rect.top - board.clientTop;
+                wallDrawStart = snapToExistingWallEndpoint(rawX, rawY) || { x: rawX, y: rawY };
                 e.preventDefault();
             });
 

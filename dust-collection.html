@@ -82,7 +82,6 @@
 
         .page-title-select:hover { background-color: #eef2ff; border-radius: 4px; }
 
-        .header-controls { display: flex; align-items: flex-start; gap: 16px; flex: 1 1 auto; min-width: 0; overflow-x: auto; overflow-y: hidden; padding-bottom: 4px; margin-right: 16px; }
         .header-field { display: flex; flex-direction: column; gap: 4px; }
 
         .header-field-label {
@@ -453,7 +452,19 @@
         .placed-tool-node.blast-gate-node {
             background-color: rgba(220, 38, 38, 0.15);
             border: 2px solid #dc2626;
-            box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.25);
+            /* inset, not outset — an outward box-shadow extends past the node's actual box
+               (box-sizing:border-box doesn't contain shadows), which made the gate visually
+               overhang the duct it's supposed to sit flush against even when widths matched. */
+            box-shadow: inset 0 0 0 2px rgba(220, 38, 38, 0.25);
+        }
+
+        .placed-tool-node.blast-gate-node .node-label {
+            font-size: 8px;
+            letter-spacing: -0.2px;
+        }
+
+        .placed-tool-node.blast-gate-node .node-dims {
+            display: none;
         }
 
         .placed-tool-node.pipe-node {
@@ -466,19 +477,19 @@
         .placed-tool-node.t-joint-node {
             background-repeat: no-repeat;
             background-position: center;
-            background-size: 80% 80%;
+            background-size: 100% 100%;
         }
 
         .placed-tool-node.elbow-node {
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M4,36 A32,32 0 0 1 36,4' stroke='%2364748b' stroke-width='9' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M4,38 A34,34 0 0 1 38,4 L24,4 A20,20 0 0 0 4,24 Z' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5'/%3E%3C/svg%3E");
         }
 
         .placed-tool-node.y-joint-node {
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M20,38 L20,22 M20,22 L4,4 M20,22 L36,4' stroke='%2364748b' stroke-width='8' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect x='13' y='18' width='14' height='22' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5'/%3E%3Crect x='13' y='0' width='14' height='26' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5' transform='rotate(-32 20 20)'/%3E%3Crect x='13' y='0' width='14' height='26' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5' transform='rotate(32 20 20)'/%3E%3C/svg%3E");
         }
 
         .placed-tool-node.t-joint-node {
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M4,20 L36,20 M20,20 L20,38' stroke='%2364748b' stroke-width='8' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M0,13 L40,13 L40,27 L27,27 L27,40 L13,40 L13,27 L0,27 Z' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5'/%3E%3C/svg%3E");
         }
 
         .placed-tool-node.bracket-node {
@@ -610,6 +621,13 @@
         /* Read-only reference display of interior walls drawn in Workshop Layout Planner —
            this page doesn't let users draw/edit them, just see where they are for duct routing. */
         .internal-wall-node {
+            position: absolute;
+            background-color: #334155;
+            z-index: 60;
+            pointer-events: none;
+        }
+
+        .internal-wall-joint {
             position: absolute;
             background-color: #334155;
             z-index: 60;
@@ -748,12 +766,6 @@
                 <option value="cutlist-optimizer.html">Cut List Optimizer</option>
                 <option value="dust-collection.html" selected>Dust Collection</option>
             </select>
-        </div>
-        <div class="header-controls">
-            <div class="header-field">
-                <label class="header-field-label">&nbsp;</label>
-                <a href="workshop-planner.html" class="new-layout-btn new-layout-btn-secondary">&#8592; Workshop Layout Planner</a>
-            </div>
         </div>
         <div class="plan-badge-group">
             <div class="header-sign-in" id="headerSignIn" title="Preview only — any username &amp; password signs you in locally in this browser.">
@@ -1126,7 +1138,7 @@
                     { name: '4in Duct Elbow', title: '4" Duct Elbow (90°)', width: 0.6, length: 0.6, height: 7.0 },
                     { name: '4in Duct Y-Joint', title: '4" Duct Y-Joint', width: 0.7, length: 0.7, height: 7.0 },
                     { name: '4in Duct T-Joint', title: '4" Duct T-Joint', width: 0.7, length: 0.7, height: 7.0 },
-                    { name: '4in Pipe Bracket', title: '4" Pipe Bracket', width: 0.15, length: 0.3, height: 7.0 },
+                    { name: '4in Pipe Bracket', title: '4" Pipe Bracket', width: 0.4, length: 0.15, height: 7.0 },
                     { name: 'Blast Gate', title: '4" Blast Gate', width: 0.35, length: 0.5, height: 7.0 }
                 ]
             },
@@ -1141,7 +1153,7 @@
                     { name: '6in Duct Elbow', title: '6" Duct Elbow (90°)', width: 0.8, length: 0.8, height: 7.0 },
                     { name: '6in Duct Y-Joint', title: '6" Duct Y-Joint', width: 0.9, length: 0.9, height: 7.0 },
                     { name: '6in Duct T-Joint', title: '6" Duct T-Joint', width: 0.9, length: 0.9, height: 7.0 },
-                    { name: '6in Pipe Bracket', title: '6" Pipe Bracket', width: 0.15, length: 0.35, height: 7.0 },
+                    { name: '6in Pipe Bracket', title: '6" Pipe Bracket', width: 0.55, length: 0.15, height: 7.0 },
                     { name: '6in Blast Gate', title: '6" Blast Gate', width: 0.5, length: 0.6, height: 7.0 }
                 ]
             }
@@ -1554,7 +1566,7 @@
         let internalWalls = [];
 
         function renderInternalWallsFromShared() {
-            document.querySelectorAll('.internal-wall-node').forEach(n => n.remove());
+            document.querySelectorAll('.internal-wall-node, .internal-wall-joint').forEach(n => n.remove());
             internalWalls.forEach(w => {
                 const dx = w.x2 - w.x1, dy = w.y2 - w.y1;
                 const lengthPx = Math.hypot(dx, dy);
@@ -1570,6 +1582,18 @@
                 el.style.transform = `rotate(${angle}deg)`;
                 if (w.label) el.title = w.label;
                 board.appendChild(el);
+
+                // Square end-caps, matching Workshop Layout Planner — fills the notch/gap
+                // that appears where two wall segments meet at an angle.
+                [[w.x1, w.y1], [w.x2, w.y2]].forEach(([px, py]) => {
+                    const cap = document.createElement('div');
+                    cap.className = 'internal-wall-joint';
+                    cap.style.width = thicknessPx + 'px';
+                    cap.style.height = thicknessPx + 'px';
+                    cap.style.left = (px - thicknessPx / 2) + 'px';
+                    cap.style.top = (py - thicknessPx / 2) + 'px';
+                    board.appendChild(cap);
+                });
             });
         }
 
@@ -1821,9 +1845,12 @@
                 // Snapping happens in live-zoom pixels above; the descriptor itself is stored
                 // BASE_PPI-normalized (createPlacedNodeFromDescriptor converts it right back).
                 const normFactor = BASE_PPI / ppi;
+                // Full "Blast Gate" text can't fit inside a footprint this small —
+                // abbreviate so it's actually legible instead of clipped.
+                const isBlastGate = internalDragData.name === 'Blast Gate' || internalDragData.name === '6in Blast Gate';
                 const descriptor = {
                     label: internalDragData.name,
-                    displayName: internalDragData.name,
+                    displayName: isBlastGate ? 'BG' : internalDragData.name,
                     displayDims: `${internalDragData.width.toFixed(1)}' x ${internalDragData.length.toFixed(1)}'`,
                     left: snapX * normFactor, top: snapY * normFactor, width: toolW * normFactor, height: toolH * normFactor,
                     rotation: 0, cabType: null, physicalHeight: internalDragData.height, layer: 'dust-collection'
