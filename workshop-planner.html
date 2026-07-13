@@ -417,6 +417,15 @@
 
         .category-items { padding: 4px 2px 2px; }
 
+        .tool-subcategory {
+            margin-left: 6px;
+            margin-bottom: 4px;
+            border-left: 2px solid #e0e7ff;
+            padding-left: 8px;
+        }
+
+        .tool-subcategory .category-header { font-size: 10px; padding: 6px; }
+
         .tool-box-item {
             position: relative;
             display: flex;
@@ -1135,15 +1144,36 @@
             box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.25);
         }
 
-        /* A curved pipe-bend glyph instead of a plain box, so an elbow reads as an elbow
-           on the grid rather than looking like just another straight duct segment. */
-        .placed-tool-node.elbow-node {
-            background-color: transparent;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M4,36 A32,32 0 0 1 36,4' stroke='%231e3a8a' stroke-width='9' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-            background-size: 80% 80%;
+        /* Shared "pipe material" look for straight ducts and every fitting (elbow/Y/T), so
+           they all read as the same galvanized ductwork rather than generic tool boxes. */
+        .placed-tool-node.pipe-node {
+            background-color: #cbd5e1;
+            border: 1px solid #64748b;
+        }
+
+        .placed-tool-node.elbow-node,
+        .placed-tool-node.y-joint-node,
+        .placed-tool-node.t-joint-node {
             background-repeat: no-repeat;
             background-position: center;
-            border: 1px dashed #94a3b8;
+            background-size: 80% 80%;
+        }
+
+        .placed-tool-node.elbow-node {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M4,36 A32,32 0 0 1 36,4' stroke='%2364748b' stroke-width='9' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+        }
+
+        .placed-tool-node.y-joint-node {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M20,38 L20,22 M20,22 L4,4 M20,22 L36,4' stroke='%2364748b' stroke-width='8' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+        }
+
+        .placed-tool-node.t-joint-node {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M4,20 L36,20 M20,20 L20,38' stroke='%2364748b' stroke-width='8' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+        }
+
+        .placed-tool-node.bracket-node {
+            background-color: #94a3b8;
+            border: 1px solid #475569;
         }
 
         .placed-tool-node.selected-node {
@@ -1785,7 +1815,7 @@
 
         <details class="tool-category">
             <summary class="category-header">
-                <span class="category-header-left">Dust Collection <span class="category-count">11</span></span>
+                <span class="category-header-left">Dust Collection <span class="category-count">22</span></span>
                 <span class="category-chevron">&#9656;</span>
             </summary>
             <div class="category-items">
@@ -1803,69 +1833,164 @@
                         <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
                     </div>
                 </div>
-                <div class="tool-box-item" draggable="true" data-layer="dust-collection" data-width="0.35" data-length="2.0" data-height="7.0" data-name="4in Dust Duct 2ft">
-                    <div><div class="tool-title">4" Dust Duct (2ft run)</div><div class="tool-dims">0.35' x 2.0' Footprint</div></div>
-                    <div class="tool-status-controls">
-                        <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
-                        <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
+
+                <details class="tool-category tool-subcategory">
+                    <summary class="category-header">
+                        <span class="category-header-left">4" Ducts &amp; Fittings <span class="category-count">10</span></span>
+                        <span class="category-chevron">&#9656;</span>
+                    </summary>
+                    <div class="category-items">
+                        <div class="tool-box-item" draggable="true" data-layer="dust-collection" data-width="0.35" data-length="2.0" data-height="7.0" data-name="4in Dust Duct 2ft">
+                            <div><div class="tool-title">4" Dust Duct (2ft run)</div><div class="tool-dims">0.35' x 2.0' Footprint</div></div>
+                            <div class="tool-status-controls">
+                                <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
+                                <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
+                            </div>
+                        </div>
+                        <div class="tool-box-item" draggable="true" data-layer="dust-collection" data-width="0.35" data-length="4.0" data-height="7.0" data-name="4in Dust Duct 4ft">
+                            <div><div class="tool-title">4" Dust Duct (4ft run)</div><div class="tool-dims">0.35' x 4.0' Footprint</div></div>
+                            <div class="tool-status-controls">
+                                <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
+                                <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
+                            </div>
+                        </div>
+                        <div class="tool-box-item" draggable="true" data-layer="dust-collection" data-width="0.35" data-length="6.0" data-height="7.0" data-name="4in Dust Duct 6ft">
+                            <div><div class="tool-title">4" Dust Duct (6ft run)</div><div class="tool-dims">0.35' x 6.0' Footprint</div></div>
+                            <div class="tool-status-controls">
+                                <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
+                                <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
+                            </div>
+                        </div>
+                        <div class="tool-box-item" draggable="true" data-layer="dust-collection" data-width="0.35" data-length="8.0" data-height="7.0" data-name="4in Dust Duct 8ft">
+                            <div><div class="tool-title">4" Dust Duct (8ft run)</div><div class="tool-dims">0.35' x 8.0' Footprint</div></div>
+                            <div class="tool-status-controls">
+                                <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
+                                <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
+                            </div>
+                        </div>
+                        <div class="tool-box-item" draggable="true" data-layer="dust-collection" data-width="0.35" data-length="10.0" data-height="7.0" data-name="4in Dust Duct 10ft">
+                            <div><div class="tool-title">4" Dust Duct (10ft run)</div><div class="tool-dims">0.35' x 10.0' Footprint</div></div>
+                            <div class="tool-status-controls">
+                                <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
+                                <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
+                            </div>
+                        </div>
+                        <div class="tool-box-item" draggable="true" data-layer="dust-collection" data-width="0.6" data-length="0.6" data-height="7.0" data-name="4in Duct Elbow">
+                            <div><div class="tool-title">4" Duct Elbow (90&deg;)</div><div class="tool-dims">0.6' x 0.6' Footprint</div></div>
+                            <div class="tool-status-controls">
+                                <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
+                                <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
+                            </div>
+                        </div>
+                        <div class="tool-box-item" draggable="true" data-layer="dust-collection" data-width="0.7" data-length="0.7" data-height="7.0" data-name="4in Duct Y-Joint">
+                            <div><div class="tool-title">4" Duct Y-Joint</div><div class="tool-dims">0.7' x 0.7' Footprint</div></div>
+                            <div class="tool-status-controls">
+                                <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
+                                <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
+                            </div>
+                        </div>
+                        <div class="tool-box-item" draggable="true" data-layer="dust-collection" data-width="0.7" data-length="0.7" data-height="7.0" data-name="4in Duct T-Joint">
+                            <div><div class="tool-title">4" Duct T-Joint</div><div class="tool-dims">0.7' x 0.7' Footprint</div></div>
+                            <div class="tool-status-controls">
+                                <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
+                                <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
+                            </div>
+                        </div>
+                        <div class="tool-box-item" draggable="true" data-layer="dust-collection" data-width="0.15" data-length="0.3" data-height="7.0" data-name="4in Pipe Bracket">
+                            <div><div class="tool-title">4" Pipe Bracket</div><div class="tool-dims">0.15' x 0.3' Footprint</div></div>
+                            <div class="tool-status-controls">
+                                <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
+                                <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
+                            </div>
+                        </div>
+                        <div class="tool-box-item" draggable="true" data-layer="dust-collection" data-width="0.35" data-length="0.5" data-height="7.0" data-name="Blast Gate">
+                            <div><div class="tool-title">4" Blast Gate</div><div class="tool-dims">0.35' x 0.5' Footprint</div></div>
+                            <div class="tool-status-controls">
+                                <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
+                                <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
+                            </div>
+                        </div>
                     </div>
-                </div>
-                <div class="tool-box-item" draggable="true" data-layer="dust-collection" data-width="0.35" data-length="4.0" data-height="7.0" data-name="4in Dust Duct 4ft">
-                    <div><div class="tool-title">4" Dust Duct (4ft run)</div><div class="tool-dims">0.35' x 4.0' Footprint</div></div>
-                    <div class="tool-status-controls">
-                        <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
-                        <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
+                </details>
+
+                <details class="tool-category tool-subcategory">
+                    <summary class="category-header">
+                        <span class="category-header-left">6" Ducts &amp; Fittings <span class="category-count">10</span></span>
+                        <span class="category-chevron">&#9656;</span>
+                    </summary>
+                    <div class="category-items">
+                        <div class="tool-box-item" draggable="true" data-layer="dust-collection" data-width="0.5" data-length="2.0" data-height="7.0" data-name="6in Dust Duct 2ft">
+                            <div><div class="tool-title">6" Dust Duct (2ft run)</div><div class="tool-dims">0.5' x 2.0' Footprint</div></div>
+                            <div class="tool-status-controls">
+                                <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
+                                <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
+                            </div>
+                        </div>
+                        <div class="tool-box-item" draggable="true" data-layer="dust-collection" data-width="0.5" data-length="4.0" data-height="7.0" data-name="6in Dust Duct 4ft">
+                            <div><div class="tool-title">6" Dust Duct (4ft run)</div><div class="tool-dims">0.5' x 4.0' Footprint</div></div>
+                            <div class="tool-status-controls">
+                                <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
+                                <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
+                            </div>
+                        </div>
+                        <div class="tool-box-item" draggable="true" data-layer="dust-collection" data-width="0.5" data-length="6.0" data-height="7.0" data-name="6in Dust Duct 6ft">
+                            <div><div class="tool-title">6" Dust Duct (6ft run)</div><div class="tool-dims">0.5' x 6.0' Footprint</div></div>
+                            <div class="tool-status-controls">
+                                <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
+                                <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
+                            </div>
+                        </div>
+                        <div class="tool-box-item" draggable="true" data-layer="dust-collection" data-width="0.5" data-length="8.0" data-height="7.0" data-name="6in Dust Duct 8ft">
+                            <div><div class="tool-title">6" Dust Duct (8ft run)</div><div class="tool-dims">0.5' x 8.0' Footprint</div></div>
+                            <div class="tool-status-controls">
+                                <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
+                                <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
+                            </div>
+                        </div>
+                        <div class="tool-box-item" draggable="true" data-layer="dust-collection" data-width="0.5" data-length="10.0" data-height="7.0" data-name="6in Dust Duct 10ft">
+                            <div><div class="tool-title">6" Dust Duct (10ft run)</div><div class="tool-dims">0.5' x 10.0' Footprint</div></div>
+                            <div class="tool-status-controls">
+                                <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
+                                <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
+                            </div>
+                        </div>
+                        <div class="tool-box-item" draggable="true" data-layer="dust-collection" data-width="0.8" data-length="0.8" data-height="7.0" data-name="6in Duct Elbow">
+                            <div><div class="tool-title">6" Duct Elbow (90&deg;)</div><div class="tool-dims">0.8' x 0.8' Footprint</div></div>
+                            <div class="tool-status-controls">
+                                <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
+                                <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
+                            </div>
+                        </div>
+                        <div class="tool-box-item" draggable="true" data-layer="dust-collection" data-width="0.9" data-length="0.9" data-height="7.0" data-name="6in Duct Y-Joint">
+                            <div><div class="tool-title">6" Duct Y-Joint</div><div class="tool-dims">0.9' x 0.9' Footprint</div></div>
+                            <div class="tool-status-controls">
+                                <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
+                                <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
+                            </div>
+                        </div>
+                        <div class="tool-box-item" draggable="true" data-layer="dust-collection" data-width="0.9" data-length="0.9" data-height="7.0" data-name="6in Duct T-Joint">
+                            <div><div class="tool-title">6" Duct T-Joint</div><div class="tool-dims">0.9' x 0.9' Footprint</div></div>
+                            <div class="tool-status-controls">
+                                <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
+                                <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
+                            </div>
+                        </div>
+                        <div class="tool-box-item" draggable="true" data-layer="dust-collection" data-width="0.15" data-length="0.35" data-height="7.0" data-name="6in Pipe Bracket">
+                            <div><div class="tool-title">6" Pipe Bracket</div><div class="tool-dims">0.15' x 0.35' Footprint</div></div>
+                            <div class="tool-status-controls">
+                                <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
+                                <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
+                            </div>
+                        </div>
+                        <div class="tool-box-item" draggable="true" data-layer="dust-collection" data-width="0.5" data-length="0.6" data-height="7.0" data-name="6in Blast Gate">
+                            <div><div class="tool-title">6" Blast Gate</div><div class="tool-dims">0.5' x 0.6' Footprint</div></div>
+                            <div class="tool-status-controls">
+                                <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
+                                <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
+                            </div>
+                        </div>
                     </div>
-                </div>
-                <div class="tool-box-item" draggable="true" data-layer="dust-collection" data-width="0.35" data-length="8.0" data-height="7.0" data-name="4in Dust Duct 8ft">
-                    <div><div class="tool-title">4" Dust Duct (8ft run)</div><div class="tool-dims">0.35' x 8.0' Footprint</div></div>
-                    <div class="tool-status-controls">
-                        <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
-                        <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
-                    </div>
-                </div>
-                <div class="tool-box-item" draggable="true" data-layer="dust-collection" data-width="0.5" data-length="2.0" data-height="7.0" data-name="6in Dust Duct 2ft">
-                    <div><div class="tool-title">6" Dust Duct (2ft run)</div><div class="tool-dims">0.5' x 2.0' Footprint</div></div>
-                    <div class="tool-status-controls">
-                        <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
-                        <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
-                    </div>
-                </div>
-                <div class="tool-box-item" draggable="true" data-layer="dust-collection" data-width="0.5" data-length="4.0" data-height="7.0" data-name="6in Dust Duct 4ft">
-                    <div><div class="tool-title">6" Dust Duct (4ft run)</div><div class="tool-dims">0.5' x 4.0' Footprint</div></div>
-                    <div class="tool-status-controls">
-                        <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
-                        <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
-                    </div>
-                </div>
-                <div class="tool-box-item" draggable="true" data-layer="dust-collection" data-width="0.5" data-length="8.0" data-height="7.0" data-name="6in Dust Duct 8ft">
-                    <div><div class="tool-title">6" Dust Duct (8ft run)</div><div class="tool-dims">0.5' x 8.0' Footprint</div></div>
-                    <div class="tool-status-controls">
-                        <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
-                        <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
-                    </div>
-                </div>
-                <div class="tool-box-item" draggable="true" data-layer="dust-collection" data-width="0.5" data-length="0.5" data-height="7.0" data-name="Blast Gate">
-                    <div><div class="tool-title">4" Blast Gate</div><div class="tool-dims">0.5' x 0.5' Footprint</div></div>
-                    <div class="tool-status-controls">
-                        <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
-                        <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
-                    </div>
-                </div>
-                <div class="tool-box-item" draggable="true" data-layer="dust-collection" data-width="0.6" data-length="0.6" data-height="7.0" data-name="4in Duct Elbow">
-                    <div><div class="tool-title">4" Duct Elbow (90&deg;)</div><div class="tool-dims">0.6' x 0.6' Footprint</div></div>
-                    <div class="tool-status-controls">
-                        <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
-                        <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
-                    </div>
-                </div>
-                <div class="tool-box-item" draggable="true" data-layer="dust-collection" data-width="0.8" data-length="0.8" data-height="7.0" data-name="6in Duct Elbow">
-                    <div><div class="tool-title">6" Duct Elbow (90&deg;)</div><div class="tool-dims">0.8' x 0.8' Footprint</div></div>
-                    <div class="tool-status-controls">
-                        <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
-                        <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
-                    </div>
-                </div>
+                </details>
             </div>
         </details>
 
@@ -2383,8 +2508,8 @@
         }
 
         function initZoomControls() {
-            document.getElementById('zoomInBtn').addEventListener('click', () => applyZoom(zoomLevel + 0.25));
-            document.getElementById('zoomOutBtn').addEventListener('click', () => applyZoom(zoomLevel - 0.25));
+            document.getElementById('zoomInBtn').addEventListener('click', () => applyZoom(zoomLevel + 0.1));
+            document.getElementById('zoomOutBtn').addEventListener('click', () => applyZoom(zoomLevel - 0.1));
             document.getElementById('zoomResetBtn').addEventListener('click', () => applyZoom(1));
 
             const viewport = document.getElementById('canvas-view-space');
@@ -2421,6 +2546,25 @@
             el.innerHTML = `<div class="node-content"><span class="node-label"></span>${displayDims ? '<span class="node-dims"></span>' : ''}</div>`;
             el.querySelector('.node-label').textContent = displayName;
             if (displayDims) el.querySelector('.node-dims').textContent = displayDims;
+        }
+
+        // Tags a placed dust-collection node with the class(es) that give it its "pipe
+        // material" look — shared by the drop handler and createPlacedNodeFromDescriptor so
+        // fresh placements and restored/pasted ones always look consistent.
+        function applyDustCollectionNodeStyling(toolNode, name) {
+            if (name === 'Blast Gate' || name === '6in Blast Gate') {
+                toolNode.classList.add('blast-gate-node');
+            } else if (name.includes('Duct Elbow')) {
+                toolNode.classList.add('pipe-node', 'elbow-node');
+            } else if (name.includes('Y-Joint')) {
+                toolNode.classList.add('pipe-node', 'y-joint-node');
+            } else if (name.includes('T-Joint')) {
+                toolNode.classList.add('pipe-node', 't-joint-node');
+            } else if (name.includes('Pipe Bracket')) {
+                toolNode.classList.add('bracket-node');
+            } else if (name.includes('Dust Duct')) {
+                toolNode.classList.add('pipe-node');
+            }
         }
 
         function initDragAndDropEngine() {
@@ -2491,8 +2635,7 @@
                 toolNode.style.left = snapX + 'px';
                 toolNode.style.top = snapY + 'px';
                 toolNode.dataset.toolName = internalDragData.name;
-                if (internalDragData.name === 'Blast Gate') toolNode.classList.add('blast-gate-node');
-                if (internalDragData.name === '4in Duct Elbow' || internalDragData.name === '6in Duct Elbow') toolNode.classList.add('elbow-node');
+                applyDustCollectionNodeStyling(toolNode, internalDragData.name);
 
                 let displayName = internalDragData.name;
                 let displayDims;
@@ -3846,8 +3989,7 @@
                 toolNode.classList.add('placed-cabinet-node', 'cabinet-' + t.cabType);
                 toolNode.dataset.cabType = t.cabType;
             }
-            if (t.label === 'Blast Gate') toolNode.classList.add('blast-gate-node');
-            if (t.label === '4in Duct Elbow' || t.label === '6in Duct Elbow') toolNode.classList.add('elbow-node');
+            applyDustCollectionNodeStyling(toolNode, t.label);
             toolNode.dataset.height = t.physicalHeight || '';
             toolNode.dataset.layer = t.layer || (t.cabType ? 'cabinets' : 'tools');
             const w = t.width * zoomFactor;
@@ -4158,13 +4300,24 @@
             'Oneida Super Dust Deputy XL': { power: 'Passive cyclone', voltage: 'N/A', weight: '~25 lbs' },
             '4in Dust Duct 2ft': { power: 'N/A', voltage: 'N/A', weight: '~1 lb' },
             '4in Dust Duct 4ft': { power: 'N/A', voltage: 'N/A', weight: '~2 lbs' },
+            '4in Dust Duct 6ft': { power: 'N/A', voltage: 'N/A', weight: '~3 lbs' },
             '4in Dust Duct 8ft': { power: 'N/A', voltage: 'N/A', weight: '~4 lbs' },
+            '4in Dust Duct 10ft': { power: 'N/A', voltage: 'N/A', weight: '~5 lbs' },
             '6in Dust Duct 2ft': { power: 'N/A', voltage: 'N/A', weight: '~1.5 lbs' },
             '6in Dust Duct 4ft': { power: 'N/A', voltage: 'N/A', weight: '~3 lbs' },
+            '6in Dust Duct 6ft': { power: 'N/A', voltage: 'N/A', weight: '~4.5 lbs' },
             '6in Dust Duct 8ft': { power: 'N/A', voltage: 'N/A', weight: '~6 lbs' },
+            '6in Dust Duct 10ft': { power: 'N/A', voltage: 'N/A', weight: '~7.5 lbs' },
             'Blast Gate': { power: 'N/A', voltage: 'N/A', weight: '~1 lb' },
+            '6in Blast Gate': { power: 'N/A', voltage: 'N/A', weight: '~1.5 lbs' },
             '4in Duct Elbow': { power: 'N/A', voltage: 'N/A', weight: '~1 lb' },
             '6in Duct Elbow': { power: 'N/A', voltage: 'N/A', weight: '~1.5 lbs' },
+            '4in Duct Y-Joint': { power: 'N/A', voltage: 'N/A', weight: '~1.2 lbs' },
+            '6in Duct Y-Joint': { power: 'N/A', voltage: 'N/A', weight: '~1.8 lbs' },
+            '4in Duct T-Joint': { power: 'N/A', voltage: 'N/A', weight: '~1.2 lbs' },
+            '6in Duct T-Joint': { power: 'N/A', voltage: 'N/A', weight: '~1.8 lbs' },
+            '4in Pipe Bracket': { power: 'N/A', voltage: 'N/A', weight: '~0.3 lbs' },
+            '6in Pipe Bracket': { power: 'N/A', voltage: 'N/A', weight: '~0.4 lbs' },
             'LED Shop Light 4ft': { power: '40W', voltage: '110V', weight: '~6 lbs' },
             'High Bay LED Fixture': { power: '150W', voltage: '110V / 220V', weight: '~12 lbs' },
             'Adjustable Task Light': { power: '10W', voltage: '110V', weight: '~3 lbs' },
