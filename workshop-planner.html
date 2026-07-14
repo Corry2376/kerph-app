@@ -1883,6 +1883,7 @@
                 <option value="cutlist-optimizer.html">Cut List Optimizer</option>
                 <option value="dust-collection.html">Dust Collection</option>
                 <option value="find-a-builder.html">Find a Builder</option>
+                <option value="shop-3d-viewer.html">3D Shop Viewer</option>
             </select>
         </div>
         <div class="header-controls">
@@ -2082,6 +2083,10 @@
             <div class="header-field" style="width:100%; margin-top:10px;">
                 <label class="header-field-label" for="inputLength">Length (ft)</label>
                 <input type="number" class="input-box" id="inputLength" value="24">
+            </div>
+            <div class="header-field" style="width:100%; margin-top:10px;">
+                <label class="header-field-label" for="inputCeilingHeight">Ceiling Height (ft)</label>
+                <input type="number" class="input-box" id="inputCeilingHeight" value="10" min="6" step="0.5">
             </div>
             <div class="header-field" style="width:100%; margin-top:10px;">
                 <label class="header-field-label" for="inputScale">Grid Scale</label>
@@ -3013,6 +3018,13 @@
 
         function getShopLengthFeet() {
             return displayToFeet(parseFloat(document.getElementById('inputLength').value) || 0);
+        }
+
+        // Ceiling height stays imperial-only (feet), same convention as physicalHeight
+        // on placed tools — see the unit-system comment above (display toggle only
+        // affects Width/Length, not real-world object/room heights).
+        function getShopCeilingHeightFeet() {
+            return parseFloat(document.getElementById('inputCeilingHeight').value) || 10;
         }
 
         let internalDragData = null;
@@ -5022,6 +5034,7 @@
                 savedAt: new Date().toISOString(),
                 widthFeet: getShopWidthFeet(),
                 lengthFeet: getShopLengthFeet(),
+                ceilingHeightFt: getShopCeilingHeightFeet(),
                 scale: document.getElementById('inputScale').value,
                 unitSystem: unitSystem,
                 shapeMode: shapeMode,
@@ -5137,6 +5150,8 @@
 
             document.getElementById('inputWidth').value = feetToDisplay(parseFloat(layout.widthFeet) || 0);
             document.getElementById('inputLength').value = feetToDisplay(parseFloat(layout.lengthFeet) || 0);
+            // Defaults to 10 for layouts saved before this field existed.
+            document.getElementById('inputCeilingHeight').value = parseFloat(layout.ceilingHeightFt) || 10;
             document.getElementById('inputScale').value = layout.scale;
             document.getElementById('inputWidth').disabled = false;
             document.getElementById('inputLength').disabled = false;
@@ -5189,7 +5204,7 @@
         const LAYOUT_TEMPLATES = {
             'one-car': {
                 name: 'Compact One-Car Garage',
-                widthFeet: 12, lengthFeet: 22, scale: '1.0',
+                widthFeet: 12, lengthFeet: 22, ceilingHeightFt: 10, scale: '1.0',
                 tools: [
                     { name: 'JET DC-1100VX', wFt: 2.2, lFt: 2.2, leftFt: 0.3, topFt: 0.3 },
                     { name: 'SawStop PCS175', wFt: 3, lFt: 5.2, leftFt: 3, topFt: 0.5 },
@@ -5201,7 +5216,7 @@
             },
             'two-car': {
                 name: 'Two-Car Garage Woodshop',
-                widthFeet: 20, lengthFeet: 24, scale: '1.0',
+                widthFeet: 20, lengthFeet: 24, ceilingHeightFt: 10, scale: '1.0',
                 tools: [
                     { name: 'JET DC-1100VX', wFt: 2.2, lFt: 2.2, leftFt: 0.3, topFt: 0.3 },
                     { name: 'SawStop PCS175', wFt: 3, lFt: 5.2, leftFt: 4, topFt: 1 },
@@ -5217,7 +5232,7 @@
             },
             'dedicated': {
                 name: 'Dedicated Shop Building',
-                widthFeet: 30, lengthFeet: 40, scale: '1.0',
+                widthFeet: 30, lengthFeet: 40, ceilingHeightFt: 12, scale: '1.0',
                 tools: [
                     { name: 'Oneida Super Dust Deputy XL', wFt: 1.5, lFt: 1.5, leftFt: 0.3, topFt: 0.3 },
                     { name: 'SawStop ICS', wFt: 3.2, lFt: 5.5, leftFt: 4, topFt: 1 },
@@ -5244,6 +5259,7 @@
             return {
                 widthFeet: tpl.widthFeet,
                 lengthFeet: tpl.lengthFeet,
+                ceilingHeightFt: tpl.ceilingHeightFt || 10,
                 scale: tpl.scale,
                 unitSystem: unitSystem,
                 shapeMode: 'rectangle',
@@ -7072,6 +7088,7 @@
                 if (!tpl) return;
                 document.getElementById('inputWidth').value = feetToDisplay(tpl.widthFeet);
                 document.getElementById('inputLength').value = feetToDisplay(tpl.lengthFeet);
+                document.getElementById('inputCeilingHeight').value = tpl.ceilingHeightFt || 10;
                 document.getElementById('inputScale').value = tpl.scale;
             });
 

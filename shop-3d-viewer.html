@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kerph - Find a Builder</title>
+    <title>Kerph - 3D Shop Viewer</title>
     <style>
         * {
             box-sizing: border-box;
@@ -15,8 +15,9 @@
         body {
             background-color: #eef1f6;
             color: #0f172a;
-            min-height: 100vh;
+            height: 100vh;
             width: 100vw;
+            overflow: hidden;
         }
 
         header {
@@ -29,15 +30,28 @@
             padding: 10px 20px;
             height: 150px;
             width: 100%;
-            position: relative;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 100;
             display: flex;
             align-items: center;
             justify-content: space-between;
         }
 
         .brand-assembly { display: flex; align-items: center; gap: 15px; height: 100%; flex-shrink: 0; }
-        .logo-spotlight { position: relative; display: flex; align-items: center; justify-content: center; width: 382px; height: 105px; }
+
+        .logo-spotlight {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 382px;
+            height: 105px;
+        }
+
         .logo-link { display: block; line-height: 0; }
+
         .logo-image {
             position: relative;
             z-index: 1;
@@ -48,7 +62,11 @@
             filter: drop-shadow(0 12px 22px rgba(15, 23, 42, 0.4));
             transition: transform 0.3s ease, filter 0.3s ease;
         }
-        .logo-image:hover { transform: scale(1.03); filter: drop-shadow(0 18px 30px rgba(15, 23, 42, 0.5)); }
+
+        .logo-image:hover {
+            transform: scale(1.03);
+            filter: drop-shadow(0 18px 30px rgba(15, 23, 42, 0.5));
+        }
 
         .page-title-select {
             font-size: 15px;
@@ -61,7 +79,10 @@
             cursor: pointer;
             white-space: nowrap;
         }
+
         .page-title-select:hover { background-color: #eef2ff; border-radius: 4px; }
+
+        .header-field { display: flex; flex-direction: column; gap: 4px; }
 
         .header-field-label {
             font-size: 10px;
@@ -71,19 +92,8 @@
             color: #6b7280;
         }
 
+        /* ---------- HEADER: SIGN-IN / ACCOUNT / PLAN (ubiquitous across all pages) ---------- */
         .plan-badge-group { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; flex-shrink: 0; }
-        .plan-label { font-size: 11px; font-weight: 700; color: #4b5563; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
-        .plan-label abbr { cursor: help; text-decoration: none; }
-        .plan-select {
-            padding: 8px 12px;
-            border: 1px solid #cbd5e1;
-            border-radius: 8px;
-            background-color: #ffffff;
-            font-size: 13px;
-            font-weight: 700;
-            color: #1e3a8a;
-            cursor: pointer;
-        }
 
         .account-btn {
             display: flex;
@@ -96,6 +106,7 @@
             cursor: pointer;
             transition: background-color 0.15s ease;
         }
+
         .account-btn:hover { background-color: #eef2ff; }
 
         .account-btn.plan-free { border-color: #16a34a; }
@@ -107,18 +118,43 @@
         .account-btn-plan { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: #6b7280; }
 
         .account-avatar {
-            width: 28px; height: 28px; border-radius: 50%;
-            background-color: #e0e7ff; background-size: cover; background-position: center;
-            display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background-color: #e0e7ff;
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            flex-shrink: 0;
         }
+
         .account-avatar-large {
-            width: 72px; height: 72px; border-radius: 50%;
-            background-color: #e0e7ff; background-size: cover; background-position: center;
-            display: flex; align-items: center; justify-content: center; font-size: 32px;
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            background-color: #e0e7ff;
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
         }
 
         .header-sign-in { display: flex; align-items: center; gap: 4px; }
-        .header-sign-in-input { width: 84px; padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 11px; font-weight: 600; }
+
+        .header-sign-in-input {
+            width: 84px;
+            padding: 6px 8px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
         .header-sign-in .mini-btn { flex: none; padding: 6px 10px; font-size: 11px; }
 
         .mini-btn {
@@ -132,6 +168,7 @@
             color: #1e3a8a;
             cursor: pointer;
         }
+
         .mini-btn:hover { background-color: #eef2ff; border-color: #2563eb; }
         .mini-btn.danger { color: #b91c1c; }
         .mini-btn.danger:hover { background-color: #fef2f2; border-color: #b91c1c; }
@@ -139,8 +176,24 @@
         .input-box { width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; font-weight: 600; }
         .select-box { width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; font-weight: 600; background: #f8fafc; }
 
-        .modal-overlay { position: fixed; inset: 0; background-color: rgba(15, 23, 42, 0.5); z-index: 3000; display: flex; align-items: center; justify-content: center; }
-        .modal-box { background-color: #ffffff; border-radius: 12px; padding: 24px; width: 320px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4); }
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background-color: rgba(15, 23, 42, 0.5);
+            z-index: 3000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-box {
+            background-color: #ffffff;
+            border-radius: 12px;
+            padding: 24px;
+            width: 320px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+        }
+
         .account-modal-box { width: 380px; max-height: 88vh; overflow-y: auto; }
         .account-member-since { font-size: 10.5px; color: #94a3b8; font-weight: 600; margin-top: 6px; }
         .account-stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
@@ -164,11 +217,27 @@
         .account-danger-zone { margin-top: 18px; padding-top: 14px; border-top: 1px solid #fecaca; }
         .account-danger-title { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: #b91c1c; margin-bottom: 4px; }
         .account-danger-desc { font-size: 11px; color: #6b7280; margin-bottom: 8px; line-height: 1.5; }
+
         .modal-title { font-size: 16px; font-weight: 800; color: #0f172a; margin-bottom: 8px; }
-        .modal-warning { font-size: 12px; color: #b45309; background-color: #fffbeb; border: 1px solid #fde68a; border-radius: 6px; padding: 8px 10px; margin-bottom: 16px; }
+
+        .modal-warning {
+            font-size: 12px;
+            color: #b45309;
+            background-color: #fffbeb;
+            border: 1px solid #fde68a;
+            border-radius: 6px;
+            padding: 8px 10px;
+            margin-bottom: 16px;
+        }
+
         .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
         .modal-actions .mini-btn { flex: 1; }
-        .modal-primary-btn { background-color: #1e3a8a !important; color: #ffffff !important; border-color: #1e3a8a !important; }
+
+        .modal-primary-btn {
+            background-color: #1e3a8a !important;
+            color: #ffffff !important;
+            border-color: #1e3a8a !important;
+        }
 
         .upgrade-nudge {
             position: fixed;
@@ -188,99 +257,74 @@
             z-index: 2000;
             max-width: 400px;
         }
+
         .upgrade-nudge.visible { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
 
-        /* ---------- PAGE CONTENT ---------- */
-        main {
-            max-width: 720px;
-            margin: 0 auto;
-            padding: 48px 24px 80px;
+        /* ---------- 3D VIEWER ---------- */
+        #viewer3dArea {
+            position: absolute;
+            top: 150px;
+            left: 0;
+            width: 100vw;
+            height: calc(100vh - 150px);
+            background: linear-gradient(180deg, #bcd6ee 0%, #dbe6f2 55%, #eef1f6 100%);
+            overflow: hidden;
         }
 
-        .finder-eyebrow {
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            color: #b23b3b;
-            margin-bottom: 8px;
-        }
+        #viewer3dCanvas { position: absolute; inset: 0; display: none; }
+        #viewer3dCanvas canvas { display: block; }
 
-        .finder-title { font-size: 28px; font-weight: 800; color: #0f172a; margin-bottom: 10px; }
-        .finder-subtitle { font-size: 14.5px; color: #4b5563; line-height: 1.6; margin-bottom: 32px; max-width: 60ch; }
+        .placeholder-box { max-width: 460px; text-align: center; padding: 32px; margin: 100px auto 0; }
+        .placeholder-icon { font-size: 40px; margin-bottom: 16px; }
+        .placeholder-title { font-size: 18px; font-weight: 700; color: #0f172a; margin-bottom: 8px; }
+        .placeholder-desc { font-size: 13px; color: #6b7280; line-height: 1.6; }
+        .placeholder-desc a { color: #1e3a8a; font-weight: 700; }
 
-        .finder-card {
+        .floating-panel {
+            position: fixed;
+            width: 280px;
             background-color: #ffffff;
             border: 1px solid #cbd5e1;
-            border-radius: 14px;
-            padding: 28px;
-            box-shadow: 0 12px 30px -12px rgba(15, 23, 42, 0.15);
+            border-radius: 10px;
+            box-shadow: 0 12px 30px -8px rgba(15, 23, 42, 0.25);
+            padding: 16px;
+            z-index: 1500;
+            top: 166px;
+            right: 24px;
         }
 
-        .finder-row { display: flex; gap: 10px; align-items: flex-end; }
-        .finder-row .header-field { flex: 1; display: flex; flex-direction: column; gap: 4px; }
-        #zipInput { font-size: 16px; letter-spacing: 0.02em; }
-        #zipSearchBtn {
-            flex: none;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 8px;
-            background-color: #1e3a8a;
-            color: #ffffff;
-            font-size: 13px;
-            font-weight: 700;
-            cursor: pointer;
-        }
-        #zipSearchBtn:hover { background-color: #1e40af; }
-
-        .zip-error { font-size: 12px; color: #b91c1c; margin-top: 6px; min-height: 16px; }
-
-        .category-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #6b7280; margin: 22px 0 10px; }
-        .category-chips { display: flex; flex-wrap: wrap; gap: 8px; }
-        .category-chip {
-            padding: 8px 14px;
-            border: 1px solid #cbd5e1;
-            border-radius: 999px;
-            background-color: #f8fafc;
-            font-size: 12.5px;
-            font-weight: 600;
+        .floating-panel-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
             color: #1e3a8a;
-            cursor: pointer;
-        }
-        .category-chip:hover { background-color: #eef2ff; border-color: #2563eb; }
-
-        .finder-secondary {
-            margin-top: 20px;
-            padding-top: 20px;
-            border-top: 1px solid #e2e8f0;
+            font-weight: 700;
+            margin-bottom: 10px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 12px;
-            flex-wrap: wrap;
         }
-        .finder-secondary-text { font-size: 12px; color: #6b7280; }
-        .finder-secondary a {
-            font-size: 12.5px;
-            font-weight: 700;
-            color: #1e3a8a;
-            text-decoration: none;
-            white-space: nowrap;
-        }
-        .finder-secondary a:hover { text-decoration: underline; }
 
-        .why-note {
-            margin-top: 24px;
-            font-size: 12px;
-            color: #6b7280;
-            line-height: 1.6;
-            background-color: rgba(30, 58, 138, 0.05);
-            border: 1px solid #dbe4ef;
-            border-left: 3px solid #1e3a8a;
+        .viewer-legend { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
+        .viewer-legend-row { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #334155; }
+        .viewer-legend-swatch { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+        .viewer-hint { font-size: 11.5px; color: #6b7280; line-height: 1.5; margin-top: 4px; }
+
+        #viewer3dTooltip {
+            position: fixed;
+            display: none;
+            background-color: rgba(15, 23, 42, 0.92);
+            color: #ffffff;
+            font-size: 12.5px;
+            padding: 8px 12px;
             border-radius: 8px;
-            padding: 12px 14px;
+            pointer-events: none;
+            z-index: 1600;
+            max-width: 220px;
+            transform: translate(14px, 14px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
         }
-        .why-note b { color: #1e293b; }
+        #viewer3dTooltip strong { display: block; font-size: 13px; margin-bottom: 2px; }
     </style>
 </head>
 <body>
@@ -298,8 +342,8 @@
                 <option value="project-designer.html">Project Designer</option>
                 <option value="cutlist-optimizer.html">Cut List Optimizer</option>
                 <option value="dust-collection.html">Dust Collection</option>
-                <option value="find-a-builder.html" selected>Find a Builder</option>
-                <option value="shop-3d-viewer.html">3D Shop Viewer</option>
+                <option value="find-a-builder.html">Find a Builder</option>
+                <option value="shop-3d-viewer.html" selected>3D Shop Viewer</option>
             </select>
         </div>
         <div class="plan-badge-group">
@@ -357,14 +401,6 @@
                 <div class="account-plan-upsell" id="accountPlanUpsell" style="display:none;">Saved layouts, custom shapes, cabinetry, and more unlock on Pro.</div>
             </div>
 
-            <div class="header-field" style="width:100%; margin-top:10px;">
-                <label class="header-field-label" for="accountUnitsSelect">Preferred Units</label>
-                <select class="select-box" id="accountUnitsSelect">
-                    <option value="imperial">Imperial (ft / in)</option>
-                    <option value="metric">Metric (m / cm)</option>
-                </select>
-            </div>
-
             <div class="header-field" style="width:100%; margin-top:14px;">
                 <label class="header-field-label">Saved Layouts</label>
                 <div id="accountLayoutsList" class="account-layouts-list"></div>
@@ -396,46 +432,50 @@
 
     <div class="upgrade-nudge" id="upgradeNudge"></div>
 
-    <main>
-        <div class="finder-eyebrow">Resource &middot; not a Kerph directory</div>
-        <div class="finder-title">Find a pole barn / post-frame builder</div>
-        <div class="finder-subtitle">Designed your shop — now find someone to build it. Enter a zip code and we'll hand you straight to Google Maps, filtered to builders near you, with real ratings and reviews.</div>
-
-        <div class="finder-card">
-            <div class="finder-row">
-                <div class="header-field">
-                    <label class="header-field-label" for="zipInput">ZIP Code</label>
-                    <input type="text" class="input-box" id="zipInput" placeholder="e.g. 46601" inputmode="numeric" maxlength="5">
-                </div>
-                <button type="button" id="zipSearchBtn">Search Builders</button>
-            </div>
-            <div class="zip-error" id="zipError"></div>
-
-            <div class="category-label">Or search a more specific term near that zip</div>
-            <div class="category-chips" id="categoryChips">
-                <button type="button" class="category-chip" data-term="pole barn builders">Pole Barn Builders</button>
-                <button type="button" class="category-chip" data-term="post frame construction contractors">Post-Frame Contractors</button>
-                <button type="button" class="category-chip" data-term="metal building contractors">Metal Building Contractors</button>
-                <button type="button" class="category-chip" data-term="barndominium builders">Barndominium Builders</button>
-                <button type="button" class="category-chip" data-term="ag building contractors">Ag Building Contractors</button>
-            </div>
-
-            <div class="finder-secondary">
-                <span class="finder-secondary-text">Want reviews, forums, and price discussion beyond Maps listings?</span>
-                <a id="webSearchLink" href="#" target="_blank" rel="noopener">Search the web &#8594;</a>
-            </div>
+    <div id="viewer3dArea">
+        <div id="empty3dState" class="placeholder-box" style="display:none;">
+            <div class="placeholder-icon">&#127959;&#65039;</div>
+            <div class="placeholder-title">No shop layout yet</div>
+            <div class="placeholder-desc">Design your shop's shape, tools, walls, and gear in the <a href="workshop-planner.html">Workshop Layout Planner</a> first — this page renders that same layout in 3D, read-only.</div>
         </div>
 
-        <div class="why-note">
-            <b>Why we link out instead of hosting our own list:</b> Google Maps' listings, ratings, and reviews stay current on their own — a directory we maintained ourselves would go stale and risks pointing you to bad contact info. This always shows real, live listings for your area.
-        </div>
-    </main>
+        <div id="viewer3dCanvas"></div>
+    </div>
 
-    <script>
-        /* ---------- SHARED STATE KEYS (must match workshop-planner.html / index.html exactly) ---------- */
+    <div class="floating-panel" id="viewerControlsPanel" style="display:none;">
+        <div class="floating-panel-title">3D Shop Viewer</div>
+        <button type="button" id="refresh3dBtn" class="mini-btn" style="width:100%;">&#8635; Refresh from Layout</button>
+        <div class="viewer-hint">Drag to orbit &middot; right-drag to pan &middot; scroll to zoom &middot; click an item for details.</div>
+        <div class="viewer-legend">
+            <div class="viewer-legend-row"><span class="viewer-legend-swatch" style="background:#1e3a8a;"></span>Tools</div>
+            <div class="viewer-legend-row"><span class="viewer-legend-swatch" style="background:#8a5a34;"></span>Cabinets</div>
+            <div class="viewer-legend-row"><span class="viewer-legend-swatch" style="background:#94a3b8;"></span>Dust collection</div>
+            <div class="viewer-legend-row"><span class="viewer-legend-swatch" style="background:#f2df8a;"></span>Lighting</div>
+        </div>
+        <div class="viewer-hint">Read-only for now — edit the actual layout in the Workshop Layout Planner.</div>
+    </div>
+
+    <div id="viewer3dTooltip"></div>
+
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+            "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+        }
+    }
+    </script>
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+        /* ---------- SHARED HEADER / ACCOUNT (same pattern as every other page) ---------- */
         const PLAN_KEY = 'kerphPlan';
         const ACCOUNT_KEY = 'kerphAccount';
         const AUTH_KEY = 'kerphSignedIn';
+        const TOOL_STATUS_KEY = 'kerphToolStatus';
+        const CURRENT_LAYOUT_KEY = 'kerphCurrentLayout';
+        const BASE_PPI = 30;
 
         function showToast(message) {
             const nudge = document.getElementById('upgradeNudge');
@@ -450,7 +490,7 @@
         function initPlanSelector() {
             const select = document.getElementById('planSelector');
             select.value = getPlan();
-            select.addEventListener('change', () => { localStorage.setItem(PLAN_KEY, select.value); });
+            select.addEventListener('change', () => localStorage.setItem(PLAN_KEY, select.value));
         }
 
         function loadAccount() {
@@ -474,29 +514,23 @@
             if (btn) btn.className = 'account-btn plan-' + (plan === 'pro' || plan === 'premier' ? plan : 'free');
         }
 
-        /* ---------- Account extras shared with the other pages: tool-status stats, saved
-           layouts (read-only view — editing lives in Workshop Layout Planner), plan card,
-           member-since, danger zone. ---------- */
-        const TOOL_STATUS_KEY = 'kerphToolStatus';
         const LAYOUTS_KEY = 'kerphSavedLayouts';
         const LAYOUT_TYPE_LABELS = { workshop: 'Workshop', 'dust-collection': 'Dust Collection', lighting: 'Lighting' };
-
-        function loadToolStatuses() {
-            try { return JSON.parse(localStorage.getItem(TOOL_STATUS_KEY)) || {}; } catch (e) { return {}; }
-        }
 
         function loadLayouts() {
             try { return JSON.parse(localStorage.getItem(LAYOUTS_KEY)) || []; } catch (e) { return []; }
         }
 
-        function persistLayouts(list) {
-            localStorage.setItem(LAYOUTS_KEY, JSON.stringify(list));
-        }
+        function persistLayouts(list) { localStorage.setItem(LAYOUTS_KEY, JSON.stringify(list)); }
 
         function escapeHtml(str) {
             const div = document.createElement('div');
             div.textContent = str == null ? '' : String(str);
             return div.innerHTML;
+        }
+
+        function loadToolStatuses() {
+            try { return JSON.parse(localStorage.getItem(TOOL_STATUS_KEY)) || {}; } catch (e) { return {}; }
         }
 
         function renderAccountStats() {
@@ -562,6 +596,35 @@
                 : '';
         }
 
+        function exportAllKerphData() {
+            const data = {};
+            Object.keys(localStorage).filter(k => k.startsWith('kerph')).forEach(k => { data[k] = localStorage.getItem(k); });
+            const blob = new Blob([JSON.stringify({ exportedAt: new Date().toISOString(), data }, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `kerph-backup-${new Date().toISOString().slice(0, 10)}.json`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+        }
+
+        function importAllKerphData(file) {
+            const reader = new FileReader();
+            reader.onload = () => {
+                let parsed;
+                try { parsed = JSON.parse(reader.result); } catch (e) { alert('That file could not be read as a valid Kerph backup.'); return; }
+                const data = parsed && parsed.data ? parsed.data : null;
+                if (!data || typeof data !== 'object') { alert('That file could not be read as a valid Kerph backup.'); return; }
+                if (!confirm('This will overwrite your current Kerph data (layouts, tool statuses, account, preferences) with the contents of this backup. Continue?')) return;
+                Object.keys(localStorage).filter(k => k.startsWith('kerph')).forEach(k => localStorage.removeItem(k));
+                Object.keys(data).forEach(k => { if (k.startsWith('kerph')) localStorage.setItem(k, data[k]); });
+                window.location.reload();
+            };
+            reader.readAsText(file);
+        }
+
         function initAccountPanel() {
             const btn = document.getElementById('accountBtn');
             const overlay = document.getElementById('accountModalOverlay');
@@ -571,7 +634,6 @@
             const avatarInput = document.getElementById('accountAvatarInput');
             const avatarBtn = document.getElementById('accountAvatarBtn');
             const avatarLarge = document.getElementById('accountAvatarLarge');
-            const unitsSelect = document.getElementById('accountUnitsSelect');
             const planSelect = document.getElementById('accountPlanSelect');
             const resetAllBtn = document.getElementById('accountResetAllBtn');
             let pendingAvatar = null;
@@ -581,7 +643,6 @@
                 usernameInput.value = acc.username || '';
                 pendingAvatar = acc.avatar || null;
                 applyAvatarTo(avatarLarge, pendingAvatar);
-                unitsSelect.value = localStorage.getItem('kerphUnitSystem') || 'imperial';
                 renderAccountMemberSince();
                 renderAccountStats();
                 renderAccountPlanCard();
@@ -604,7 +665,6 @@
                 const username = usernameInput.value.trim();
                 if (!username) { showToast('Enter a username to save your profile.'); return; }
                 localStorage.setItem(ACCOUNT_KEY, JSON.stringify({ ...loadAccount(), username, avatar: pendingAvatar }));
-                localStorage.setItem('kerphUnitSystem', unitsSelect.value);
                 renderAccountBadge();
                 overlay.style.display = 'none';
                 showToast('Profile saved locally.');
@@ -615,7 +675,6 @@
                     localStorage.setItem(PLAN_KEY, planSelect.value);
                     const headerSelect = document.getElementById('planSelector');
                     if (headerSelect) headerSelect.value = planSelect.value;
-                    if (typeof applyPlanGating === 'function') applyPlanGating();
                     renderAccountPlanCard();
                     renderAccountBadge();
                     showToast(`Switched to the ${planSelect.value[0].toUpperCase()}${planSelect.value.slice(1)} plan (preview).`);
@@ -645,37 +704,7 @@
             }
 
             document.getElementById('accountSignOutBtn').addEventListener('click', () => { overlay.style.display = 'none'; signOut(); });
-
             renderAccountBadge();
-        }
-
-        function exportAllKerphData() {
-            const data = {};
-            Object.keys(localStorage).filter(k => k.startsWith('kerph')).forEach(k => { data[k] = localStorage.getItem(k); });
-            const blob = new Blob([JSON.stringify({ exportedAt: new Date().toISOString(), data }, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `kerph-backup-${new Date().toISOString().slice(0, 10)}.json`;
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
-            URL.revokeObjectURL(url);
-        }
-
-        function importAllKerphData(file) {
-            const reader = new FileReader();
-            reader.onload = () => {
-                let parsed;
-                try { parsed = JSON.parse(reader.result); } catch (e) { alert('That file could not be read as a valid Kerph backup.'); return; }
-                const data = parsed && parsed.data ? parsed.data : null;
-                if (!data || typeof data !== 'object') { alert('That file could not be read as a valid Kerph backup.'); return; }
-                if (!confirm('This will overwrite your current Kerph data (layouts, tool statuses, account, preferences) with the contents of this backup. Continue?')) return;
-                Object.keys(localStorage).filter(k => k.startsWith('kerph')).forEach(k => localStorage.removeItem(k));
-                Object.keys(data).forEach(k => { if (k.startsWith('kerph')) localStorage.setItem(k, data[k]); });
-                window.location.reload();
-            };
-            reader.readAsText(file);
         }
 
         function isSignedIn() { return localStorage.getItem(AUTH_KEY) === 'true'; }
@@ -716,72 +745,278 @@
             [usernameInput, passwordInput].forEach(input => {
                 input.addEventListener('keydown', (e) => { if (e.key === 'Enter') attemptSignIn(); });
             });
-
             updateHeaderSignInState();
         }
 
-        /* ---------- BUILDER FINDER ---------- */
-        function isValidZip(zip) {
-            return /^\d{5}$/.test(zip);
+        /* ---------- 3D VIEWER ---------- */
+        const COLORS = {
+            wall: 0xf3f1ea,
+            innerWall: 0xece6d8,
+            floor: 0xd7cdb8,
+            tool: 0x1e3a8a,
+            cabinet: 0x8a5a34,
+            duct: 0x94a3b8,
+            lighting: 0xf2df8a,
+            door: 0x8a5a34,
+            window: 0x9fd3f0,
+            outlet: 0xd97706,
+            switch: 0xd97706,
+            panel: 0xb91c1c,
+            minisplit: 0x475569
+        };
+
+        // Real-world default heights for wall features that don't carry stored height
+        // data today (see the plan: only outlets store a real mountHeightIn).
+        const WALL_FEATURE_DEFAULTS = {
+            door: { bottomIn: 0, heightIn: 80, color: COLORS.door, opacity: 1 },
+            window: { bottomIn: 36, heightIn: 36, color: COLORS.window, opacity: 0.55 },
+            switch: { bottomIn: 48, heightIn: 4, color: COLORS.switch, opacity: 1 },
+            outlet: { bottomIn: null, heightIn: 4, color: COLORS.outlet, opacity: 1 },
+            panel: { bottomIn: 60, heightIn: 14, color: COLORS.panel, opacity: 1 },
+            minisplit: { bottomIn: 84, heightIn: 10, color: COLORS.minisplit, opacity: 1 }
+        };
+
+        let scene, camera, renderer, controls, raycaster, mouse;
+        let sharedLayout = null;
+        const clickableMeshes = [];
+        const canvasWrap = document.getElementById('viewer3dCanvas');
+
+        function ftFromPx(px) { return (parseFloat(px) || 0) / BASE_PPI; }
+
+        function initThree() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(50, canvasWrap.clientWidth / Math.max(canvasWrap.clientHeight, 1), 0.1, 2000);
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(canvasWrap.clientWidth, canvasWrap.clientHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+            canvasWrap.appendChild(renderer.domElement);
+
+            controls = new OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.08;
+            controls.maxPolarAngle = Math.PI / 2 - 0.02;
+
+            raycaster = new THREE.Raycaster();
+            mouse = new THREE.Vector2();
+            renderer.domElement.addEventListener('click', onCanvasClick);
+            window.addEventListener('resize', onWindowResize);
+
+            animate();
         }
 
-        function mapsSearchUrl(term, zip) {
-            return 'https://www.google.com/maps/search/' + encodeURIComponent(term + ' near ' + zip);
+        function onWindowResize() {
+            if (!camera || !renderer) return;
+            camera.aspect = canvasWrap.clientWidth / Math.max(canvasWrap.clientHeight, 1);
+            camera.updateProjectionMatrix();
+            renderer.setSize(canvasWrap.clientWidth, canvasWrap.clientHeight);
         }
 
-        function webSearchUrl(term, zip) {
-            return 'https://www.google.com/search?q=' + encodeURIComponent(term + ' near ' + zip + ' reviews');
+        function animate() {
+            requestAnimationFrame(animate);
+            if (controls) controls.update();
+            if (renderer && scene && camera) renderer.render(scene, camera);
         }
 
-        function currentZip() {
-            return document.getElementById('zipInput').value.trim();
+        function clearScene() {
+            while (scene.children.length) scene.remove(scene.children[0]);
+            clickableMeshes.length = 0;
         }
 
-        function initBuilderFinder() {
-            const zipInput = document.getElementById('zipInput');
-            const zipError = document.getElementById('zipError');
-            const searchBtn = document.getElementById('zipSearchBtn');
-            const webLink = document.getElementById('webSearchLink');
+        function getWallSegmentsFt(widthFt, lengthFt) {
+            let points;
+            if (sharedLayout.shapeMode === 'custom' && sharedLayout.shapePoints && sharedLayout.shapePoints.length >= 3) {
+                points = sharedLayout.shapePoints.map(p => ({ x: ftFromPx(p.x), y: ftFromPx(p.y) }));
+            } else {
+                points = [{ x: 0, y: 0 }, { x: widthFt, y: 0 }, { x: widthFt, y: lengthFt }, { x: 0, y: lengthFt }];
+            }
+            return points.map((p, i) => [p, points[(i + 1) % points.length]]);
+        }
 
-            function runSearch(term) {
-                const zip = currentZip();
-                if (!isValidZip(zip)) {
-                    zipError.textContent = 'Enter a valid 5-digit ZIP code first.';
-                    zipInput.focus();
-                    return;
-                }
-                zipError.textContent = '';
-                window.open(mapsSearchUrl(term, zip), '_blank', 'noopener');
+        function addWallSegment(a, b, thicknessFt, heightFt, color) {
+            const dx = b.x - a.x, dy = b.y - a.y;
+            const length = Math.hypot(dx, dy);
+            if (length < 0.05) return;
+            const angle = Math.atan2(dy, dx);
+            const geo = new THREE.BoxGeometry(length, heightFt, thicknessFt);
+            const mat = new THREE.MeshStandardMaterial({ color });
+            const mesh = new THREE.Mesh(geo, mat);
+            mesh.position.set((a.x + b.x) / 2, heightFt / 2, (a.y + b.y) / 2);
+            mesh.rotation.y = -angle;
+            scene.add(mesh);
+        }
+
+        function addToolMesh(t, ceilingFt) {
+            const layer = t.layer || 'tools';
+            const leftFt = ftFromPx(t.left), topFt = ftFromPx(t.top);
+            const wFt = ftFromPx(t.width) || 1, hFt = ftFromPx(t.height) || 1;
+            const physFt = parseFloat(t.physicalHeight) || 0;
+            const centerX = leftFt + wFt / 2, centerZ = topFt + hFt / 2;
+            const rotY = -THREE.MathUtils.degToRad(t.rotation || 0);
+            let mesh;
+
+            if (layer === 'dust-collection') {
+                // physicalHeight is a mount ELEVATION for this layer, not the object's own
+                // thickness (every duct/fitting shares a uniform catalog placeholder) — see plan.
+                const elevFt = physFt || 7;
+                const pipeRadius = Math.max(Math.min(wFt, hFt) / 2, 0.08);
+                const pipeLen = Math.max(wFt, hFt);
+                const geo = new THREE.CylinderGeometry(pipeRadius, pipeRadius, pipeLen, 12);
+                const mat = new THREE.MeshStandardMaterial({ color: COLORS.duct });
+                mesh = new THREE.Mesh(geo, mat);
+                mesh.rotation.z = Math.PI / 2;
+                mesh.position.set(centerX, elevFt, centerZ);
+                mesh.rotation.y = rotY;
+            } else if (layer === 'lighting') {
+                const elevFt = physFt || (ceilingFt - 0.3);
+                const geo = new THREE.BoxGeometry(Math.max(wFt, 0.3), 0.15, Math.max(hFt, 0.3));
+                const mat = new THREE.MeshStandardMaterial({ color: COLORS.lighting, emissive: 0xfff3b0, emissiveIntensity: 0.7 });
+                mesh = new THREE.Mesh(geo, mat);
+                mesh.position.set(centerX, elevFt, centerZ);
+                mesh.rotation.y = rotY;
+                const point = new THREE.PointLight(0xfff4d6, 0.7, 14);
+                point.position.set(centerX, elevFt - 0.15, centerZ);
+                scene.add(point);
+            } else {
+                const boxH = physFt || 3;
+                const geo = new THREE.BoxGeometry(wFt, boxH, hFt);
+                const mat = new THREE.MeshStandardMaterial({ color: t.cabType ? COLORS.cabinet : COLORS.tool });
+                mesh = new THREE.Mesh(geo, mat);
+                mesh.position.set(centerX, boxH / 2, centerZ);
+                mesh.rotation.y = rotY;
             }
 
-            searchBtn.addEventListener('click', () => runSearch('pole barn builders'));
-            zipInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') runSearch('pole barn builders'); });
-            zipInput.addEventListener('input', () => {
-                zipInput.value = zipInput.value.replace(/\D/g, '').slice(0, 5);
-                zipError.textContent = '';
-            });
-
-            document.querySelectorAll('.category-chip').forEach(chip => {
-                chip.addEventListener('click', () => runSearch(chip.getAttribute('data-term')));
-            });
-
-            webLink.addEventListener('click', (e) => {
-                const zip = currentZip();
-                if (!isValidZip(zip)) {
-                    e.preventDefault();
-                    zipError.textContent = 'Enter a valid 5-digit ZIP code first.';
-                    zipInput.focus();
-                    return;
-                }
-                webLink.href = webSearchUrl('pole barn builders', zip);
-            });
+            mesh.userData = { name: t.displayName || t.label || 'Item', dims: t.displayDims || '' };
+            scene.add(mesh);
+            clickableMeshes.push(mesh);
         }
+
+        function addWallFeatureMesh(f) {
+            const def = WALL_FEATURE_DEFAULTS[f.type];
+            if (!def) return;
+            const xFt = ftFromPx(f.x), zFt = ftFromPx(f.y);
+            const lengthFt = f.lengthFt || 1;
+            const thicknessFt = (f.thicknessFt || 0.3) + 0.03;
+            const bottomIn = f.type === 'outlet' ? (parseFloat(f.mountHeightIn) || 18) : def.bottomIn;
+            const heightFt = def.heightIn / 12;
+            const bottomFt = bottomIn / 12;
+
+            const geo = new THREE.BoxGeometry(lengthFt, heightFt, thicknessFt);
+            const mat = new THREE.MeshStandardMaterial({ color: def.color, transparent: def.opacity < 1, opacity: def.opacity });
+            const mesh = new THREE.Mesh(geo, mat);
+            mesh.position.set(xFt, bottomFt + heightFt / 2, zFt);
+            mesh.rotation.y = -THREE.MathUtils.degToRad(f.angle || 0);
+            mesh.userData = { name: f.label || f.type, dims: `${lengthFt.toFixed(2)} ft wide` };
+            scene.add(mesh);
+            clickableMeshes.push(mesh);
+        }
+
+        function frameCamera(widthFt, lengthFt, ceilingFt) {
+            const maxDim = Math.max(widthFt, lengthFt, ceilingFt, 1);
+            camera.position.set(widthFt / 2 + maxDim * 0.9, maxDim * 0.85, lengthFt / 2 + maxDim * 0.9);
+            controls.target.set(widthFt / 2, ceilingFt / 3, lengthFt / 2);
+            controls.update();
+        }
+
+        function buildScene() {
+            clearScene();
+
+            const widthFt = parseFloat(sharedLayout.widthFeet) || 20;
+            const lengthFt = parseFloat(sharedLayout.lengthFeet) || 24;
+            const ceilingFt = parseFloat(sharedLayout.ceilingHeightFt) || 10;
+            const wallThicknessFt = 0.35;
+
+            scene.background = new THREE.Color(0xdbe6f2);
+            scene.add(new THREE.AmbientLight(0xffffff, 0.55));
+            const dirLight = new THREE.DirectionalLight(0xffffff, 0.7);
+            dirLight.position.set(widthFt * 0.3, ceilingFt * 4, lengthFt * 0.7);
+            scene.add(dirLight);
+
+            const floorGeo = new THREE.PlaneGeometry(widthFt, lengthFt);
+            const floorMat = new THREE.MeshStandardMaterial({ color: COLORS.floor, side: THREE.DoubleSide });
+            const floor = new THREE.Mesh(floorGeo, floorMat);
+            floor.rotation.x = -Math.PI / 2;
+            floor.position.set(widthFt / 2, 0, lengthFt / 2);
+            scene.add(floor);
+
+            const gridSize = Math.max(widthFt, lengthFt);
+            const grid = new THREE.GridHelper(gridSize, Math.max(Math.round(gridSize), 1), 0xffffff, 0xbdb193);
+            grid.position.set(widthFt / 2, 0.01, lengthFt / 2);
+            scene.add(grid);
+
+            getWallSegmentsFt(widthFt, lengthFt).forEach(([a, b]) => addWallSegment(a, b, wallThicknessFt, ceilingFt, COLORS.wall));
+
+            (sharedLayout.internalWalls || []).forEach(w => {
+                const a = { x: ftFromPx(w.x1), y: ftFromPx(w.y1) };
+                const b = { x: ftFromPx(w.x2), y: ftFromPx(w.y2) };
+                addWallSegment(a, b, w.thicknessFt || 0.35, ceilingFt, COLORS.innerWall);
+            });
+
+            (sharedLayout.tools || []).forEach(t => addToolMesh(t, ceilingFt));
+            (sharedLayout.wallFeatures || []).forEach(f => addWallFeatureMesh(f));
+
+            frameCamera(widthFt, lengthFt, ceilingFt);
+        }
+
+        function onCanvasClick(e) {
+            const rect = renderer.domElement.getBoundingClientRect();
+            mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+            mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+            raycaster.setFromCamera(mouse, camera);
+            const hits = raycaster.intersectObjects(clickableMeshes, false);
+            const tooltip = document.getElementById('viewer3dTooltip');
+            if (hits.length) {
+                const obj = hits[0].object;
+                tooltip.innerHTML = `<strong>${escapeHtml(obj.userData.name)}</strong>${obj.userData.dims ? escapeHtml(obj.userData.dims) : ''}`;
+                tooltip.style.display = 'block';
+                tooltip.style.left = e.clientX + 'px';
+                tooltip.style.top = e.clientY + 'px';
+            } else {
+                tooltip.style.display = 'none';
+            }
+        }
+
+        function loadSharedLayout() {
+            try {
+                const raw = localStorage.getItem(CURRENT_LAYOUT_KEY);
+                sharedLayout = raw ? JSON.parse(raw) : null;
+            } catch (e) {
+                sharedLayout = null;
+            }
+
+            const emptyState = document.getElementById('empty3dState');
+            const controlsPanel = document.getElementById('viewerControlsPanel');
+            document.getElementById('viewer3dTooltip').style.display = 'none';
+
+            if (!sharedLayout || !sharedLayout.widthFeet) {
+                emptyState.style.display = 'block';
+                canvasWrap.style.display = 'none';
+                controlsPanel.style.display = 'none';
+                return;
+            }
+
+            emptyState.style.display = 'none';
+            canvasWrap.style.display = 'block';
+            controlsPanel.style.display = 'block';
+            buildScene();
+            onWindowResize();
+        }
+
+        document.getElementById('refresh3dBtn').addEventListener('click', () => {
+            loadSharedLayout();
+            showToast('Refreshed from your current layout.');
+        });
+
+        window.addEventListener('storage', (e) => {
+            if (e.key === CURRENT_LAYOUT_KEY) loadSharedLayout();
+        });
 
         document.getElementById('pageNavSelect').addEventListener('change', (e) => { window.location.href = e.target.value; });
         initPlanSelector();
         initHeaderSignIn();
         initAccountPanel();
-        initBuilderFinder();
+        initThree();
+        loadSharedLayout();
     </script>
+
 </body>
 </html>
