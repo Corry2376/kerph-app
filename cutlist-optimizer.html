@@ -1297,12 +1297,59 @@
             return labelColorMap[label];
         }
 
+        // Text-fit helpers for the part labels drawn on each cut piece. SVG has no
+        // text wrapping/auto-shrink, so widths are measured with a scratch canvas —
+        // font-size and the SVG viewBox are both in the same abstract "user units"
+        // (inches here), so measuring at fontSize-as-px and comparing directly against
+        // the available inches works without any unit conversion.
+        const _measureCtx = document.createElement('canvas').getContext('2d');
+        function measureTextWidth(text, fontSize, weight) {
+            _measureCtx.font = `${weight || 700} ${fontSize}px sans-serif`;
+            return _measureCtx.measureText(text).width;
+        }
+        function truncateToWidth(text, fontSize, maxWidth, weight) {
+            if (maxWidth <= 0) return '';
+            if (measureTextWidth(text, fontSize, weight) <= maxWidth) return text;
+            let lo = 0, hi = text.length;
+            while (lo < hi) {
+                const mid = Math.ceil((lo + hi) / 2);
+                const candidate = text.slice(0, mid) + '…';
+                if (measureTextWidth(candidate, fontSize, weight) <= maxWidth) lo = mid; else hi = mid - 1;
+            }
+            return lo > 0 ? text.slice(0, lo) + '…' : '';
+        }
+        // Shared white-on-color label style, with a soft dark stroke so it stays
+        // legible against any of the PART_COLORS fills.
+        function labelTextSvg(x, y, fontSize, weight, text) {
+            return `<text x="${x}" y="${y}" text-anchor="middle" dominant-baseline="middle" font-size="${fontSize}" font-weight="${weight}" fill="#ffffff" style="paint-order:stroke; stroke:#0f172a; stroke-width:${(fontSize * 0.06).toFixed(2)}; stroke-opacity:0.35;">${escapeHtml(text)}</text>`;
+        }
+
         function buildSheetSvg(sheet, sheetW, sheetH, labelColorMap) {
             let rects = '';
             sheet.shelves.forEach(shelf => {
                 shelf.parts.forEach(p => {
                     const color = colorForLabel(p.label, labelColorMap);
-                    rects += `<rect x="${p.x}" y="${p.y}" width="${p.w}" height="${p.h}" fill="${color}" fill-opacity="0.75" stroke="#0f172a" stroke-width="0.3"><title>${escapeHtml(p.label)} — ${p.w.toFixed(2)}" x ${p.h.toFixed(2)}"${p.rotated ? ' (rotated)' : ''}</title></rect>`;
+                    const dimsText = `${p.w.toFixed(1)}" x ${p.h.toFixed(1)}"`;
+                    rects += `<rect x="${p.x}" y="${p.y}" width="${p.w}" height="${p.h}" fill="${color}" fill-opacity="0.75" stroke="#0f172a" stroke-width="0.3"><title>${escapeHtml(p.label)} — ${dimsText}${p.rotated ? ' (rotated)' : ''}</title></rect>`;
+
+                    // Label the piece with its part name + dimensions, not just its
+                    // color — skip entirely on pieces too small to hold legible text.
+                    const minDim = Math.min(p.w, p.h);
+                    if (minDim >= 3) {
+                        const fontSize = Math.max(1.6, Math.min(minDim * 0.22, 3.2));
+                        const dimFontSize = fontSize * 0.72;
+                        const maxTextWidth = p.w - fontSize * 0.6;
+                        const cx = p.x + p.w / 2, cy = p.y + p.h / 2;
+                        const showDims = p.h >= fontSize * 2.6 + dimFontSize * 1.4;
+                        const nameLine = truncateToWidth(p.label, fontSize, maxTextWidth, 700);
+                        if (nameLine) {
+                            rects += labelTextSvg(cx, showDims ? cy - dimFontSize * 0.6 : cy, fontSize, 700, nameLine);
+                        }
+                        if (showDims) {
+                            const dimsLine = truncateToWidth(dimsText, dimFontSize, maxTextWidth, 600);
+                            if (dimsLine) rects += labelTextSvg(cx, cy + fontSize * 0.75, dimFontSize, 600, dimsLine);
+                        }
+                    }
                 });
             });
             return `<svg viewBox="0 0 ${sheetW} ${sheetH}" class="cut-diagram-svg"><rect x="0" y="0" width="${sheetW}" height="${sheetH}" fill="#f1f5f9" stroke="#94a3b8" stroke-width="0.5"/>${rects}</svg>`;
@@ -1313,7 +1360,18 @@
             let rects = '';
             board.parts.forEach(p => {
                 const color = colorForLabel(p.label, labelColorMap);
-                rects += `<rect x="${p.start}" y="0" width="${p.lengthIn}" height="${barHeight}" fill="${color}" fill-opacity="0.75" stroke="#0f172a" stroke-width="0.3"><title>${escapeHtml(p.label)} — ${p.lengthIn.toFixed(2)}"</title></rect>`;
+                const dimsText = `${p.lengthIn.toFixed(1)}"`;
+                rects += `<rect x="${p.start}" y="0" width="${p.lengthIn}" height="${barHeight}" fill="${color}" fill-opacity="0.75" stroke="#0f172a" stroke-width="0.3"><title>${escapeHtml(p.label)} — ${dimsText}</title></rect>`;
+
+                if (p.lengthIn >= 4) {
+                    const fontSize = Math.min(4.2, Math.max(2.2, barHeight * 0.3));
+                    const maxTextWidth = p.lengthIn - fontSize * 0.8;
+                    const combined = truncateToWidth(`${p.label} — ${dimsText}`, fontSize, maxTextWidth, 700);
+                    // Falling back to just the dims keeps *something* legible on a
+                    // narrow piece where the combined name+dims truncated to nothing useful.
+                    const text = combined.replace(/…$/, '').length >= 3 ? combined : truncateToWidth(dimsText, fontSize, maxTextWidth, 700);
+                    if (text) rects += labelTextSvg(p.start + p.lengthIn / 2, barHeight / 2, fontSize, 700, text);
+                }
             });
             return `<svg viewBox="0 0 ${boardLenIn} ${barHeight}" class="cut-diagram-svg cut-diagram-linear"><rect x="0" y="0" width="${boardLenIn}" height="${barHeight}" fill="#f1f5f9" stroke="#94a3b8" stroke-width="0.5"/>${rects}</svg>`;
         }
