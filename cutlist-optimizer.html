@@ -455,6 +455,31 @@
         }
 
         .cut-diagram-linear { max-height: 40px; }
+
+        .print-only-header { display: none; }
+
+        @media print {
+            @page { size: portrait; margin: 0.5in; }
+            body { background: #fff !important; }
+            header, #sidebar-panel, .upgrade-nudge, #optimizeBtn, #exportPdfBtn {
+                display: none !important;
+            }
+            .print-only-header {
+                display: block !important;
+                margin-bottom: 14px;
+            }
+            .print-only-header .print-title { font-size: 20px; font-weight: 800; color: #0f172a; }
+            .print-only-header .print-meta { font-size: 12px; color: #475569; margin-top: 2px; }
+            #canvas-area {
+                position: static !important;
+                width: auto !important;
+                height: auto !important;
+                overflow: visible !important;
+                padding: 0 !important;
+                top: auto !important; left: auto !important;
+            }
+            .cut-diagram-block { page-break-inside: avoid; }
+        }
     </style>
 </head>
 <body>
@@ -640,6 +665,8 @@
 
         <button type="button" id="optimizeBtn" class="new-layout-btn" style="width:100%; margin-top:8px;">Optimize Cut List</button>
     </div>
+
+    <div class="print-only-header" id="printOnlyHeader"></div>
 
     <div id="canvas-area">
         <div class="placeholder-box" id="emptyOptimizerState">
@@ -1374,14 +1401,30 @@
                         <div class="summary-label">Boards Needed</div>
                     </div>
                 </div>
+                <button type="button" id="exportPdfBtn" class="mini-btn" style="display:block; margin: 12px auto 0;">&#128196; Export PDF</button>
                 ${cardsHtml}
             `;
+            const exportBtn = document.getElementById('exportPdfBtn');
+            if (exportBtn) exportBtn.addEventListener('click', exportCutListPdf);
 
             document.getElementById('emptyOptimizerState').style.display = 'none';
             document.getElementById('resultsWrap').style.display = 'block';
         }
 
         document.getElementById('optimizeBtn').addEventListener('click', runOptimization);
+
+        /* ---------- EXPORT CUT LIST TO PDF ----------
+           Same approach as the Workshop Layout Planner's PDF export: no bundled library,
+           just fill in a print-only header and hand off to the browser's native
+           Save-as-PDF print destination. See the @media print block below. */
+        function exportCutListPdf() {
+            const dateStr = new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+            document.getElementById('printOnlyHeader').innerHTML = `
+                <div class="print-title">Kerph Cut List</div>
+                <div class="print-meta">Generated ${dateStr}</div>
+            `;
+            window.print();
+        }
     </script>
 
 </body>
