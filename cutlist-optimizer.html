@@ -485,6 +485,13 @@
                 top: auto !important; left: auto !important;
             }
             .cut-diagram-block { page-break-inside: avoid; }
+            /* `zoom` (not transform) so shrinking also shrinks the reserved layout
+               space, not just the visual appearance — otherwise a shrunk-but-still-
+               full-size box would still overflow onto a mostly-blank second page.
+               Set from JS right before printing (see exportCutListPdf) — capped
+               there so a long cut list doesn't get squeezed into illegibility just
+               to force it onto one page. */
+            #resultsWrap { zoom: var(--print-zoom, 1); }
         }
     </style>
 </head>
@@ -1437,8 +1444,27 @@
                 <div class="print-title">Kerph Cut List</div>
                 <div class="print-meta">Generated ${dateStr}</div>
             `;
+
+            // Best-effort shrink to fit one portrait page — 680x900 CSS px is a
+            // conservative printable area (comfortably inside Letter/A4 portrait at
+            // the @page 0.5in margin, with room left for the header). A cut list with
+            // many sheets/boards can legitimately be too long to shrink onto one page
+            // without becoming unreadable, so below PRINT_ZOOM_FLOOR we give up and
+            // let it paginate naturally instead of forcing illegibly tiny print.
+            const wrap = document.getElementById('resultsWrap');
+            const PRINT_AREA_W = 680;
+            const PRINT_AREA_H = 900;
+            const PRINT_ZOOM_FLOOR = 0.5;
+            const scale = Math.min(1, PRINT_AREA_W / wrap.scrollWidth, PRINT_AREA_H / wrap.scrollHeight);
+            wrap.style.setProperty('--print-zoom', scale >= PRINT_ZOOM_FLOOR ? scale : 1);
+
             window.print();
         }
+
+        window.addEventListener('afterprint', () => {
+            const wrap = document.getElementById('resultsWrap');
+            if (wrap) wrap.style.removeProperty('--print-zoom');
+        });
     </script>
 
 </body>

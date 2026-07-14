@@ -1857,6 +1857,11 @@
                 left: auto !important;
                 box-shadow: none !important;
                 page-break-inside: avoid;
+                /* `zoom` (not transform) so the shrink also shrinks the box's reserved
+                   layout space, not just its visual appearance — a transformed-but-
+                   still-full-size box would still overflow onto a second, mostly-blank
+                   page. Set from JS right before printing (see initExportPdf). */
+                zoom: var(--print-zoom, 1);
             }
             .placed-tool-node.selected-node { outline: none !important; }
         }
@@ -5899,7 +5904,22 @@
                     <div class="print-title">Kerph Workshop Layout</div>
                     <div class="print-meta">${feetToDisplay(widthFt)}${unitSystem === 'metric' ? 'm' : "'"} x ${feetToDisplay(lengthFt)}${unitSystem === 'metric' ? 'm' : "'"} shop &mdash; printed ${dateStr}</div>
                 `;
+
+                // Shrink the board to fit a single landscape page — 940x650 CSS px is a
+                // conservative printable area (comfortably inside both Letter and A4
+                // landscape at the @page 0.4in margin, with room left for the header
+                // above it). Never scales UP past 1 — a board that already fits stays
+                // as-is rather than being blown up to fill the page.
+                const PRINT_AREA_W = 940;
+                const PRINT_AREA_H = 650;
+                const scale = Math.min(1, PRINT_AREA_W / board.scrollWidth, PRINT_AREA_H / board.scrollHeight);
+                board.style.setProperty('--print-zoom', scale);
+
                 window.print();
+            });
+
+            window.addEventListener('afterprint', () => {
+                board.style.removeProperty('--print-zoom');
             });
         }
 
