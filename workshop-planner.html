@@ -1192,6 +1192,63 @@
             z-index: 850;
         }
 
+        .cost-panel {
+            top: 166px;
+            right: 24px;
+        }
+
+        .cost-group-label {
+            font-size: 9.5px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: #94a3b8;
+            margin-top: 8px;
+            margin-bottom: 2px;
+        }
+        .cost-group-label:first-child { margin-top: 0; }
+
+        .cost-item-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            padding: 3px 0;
+        }
+        .cost-item-name {
+            font-size: 11.5px;
+            color: #334155;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            flex: 1;
+        }
+        .cost-item-input {
+            width: 74px;
+            flex-shrink: 0;
+            font-size: 11.5px;
+            padding: 3px 6px;
+            border: 1px solid #cbd5e1;
+            border-radius: 5px;
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .cost-total-row {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            margin-top: 10px;
+            padding-top: 8px;
+            border-top: 1px solid #e2e8f0;
+            font-size: 13px;
+        }
+        .cost-total-row b {
+            font-size: 16px;
+            color: #1e3a8a;
+            font-variant-numeric: tabular-nums;
+        }
+
         .elec-stat-row {
             display: flex;
             align-items: baseline;
@@ -2813,6 +2870,16 @@
             <div id="clearanceResults"></div>
 
             <div class="shape-hint" style="margin-top:10px;">Flags gaps narrower than the minimum between tools/cabinets, and between them and the shop walls. Rotated footprints are approximated as bounding boxes.</div>
+        </div>
+    </div>
+
+    <div class="floating-panel cost-panel collapsed" id="costPanel">
+        <div class="floating-panel-title" id="costPanelHandle">&#128176; Cost Rollup <span class="panel-toggle-chevron">&#9656;</span></div>
+        <div class="panel-body">
+            <div id="costList"></div>
+            <div class="cost-total-row"><span>Total</span><b id="costTotalValue">$0</b></div>
+            <button type="button" id="costRefreshBtn" class="mini-btn" style="width:100%; margin-top:8px;">Refresh List</button>
+            <div class="shape-hint" style="margin-top:10px;">Nothing here is pre-filled — enter your own prices per item, since real prices vary by retailer, sale, and region.</div>
         </div>
     </div>
 
@@ -4804,7 +4871,8 @@
                 // physicalHeight is the object's real-world vertical height in feet (for future 3D),
                 // distinct from `height` above which is the 2D footprint box's pixel size.
                 physicalHeight: node.dataset.height || null,
-                layer: node.dataset.layer || 'tools'
+                layer: node.dataset.layer || 'tools',
+                estCost: node.dataset.estCost || ''
             }));
 
             const normalizedWallFeatures = (typeof wallFeatures !== 'undefined' ? wallFeatures : [])
@@ -4863,6 +4931,7 @@
             applyDustCollectionNodeStyling(toolNode, t.label);
             toolNode.dataset.height = t.physicalHeight || '';
             toolNode.dataset.layer = t.layer || (t.cabType ? 'cabinets' : 'tools');
+            toolNode.dataset.estCost = t.estCost || '';
             const w = t.width * zoomFactor;
             const h = t.height * zoomFactor;
             toolNode.style.width = w + 'px';
@@ -4899,7 +4968,8 @@
                 rotation: parseFloat(node.dataset.rotation) || 0,
                 cabType: node.dataset.cabType || null,
                 physicalHeight: node.dataset.height || null,
-                layer: node.dataset.layer || 'tools'
+                layer: node.dataset.layer || 'tools',
+                estCost: node.dataset.estCost || ''
             };
         }
 
@@ -5616,6 +5686,73 @@
             document.getElementById('clearanceMinWidth').addEventListener('change', () => {
                 if (!document.getElementById('clearancePanel').classList.contains('collapsed')) checkClearance();
             });
+        }
+
+        /* ---------- WHOLE-SHOP COST ROLLUP ----------
+           No prices are pre-filled — real prices vary too much by retailer/sale/region to
+           bake in a static guess, so this is purely a place for the user to enter and total
+           up their own numbers. Values live in dataset.estCost on each placed node and ride
+           along through the same descriptor pipeline as everything else (serialize/restore/
+           paste), so they survive save/load and undo/redo like any other placement detail. */
+        const COST_LAYER_LABELS = { tools: 'Tools', cabinets: 'Cabinets', 'dust-collection': 'Dust Collection', lighting: 'Lighting' };
+        let costRowNodes = [];
+
+        function getCostItems() {
+            return Array.from(document.querySelectorAll('.placed-tool-node')).map(n => ({
+                el: n,
+                label: n.dataset.displayName || n.dataset.toolName || 'Item',
+                layer: n.dataset.layer || 'tools'
+            }));
+        }
+
+        function updateCostTotal() {
+            const totalEl = document.getElementById('costTotalValue');
+            if (!totalEl) return;
+            let total = 0;
+            document.querySelectorAll('.cost-item-input').forEach(inp => { total += parseFloat(inp.value) || 0; });
+            totalEl.textContent = '$' + total.toLocaleString(undefined, { maximumFractionDigits: 0 });
+        }
+
+        function renderCostPanel() {
+            const listEl = document.getElementById('costList');
+            if (!listEl) return;
+            costRowNodes = [];
+            const items = getCostItems();
+            if (!items.length) {
+                listEl.innerHTML = '<div class="elec-empty">Nothing placed yet — drag tools onto the grid.</div>';
+                updateCostTotal();
+                return;
+            }
+            const groups = {};
+            items.forEach(it => {
+                if (!groups[it.layer]) groups[it.layer] = [];
+                groups[it.layer].push(it);
+            });
+            let html = '';
+            Object.keys(groups).forEach(layerKey => {
+                html += `<div class="cost-group-label">${escapeHtml(COST_LAYER_LABELS[layerKey] || layerKey)}</div>`;
+                groups[layerKey].forEach(it => {
+                    const rowIndex = costRowNodes.push(it.el) - 1;
+                    const val = it.el.dataset.estCost || '';
+                    html += `
+                        <div class="cost-item-row">
+                            <span class="cost-item-name">${escapeHtml(it.label)}</span>
+                            <input type="number" class="cost-item-input" min="0" step="1" data-row-index="${rowIndex}" placeholder="$0" value="${escapeHtml(val)}">
+                        </div>`;
+                });
+            });
+            listEl.innerHTML = html;
+            updateCostTotal();
+        }
+
+        function initCostPanel() {
+            document.getElementById('costList').addEventListener('input', (e) => {
+                if (!e.target.classList.contains('cost-item-input')) return;
+                const node = costRowNodes[parseInt(e.target.dataset.rowIndex, 10)];
+                if (node) node.dataset.estCost = e.target.value;
+                updateCostTotal();
+            });
+            document.getElementById('costRefreshBtn').addEventListener('click', renderCostPanel);
         }
 
         const CATEGORY_ICONS = {
@@ -6703,7 +6840,8 @@
                 document.getElementById('wallFeaturePanel'),
                 document.getElementById('layersPanel'),
                 document.getElementById('electricalPanel'),
-                document.getElementById('clearancePanel')
+                document.getElementById('clearancePanel'),
+                document.getElementById('costPanel')
             ];
             const gap = 10;
             let currentTop = 166;
@@ -6738,6 +6876,13 @@
                 clearancePanel.classList.toggle('collapsed');
                 if (clearancePanel.classList.contains('collapsed')) clearClearanceFlags();
                 else checkClearance();
+                arrangeFloatingPanels();
+            });
+
+            const costPanel = document.getElementById('costPanel');
+            makeDraggable(costPanel, document.getElementById('costPanelHandle'), () => {
+                costPanel.classList.toggle('collapsed');
+                if (!costPanel.classList.contains('collapsed')) renderCostPanel();
                 arrangeFloatingPanels();
             });
 
@@ -6921,6 +7066,7 @@
         initHideDcLabels();
         initElectricalPanel();
         initClearancePanel();
+        initCostPanel();
         document.getElementById('pageNavSelect').addEventListener('change', (e) => { window.location.href = e.target.value; });
         initDraggablePanels();
         initNewLayoutModal();
