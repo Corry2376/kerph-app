@@ -1174,6 +1174,24 @@
             right: 24px;
         }
 
+        .clearance-panel {
+            top: 166px;
+            right: 24px;
+        }
+
+        .clearance-flag-item {
+            outline: 2px dashed #dc2626 !important;
+            outline-offset: 2px;
+        }
+
+        .clearance-wall-marker {
+            position: absolute;
+            border: 2px dashed #dc2626;
+            background: rgba(220, 38, 38, 0.08);
+            pointer-events: none;
+            z-index: 850;
+        }
+
         .elec-stat-row {
             display: flex;
             align-items: baseline;
@@ -2764,6 +2782,27 @@
             <div id="elecResults"></div>
 
             <div class="shape-hint" style="margin-top:10px;">Estimate only — sums each placed tool's full-load amps (NEC Table 430.248 for motors; nameplate A/W otherwise) plus a 25% margin on the largest motor per NEC 430.24. Not a substitute for a licensed electrician's actual service calculation.</div>
+        </div>
+    </div>
+
+    <div class="floating-panel clearance-panel collapsed" id="clearancePanel">
+        <div class="floating-panel-title" id="clearancePanelHandle">&#128694; Clearance Checker <span class="panel-toggle-chevron">&#9656;</span></div>
+        <div class="panel-body">
+            <div class="header-field">
+                <label class="header-field-label" for="clearanceMinWidth">Minimum Walkway Width</label>
+                <select class="select-box" id="clearanceMinWidth">
+                    <option value="24">24 in</option>
+                    <option value="30" selected>30 in</option>
+                    <option value="36">36 in (ADA)</option>
+                    <option value="42">42 in</option>
+                </select>
+            </div>
+
+            <button type="button" id="clearanceCheckBtn" class="mini-btn" style="width:100%; margin-top:10px;">Check Clearance</button>
+
+            <div id="clearanceResults"></div>
+
+            <div class="shape-hint" style="margin-top:10px;">Flags gaps narrower than the minimum between tools/cabinets, and between them and the shop walls. Rotated footprints are approximated as bounding boxes.</div>
         </div>
     </div>
 
@@ -5343,6 +5382,146 @@
             renderElectricalPanel();
         }
 
+        /* ---------- CLEARANCE / WALKWAY CHECKER ---------- */
+        function pointToSegmentDist(px, py, a, b) {
+            const proj = projectPointToSegment(px, py, a, b);
+            return Math.hypot(px - proj.x, py - proj.y);
+        }
+
+        function pointToRectDist(px, py, rect) {
+            const cx = Math.max(rect.left, Math.min(px, rect.right));
+            const cy = Math.max(rect.top, Math.min(py, rect.bottom));
+            return Math.hypot(px - cx, py - cy);
+        }
+
+        function segmentsIntersect(p1, p2, p3, p4) {
+            const ccw = (a, b, c) => (c.y - a.y) * (b.x - a.x) > (b.y - a.y) * (c.x - a.x);
+            return ccw(p1, p3, p4) !== ccw(p2, p3, p4) && ccw(p1, p2, p3) !== ccw(p1, p2, p4);
+        }
+
+        // Minimum distance between a rect and a line segment — since both are convex,
+        // the closest approach is either an intersection (0) or a vertex-to-edge pairing.
+        function rectToSegmentDist(rect, a, b) {
+            const corners = [
+                { x: rect.left, y: rect.top }, { x: rect.right, y: rect.top },
+                { x: rect.right, y: rect.bottom }, { x: rect.left, y: rect.bottom }
+            ];
+            const pointInRect = (p) => p.x >= rect.left && p.x <= rect.right && p.y >= rect.top && p.y <= rect.bottom;
+            if (pointInRect(a) || pointInRect(b)) return 0;
+            for (let i = 0; i < 4; i++) {
+                if (segmentsIntersect(a, b, corners[i], corners[(i + 1) % 4])) return 0;
+            }
+            let minDist = Math.min(pointToRectDist(a.x, a.y, rect), pointToRectDist(b.x, b.y, rect));
+            corners.forEach(c => { minDist = Math.min(minDist, pointToSegmentDist(c.x, c.y, a, b)); });
+            return minDist;
+        }
+
+        // Shortest gap between two non-rotated bounding rects: the corridor width if their
+        // spans overlap on one axis, otherwise the corner-to-corner diagonal distance.
+        function rectGapPx(a, b) {
+            const dx = a.left > b.right ? a.left - b.right : (b.left > a.right ? b.left - a.right : 0);
+            const dy = a.top > b.bottom ? a.top - b.bottom : (b.top > a.bottom ? b.top - a.bottom : 0);
+            if (dx === 0 && dy === 0) return 0;
+            if (dx === 0) return dy;
+            if (dy === 0) return dx;
+            return Math.hypot(dx, dy);
+        }
+
+        function getFloorObstacles() {
+            return Array.from(document.querySelectorAll('.placed-tool-node')).filter(n => {
+                const layer = n.dataset.layer || 'tools';
+                return layer === 'tools' || layer === 'cabinets';
+            }).map(n => {
+                const left = parseFloat(n.style.left) || 0;
+                const top = parseFloat(n.style.top) || 0;
+                const w = parseFloat(n.style.width) || 0;
+                const h = parseFloat(n.style.height) || 0;
+                const angle = parseFloat(n.dataset.rotation) || 0;
+                return {
+                    el: n,
+                    rect: rectFromCenter(left + w / 2, top + h / 2, w, h, angle),
+                    label: n.dataset.displayName || n.dataset.toolName || 'Item'
+                };
+            });
+        }
+
+        function clearClearanceFlags() {
+            document.querySelectorAll('.clearance-flag-item').forEach(n => n.classList.remove('clearance-flag-item'));
+            document.querySelectorAll('.clearance-wall-marker').forEach(n => n.remove());
+        }
+
+        function checkClearance() {
+            clearClearanceFlags();
+            const resultEl = document.getElementById('clearanceResults');
+            if (!resultEl) return;
+            const minIn = parseFloat(document.getElementById('clearanceMinWidth').value) || 30;
+            const minPx = (minIn / 12) * ppi;
+            const flushThresholdPx = (2 / 12) * ppi;
+
+            const obstacles = getFloorObstacles();
+            const flaggedEls = new Set();
+            let issueCount = 0;
+
+            for (let i = 0; i < obstacles.length; i++) {
+                for (let j = i + 1; j < obstacles.length; j++) {
+                    const gap = rectGapPx(obstacles[i].rect, obstacles[j].rect);
+                    if (gap < minPx) {
+                        flaggedEls.add(obstacles[i].el);
+                        flaggedEls.add(obstacles[j].el);
+                        issueCount++;
+                    }
+                }
+            }
+
+            // Wall segments (shop perimeter + interior walls) as clearance obstacles too —
+            // but flush-mounted items (gap under ~2in) are almost always intentional, so
+            // only genuinely awkward mid-range gaps get flagged here.
+            const wallSegs = getWallSegments().concat(
+                internalWalls.map(w => [{ x: w.x1, y: w.y1 }, { x: w.x2, y: w.y2 }])
+            );
+            obstacles.forEach(o => {
+                let closest = null;
+                wallSegs.forEach(([a, b]) => {
+                    const dist = rectToSegmentDist(o.rect, a, b);
+                    if (!closest || dist < closest.dist) closest = { dist, a, b };
+                });
+                if (closest && closest.dist > flushThresholdPx && closest.dist < minPx) {
+                    flaggedEls.add(o.el);
+                    issueCount++;
+                    const cx = (o.rect.left + o.rect.right) / 2;
+                    const cy = (o.rect.top + o.rect.bottom) / 2;
+                    const proj = projectPointToSegment(cx, cy, closest.a, closest.b);
+                    const marker = document.createElement('div');
+                    marker.className = 'clearance-wall-marker';
+                    const size = 16;
+                    marker.style.left = (proj.x - size / 2) + 'px';
+                    marker.style.top = (proj.y - size / 2) + 'px';
+                    marker.style.width = size + 'px';
+                    marker.style.height = size + 'px';
+                    marker.style.borderRadius = '50%';
+                    board.appendChild(marker);
+                }
+            });
+
+            flaggedEls.forEach(el => el.classList.add('clearance-flag-item'));
+
+            if (!obstacles.length) {
+                resultEl.innerHTML = '<div class="elec-empty">No tools or cabinets placed yet.</div>';
+            } else if (!issueCount) {
+                resultEl.innerHTML = `<div class="elec-status-badge ok">&#10003; No walkways narrower than ${minIn}in found</div>`;
+            } else {
+                const itemCount = flaggedEls.size;
+                resultEl.innerHTML = `<div class="elec-status-badge warn">&#9888; ${issueCount} tight spot${issueCount === 1 ? '' : 's'} across ${itemCount} item${itemCount === 1 ? '' : 's'} — flagged in red on the grid</div>`;
+            }
+        }
+
+        function initClearancePanel() {
+            document.getElementById('clearanceCheckBtn').addEventListener('click', checkClearance);
+            document.getElementById('clearanceMinWidth').addEventListener('change', () => {
+                if (!document.getElementById('clearancePanel').classList.contains('collapsed')) checkClearance();
+            });
+        }
+
         const CATEGORY_ICONS = {
             'Table Saws': '<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="6" y="34" width="52" height="8" rx="2" fill="#1e3a8a"/><circle cx="32" cy="30" r="16" stroke="#1e3a8a" stroke-width="3"/><line x1="32" y1="14" x2="32" y2="46" stroke="#1e3a8a" stroke-width="3"/><line x1="16" y1="30" x2="48" y2="30" stroke="#1e3a8a" stroke-width="3"/></svg>',
             'Bandsaws': '<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="32" cy="14" r="9" stroke="#1e3a8a" stroke-width="3"/><circle cx="32" cy="50" r="9" stroke="#1e3a8a" stroke-width="3"/><line x1="23" y1="14" x2="23" y2="50" stroke="#1e3a8a" stroke-width="3"/><line x1="41" y1="14" x2="41" y2="50" stroke="#1e3a8a" stroke-width="3"/></svg>',
@@ -6427,7 +6606,8 @@
                 document.getElementById('cabinetPanel'),
                 document.getElementById('wallFeaturePanel'),
                 document.getElementById('layersPanel'),
-                document.getElementById('electricalPanel')
+                document.getElementById('electricalPanel'),
+                document.getElementById('clearancePanel')
             ];
             const gap = 10;
             let currentTop = 166;
@@ -6454,6 +6634,14 @@
             makeDraggable(electricalPanel, document.getElementById('electricalPanelHandle'), () => {
                 electricalPanel.classList.toggle('collapsed');
                 if (!electricalPanel.classList.contains('collapsed')) renderElectricalPanel();
+                arrangeFloatingPanels();
+            });
+
+            const clearancePanel = document.getElementById('clearancePanel');
+            makeDraggable(clearancePanel, document.getElementById('clearancePanelHandle'), () => {
+                clearancePanel.classList.toggle('collapsed');
+                if (clearancePanel.classList.contains('collapsed')) clearClearanceFlags();
+                else checkClearance();
                 arrangeFloatingPanels();
             });
 
@@ -6616,6 +6804,7 @@
         initZoomControls();
         initHideDcLabels();
         initElectricalPanel();
+        initClearancePanel();
         document.getElementById('pageNavSelect').addEventListener('change', (e) => { window.location.href = e.target.value; });
         initDraggablePanels();
         initNewLayoutModal();
