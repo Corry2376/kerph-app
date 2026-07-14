@@ -776,6 +776,35 @@
             margin-bottom: 12px;
         }
 
+        .calc-connections-result {
+            font-size: 11.5px;
+            font-weight: 700;
+            padding: 6px 9px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+        }
+        .calc-connections-result.ok { background: rgba(22, 163, 74, 0.1); color: #15803d; }
+        .calc-connections-result.warn { background: rgba(217, 119, 6, 0.1); color: #b45309; }
+
+        /* Pulses at each unmatched port so an open duct end is easy to spot on the grid. */
+        .open-port-marker {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            margin-left: -5px;
+            margin-top: -5px;
+            border-radius: 50%;
+            background: #dc2626;
+            box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.25);
+            z-index: 900;
+            pointer-events: none;
+            animation: openPortPulse 1s ease-in-out infinite;
+        }
+        @keyframes openPortPulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.3); }
+        }
+
         .calc-branch-row {
             display: flex;
             flex-direction: column;
@@ -991,7 +1020,9 @@
         <div class="panel-body">
             <div class="calc-hint">Planning estimate, not an engineering guarantee — real static pressure depends on your exact hose/pipe, fittings, and collector's fan curve. Use it to sanity-check duct size and see roughly how much resistance a run adds.</div>
 
-            <button type="button" id="calcAutoFillBtn" class="mini-btn" style="width:100%; margin-bottom:10px;">&#9889; Auto-Fill Branches from Layout</button>
+            <button type="button" id="calcAutoFillBtn" class="mini-btn" style="width:100%; margin-bottom:6px;">&#9889; Auto-Fill Branches from Layout</button>
+            <button type="button" id="calcCheckConnectionsBtn" class="mini-btn" style="width:100%; margin-bottom:10px;">&#128269; Check Duct Connections</button>
+            <div id="calcConnectionsResult"></div>
 
             <div id="calcBranchList"></div>
             <button type="button" id="calcAddBranchBtn" class="mini-btn" style="width:100%; margin-top:4px;">+ Add Branch</button>
@@ -2510,6 +2541,46 @@
             return !(a.x2 + tolFt < b.x1 || b.x2 + tolFt < a.x1 || a.y2 + tolFt < b.y1 || b.y2 + tolFt < a.y1);
         }
 
+        // Builds the REAL connectivity graph from the magnetic ports (see DUCT_PORTS /
+        // getWorldPorts / getPortItemType) instead of guessing from bounding-box proximity —
+        // two ports only count as connected if they land within a couple px of each other
+        // (properly snapped), which is far more precise than "boxes are roughly touching"
+        // and won't false-positive-connect two runs that just happen to sit near each other.
+        // Also returns every port that DIDN'T find a match, for the open-ends check.
+        const NETWORK_PORT_TOL = 3;
+
+        function buildDuctPortGraph(nodes) {
+            const info = nodes.map(n => {
+                const type = getPortItemType(n.dataset.toolName);
+                if (!type) return null;
+                const left = parseFloat(n.style.left), top = parseFloat(n.style.top);
+                const w = parseFloat(n.style.width), h = parseFloat(n.style.height);
+                const rotation = parseFloat(n.dataset.rotation) || 0;
+                return { node: n, sizeClass: getDuctSizeClass(n.dataset.toolName), ports: getWorldPorts(type, left, top, w, h, rotation) };
+            }).filter(Boolean);
+
+            const adjacency = new Map(info.map(i => [i.node, []]));
+            const openPorts = [];
+
+            info.forEach((a, ai) => {
+                a.ports.forEach(ap => {
+                    let matched = false;
+                    info.forEach((b, bi) => {
+                        if (ai === bi || a.sizeClass !== b.sizeClass) return;
+                        b.ports.forEach(bp => {
+                            if (Math.hypot(ap.x - bp.x, ap.y - bp.y) < NETWORK_PORT_TOL) {
+                                matched = true;
+                                if (!adjacency.get(a.node).includes(b.node)) adjacency.get(a.node).push(b.node);
+                            }
+                        });
+                    });
+                    if (!matched) openPorts.push({ node: a.node, x: ap.x, y: ap.y });
+                });
+            });
+
+            return { adjacency, openPorts };
+        }
+
         function traceDuctworkFromLayout() {
             const nodes = Array.from(document.querySelectorAll('.placed-tool-node[data-layer="dust-collection"]'));
             if (!nodes.length) return [];
@@ -2523,9 +2594,19 @@
             const blastGates = nodes.filter(n => n.dataset.toolName === 'Blast Gate' || n.dataset.toolName === '6in Blast Gate');
             if (!blastGates.length) return [];
 
-            const TOL_FT = 0.5;
-            const boxes = new Map(nodes.map(n => [n, getNodeBoxFt(n)]));
-            const neighbors = (node) => nodes.filter(other => other !== node && boxesNearlyTouch(boxes.get(node), boxes.get(other), TOL_FT));
+            const { adjacency } = buildDuctPortGraph(nodes);
+            // The collector has no formal port (it's not a flow-through fitting shape), so
+            // bridge it into the graph with the old box-proximity check just for this one
+            // connection — everything downstream of it uses the exact port graph.
+            const collectorBox = getNodeBoxFt(collectorNode);
+            if (!adjacency.has(collectorNode)) adjacency.set(collectorNode, []);
+            nodes.forEach(n => {
+                if (n === collectorNode || !adjacency.has(n)) return;
+                if (boxesNearlyTouch(collectorBox, getNodeBoxFt(n), 0.5)) {
+                    adjacency.get(collectorNode).push(n);
+                    adjacency.get(n).push(collectorNode);
+                }
+            });
 
             const results = [];
             blastGates.forEach(gate => {
@@ -2535,7 +2616,7 @@
                 while (queue.length) {
                     const { node, path } = queue.shift();
                     if (node === collectorNode) { found = path; break; }
-                    neighbors(node).forEach(n => {
+                    (adjacency.get(node) || []).forEach(n => {
                         if (!visited.has(n)) {
                             visited.add(n);
                             queue.push({ node: n, path: [...path, n] });
@@ -2549,13 +2630,49 @@
                     if (n === collectorNode) return;
                     const name = n.dataset.toolName || '';
                     if (name.includes('Elbow') || name.includes('Y-Joint') || name.includes('T-Joint')) elbows += 1;
-                    else if (name.includes('Dust Duct')) lengthFt += boxes.get(n).lengthFt;
+                    else if (name.includes('Dust Duct')) lengthFt += getNodeBoxFt(n).lengthFt;
                 });
 
                 results.push({ lengthFt: Math.round(lengthFt * 10) / 10, elbows });
             });
 
             return results;
+        }
+
+        // Marks every unmatched port on the grid with a pulsing dot and reports a count —
+        // the port graph already knows exactly which connections are real, so this is exact,
+        // not a guess.
+        function checkDuctConnections() {
+            document.querySelectorAll('.open-port-marker').forEach(m => m.remove());
+            const nodes = Array.from(document.querySelectorAll('.placed-tool-node[data-layer="dust-collection"]'));
+            const resultEl = document.getElementById('calcConnectionsResult');
+            if (!nodes.length) {
+                resultEl.innerHTML = '';
+                return;
+            }
+            const { openPorts } = buildDuctPortGraph(nodes);
+            // The collector isn't a port-based shape, so a port that lands right at a
+            // collector's intake would otherwise be flagged "open" even though it's actually
+            // connected — exclude anything within a few inches of a collector's box.
+            const collectorBoxesFt = nodes
+                .filter(n => (n.dataset.toolName || '').match(/DC-1100VX|Dust Deputy/))
+                .map(n => getNodeBoxFt(n));
+            const genuinelyOpen = openPorts.filter(p => {
+                const pxFt = p.x / ppi, pyFt = p.y / ppi;
+                return !collectorBoxesFt.some(b => pxFt > b.x1 - 0.5 && pxFt < b.x2 + 0.5 && pyFt > b.y1 - 0.5 && pyFt < b.y2 + 0.5);
+            });
+            genuinelyOpen.forEach(p => {
+                const marker = document.createElement('div');
+                marker.className = 'open-port-marker';
+                marker.style.left = p.x + 'px';
+                marker.style.top = p.y + 'px';
+                board.appendChild(marker);
+            });
+            if (!genuinelyOpen.length) {
+                resultEl.innerHTML = '<div class="calc-connections-result ok">&#10003; Every duct port is connected.</div>';
+            } else {
+                resultEl.innerHTML = `<div class="calc-connections-result warn">&#9888; ${genuinelyOpen.length} open duct end${genuinelyOpen.length === 1 ? '' : 's'} — marked in red on the grid.</div>`;
+            }
         }
 
         function autoFillBranchesFromLayout() {
@@ -2579,6 +2696,7 @@
             document.getElementById('calcAddBranchBtn').addEventListener('click', () => addCalcBranchRow());
             document.getElementById('calcRunBtn').addEventListener('click', runCalculator);
             document.getElementById('calcAutoFillBtn').addEventListener('click', autoFillBranchesFromLayout);
+            document.getElementById('calcCheckConnectionsBtn').addEventListener('click', checkDuctConnections);
             initCollectorPresets();
             addCalcBranchRow('Table Saw');
         }
