@@ -445,14 +445,24 @@
     <div class="floating-panel" id="viewerControlsPanel" style="display:none;">
         <div class="floating-panel-title">3D Shop Viewer</div>
         <button type="button" id="refresh3dBtn" class="mini-btn" style="width:100%;">&#8635; Refresh from Layout</button>
-        <div class="viewer-hint">Drag to orbit &middot; right-drag to pan &middot; scroll to zoom &middot; click an item for details.</div>
+        <div class="viewer-hint">Drag empty space to orbit &middot; right-drag to pan &middot; scroll to zoom &middot; drag a tool or cabinet to move it.</div>
         <div class="viewer-legend">
             <div class="viewer-legend-row"><span class="viewer-legend-swatch" style="background:#1e3a8a;"></span>Tools</div>
             <div class="viewer-legend-row"><span class="viewer-legend-swatch" style="background:#8a5a34;"></span>Cabinets</div>
             <div class="viewer-legend-row"><span class="viewer-legend-swatch" style="background:#94a3b8;"></span>Dust collection</div>
             <div class="viewer-legend-row"><span class="viewer-legend-swatch" style="background:#f2df8a;"></span>Lighting</div>
         </div>
-        <div class="viewer-hint">Read-only for now — edit the actual layout in the Workshop Layout Planner.</div>
+        <div class="viewer-hint">Dust collection, lighting, and wall features are read-only for now — edit those in the Workshop Layout Planner.</div>
+    </div>
+
+    <div class="floating-panel" id="selectionPanel" style="display:none; left:24px; right:auto;">
+        <div class="floating-panel-title">Selected Item</div>
+        <div class="viewer-hint" id="selectionPanelName" style="font-weight:700; color:#0f172a; margin-top:-6px; margin-bottom:8px;"></div>
+        <div style="display:flex; gap:8px;">
+            <button type="button" id="rotateSelectedBtn" class="mini-btn" style="flex:1;">&#8635; Rotate 90&deg;</button>
+            <button type="button" id="removeSelectedBtn" class="mini-btn danger" style="flex:1;">Remove</button>
+        </div>
+        <div class="viewer-hint">Drag to move it &middot; click empty space to deselect.</div>
     </div>
 
     <div id="viewer3dTooltip"></div>
@@ -781,6 +791,14 @@
         const clickableMeshes = [];
         const canvasWrap = document.getElementById('viewer3dCanvas');
 
+        // ---- Phase 2: select / drag / rotate / delete floor items (tools & cabinets only) ----
+        let selectedMesh = null;
+        let selectionHelper = null;
+        let dragState = null;
+        const dragPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+        const dragPoint = new THREE.Vector3();
+        let currentShopWidthFt = 20, currentShopLengthFt = 24;
+
         function ftFromPx(px) { return (parseFloat(px) || 0) / BASE_PPI; }
 
         function initThree() {
@@ -798,7 +816,10 @@
 
             raycaster = new THREE.Raycaster();
             mouse = new THREE.Vector2();
-            renderer.domElement.addEventListener('click', onCanvasClick);
+            // Capture-phase + on the wrapping div (an ancestor of the canvas) — see
+            // onPointerDownCapture's comment for why this ordering matters.
+            canvasWrap.addEventListener('pointerdown', onPointerDownCapture, { capture: true });
+            renderer.domElement.addEventListener('pointermove', onHoverMove);
             window.addEventListener('resize', onWindowResize);
 
             animate();
@@ -845,7 +866,7 @@
             scene.add(mesh);
         }
 
-        function addToolMesh(t, ceilingFt) {
+        function addToolMesh(t, ceilingFt, index) {
             const layer = t.layer || 'tools';
             const leftFt = ftFromPx(t.left), topFt = ftFromPx(t.top);
             const wFt = ftFromPx(t.width) || 1, hFt = ftFromPx(t.height) || 1;
@@ -883,9 +904,14 @@
                 mesh = new THREE.Mesh(geo, mat);
                 mesh.position.set(centerX, boxH / 2, centerZ);
                 mesh.rotation.y = rotY;
+                // Only floor items (tools/cabinets) are draggable in Phase 2 — dust-collection
+                // and lighting stay elevation-positioned/read-only, see the plan.
+                mesh.userData.draggable = true;
+                mesh.userData.toolIndex = index;
             }
 
-            mesh.userData = { name: t.displayName || t.label || 'Item', dims: t.displayDims || '' };
+            mesh.userData.name = t.displayName || t.label || 'Item';
+            mesh.userData.dims = t.displayDims || '';
             scene.add(mesh);
             clickableMeshes.push(mesh);
         }
@@ -924,6 +950,8 @@
             const lengthFt = parseFloat(sharedLayout.lengthFeet) || 24;
             const ceilingFt = parseFloat(sharedLayout.ceilingHeightFt) || 10;
             const wallThicknessFt = 0.35;
+            currentShopWidthFt = widthFt;
+            currentShopLengthFt = lengthFt;
 
             scene.background = new THREE.Color(0xdbe6f2);
             scene.add(new THREE.AmbientLight(0xffffff, 0.55));
@@ -951,21 +979,36 @@
                 addWallSegment(a, b, w.thicknessFt || 0.35, ceilingFt, COLORS.innerWall);
             });
 
-            (sharedLayout.tools || []).forEach(t => addToolMesh(t, ceilingFt));
+            (sharedLayout.tools || []).forEach((t, i) => addToolMesh(t, ceilingFt, i));
             (sharedLayout.wallFeatures || []).forEach(f => addWallFeatureMesh(f));
+
+            // A rebuild (after a rotate/remove, or reload) always starts with nothing selected.
+            selectedMesh = null;
+            selectionHelper = null;
+            const selPanel = document.getElementById('selectionPanel');
+            if (selPanel) selPanel.style.display = 'none';
 
             frameCamera(widthFt, lengthFt, ceilingFt);
         }
 
-        function onCanvasClick(e) {
+        function screenToNDC(e, rect) {
+            return {
+                x: ((e.clientX - rect.left) / rect.width) * 2 - 1,
+                y: -((e.clientY - rect.top) / rect.height) * 2 + 1
+            };
+        }
+
+        function raycastFromEvent(e) {
             const rect = renderer.domElement.getBoundingClientRect();
-            mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-            mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+            const ndc = screenToNDC(e, rect);
+            mouse.x = ndc.x;
+            mouse.y = ndc.y;
             raycaster.setFromCamera(mouse, camera);
-            const hits = raycaster.intersectObjects(clickableMeshes, false);
+        }
+
+        function showTooltipFor(e, obj) {
             const tooltip = document.getElementById('viewer3dTooltip');
-            if (hits.length) {
-                const obj = hits[0].object;
+            if (obj) {
                 tooltip.innerHTML = `<strong>${escapeHtml(obj.userData.name)}</strong>${obj.userData.dims ? escapeHtml(obj.userData.dims) : ''}`;
                 tooltip.style.display = 'block';
                 tooltip.style.left = e.clientX + 'px';
@@ -973,6 +1016,140 @@
             } else {
                 tooltip.style.display = 'none';
             }
+        }
+
+        function selectMesh(mesh) {
+            if (selectionHelper) { scene.remove(selectionHelper); selectionHelper = null; }
+            selectedMesh = mesh;
+            const panel = document.getElementById('selectionPanel');
+            if (mesh && mesh.userData.draggable) {
+                selectionHelper = new THREE.BoxHelper(mesh, 0xdb2777);
+                scene.add(selectionHelper);
+                document.getElementById('selectionPanelName').textContent = mesh.userData.name;
+                panel.style.display = 'block';
+            } else {
+                panel.style.display = 'none';
+            }
+        }
+
+        // Persists the current in-memory sharedLayout and rebuilds the scene from that
+        // just-saved state — same "mutate → persist → rebuild from source of truth" pattern
+        // the 2D planner's applyLayoutState() uses, scoped to this page. buildScene() always
+        // clears selection first (a fresh rebuild's meshes are new objects), so pass the
+        // edited tool's index to re-select the same item afterward — e.g. so clicking
+        // Rotate repeatedly keeps rotating the same object instead of needing a re-click
+        // between every step. Omit it (e.g. after a delete) to leave nothing selected.
+        function persistAndRebuild(reselectToolIndex) {
+            localStorage.setItem(CURRENT_LAYOUT_KEY, JSON.stringify(sharedLayout));
+            buildScene();
+            if (reselectToolIndex != null) {
+                const mesh = clickableMeshes.find(m => m.userData.toolIndex === reselectToolIndex);
+                if (mesh) selectMesh(mesh);
+            }
+        }
+
+        // Registered on canvasWrap (an ANCESTOR of the renderer's canvas) in the capture
+        // phase, so this always runs before OrbitControls' own pointerdown listener (which
+        // it attaches directly on the canvas, in the bubble phase) — stopPropagation() here
+        // stops that event from ever reaching OrbitControls, which is what keeps a drag on a
+        // draggable item from also starting a camera orbit.
+        function onPointerDownCapture(e) {
+            if (e.button !== 0) return;
+            raycastFromEvent(e);
+            const hits = raycaster.intersectObjects(clickableMeshes, false);
+
+            if (!hits.length) {
+                selectMesh(null);
+                document.getElementById('viewer3dTooltip').style.display = 'none';
+                return;
+            }
+
+            const obj = hits[0].object;
+            selectMesh(obj);
+
+            if (obj.userData.draggable) {
+                // The selection panel already names the item — skip the hover tooltip
+                // here, it would just be immediately covered by the drag anyway.
+                document.getElementById('viewer3dTooltip').style.display = 'none';
+                e.stopPropagation();
+                e.preventDefault();
+                raycaster.ray.intersectPlane(dragPlane, dragPoint);
+                dragState = { offsetX: obj.position.x - dragPoint.x, offsetZ: obj.position.z - dragPoint.z };
+                controls.enabled = false;
+                renderer.domElement.style.cursor = 'grabbing';
+                window.addEventListener('pointermove', onDragMove);
+                window.addEventListener('pointerup', onDragEnd);
+            } else {
+                showTooltipFor(e, obj);
+            }
+        }
+
+        // Rotated-AABB half-extents (mirrors getRotatedAabb() in workshop-planner.html) so a
+        // drag clamp keeps the object's whole footprint inside the shop, not just its center.
+        function getMeshHalfExtentsFt(mesh) {
+            const w = mesh.geometry.parameters.width || 1;
+            const d = mesh.geometry.parameters.depth || 1;
+            const rot = mesh.rotation.y;
+            return {
+                halfW: (Math.abs(w * Math.cos(rot)) + Math.abs(d * Math.sin(rot))) / 2,
+                halfD: (Math.abs(w * Math.sin(rot)) + Math.abs(d * Math.cos(rot))) / 2
+            };
+        }
+
+        function onDragMove(e) {
+            if (!dragState || !selectedMesh) return;
+            raycastFromEvent(e);
+            if (!raycaster.ray.intersectPlane(dragPlane, dragPoint)) return;
+            const { halfW, halfD } = getMeshHalfExtentsFt(selectedMesh);
+            const newX = Math.max(halfW, Math.min(dragPoint.x + dragState.offsetX, currentShopWidthFt - halfW));
+            const newZ = Math.max(halfD, Math.min(dragPoint.z + dragState.offsetZ, currentShopLengthFt - halfD));
+            selectedMesh.position.x = newX;
+            selectedMesh.position.z = newZ;
+            if (selectionHelper) selectionHelper.update();
+        }
+
+        function onDragEnd() {
+            window.removeEventListener('pointermove', onDragMove);
+            window.removeEventListener('pointerup', onDragEnd);
+            controls.enabled = true;
+            renderer.domElement.style.cursor = '';
+            if (dragState && selectedMesh) {
+                const t = sharedLayout.tools[selectedMesh.userData.toolIndex];
+                if (t) {
+                    const wFt = ftFromPx(t.width) || 1, hFt = ftFromPx(t.height) || 1;
+                    t.left = (selectedMesh.position.x - wFt / 2) * BASE_PPI;
+                    t.top = (selectedMesh.position.z - hFt / 2) * BASE_PPI;
+                    localStorage.setItem(CURRENT_LAYOUT_KEY, JSON.stringify(sharedLayout));
+                    showToast('Saved.');
+                }
+            }
+            dragState = null;
+        }
+
+        // Hover-only affordance (not drag-initiating) — separate from the capture-phase
+        // pointerdown above, safe to register normally on the canvas itself.
+        function onHoverMove(e) {
+            if (dragState) return;
+            raycastFromEvent(e);
+            const hits = raycaster.intersectObjects(clickableMeshes, false);
+            renderer.domElement.style.cursor = (hits.length && hits[0].object.userData.draggable) ? 'grab' : '';
+        }
+
+        function initSelectionPanel() {
+            document.getElementById('rotateSelectedBtn').addEventListener('click', () => {
+                if (!selectedMesh || !selectedMesh.userData.draggable) return;
+                const idx = selectedMesh.userData.toolIndex;
+                const t = sharedLayout.tools[idx];
+                if (!t) return;
+                t.rotation = ((parseFloat(t.rotation) || 0) + 90) % 360;
+                persistAndRebuild(idx);
+            });
+            document.getElementById('removeSelectedBtn').addEventListener('click', () => {
+                if (!selectedMesh || !selectedMesh.userData.draggable) return;
+                sharedLayout.tools.splice(selectedMesh.userData.toolIndex, 1);
+                persistAndRebuild();
+                showToast('Removed.');
+            });
         }
 
         function loadSharedLayout() {
@@ -1015,6 +1192,7 @@
         initHeaderSignIn();
         initAccountPanel();
         initThree();
+        initSelectionPanel();
         loadSharedLayout();
     </script>
 
