@@ -390,6 +390,37 @@
 
         .cabinet-remove-btn:hover { border-color: #b91c1c; color: #b91c1c; }
 
+        .tool-maintenance { flex: 1 0 100%; margin-top: 6px; padding-top: 6px; border-top: 1px dashed #e2e8f0; }
+
+        .maintenance-badge { font-size: 11px; font-weight: 600; padding: 3px 0; }
+        .maintenance-badge.overdue { color: #b91c1c; }
+        .maintenance-badge.due-soon { color: #b45309; }
+        .maintenance-badge.due-ok { color: #6b7280; }
+
+        .maintenance-actions { display: flex; gap: 6px; margin-top: 4px; }
+
+        .maintenance-mini-btn {
+            font-size: 10.5px;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 5px;
+            border: 1px solid #cbd5e1;
+            background-color: #ffffff;
+            color: #334155;
+            cursor: pointer;
+        }
+        .maintenance-mini-btn:hover { border-color: #1e3a8a; color: #1e3a8a; }
+
+        .maintenance-form-row { display: flex; gap: 6px; margin-top: 4px; }
+        .maintenance-input {
+            font-size: 11px;
+            padding: 4px 6px;
+            border: 1px solid #cbd5e1;
+            border-radius: 5px;
+            flex: 1;
+            min-width: 0;
+        }
+
         /* ---------- MAIN CONTENT ---------- */
         main {
             margin-left: 310px;
@@ -1002,6 +1033,129 @@
             }
         }
 
+        // Overdue/due-soon/due-ok status text + CSS class for a maintenance reminder's due date.
+        function formatMaintenanceStatus(dueDateStr) {
+            const due = new Date(dueDateStr + 'T00:00:00');
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const diffDays = Math.round((due - today) / 86400000);
+            if (diffDays < 0) return { text: `Overdue by ${Math.abs(diffDays)}d`, cls: 'overdue' };
+            if (diffDays === 0) return { text: 'Due today', cls: 'due-soon' };
+            if (diffDays <= 7) return { text: `Due in ${diffDays}d`, cls: 'due-soon' };
+            return { text: `Due ${due.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}`, cls: 'due-ok' };
+        }
+
+        // Pass maintenance: null to clear the reminder entirely.
+        function updateToolMaintenance(name, maintenance) {
+            const current = loadToolStatuses();
+            if (!current[name]) return;
+            if (maintenance === null) {
+                delete current[name].maintenance;
+            } else {
+                current[name].maintenance = maintenance;
+            }
+            localStorage.setItem(TOOL_STATUS_KEY, JSON.stringify(current));
+            renderToolLists();
+        }
+
+        function openMaintenanceForm(container, name) {
+            container.innerHTML = '';
+
+            const noteInput = document.createElement('input');
+            noteInput.type = 'text';
+            noteInput.className = 'maintenance-input';
+            noteInput.placeholder = 'e.g. Change blade';
+
+            const dateInput = document.createElement('input');
+            dateInput.type = 'date';
+            dateInput.className = 'maintenance-input';
+            dateInput.value = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10);
+
+            const intervalInput = document.createElement('input');
+            intervalInput.type = 'number';
+            intervalInput.className = 'maintenance-input';
+            intervalInput.min = '1';
+            intervalInput.placeholder = 'Repeat every N days (optional)';
+
+            const saveBtn = document.createElement('button');
+            saveBtn.type = 'button';
+            saveBtn.className = 'maintenance-mini-btn';
+            saveBtn.textContent = 'Save';
+            saveBtn.addEventListener('click', () => {
+                if (!dateInput.value) return;
+                updateToolMaintenance(name, {
+                    note: noteInput.value.trim(),
+                    dueDate: dateInput.value,
+                    intervalDays: parseInt(intervalInput.value, 10) || null
+                });
+            });
+
+            const row1 = document.createElement('div');
+            row1.className = 'maintenance-form-row';
+            row1.appendChild(noteInput);
+            const row2 = document.createElement('div');
+            row2.className = 'maintenance-form-row';
+            row2.appendChild(dateInput);
+            const row3 = document.createElement('div');
+            row3.className = 'maintenance-form-row';
+            row3.appendChild(intervalInput);
+            row3.appendChild(saveBtn);
+
+            container.appendChild(row1);
+            container.appendChild(row2);
+            container.appendChild(row3);
+        }
+
+        function buildMaintenanceSection(name, entry) {
+            const wrap = document.createElement('div');
+            wrap.className = 'tool-maintenance';
+
+            if (entry.maintenance && entry.maintenance.dueDate) {
+                const status = formatMaintenanceStatus(entry.maintenance.dueDate);
+                const badge = document.createElement('div');
+                badge.className = 'maintenance-badge ' + status.cls;
+                badge.textContent = `\u{1F527} ${entry.maintenance.note ? entry.maintenance.note + ' — ' : ''}${status.text}`;
+                wrap.appendChild(badge);
+
+                const actions = document.createElement('div');
+                actions.className = 'maintenance-actions';
+
+                const doneBtn = document.createElement('button');
+                doneBtn.type = 'button';
+                doneBtn.className = 'maintenance-mini-btn';
+                doneBtn.textContent = 'Mark Done';
+                doneBtn.addEventListener('click', () => {
+                    const interval = entry.maintenance.intervalDays;
+                    if (interval) {
+                        const next = new Date();
+                        next.setDate(next.getDate() + interval);
+                        updateToolMaintenance(name, { ...entry.maintenance, dueDate: next.toISOString().slice(0, 10) });
+                    } else {
+                        updateToolMaintenance(name, null);
+                    }
+                });
+
+                const clearBtn = document.createElement('button');
+                clearBtn.type = 'button';
+                clearBtn.className = 'maintenance-mini-btn';
+                clearBtn.textContent = 'Clear';
+                clearBtn.addEventListener('click', () => updateToolMaintenance(name, null));
+
+                actions.appendChild(doneBtn);
+                actions.appendChild(clearBtn);
+                wrap.appendChild(actions);
+            } else {
+                const setBtn = document.createElement('button');
+                setBtn.type = 'button';
+                setBtn.className = 'maintenance-mini-btn';
+                setBtn.textContent = '+ Set Maintenance Reminder';
+                setBtn.addEventListener('click', () => openMaintenanceForm(wrap, name));
+                wrap.appendChild(setBtn);
+            }
+
+            return wrap;
+        }
+
         function buildToolCard(name, entry) {
             const card = document.createElement('div');
             card.className = 'tool-box-item ' + (entry.status === 'owned' ? 'is-owned' : 'is-wishlist');
@@ -1022,6 +1176,10 @@
             info.appendChild(dims);
 
             card.appendChild(info);
+
+            if (entry.status === 'owned') {
+                card.appendChild(buildMaintenanceSection(name, entry));
+            }
 
             const removeBtn = document.createElement('button');
             removeBtn.type = 'button';
