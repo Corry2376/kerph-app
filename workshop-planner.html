@@ -892,6 +892,7 @@
             position: absolute;
             top: 80px;
             left: 40px;
+            cursor: grab;
 
             background-image:
                 linear-gradient(to right, #cbd5e1 1px, transparent 1px),
@@ -2980,6 +2981,7 @@
     <script>
         const board = document.getElementById('workshopBoard');
         let ppi = 30; // pixels per foot at 100% zoom — a live variable so zoom can scale it
+        let justPannedGrid = false; // set true right after a click-drag pan ends, to swallow the resulting spurious deselect click
 
         /* ---------- UNITS (imperial/metric) ----------
            Canonical internal storage is always FEET, since ppi is feet-based and that math
@@ -3416,8 +3418,11 @@
         function initDragAndDropEngine() {
             document.querySelectorAll('.tool-box-item').forEach(wireToolDragStart);
 
-            // Clicking empty grid space deselects whatever placed node was selected.
+            // Clicking empty grid space deselects whatever placed node was selected — but
+            // not right after a click-drag pan, which would otherwise also land on `board`
+            // and deselect as an unwanted side effect of just moving the viewport.
             board.addEventListener('click', (e) => {
+                if (justPannedGrid) { justPannedGrid = false; return; }
                 if (e.target === board) clearSelection();
             });
 
@@ -3510,6 +3515,53 @@
                 board.appendChild(toolNode);
                 internalDragData = null;
                 applyLayerVisibility();
+            });
+        }
+
+        /* ---------- GRID PANNING (click-drag empty grid to scroll, instead of scrollbars) ----------
+           Only arms on a genuine mousedown directly on the bare board background (e.target ===
+           board — same targeting the deselect-click handler already uses), and only once the
+           other click-driven grid tools (measure, wall drawing, shape drawing) are inactive, so
+           it never steals their drag gestures. A small movement threshold keeps a plain click
+           (deselect, or the shape-draw point-placement click) working as before. */
+        function initGridPanning() {
+            const scrollArea = document.getElementById('canvas-scroll-area');
+            if (!scrollArea) return;
+            let panState = null;
+
+            board.addEventListener('mousedown', (e) => {
+                if (e.button !== 0) return;
+                if (e.target !== board) return;
+                if (measureMode || wallFeatureMode === 'wall' || shapeMode === 'drawing') return;
+                panState = {
+                    startX: e.clientX,
+                    startY: e.clientY,
+                    scrollLeft: scrollArea.scrollLeft,
+                    scrollTop: scrollArea.scrollTop,
+                    moved: false
+                };
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (!panState) return;
+                const dx = e.clientX - panState.startX;
+                const dy = e.clientY - panState.startY;
+                if (!panState.moved) {
+                    if (Math.abs(dx) < 4 && Math.abs(dy) < 4) return;
+                    panState.moved = true;
+                    board.style.cursor = 'grabbing';
+                }
+                scrollArea.scrollLeft = panState.scrollLeft - dx;
+                scrollArea.scrollTop = panState.scrollTop - dy;
+            });
+
+            document.addEventListener('mouseup', () => {
+                if (!panState) return;
+                if (panState.moved) {
+                    board.style.cursor = '';
+                    justPannedGrid = true;
+                }
+                panState = null;
             });
         }
 
@@ -7140,6 +7192,7 @@
         document.getElementById('inputLength').addEventListener('input', updateWorkshopGridSize);
         document.getElementById('inputScale').addEventListener('change', updateWorkshopGridSize);
         initDragAndDropEngine();
+        initGridPanning();
         initResizeHandles();
         initToolStatusControls();
         initCustomTools();

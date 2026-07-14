@@ -454,6 +454,7 @@
             position: absolute;
             top: 80px;
             left: 40px;
+            cursor: grab;
             background-image:
                 linear-gradient(to right, #cbd5e1 1px, transparent 1px),
                 linear-gradient(to bottom, #cbd5e1 1px, transparent 1px);
@@ -1514,6 +1515,7 @@
         let selectedNode = null;
         let clipboardDescriptor = null;
         const board = document.getElementById('workshopBoard');
+        let justPannedGrid = false; // set true right after a click-drag pan ends, to swallow the resulting spurious deselect click
 
         function selectNode(el) {
             if (selectedNode === el) return;
@@ -2293,10 +2295,14 @@
 
         function initDragAndDropEngine() {
             document.getElementById('canvas-scroll-area').addEventListener('click', (e) => {
+                if (justPannedGrid) { justPannedGrid = false; return; }
                 if (e.target.id === 'canvas-scroll-area') clearSelection();
             });
 
-            board.addEventListener('click', (e) => { if (e.target === board) clearSelection(); });
+            board.addEventListener('click', (e) => {
+                if (justPannedGrid) { justPannedGrid = false; return; }
+                if (e.target === board) clearSelection();
+            });
             board.addEventListener('dragover', (e) => e.preventDefault());
 
             board.addEventListener('drop', (e) => {
@@ -2331,6 +2337,40 @@
                 selectNode(node);
                 internalDragData = null;
                 saveDustCollectionChanges();
+            });
+        }
+
+        // Click-drag empty grid to scroll instead of scrollbars. Only arms on a mousedown
+        // directly on the bare board background, and stays off while placing an outlet.
+        function initGridPanning() {
+            const scrollArea = document.getElementById('canvas-scroll-area');
+            if (!scrollArea) return;
+            let panState = null;
+
+            board.addEventListener('mousedown', (e) => {
+                if (e.button !== 0) return;
+                if (e.target !== board) return;
+                if (outletPlacementMode) return;
+                panState = { startX: e.clientX, startY: e.clientY, scrollLeft: scrollArea.scrollLeft, scrollTop: scrollArea.scrollTop, moved: false };
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (!panState) return;
+                const dx = e.clientX - panState.startX;
+                const dy = e.clientY - panState.startY;
+                if (!panState.moved) {
+                    if (Math.abs(dx) < 4 && Math.abs(dy) < 4) return;
+                    panState.moved = true;
+                    board.style.cursor = 'grabbing';
+                }
+                scrollArea.scrollLeft = panState.scrollLeft - dx;
+                scrollArea.scrollTop = panState.scrollTop - dy;
+            });
+
+            document.addEventListener('mouseup', () => {
+                if (!panState) return;
+                if (panState.moved) { board.style.cursor = ''; justPannedGrid = true; }
+                panState = null;
             });
         }
 
@@ -2806,6 +2846,7 @@
         initAccountPanel();
         renderCatalog();
         initDragAndDropEngine();
+        initGridPanning();
         loadSharedLayout();
         initOutletHeightModal();
         initOutletPanel();
