@@ -167,21 +167,27 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            padding: 6px 12px 6px 6px;
-            border: 1px solid #cbd5e1;
+            padding: 5px 14px 5px 5px;
+            border: 3px solid #cbd5e1;
             border-radius: 999px;
             background-color: #ffffff;
-            font-size: 13px;
-            font-weight: 700;
-            color: #1e3a8a;
             cursor: pointer;
+            transition: background-color 0.15s ease;
         }
 
-        .account-btn:hover { border-color: #1e3a8a; background-color: #eef2ff; }
+        .account-btn:hover { background-color: #eef2ff; }
+
+        .account-btn.plan-free { border-color: #16a34a; }
+        .account-btn.plan-pro { border-color: #2563eb; }
+        .account-btn.plan-premier { border-color: #ca8a04; }
+
+        .account-btn-text { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.2; }
+        .account-btn-name { font-size: 13px; font-weight: 700; color: #1e3a8a; }
+        .account-btn-plan { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: #6b7280; }
 
         .account-avatar {
-            width: 26px;
-            height: 26px;
+            width: 28px;
+            height: 28px;
             border-radius: 50%;
             background-color: #e0e7ff;
             background-size: cover;
@@ -506,17 +512,18 @@
                 <input type="password" class="header-sign-in-input" id="headerSignInPassword" placeholder="Password" autocomplete="current-password">
                 <button type="button" id="headerSignInBtn" class="mini-btn" title="Sign In">Sign In</button>
             </div>
-            <button type="button" id="accountBtn" class="account-btn" title="Account Settings" style="display:none;">
+            <button type="button" id="accountBtn" class="account-btn plan-free" title="Account &amp; Plan Settings — border color shows your plan level" style="display:none;">
                 <span class="account-avatar" id="accountAvatarPreview">&#128100;</span>
-                <span id="accountBtnLabel">Account</span>
+                <span class="account-btn-text">
+                    <span class="account-btn-name" id="accountBtnLabel">Account</span>
+                    <span class="account-btn-plan" id="accountBtnPlan">Free</span>
+                </span>
             </button>
-            <div>
-                <div class="plan-label"><abbr title="Simulates your subscription tier locally for previewing gated features. Real account billing isn't connected yet.">Plan Level ⓘ</abbr></div>
-                <select class="plan-select" id="planSelector">
-                    <option value="free">Free</option>
-                    <option value="pro">Pro</option>
-                    <option value="premier">Premier</option>
-                </select>
+            <select class="plan-select" id="planSelector" style="display:none;">
+                <option value="free">Free</option>
+                <option value="pro">Pro</option>
+                <option value="premier">Premier</option>
+            </select>
             </div>
         </div>
     </header>
@@ -734,6 +741,13 @@
             const acc = loadAccount();
             document.getElementById('accountBtnLabel').textContent = acc.username || 'Account';
             applyAvatarTo(document.getElementById('accountAvatarPreview'), acc.avatar);
+
+            const plan = getPlan();
+            const planLabels = { free: 'Free', pro: 'Pro', premier: 'Premier' };
+            const planEl = document.getElementById('accountBtnPlan');
+            if (planEl) planEl.textContent = planLabels[plan] || 'Free';
+            const btn = document.getElementById('accountBtn');
+            if (btn) btn.className = 'account-btn plan-' + (plan === 'pro' || plan === 'premier' ? plan : 'free');
         }
 
         /* ---------- Account extras shared with the other pages: tool-status stats, saved
@@ -884,6 +898,7 @@
                     if (headerSelect) headerSelect.value = planSelect.value;
                     if (typeof applyPlanGating === 'function') applyPlanGating();
                     renderAccountPlanCard();
+                    renderAccountBadge();
                     showToast(`Switched to the ${planSelect.value[0].toUpperCase()}${planSelect.value.slice(1)} plan (preview).`);
                 });
             }
