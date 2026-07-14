@@ -1929,6 +1929,16 @@
             <div class="modal-title" id="modalTitle">Start a New Shop Layout</div>
             <div class="modal-warning" id="modalWarning">This clears everything currently on the grid.</div>
 
+            <div class="header-field" style="width:100%; margin-bottom:10px;" id="templateField">
+                <label class="header-field-label" for="layoutTemplateSelect">Start From</label>
+                <select class="select-box" id="layoutTemplateSelect">
+                    <option value="">Blank Layout</option>
+                    <option value="one-car">Compact One-Car Garage (12' x 22')</option>
+                    <option value="two-car">Two-Car Garage Woodshop (20' x 24')</option>
+                    <option value="dedicated">Dedicated Shop Building (30' x 40')</option>
+                </select>
+            </div>
+
             <div class="header-field" style="width:100%; margin-bottom:10px;">
                 <label class="header-field-label">Units</label>
                 <div class="header-compound-row">
@@ -4965,6 +4975,92 @@
             showToast(`Loaded "${layout.name}".`);
         }
 
+        /* ---------- STARTER LAYOUT TEMPLATES ----------
+           Each tool entry's wFt/lFt mirror a real catalog item's data-width/data-length
+           (see the sidebar catalog), and leftFt/topFt are hand-placed in feet from the
+           shop's top-left corner — buildTemplateLayout() converts all of that into the
+           same BASE_PPI-normalized descriptor shape applyLayoutState() already expects
+           from a saved layout, so no new placement code path is needed. */
+        const LAYOUT_TEMPLATES = {
+            'one-car': {
+                name: 'Compact One-Car Garage',
+                widthFeet: 12, lengthFeet: 22, scale: '1.0',
+                tools: [
+                    { name: 'JET DC-1100VX', wFt: 2.2, lFt: 2.2, leftFt: 0.3, topFt: 0.3 },
+                    { name: 'SawStop PCS175', wFt: 3, lFt: 5.2, leftFt: 3, topFt: 0.5 },
+                    { name: 'Laguna 14BX', wFt: 2.1, lFt: 2.5, leftFt: 9, topFt: 0.5 },
+                    { name: 'Assembly Table', wFt: 3, lFt: 6, leftFt: 3, topFt: 6 },
+                    { name: 'Husky 72in Tool Chest Combo', wFt: 2, lFt: 6, leftFt: 0.3, topFt: 12 },
+                    { name: 'Craftsman 26in Rolling Cabinet', wFt: 2.2, lFt: 1.5, leftFt: 7, topFt: 12 }
+                ]
+            },
+            'two-car': {
+                name: 'Two-Car Garage Woodshop',
+                widthFeet: 20, lengthFeet: 24, scale: '1.0',
+                tools: [
+                    { name: 'JET DC-1100VX', wFt: 2.2, lFt: 2.2, leftFt: 0.3, topFt: 0.3 },
+                    { name: 'SawStop PCS175', wFt: 3, lFt: 5.2, leftFt: 4, topFt: 1 },
+                    { name: 'Laguna 14BX', wFt: 2.1, lFt: 2.5, leftFt: 12, topFt: 1 },
+                    { name: 'Powermatic 201HH', wFt: 2.6, lFt: 3.4, leftFt: 4, topFt: 6 },
+                    { name: 'Festool Kapex KS 120', wFt: 2.5, lFt: 4.5, leftFt: 9, topFt: 6 },
+                    { name: 'JET 22-44 Sander', wFt: 1.5, lFt: 1.5, leftFt: 15, topFt: 6 },
+                    { name: 'Assembly Table', wFt: 3, lFt: 6, leftFt: 4, topFt: 10 },
+                    { name: 'Husky 72in Tool Chest Combo', wFt: 2, lFt: 6, leftFt: 0.3, topFt: 15 },
+                    { name: 'Craftsman 26in Rolling Cabinet', wFt: 2.2, lFt: 1.5, leftFt: 8, topFt: 15 },
+                    { name: 'DEWALT TOUGHSYSTEM 2.0', wFt: 1.8, lFt: 2.0, leftFt: 11, topFt: 15 }
+                ]
+            },
+            'dedicated': {
+                name: 'Dedicated Shop Building',
+                widthFeet: 30, lengthFeet: 40, scale: '1.0',
+                tools: [
+                    { name: 'Oneida Super Dust Deputy XL', wFt: 1.5, lFt: 1.5, leftFt: 0.3, topFt: 0.3 },
+                    { name: 'SawStop ICS', wFt: 3.2, lFt: 5.5, leftFt: 4, topFt: 1 },
+                    { name: 'Grizzly G0513X2', wFt: 2.2, lFt: 2.6, leftFt: 11, topFt: 1 },
+                    { name: 'Hammer A3-31', wFt: 2.5, lFt: 4.0, leftFt: 16, topFt: 1 },
+                    { name: 'SuperMax 19-38', wFt: 2.0, lFt: 3.5, leftFt: 22, topFt: 1 },
+                    { name: 'Powermatic 3520C', wFt: 2.0, lFt: 6.5, leftFt: 4, topFt: 6 },
+                    { name: 'JET 22-44 Sander', wFt: 1.5, lFt: 1.5, leftFt: 12, topFt: 6 },
+                    { name: 'Festool Kapex KS 120', wFt: 2.5, lFt: 4.5, leftFt: 15, topFt: 6 },
+                    { name: 'Kreg PRS2100', wFt: 1.8, lFt: 2.8, leftFt: 21, topFt: 6 },
+                    { name: 'Assembly Table', wFt: 3, lFt: 6, leftFt: 4, topFt: 12 },
+                    { name: 'Kreg Mobile Project Center', wFt: 2, lFt: 3, leftFt: 12, topFt: 12 },
+                    { name: 'Husky 72in Tool Chest Combo', wFt: 2, lFt: 6, leftFt: 0.3, topFt: 18 },
+                    { name: 'Snap-on KRL1023 Classic 78', wFt: 2.1, lFt: 6.5, leftFt: 8, topFt: 18 },
+                    { name: 'Kobalt 41in Rolling Chest', wFt: 1.5, lFt: 3.4, leftFt: 16, topFt: 18 },
+                    { name: 'US General 56in Roller Cabinet', wFt: 1.8, lFt: 4.7, leftFt: 21, topFt: 18 }
+                ]
+            }
+        };
+
+        function buildTemplateLayout(key) {
+            const tpl = LAYOUT_TEMPLATES[key];
+            if (!tpl) return null;
+            return {
+                widthFeet: tpl.widthFeet,
+                lengthFeet: tpl.lengthFeet,
+                scale: tpl.scale,
+                unitSystem: unitSystem,
+                shapeMode: 'rectangle',
+                shapePoints: [],
+                tools: tpl.tools.map(t => ({
+                    label: t.name,
+                    displayName: t.name,
+                    displayDims: '',
+                    left: t.leftFt * BASE_PPI,
+                    top: t.topFt * BASE_PPI,
+                    width: t.lFt * BASE_PPI,
+                    height: t.wFt * BASE_PPI,
+                    rotation: 0,
+                    cabType: null,
+                    physicalHeight: null,
+                    layer: 'tools'
+                })),
+                wallFeatures: [],
+                internalWalls: []
+            };
+        }
+
         /* ---------- UNDO / REDO ----------
            Snapshot-based rather than per-action command objects: every undoable gesture
            (place, drag, resize, rotate, delete, shape edit, dimension change, layout load)
@@ -6654,7 +6750,17 @@
             const title = document.getElementById('modalTitle');
             const warning = document.getElementById('modalWarning');
             const startBtn = document.getElementById('modalStartBtn');
+            const templateField = document.getElementById('templateField');
+            const templateSelect = document.getElementById('layoutTemplateSelect');
             let modalMode = 'new';
+
+            templateSelect.addEventListener('change', () => {
+                const tpl = LAYOUT_TEMPLATES[templateSelect.value];
+                if (!tpl) return;
+                document.getElementById('inputWidth').value = feetToDisplay(tpl.widthFeet);
+                document.getElementById('inputLength').value = feetToDisplay(tpl.lengthFeet);
+                document.getElementById('inputScale').value = tpl.scale;
+            });
 
             function openModal(mode) {
                 modalMode = mode;
@@ -6662,10 +6768,13 @@
                     title.textContent = 'Edit Shop Settings';
                     warning.style.display = 'none';
                     startBtn.textContent = 'Apply Changes';
+                    templateField.style.display = 'none';
                 } else {
                     title.textContent = 'Start a New Shop Layout';
                     warning.style.display = 'block';
                     startBtn.textContent = 'Start Layout';
+                    templateField.style.display = 'block';
+                    templateSelect.value = '';
                 }
                 overlay.style.display = 'flex';
             }
@@ -6684,9 +6793,16 @@
             startBtn.addEventListener('click', () => {
                 pushUndoSnapshot();
                 if (modalMode === 'new') {
-                    clearBoardTools();
-                    resetToRectangle();
-                    showToast('Started a new shop layout.');
+                    const tplKey = templateSelect.value;
+                    const tpl = LAYOUT_TEMPLATES[tplKey];
+                    if (tpl) {
+                        applyLayoutState(buildTemplateLayout(tplKey));
+                        showToast(`Started from the "${tpl.name}" template.`);
+                    } else {
+                        clearBoardTools();
+                        resetToRectangle();
+                        showToast('Started a new shop layout.');
+                    }
                 } else {
                     updateWorkshopGridSize();
                     showToast('Shop settings updated.');
