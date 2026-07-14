@@ -3361,10 +3361,12 @@
         function buildPlacedNodeContent(el, displayName, displayDims) {
             el.dataset.displayName = displayName;
             el.dataset.displayDims = displayDims || '';
-            // Blast gates/brackets are too small a footprint to hold readable text inside
-            // themselves — .flag-content is styled to sit just outside the node as a small
-            // tag instead (see CSS), rather than clipped/shrunk to fit inside the icon.
-            const useFlag = el.classList.contains('blast-gate-node') || el.classList.contains('bracket-node');
+            // Blast gates/brackets/Y-joints/T-joints are too small (or too visually busy) a
+            // footprint to hold readable text inside themselves — .flag-content is styled to
+            // sit just outside the node as a small tag instead (see CSS), rather than
+            // clipped/shrunk to fit inside the icon.
+            const useFlag = el.classList.contains('blast-gate-node') || el.classList.contains('bracket-node')
+                || el.classList.contains('y-joint-node') || el.classList.contains('t-joint-node');
             el.innerHTML = `<div class="node-content${useFlag ? ' flag-content' : ''}"><span class="node-label"></span>${(displayDims && !useFlag) ? '<span class="node-dims"></span>' : ''}</div>`;
             el.querySelector('.node-label').textContent = displayName;
             if (displayDims && !useFlag) el.querySelector('.node-dims').textContent = displayDims;
