@@ -234,6 +234,30 @@
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
         }
 
+        /* The account modal has grown a lot more content than a typical modal (stats, plan,
+           saved layouts, danger zone) — wider and independently scrollable so it never runs
+           off the bottom of a shorter viewport. */
+        .account-modal-box { width: 380px; max-height: 88vh; overflow-y: auto; }
+        .account-member-since { font-size: 10.5px; color: #94a3b8; font-weight: 600; margin-top: 6px; }
+        .account-stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
+        .account-stat { text-align: center; background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 4px; }
+        .account-stat-value { font-size: 16px; font-weight: 800; color: #1e3a8a; font-variant-numeric: tabular-nums; }
+        .account-stat-label { font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: #6b7280; margin-top: 2px; }
+        .account-plan-card { margin-top: 12px; background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px; }
+        .account-plan-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+        .account-plan-name { font-size: 15px; font-weight: 800; color: #0f172a; }
+        .account-plan-upsell { font-size: 11px; color: #92400e; margin-top: 8px; padding-top: 8px; border-top: 1px dashed #fde68a; }
+        .account-layouts-list { max-height: 150px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px; margin-top: 4px; }
+        .account-layout-item { display: flex; align-items: center; gap: 6px; padding: 7px 9px; border-bottom: 1px solid #f1f5f9; font-size: 11.5px; }
+        .account-layout-item:last-child { border-bottom: none; }
+        .account-layout-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 700; color: #1e293b; }
+        .account-layout-type { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; color: #6b7280; background-color: #eef2ff; border-radius: 4px; padding: 2px 5px; flex-shrink: 0; }
+        .account-layout-del { flex-shrink: 0; border: none; background: none; color: #b91c1c; cursor: pointer; font-size: 13px; padding: 0 2px; }
+        .account-layouts-empty { font-size: 11.5px; color: #9ca3af; font-style: italic; padding: 10px; text-align: center; }
+        .account-danger-zone { margin-top: 18px; padding-top: 14px; border-top: 1px solid #fecaca; }
+        .account-danger-title { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: #b91c1c; margin-bottom: 4px; }
+        .account-danger-desc { font-size: 11px; color: #6b7280; margin-bottom: 8px; line-height: 1.5; }
+
         .modal-title {
             font-size: 16px;
             font-weight: 800;
@@ -512,7 +536,7 @@
     </header>
 
     <div class="modal-overlay" id="accountModalOverlay" style="display:none;">
-        <div class="modal-box">
+        <div class="modal-box account-modal-box">
             <div class="modal-title">Account Settings</div>
             <div class="modal-warning">Saved locally in this browser only — real accounts, Google sign-in, and community features aren't connected yet.</div>
 
@@ -520,11 +544,29 @@
                 <div class="account-avatar-large" id="accountAvatarLarge">&#128100;</div>
                 <input type="file" id="accountAvatarInput" accept="image/*" style="display:none;">
                 <button type="button" id="accountAvatarBtn" class="mini-btn" style="margin-top:10px; flex:none;">Upload Photo</button>
+                <div class="account-member-since" id="accountMemberSince"></div>
             </div>
 
             <div class="header-field" style="width:100%;">
                 <label class="header-field-label" for="accountUsernameInput">Username</label>
                 <input type="text" class="input-box" id="accountUsernameInput" placeholder="Choose a username">
+            </div>
+
+            <div class="account-stats-row" id="accountStatsRow"></div>
+
+            <div class="account-plan-card">
+                <div class="account-plan-row">
+                    <div>
+                        <div class="header-field-label" style="margin-bottom:3px;">Plan</div>
+                        <div class="account-plan-name" id="accountPlanName">Free</div>
+                    </div>
+                    <select class="select-box" id="accountPlanSelect" style="width:auto;">
+                        <option value="free">Free</option>
+                        <option value="pro">Pro</option>
+                        <option value="premier">Premier</option>
+                    </select>
+                </div>
+                <div class="account-plan-upsell" id="accountPlanUpsell" style="display:none;">Saved layouts, custom shapes, cabinetry, and more unlock on Pro.</div>
             </div>
 
             <div class="header-field" style="width:100%; margin-top:10px;">
@@ -535,11 +577,22 @@
                 </select>
             </div>
 
+            <div class="header-field" style="width:100%; margin-top:14px;">
+                <label class="header-field-label">Saved Layouts</label>
+                <div id="accountLayoutsList" class="account-layouts-list"></div>
+            </div>
+
             <div class="modal-actions">
                 <button type="button" id="accountCancelBtn" class="mini-btn">Close</button>
                 <button type="button" id="accountSaveBtn" class="mini-btn modal-primary-btn">Save</button>
             </div>
             <button type="button" id="accountSignOutBtn" class="mini-btn danger" style="width:100%; margin-top:8px;">Sign Out</button>
+
+            <div class="account-danger-zone">
+                <div class="account-danger-title">Danger Zone</div>
+                <div class="account-danger-desc">Permanently erases every layout, tool status, and preference saved in this browser. This cannot be undone.</div>
+                <button type="button" id="accountResetAllBtn" class="mini-btn danger" style="width:100%;">Reset All Local Data&hellip;</button>
+            </div>
         </div>
     </div>
 
@@ -651,6 +704,93 @@
             applyAvatarTo(document.getElementById('accountAvatarPreview'), acc.avatar);
         }
 
+        /* ---------- SAVED LAYOUTS (read-only view from here — editing lives in Workshop
+           Layout Planner) + account stats/plan/member-since. Shares kerphSavedLayouts with
+           that page so a layout saved there shows up here too. ---------- */
+        const LAYOUTS_KEY = 'kerphSavedLayouts';
+        const LAYOUT_TYPE_LABELS = { workshop: 'Workshop', 'dust-collection': 'Dust Collection', lighting: 'Lighting' };
+
+        function loadLayouts() {
+            try { return JSON.parse(localStorage.getItem(LAYOUTS_KEY)) || []; } catch (e) { return []; }
+        }
+
+        function persistLayouts(list) {
+            localStorage.setItem(LAYOUTS_KEY, JSON.stringify(list));
+        }
+
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str == null ? '' : String(str);
+            return div.innerHTML;
+        }
+
+        function renderAccountStats() {
+            const row = document.getElementById('accountStatsRow');
+            if (!row) return;
+            const statuses = loadToolStatuses();
+            let owned = 0, wishlist = 0;
+            Object.values(statuses).forEach(s => {
+                if (s.status === 'owned') owned++;
+                else if (s.status === 'wishlist') wishlist++;
+            });
+            const layoutCount = loadLayouts().length;
+            row.innerHTML = `
+                <div class="account-stat"><div class="account-stat-value">${owned}</div><div class="account-stat-label">Owned</div></div>
+                <div class="account-stat"><div class="account-stat-value">${wishlist}</div><div class="account-stat-label">Wishlist</div></div>
+                <div class="account-stat"><div class="account-stat-value">${layoutCount}</div><div class="account-stat-label">Layouts</div></div>
+            `;
+        }
+
+        function renderAccountPlanCard() {
+            const nameEl = document.getElementById('accountPlanName');
+            const select = document.getElementById('accountPlanSelect');
+            const upsell = document.getElementById('accountPlanUpsell');
+            if (!nameEl || !select) return;
+            const plan = getPlan();
+            const labels = { free: 'Free', pro: 'Pro', premier: 'Premier' };
+            nameEl.textContent = labels[plan] || 'Free';
+            select.value = plan;
+            upsell.style.display = plan === 'free' ? 'block' : 'none';
+        }
+
+        function renderAccountLayoutsList() {
+            const list = document.getElementById('accountLayoutsList');
+            if (!list) return;
+            const layouts = loadLayouts();
+            if (!layouts.length) {
+                list.innerHTML = '<div class="account-layouts-empty">No saved layouts yet.</div>';
+                return;
+            }
+            list.innerHTML = layouts.slice().reverse().map(l => {
+                const typeLabel = LAYOUT_TYPE_LABELS[l.layoutType] || 'Workshop';
+                return `
+                    <div class="account-layout-item">
+                        <span class="account-layout-type">${typeLabel}</span>
+                        <span class="account-layout-name" title="${escapeHtml(l.name)}">${escapeHtml(l.name)}</span>
+                        <button type="button" class="account-layout-del" data-id="${l.id}" title="Delete this layout">&#10005;</button>
+                    </div>
+                `;
+            }).join('');
+            list.querySelectorAll('.account-layout-del').forEach(delBtn => {
+                delBtn.addEventListener('click', () => {
+                    const id = delBtn.getAttribute('data-id');
+                    persistLayouts(loadLayouts().filter(l => l.id !== id));
+                    renderAccountLayoutsList();
+                    renderAccountStats();
+                    showToast('Layout deleted.');
+                });
+            });
+        }
+
+        function renderAccountMemberSince() {
+            const el = document.getElementById('accountMemberSince');
+            if (!el) return;
+            const acc = loadAccount();
+            el.textContent = acc.memberSince
+                ? `Member since ${new Date(acc.memberSince).toLocaleDateString(undefined, { year: 'numeric', month: 'long' })}`
+                : '';
+        }
+
         function initAccountPanel() {
             const btn = document.getElementById('accountBtn');
             const overlay = document.getElementById('accountModalOverlay');
@@ -661,6 +801,8 @@
             const avatarBtn = document.getElementById('accountAvatarBtn');
             const avatarLarge = document.getElementById('accountAvatarLarge');
             const unitsSelect = document.getElementById('accountUnitsSelect');
+            const planSelect = document.getElementById('accountPlanSelect');
+            const resetAllBtn = document.getElementById('accountResetAllBtn');
             let pendingAvatar = null;
 
             btn.addEventListener('click', () => {
@@ -669,6 +811,10 @@
                 pendingAvatar = acc.avatar || null;
                 applyAvatarTo(avatarLarge, pendingAvatar);
                 unitsSelect.value = localStorage.getItem('kerphUnitSystem') || 'imperial';
+                renderAccountMemberSince();
+                renderAccountStats();
+                renderAccountPlanCard();
+                renderAccountLayoutsList();
                 overlay.style.display = 'flex';
             });
 
@@ -693,12 +839,32 @@
                     showToast('Enter a username to save your profile.');
                     return;
                 }
-                localStorage.setItem(ACCOUNT_KEY, JSON.stringify({ username, avatar: pendingAvatar }));
+                localStorage.setItem(ACCOUNT_KEY, JSON.stringify({ ...loadAccount(), username, avatar: pendingAvatar }));
                 localStorage.setItem('kerphUnitSystem', unitsSelect.value);
                 renderAccountBadge();
                 overlay.style.display = 'none';
                 showToast('Profile saved locally.');
             });
+
+            if (planSelect) {
+                planSelect.addEventListener('change', () => {
+                    localStorage.setItem(PLAN_KEY, planSelect.value);
+                    const headerSelect = document.getElementById('planSelector');
+                    if (headerSelect) headerSelect.value = planSelect.value;
+                    if (typeof applyPlanGating === 'function') applyPlanGating();
+                    renderAccountPlanCard();
+                    showToast(`Switched to the ${planSelect.value[0].toUpperCase()}${planSelect.value.slice(1)} plan (preview).`);
+                });
+            }
+
+            if (resetAllBtn) {
+                resetAllBtn.addEventListener('click', () => {
+                    if (!confirm('This permanently deletes every saved layout, tool status, and preference stored in this browser for Kerph. This cannot be undone. Continue?')) return;
+                    Object.keys(localStorage).filter(k => k.startsWith('kerph')).forEach(k => localStorage.removeItem(k));
+                    overlay.style.display = 'none';
+                    window.location.reload();
+                });
+            }
 
             document.getElementById('accountSignOutBtn').addEventListener('click', () => {
                 overlay.style.display = 'none';
@@ -723,6 +889,7 @@
             localStorage.setItem(AUTH_KEY, 'true');
             const acc = loadAccount();
             acc.username = username;
+            if (!acc.memberSince) acc.memberSince = new Date().toISOString();
             localStorage.setItem(ACCOUNT_KEY, JSON.stringify(acc));
             renderAccountBadge();
             updateHeaderSignInState();
