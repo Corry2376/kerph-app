@@ -251,6 +251,9 @@
         .account-layout-type { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; color: #6b7280; background-color: #eef2ff; border-radius: 4px; padding: 2px 5px; flex-shrink: 0; }
         .account-layout-del { flex-shrink: 0; border: none; background: none; color: #b91c1c; cursor: pointer; font-size: 13px; padding: 0 2px; }
         .account-layouts-empty { font-size: 11.5px; color: #9ca3af; font-style: italic; padding: 10px; text-align: center; }
+        .account-backup-zone { margin-top: 18px; padding-top: 14px; border-top: 1px solid #e2e8f0; }
+        .account-backup-title { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: #1e3a8a; margin-bottom: 4px; }
+        .account-backup-desc { font-size: 11px; color: #6b7280; margin-bottom: 8px; line-height: 1.5; }
         .account-danger-zone { margin-top: 18px; padding-top: 14px; border-top: 1px solid #fecaca; }
         .account-danger-title { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: #b91c1c; margin-bottom: 4px; }
         .account-danger-desc { font-size: 11px; color: #6b7280; margin-bottom: 8px; line-height: 1.5; }
@@ -933,6 +936,16 @@
             </div>
             <button type="button" id="accountSignOutBtn" class="mini-btn danger" style="width:100%; margin-top:8px;">Sign Out</button>
 
+            <div class="account-backup-zone">
+                <div class="account-backup-title">Backup &amp; Restore</div>
+                <div class="account-backup-desc">Everything lives only in this browser — export a copy so a cleared cache or a new device doesn't lose it.</div>
+                <div style="display:flex; gap:8px;">
+                    <button type="button" id="accountExportBtn" class="mini-btn" style="flex:1;">&#11015;&#65039; Export</button>
+                    <button type="button" id="accountImportBtn" class="mini-btn" style="flex:1;">&#11014;&#65039; Import&hellip;</button>
+                </div>
+                <input type="file" id="accountImportInput" accept="application/json" style="display:none;">
+            </div>
+
             <div class="account-danger-zone">
                 <div class="account-danger-title">Danger Zone</div>
                 <div class="account-danger-desc">Permanently erases every layout, tool status, and preference saved in this browser. This cannot be undone.</div>
@@ -1254,8 +1267,50 @@
                 });
             }
 
+            const exportBtn = document.getElementById('accountExportBtn');
+            const importBtn = document.getElementById('accountImportBtn');
+            const importInput = document.getElementById('accountImportInput');
+            if (exportBtn) exportBtn.addEventListener('click', exportAllKerphData);
+            if (importBtn && importInput) {
+                importBtn.addEventListener('click', () => importInput.click());
+                importInput.addEventListener('change', () => {
+                    const file = importInput.files[0];
+                    if (file) importAllKerphData(file);
+                    importInput.value = '';
+                });
+            }
+
             document.getElementById('accountSignOutBtn').addEventListener('click', () => { overlay.style.display = 'none'; signOut(); });
             renderAccountBadge();
+        }
+
+        function exportAllKerphData() {
+            const data = {};
+            Object.keys(localStorage).filter(k => k.startsWith('kerph')).forEach(k => { data[k] = localStorage.getItem(k); });
+            const blob = new Blob([JSON.stringify({ exportedAt: new Date().toISOString(), data }, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `kerph-backup-${new Date().toISOString().slice(0, 10)}.json`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+        }
+
+        function importAllKerphData(file) {
+            const reader = new FileReader();
+            reader.onload = () => {
+                let parsed;
+                try { parsed = JSON.parse(reader.result); } catch (e) { alert('That file could not be read as a valid Kerph backup.'); return; }
+                const data = parsed && parsed.data ? parsed.data : null;
+                if (!data || typeof data !== 'object') { alert('That file could not be read as a valid Kerph backup.'); return; }
+                if (!confirm('This will overwrite your current Kerph data (layouts, tool statuses, account, preferences) with the contents of this backup. Continue?')) return;
+                Object.keys(localStorage).filter(k => k.startsWith('kerph')).forEach(k => localStorage.removeItem(k));
+                Object.keys(data).forEach(k => { if (k.startsWith('kerph')) localStorage.setItem(k, data[k]); });
+                window.location.reload();
+            };
+            reader.readAsText(file);
         }
 
         function isSignedIn() { return localStorage.getItem(AUTH_KEY) === 'true'; }

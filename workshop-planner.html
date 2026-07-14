@@ -355,6 +355,28 @@
             text-align: center;
         }
 
+        .account-backup-zone {
+            margin-top: 18px;
+            padding-top: 14px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .account-backup-title {
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #1e3a8a;
+            margin-bottom: 4px;
+        }
+
+        .account-backup-desc {
+            font-size: 11px;
+            color: #6b7280;
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+
         .account-danger-zone {
             margin-top: 18px;
             padding-top: 14px;
@@ -1856,6 +1878,16 @@
                 <button type="button" id="accountSaveBtn" class="mini-btn modal-primary-btn">Save</button>
             </div>
             <button type="button" id="accountSignOutBtn" class="mini-btn danger" style="width:100%; margin-top:8px;">Sign Out</button>
+
+            <div class="account-backup-zone">
+                <div class="account-backup-title">Backup &amp; Restore</div>
+                <div class="account-backup-desc">Everything lives only in this browser — export a copy so a cleared cache or a new device doesn't lose it.</div>
+                <div style="display:flex; gap:8px;">
+                    <button type="button" id="accountExportBtn" class="mini-btn" style="flex:1;">&#11015;&#65039; Export</button>
+                    <button type="button" id="accountImportBtn" class="mini-btn" style="flex:1;">&#11014;&#65039; Import&hellip;</button>
+                </div>
+                <input type="file" id="accountImportInput" accept="application/json" style="display:none;">
+            </div>
 
             <div class="account-danger-zone">
                 <div class="account-danger-title">Danger Zone</div>
@@ -4306,12 +4338,65 @@
                 });
             }
 
+            const exportBtn = document.getElementById('accountExportBtn');
+            const importBtn = document.getElementById('accountImportBtn');
+            const importInput = document.getElementById('accountImportInput');
+            if (exportBtn) exportBtn.addEventListener('click', exportAllKerphData);
+            if (importBtn && importInput) {
+                importBtn.addEventListener('click', () => importInput.click());
+                importInput.addEventListener('change', () => {
+                    const file = importInput.files[0];
+                    if (file) importAllKerphData(file);
+                    importInput.value = '';
+                });
+            }
+
             document.getElementById('accountSignOutBtn').addEventListener('click', () => {
                 overlay.style.display = 'none';
                 signOut();
             });
 
             renderAccountBadge();
+        }
+
+        // Every kerph* localStorage key, bundled into one downloadable JSON file — the only
+        // backup that exists, since nothing is stored anywhere but this browser.
+        function exportAllKerphData() {
+            const data = {};
+            Object.keys(localStorage).filter(k => k.startsWith('kerph')).forEach(k => { data[k] = localStorage.getItem(k); });
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `kerph-backup-${new Date().toISOString().slice(0, 10)}.json`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+            showToast('Backup downloaded.');
+        }
+
+        function importAllKerphData(file) {
+            const reader = new FileReader();
+            reader.onload = () => {
+                let data;
+                try {
+                    data = JSON.parse(reader.result);
+                } catch (e) {
+                    showToast("That file doesn't look like a valid Kerph backup.");
+                    return;
+                }
+                const keys = Object.keys(data).filter(k => k.startsWith('kerph'));
+                if (!keys.length) {
+                    showToast("That file doesn't look like a valid Kerph backup.");
+                    return;
+                }
+                if (!confirm(`This restores ${keys.length} saved item(s) from the backup, overwriting anything currently stored in this browser with the same name. Continue?`)) return;
+                keys.forEach(k => localStorage.setItem(k, data[k]));
+                showToast('Backup restored — reloading...');
+                setTimeout(() => window.location.reload(), 900);
+            };
+            reader.readAsText(file);
         }
 
         /* ---------- LOCAL SIGN-IN (inline in the header, not a blocking gate) ----------
