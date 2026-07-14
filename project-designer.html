@@ -457,6 +457,29 @@
         }
 
         .cutlist-table tbody tr:last-child td { border-bottom: none; }
+
+        .hardware-checklist { max-width: 900px; margin: 24px auto 0; padding-top: 20px; border-top: 1px solid #e2e8f0; }
+
+        .hardware-add-row { display: flex; gap: 8px; margin-top: 10px; }
+        .hardware-add-row .input-box { flex: 2; }
+        .hardware-add-row #hardwareQtyInput { flex: 0 0 70px; }
+
+        .hardware-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 10px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            margin-bottom: 6px;
+            background-color: #f9fafb;
+        }
+        .hardware-item.is-checked { background-color: #f0fdf4; border-color: #bbf7d0; }
+        .hardware-item.is-checked .hardware-item-name { text-decoration: line-through; color: #6b7280; }
+        .hardware-item-checkbox { width: 16px; height: 16px; flex-shrink: 0; cursor: pointer; accent-color: #15803d; }
+        .hardware-item-name { flex: 1; font-size: 13px; font-weight: 600; color: #0f172a; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .hardware-item-qty { font-size: 11px; color: #6b7280; font-variant-numeric: tabular-nums; flex-shrink: 0; }
+        .hardware-item-remove { border: none; background: none; color: #b91c1c; cursor: pointer; font-size: 14px; padding: 0 4px; flex-shrink: 0; }
     </style>
 </head>
 <body>
@@ -649,6 +672,17 @@
             </table>
 
             <button type="button" id="openFullCutListBtn" class="new-layout-btn" style="margin-top:20px;">Open Full Cut List Optimizer &#8594;</button>
+        </div>
+
+        <div class="hardware-checklist" id="hardwareChecklist">
+            <div class="sidebar-title" style="margin-top:0;">Hardware &amp; Consumables</div>
+            <div class="empty-hint" id="hardwareListEmptyHint">No hardware tracked yet. Add screws, hinges, glue, edge banding &mdash; anything this project needs beyond the cut panels.</div>
+            <div id="hardwareList"></div>
+            <div class="hardware-add-row">
+                <input type="text" class="input-box" id="hardwareNameInput" placeholder="e.g. 1.25in Pocket Screws">
+                <input type="number" class="input-box" id="hardwareQtyInput" placeholder="Qty" min="1" step="1" value="1">
+                <button type="button" class="mini-btn" id="addHardwareBtn">+ Add</button>
+            </div>
         </div>
     </div>
 
@@ -1022,6 +1056,92 @@
             localStorage.setItem(PANELS_KEY, JSON.stringify(panels));
         }
 
+        // Hardware/consumables: screws, hinges, glue, edge banding — anything beyond the
+        // cut panels themselves. Parallel array + key to `panels`/PANELS_KEY, same
+        // load-once/save-on-mutate pattern, deliberately not nested under a "project"
+        // object since panels aren't either (see DATA MODEL comment above).
+        const HARDWARE_KEY = 'kerphProjectHardware';
+        let hardware = [];
+        try {
+            hardware = JSON.parse(localStorage.getItem(HARDWARE_KEY)) || [];
+        } catch (e) {
+            hardware = [];
+        }
+
+        function saveHardware() {
+            localStorage.setItem(HARDWARE_KEY, JSON.stringify(hardware));
+        }
+
+        function addHardwareItem() {
+            const nameInput = document.getElementById('hardwareNameInput');
+            const qtyInput = document.getElementById('hardwareQtyInput');
+            const name = nameInput.value.trim();
+            if (!name) return;
+            const qty = Math.max(1, parseInt(qtyInput.value, 10) || 1);
+            hardware.push({
+                id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+                name, qty, have: false
+            });
+            saveHardware();
+            renderHardwareList();
+            nameInput.value = '';
+            qtyInput.value = '1';
+            nameInput.focus();
+        }
+
+        function toggleHardwareHave(id) {
+            const item = hardware.find(h => h.id === id);
+            if (!item) return;
+            item.have = !item.have;
+            saveHardware();
+            renderHardwareList();
+        }
+
+        function deleteHardwareItem(id) {
+            hardware = hardware.filter(h => h.id !== id);
+            saveHardware();
+            renderHardwareList();
+        }
+
+        function renderHardwareList() {
+            const container = document.getElementById('hardwareList');
+            const hint = document.getElementById('hardwareListEmptyHint');
+            container.innerHTML = '';
+            hint.style.display = hardware.length ? 'none' : 'block';
+
+            hardware.forEach(h => {
+                const item = document.createElement('div');
+                item.className = 'hardware-item' + (h.have ? ' is-checked' : '');
+
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.className = 'hardware-item-checkbox';
+                checkbox.checked = h.have;
+                checkbox.title = 'Have it';
+                checkbox.addEventListener('change', () => toggleHardwareHave(h.id));
+
+                const name = document.createElement('span');
+                name.className = 'hardware-item-name';
+                name.textContent = h.name;
+
+                const qty = document.createElement('span');
+                qty.className = 'hardware-item-qty';
+                qty.textContent = 'x' + h.qty;
+
+                const removeBtn = document.createElement('button');
+                removeBtn.className = 'hardware-item-remove';
+                removeBtn.textContent = '✕';
+                removeBtn.title = 'Remove';
+                removeBtn.addEventListener('click', () => deleteHardwareItem(h.id));
+
+                item.appendChild(checkbox);
+                item.appendChild(name);
+                item.appendChild(qty);
+                item.appendChild(removeBtn);
+                container.appendChild(item);
+            });
+        }
+
         function populateMaterialSelect(select) {
             select.innerHTML = '';
             Object.keys(MATERIALS).forEach(key => {
@@ -1177,7 +1297,13 @@
         function renderAll() {
             renderPanelList();
             renderCutListPreview();
+            renderHardwareList();
         }
+
+        document.getElementById('addHardwareBtn').addEventListener('click', addHardwareItem);
+        document.getElementById('hardwareNameInput').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') addHardwareItem();
+        });
 
         document.getElementById('addPanelBtn').addEventListener('click', () => openPanelModal(null));
         document.getElementById('panelCancelBtn').addEventListener('click', closePanelModal);
