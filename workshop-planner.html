@@ -1794,6 +1794,49 @@
             text-align: center;
             font-style: italic;
         }
+
+        .print-only-header { display: none; }
+
+        /* ---------- PRINT / PDF EXPORT ----------
+           The board's on-screen layout is all position:absolute against viewport-relative
+           containers (see #canvas-view-space etc.), which paginates badly as-is. Rather than
+           reflow that whole system, print mode strips it down to just the board: the
+           scroll/viewport containers go back to normal static flow (so the browser can
+           paginate them naturally) while .workshop-grid-board keeps position:relative so its
+           absolutely-positioned children (tools, walls, wall features) still anchor correctly
+           to it instead of the page. */
+        @media print {
+            @page { size: landscape; margin: 0.4in; }
+            body { background: #fff !important; }
+            header, #sidebar-panel, .measure-toolbar, .floating-panel, .upgrade-nudge,
+            .ruler, .resize-handle, .rotate-handle, .rotate-readout, .node-resize-handle,
+            .open-port-marker, .clearance-wall-marker, .modal-overlay, #shapeDrawControls {
+                display: none !important;
+            }
+            .print-only-header {
+                display: block !important;
+                font-family: inherit;
+                margin-bottom: 14px;
+            }
+            .print-only-header .print-title { font-size: 20px; font-weight: 800; color: #0f172a; }
+            .print-only-header .print-meta { font-size: 12px; color: #475569; margin-top: 2px; }
+            #canvas-view-space, #canvas-scroll-area {
+                position: static !important;
+                width: auto !important;
+                height: auto !important;
+                overflow: visible !important;
+                background: none !important;
+                top: auto !important; left: auto !important; right: auto !important; bottom: auto !important;
+            }
+            .workshop-grid-board {
+                position: relative !important;
+                top: auto !important;
+                left: auto !important;
+                box-shadow: none !important;
+                page-break-inside: avoid;
+            }
+            .placed-tool-node.selected-node { outline: none !important; }
+        }
     </style>
 </head>
 <body>
@@ -2706,7 +2749,10 @@
         <button type="button" id="zoomInBtn" class="measure-btn" title="Zoom in">&#43;</button>
         <button type="button" id="zoomResetBtn" class="measure-btn" title="Reset zoom to 100%">Reset</button>
         <button type="button" id="hideDcLabelsBtn" class="measure-btn" title="Hide the text labels on dust collection ducts/fittings so you can see the pure shapes">&#127991;&#65039; Hide Labels</button>
+        <button type="button" id="exportPdfBtn" class="measure-btn" title="Print or save this layout as a PDF">&#128196; Export PDF</button>
     </div>
+
+    <div class="print-only-header" id="printOnlyHeader"></div>
 
     <div class="floating-panel layers-panel collapsed" id="layersPanel">
         <div class="floating-panel-title" id="layersPanelHandle">Layers <span class="panel-toggle-chevron">&#9656;</span></div>
@@ -5755,6 +5801,24 @@
             document.getElementById('costRefreshBtn').addEventListener('click', renderCostPanel);
         }
 
+        /* ---------- EXPORT LAYOUT TO PDF ----------
+           No PDF library — this just fills in a print-only header and calls window.print(),
+           relying on the browser's native "Save as PDF" print destination. See the
+           @media print block for how the on-screen absolute-positioned layout gets stripped
+           down to just the board so it paginates cleanly. */
+        function initExportPdf() {
+            document.getElementById('exportPdfBtn').addEventListener('click', () => {
+                const widthFt = getShopWidthFeet();
+                const lengthFt = getShopLengthFeet();
+                const dateStr = new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+                document.getElementById('printOnlyHeader').innerHTML = `
+                    <div class="print-title">Kerph Workshop Layout</div>
+                    <div class="print-meta">${feetToDisplay(widthFt)}${unitSystem === 'metric' ? 'm' : "'"} x ${feetToDisplay(lengthFt)}${unitSystem === 'metric' ? 'm' : "'"} shop &mdash; printed ${dateStr}</div>
+                `;
+                window.print();
+            });
+        }
+
         const CATEGORY_ICONS = {
             'Table Saws': '<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="6" y="34" width="52" height="8" rx="2" fill="#1e3a8a"/><circle cx="32" cy="30" r="16" stroke="#1e3a8a" stroke-width="3"/><line x1="32" y1="14" x2="32" y2="46" stroke="#1e3a8a" stroke-width="3"/><line x1="16" y1="30" x2="48" y2="30" stroke="#1e3a8a" stroke-width="3"/></svg>',
             'Bandsaws': '<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="32" cy="14" r="9" stroke="#1e3a8a" stroke-width="3"/><circle cx="32" cy="50" r="9" stroke="#1e3a8a" stroke-width="3"/><line x1="23" y1="14" x2="23" y2="50" stroke="#1e3a8a" stroke-width="3"/><line x1="41" y1="14" x2="41" y2="50" stroke="#1e3a8a" stroke-width="3"/></svg>',
@@ -7067,6 +7131,7 @@
         initElectricalPanel();
         initClearancePanel();
         initCostPanel();
+        initExportPdf();
         document.getElementById('pageNavSelect').addEventListener('change', (e) => { window.location.href = e.target.value; });
         initDraggablePanels();
         initNewLayoutModal();
