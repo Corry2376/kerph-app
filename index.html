@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <script>if (localStorage.getItem('kerphComingSoonBypass') !== 'true') { location.replace('coming-soon.html'); }</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kerph - Workshop &amp; Project Tools</title>
@@ -422,7 +423,7 @@
 
         /* ---------- COLLAPSIBLE SIDEBAR SECTIONS ----------
            Same <details>/<summary> pattern as workshop-planner.html's catalog categories —
-           reused here so My Tools/My Wishlist/Hand & Power Tools can each be closed to cut
+           reused here so My Tools/My Wishlist/Small Power Tools can each be closed to cut
            down on sidebar clutter, without needing a separate JS toggle (native <details>
            handles open/closed state and the [open] selector alone drives the chevron). */
         .tool-category { border: none; margin-bottom: 6px; }
@@ -486,6 +487,16 @@
 
         .tool-title { font-weight: 700; font-size: 13px; color: #0f172a; }
         .tool-dims { font-size: 11px; color: #6b7280; margin-top: 1px; }
+
+        .tool-search-category-heading {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #6b7280;
+            margin: 10px 0 4px;
+        }
+        .tool-search-category-heading:first-child { margin-top: 2px; }
 
         .cabinet-remove-btn {
             width: 20px;
@@ -1011,7 +1022,7 @@
             </summary>
             <div class="category-items">
                 <button type="button" id="insuranceReportBtn" class="insurance-report-btn" title="Premier — generate a printable inventory of your owned tools, with estimated replacement values, for insurance documentation">&#128737;&#65039; Insurance Inventory Report</button>
-                <div class="empty-hint" id="myToolsEmptyHint">No owned tools yet. Mark tools as owned in the Workshop Layout Planner (or search Hand &amp; Power Tools below) and they'll show up here.</div>
+                <div class="empty-hint" id="myToolsEmptyHint">No owned tools yet. Mark tools as owned in the Workshop Layout Planner (or search Small Power Tools below) and they'll show up here.</div>
                 <div id="myToolsList"></div>
             </div>
         </details>
@@ -1027,18 +1038,33 @@
             </div>
         </details>
 
-        <details class="tool-category" id="handToolsCategory">
+        <details class="tool-category" id="floorToolsCategory">
             <summary class="category-header">
-                <span class="category-header-left">Hand &amp; Power Tools <span class="category-count" id="handToolsCount">0</span></span>
+                <span class="category-header-left">Floor Tools <span class="category-count" id="floorToolsCount">0</span></span>
                 <span class="category-chevron">&#9656;</span>
             </summary>
             <div class="category-items">
-                <div class="empty-hint">Routers, sanders, drills, and other tools that never sit on the shop floor — search to add them to My Tools or your wishlist. They'll count in the Insurance Report either way.</div>
+                <div class="empty-hint">The same machinery catalog as the Workshop Layout Planner &mdash; browse or search below to mark tools owned or wishlist them from here too. Placing them on your shop floor still happens in the Workshop Layout Planner.</div>
                 <div class="tool-search-wrap">
-                    <input type="text" class="input-box" id="handToolSearchInput" placeholder="&#128269; Search hand &amp; power tools...">
+                    <input type="text" class="input-box" id="floorToolSearchInput" placeholder="&#128269; Search floor tools...">
                 </div>
-                <div class="empty-hint" id="handToolSearchEmptyHint" style="display:none;">No tools match your search.</div>
-                <div id="handToolSearchResults"></div>
+                <div class="empty-hint" id="floorToolSearchEmptyHint" style="display:none;">No tools match your search.</div>
+                <div id="floorToolSearchResults"></div>
+            </div>
+        </details>
+
+        <details class="tool-category" id="smallPowerToolsCategory">
+            <summary class="category-header">
+                <span class="category-header-left">Small Power Tools <span class="category-count" id="smallPowerToolsCount">0</span></span>
+                <span class="category-chevron">&#9656;</span>
+            </summary>
+            <div class="category-items">
+                <div class="empty-hint">Drills, routers, circular saws, and other portable power tools that never sit on the shop floor — browse or search below to add them to My Tools or your wishlist. They'll count in the Insurance Report either way.</div>
+                <div class="tool-search-wrap">
+                    <input type="text" class="input-box" id="smallPowerToolSearchInput" placeholder="&#128269; Search small power tools...">
+                </div>
+                <div class="empty-hint" id="smallPowerToolSearchEmptyHint" style="display:none;">No tools match your search.</div>
+                <div id="smallPowerToolSearchResults"></div>
             </div>
         </details>
     </div>
@@ -1142,38 +1168,37 @@
            store as everything else, so it flows into My Tools/Wishlist/the Insurance Report for
            free. This is a starter set covering common categories, not an exhaustive catalog —
            built to be extended, not a claim of covering "every tool" out of the gate. */
-        const HAND_TOOLS = [
+        // Source of truth for the "Small Power Tools" sidebar section — portable power tools
+        // that never sit on the shop floor, searchable so they can still be added to My Tools/
+        // Wishlist and counted in the Insurance Report.
+        const SMALL_TOOLS = [
             { name: 'Router (Fixed Base)', category: 'Routers' },
             { name: 'Router (Plunge)', category: 'Routers' },
             { name: 'Router (Trim/Palm)', category: 'Routers' },
             { name: 'Router Table', category: 'Routers' },
+            { name: 'Festool OF 1400 EQ Router', category: 'Routers' },
+            { name: 'Festool MFK 700 Trim Router', category: 'Routers' },
             { name: 'Random Orbital Sander', category: 'Sanders' },
             { name: 'Belt Sander', category: 'Sanders' },
             { name: 'Detail/Mouse Sander', category: 'Sanders' },
             { name: 'Handheld Drum Sander', category: 'Sanders' },
+            { name: 'Festool RO 150 FEQ Rotex Sander', category: 'Sanders' },
             { name: 'Circular Saw', category: 'Handheld Saws' },
             { name: 'Jigsaw', category: 'Handheld Saws' },
             { name: 'Reciprocating Saw', category: 'Handheld Saws' },
             { name: 'Track Saw', category: 'Handheld Saws' },
             { name: 'Handheld Miter Saw', category: 'Handheld Saws' },
+            { name: 'Festool TS 55 REQ Track Saw', category: 'Handheld Saws' },
+            { name: 'Festool Carvex PS 420 Jigsaw', category: 'Handheld Saws' },
+            { name: 'Festool Kapex KS 120 Miter Saw', category: 'Handheld Saws' },
             { name: 'Cordless Drill/Driver', category: 'Drills & Drivers' },
             { name: 'Impact Driver', category: 'Drills & Drivers' },
             { name: 'Hammer Drill', category: 'Drills & Drivers' },
             { name: 'Benchtop Drill Press', category: 'Drills & Drivers' },
-            { name: 'Hand Plane', category: 'Planes & Joinery' },
+            { name: 'Festool T 18 Cordless Drill', category: 'Drills & Drivers' },
             { name: 'Biscuit Joiner', category: 'Planes & Joinery' },
-            { name: 'Pocket Hole Jig', category: 'Planes & Joinery' },
-            { name: 'Doweling Jig', category: 'Planes & Joinery' },
             { name: 'Power Hand Planer', category: 'Planes & Joinery' },
-            { name: 'Tape Measure', category: 'Measuring & Layout' },
-            { name: 'Combination Square', category: 'Measuring & Layout' },
-            { name: 'Marking Gauge', category: 'Measuring & Layout' },
-            { name: 'Digital Angle Finder', category: 'Measuring & Layout' },
-            { name: 'Laser Level', category: 'Measuring & Layout' },
-            { name: 'Bar Clamps (Set)', category: 'Clamps' },
-            { name: 'Pipe Clamps (Set)', category: 'Clamps' },
-            { name: 'Spring Clamps (Set)', category: 'Clamps' },
-            { name: 'Parallel Clamps (Set)', category: 'Clamps' },
+            { name: 'Festool Domino DF 500 Joiner', category: 'Planes & Joinery' },
             { name: 'Portable Air Compressor', category: 'Air Tools' },
             { name: 'Brad Nailer', category: 'Air Tools' },
             { name: 'Finish Nailer', category: 'Air Tools' },
@@ -1183,11 +1208,76 @@
             { name: 'Angle Grinder', category: 'Outdoor & Rough Tools' },
             { name: 'Heat Gun', category: 'Outdoor & Rough Tools' },
             { name: 'Handheld Shop Vacuum', category: 'Safety & Dust' },
-            { name: 'Respirator', category: 'Safety & Dust' },
-            { name: 'Chisel Set', category: 'Hand Tools' },
-            { name: 'Hand Saw', category: 'Hand Tools' },
-            { name: 'Coping Saw', category: 'Hand Tools' },
-            { name: 'Rasp/File Set', category: 'Hand Tools' }
+            { name: 'Festool CT 26 Dust Extractor', category: 'Safety & Dust' }
+        ];
+
+        // Same machinery catalog as the Workshop Layout Planner's draggable sidebar (kept in
+        // sync) — floor-standing tools that DO sit on the shop floor, so placing them on a
+        // layout still happens over there, but they're just as ownable/wishlist-able from here.
+        // widthFt/lengthFt/heightFt match the Workshop Layout Planner's real footprints, so an
+        // owned floor tool's Insurance Report row shows real dimensions, not "—".
+        const FLOOR_TOOLS = [
+            { name: 'SawStop PCS175 Cabinet Saw', category: 'Table Saws', widthFt: 3.0, lengthFt: 5.2, heightFt: 2.9 },
+            { name: 'SawStop ICS Industrial Cabinet Saw', category: 'Table Saws', widthFt: 3.2, lengthFt: 5.5, heightFt: 3.0 },
+            { name: 'Delta 36-L352 Unisaw', category: 'Table Saws', widthFt: 3.0, lengthFt: 5.0, heightFt: 2.9 },
+            { name: 'Laguna 14BX Bandsaw', category: 'Bandsaws', widthFt: 2.1, lengthFt: 2.5, heightFt: 5.8 },
+            { name: 'Rikon 10-326 18" Bandsaw', category: 'Bandsaws', widthFt: 2.3, lengthFt: 2.8, heightFt: 5.9 },
+            { name: 'Grizzly G0513X2 17" Bandsaw', category: 'Bandsaws', widthFt: 2.2, lengthFt: 2.6, heightFt: 5.9 },
+            { name: 'Powermatic PJ882HHT Jointer', category: 'Jointers & Planers', widthFt: 1.4, lengthFt: 7.3, heightFt: 3.0 },
+            { name: 'Powermatic 201HH 20" Planer', category: 'Jointers & Planers', widthFt: 2.6, lengthFt: 3.4, heightFt: 3.2 },
+            { name: 'Hammer A3-31 Jointer/Planer Combo', category: 'Jointers & Planers', widthFt: 2.5, lengthFt: 4.0, heightFt: 3.0 },
+            { name: 'Grizzly G0771Z Edge Sander', category: 'Sanding', widthFt: 1.8, lengthFt: 2.2, heightFt: 5.0 },
+            { name: 'JET 22-44 Oscillating Spindle Sander', category: 'Sanding', widthFt: 1.5, lengthFt: 1.5, heightFt: 3.3 },
+            { name: 'SuperMax 19-38 Drum Sander', category: 'Sanding', widthFt: 2.0, lengthFt: 3.5, heightFt: 4.0 },
+            { name: 'Powermatic PM2800B Drill Press', category: 'Drilling & Boring', widthFt: 2.0, lengthFt: 2.3, heightFt: 6.3 },
+            { name: 'General International 75-510 M1 Drill Press', category: 'Drilling & Boring', widthFt: 1.8, lengthFt: 2.0, heightFt: 5.5 },
+            { name: 'Powermatic 3520C Wood Lathe', category: 'Turning', widthFt: 2.0, lengthFt: 6.5, heightFt: 4.0 },
+            { name: 'JET JWL-1640EVS Lathe', category: 'Turning', widthFt: 1.8, lengthFt: 5.8, heightFt: 3.7 },
+            { name: 'SawStop Professional Router Table', category: 'Routing', widthFt: 2.0, lengthFt: 3.0, heightFt: 3.0 },
+            { name: 'Kreg PRS2100 Router Table', category: 'Routing', widthFt: 1.8, lengthFt: 2.8, heightFt: 3.0 },
+            { name: 'Festool Kapex KS 120 + Stand', category: 'Crosscut & Miter', widthFt: 2.5, lengthFt: 4.5, heightFt: 3.7 },
+            { name: 'Bosch GTS1041A + Gravity Stand', category: 'Crosscut & Miter', widthFt: 2.2, lengthFt: 4.0, heightFt: 3.8 },
+            { name: 'JET DC-1100VX-CK Dust Collector', category: 'Dust Collection', widthFt: 2.2, lengthFt: 2.2, heightFt: 7.2 },
+            { name: 'Oneida Super Dust Deputy XL Cyclone', category: 'Dust Collection', widthFt: 1.5, lengthFt: 1.5, heightFt: 2.8 },
+            { name: '4" Dust Duct (2ft run)', category: 'Dust Collection', widthFt: 0.35, lengthFt: 2.0, heightFt: 7.0 },
+            { name: '4" Dust Duct (4ft run)', category: 'Dust Collection', widthFt: 0.35, lengthFt: 4.0, heightFt: 7.0 },
+            { name: '4" Dust Duct (6ft run)', category: 'Dust Collection', widthFt: 0.35, lengthFt: 6.0, heightFt: 7.0 },
+            { name: '4" Dust Duct (8ft run)', category: 'Dust Collection', widthFt: 0.35, lengthFt: 8.0, heightFt: 7.0 },
+            { name: '4" Dust Duct (10ft run)', category: 'Dust Collection', widthFt: 0.35, lengthFt: 10.0, heightFt: 7.0 },
+            { name: '4" Duct Elbow (90°)', category: 'Dust Collection', widthFt: 0.6, lengthFt: 0.6, heightFt: 7.0 },
+            { name: '4" Duct Y-Joint', category: 'Dust Collection', widthFt: 0.7, lengthFt: 0.7, heightFt: 7.0 },
+            { name: '4" Duct T-Joint', category: 'Dust Collection', widthFt: 0.7, lengthFt: 0.7, heightFt: 7.0 },
+            { name: '4" Pipe Bracket', category: 'Dust Collection', widthFt: 0.5, lengthFt: 0.15, heightFt: 7.0 },
+            { name: '4" Blast Gate', category: 'Dust Collection', widthFt: 0.35, lengthFt: 0.5, heightFt: 7.0 },
+            { name: '6" Dust Duct (2ft run)', category: 'Dust Collection', widthFt: 0.5, lengthFt: 2.0, heightFt: 7.0 },
+            { name: '6" Dust Duct (4ft run)', category: 'Dust Collection', widthFt: 0.5, lengthFt: 4.0, heightFt: 7.0 },
+            { name: '6" Dust Duct (6ft run)', category: 'Dust Collection', widthFt: 0.5, lengthFt: 6.0, heightFt: 7.0 },
+            { name: '6" Dust Duct (8ft run)', category: 'Dust Collection', widthFt: 0.5, lengthFt: 8.0, heightFt: 7.0 },
+            { name: '6" Dust Duct (10ft run)', category: 'Dust Collection', widthFt: 0.5, lengthFt: 10.0, heightFt: 7.0 },
+            { name: '6" Duct Elbow (90°)', category: 'Dust Collection', widthFt: 0.8, lengthFt: 0.8, heightFt: 7.0 },
+            { name: '6" Duct Y-Joint', category: 'Dust Collection', widthFt: 0.9, lengthFt: 0.9, heightFt: 7.0 },
+            { name: '6" Duct T-Joint', category: 'Dust Collection', widthFt: 0.9, lengthFt: 0.9, heightFt: 7.0 },
+            { name: '6" Pipe Bracket', category: 'Dust Collection', widthFt: 0.7, lengthFt: 0.15, heightFt: 7.0 },
+            { name: '6" Blast Gate', category: 'Dust Collection', widthFt: 0.5, lengthFt: 0.6, heightFt: 7.0 },
+            { name: '4ft LED Shop Light', category: 'Lighting', widthFt: 0.4, lengthFt: 4.0, heightFt: 8.5 },
+            { name: 'High Bay LED Fixture', category: 'Lighting', widthFt: 1.2, lengthFt: 1.2, heightFt: 9.0 },
+            { name: 'Adjustable Task/Bench Light', category: 'Lighting', widthFt: 0.6, lengthFt: 0.6, heightFt: 5.5 },
+            { name: 'Shapeoko Pro XXL CNC', category: 'CNC & Digital Fab', widthFt: 3.0, lengthFt: 4.5, heightFt: 1.2 },
+            { name: 'Glowforge Pro Laser', category: 'CNC & Digital Fab', widthFt: 1.6, lengthFt: 2.8, heightFt: 0.7 },
+            { name: 'Bambu Lab X1 Carbon 3D Printer', category: 'CNC & Digital Fab', widthFt: 1.3, lengthFt: 1.3, heightFt: 1.5 },
+            { name: 'Prusa MK4 3D Printer', category: 'CNC & Digital Fab', widthFt: 1.5, lengthFt: 1.6, heightFt: 1.3 },
+            { name: 'Creality K1 Max 3D Printer', category: 'CNC & Digital Fab', widthFt: 1.8, lengthFt: 2.0, heightFt: 1.6 },
+            { name: 'Elegoo Saturn 4 Ultra Resin Printer', category: 'CNC & Digital Fab', widthFt: 0.8, lengthFt: 0.9, heightFt: 1.6 },
+            { name: 'Assembly / Outfeed Table', category: 'Assembly & Storage', widthFt: 3.0, lengthFt: 6.0, heightFt: 3.0 },
+            { name: 'Kreg Mobile Project Center', category: 'Assembly & Storage', widthFt: 2.0, lengthFt: 3.0, heightFt: 3.0 },
+            { name: 'Milwaukee PACKOUT Rolling Tool Box', category: 'Tool Storage', widthFt: 1.8, lengthFt: 1.3, heightFt: 1.3 },
+            { name: 'DEWALT TOUGHSYSTEM 2.0 Mobile Tool Box', category: 'Tool Storage', widthFt: 2.0, lengthFt: 1.8, heightFt: 1.7 },
+            { name: 'Craftsman 26" Rolling Tool Cabinet', category: 'Tool Storage', widthFt: 2.2, lengthFt: 1.5, heightFt: 3.2 },
+            { name: 'Kobalt 41" 9-Drawer Rolling Tool Chest', category: 'Tool Storage', widthFt: 3.4, lengthFt: 1.5, heightFt: 3.0 },
+            { name: 'US General 56" 10-Drawer Roller Cabinet', category: 'Tool Storage', widthFt: 4.7, lengthFt: 1.8, heightFt: 3.1 },
+            { name: 'Husky 52" 10-Drawer Mobile Workbench', category: 'Tool Storage', widthFt: 4.3, lengthFt: 2.1, heightFt: 3.3 },
+            { name: 'Snap-on KRL1023 Classic 78" Roll Cab', category: 'Tool Storage', widthFt: 6.5, lengthFt: 2.1, heightFt: 3.5 },
+            { name: 'Husky 72" 18-Drawer Tool Chest Combo', category: 'Tool Storage', widthFt: 2.0, lengthFt: 6.0, heightFt: 6.2 }
         ];
 
         function maintenanceRemindersEnabled() {
@@ -1802,7 +1892,7 @@
             const info = document.createElement('div');
             const title = document.createElement('div');
             title.className = 'tool-title';
-            title.textContent = entry.nickname ? `${entry.nickname} (${name})` : name;
+            title.textContent = entry.nickname ? `${name} (${entry.nickname})` : name;
             info.appendChild(title);
 
             const dims = document.createElement('div');
@@ -1887,10 +1977,11 @@
             document.getElementById('myToolsCount').textContent = owned.length;
             document.getElementById('wishlistCount').textContent = wishlist.length;
 
-            // Search-result cards for hand/power tools show live Owned/Wishlist state on their
-            // own buttons — keep them in sync whenever the underlying status store changes,
-            // same as My Tools/Wishlist just did above.
-            if (typeof renderHandToolSearchResults === 'function') renderHandToolSearchResults();
+            // Search-result cards for small power tools and floor tools show live Owned/Wishlist
+            // state on their own buttons — keep them in sync whenever the underlying status store
+            // changes, same as My Tools/Wishlist just did above.
+            if (typeof renderPowerToolSearchResults === 'function') renderPowerToolSearchResults();
+            if (typeof renderFloorToolSection === 'function') renderFloorToolSection();
         }
 
         // A genuine, working link (a retailer search for the exact tool name) rather than a fake
@@ -1900,7 +1991,7 @@
             return `https://www.amazon.com/s?k=${encodeURIComponent(name)}`;
         }
 
-        function setHandToolStatus(name, category, status) {
+        function setToolStatus(name, category, status, extraFields) {
             const current = loadToolStatuses();
             const existing = current[name];
             // Clicking the already-active state again clears it — standard toggle-button feel,
@@ -1909,14 +2000,17 @@
                 delete current[name];
                 showToast('Removed.');
             } else {
-                current[name] = { status, category };
+                // extraFields carries widthFt/lengthFt/heightFt for floor tools (real footprint,
+                // matching the Workshop Layout Planner's catalog) so the Insurance Report can show
+                // real dimensions instead of "—" — small power tools just omit it.
+                current[name] = Object.assign({ status, category }, extraFields || {});
                 showToast(status === 'owned' ? 'Added to My Tools.' : 'Added to your Wishlist.');
             }
             localStorage.setItem(TOOL_STATUS_KEY, JSON.stringify(current));
             renderToolLists();
         }
 
-        function buildHandToolResultCard(tool) {
+        function buildToolResultCard(tool) {
             const statuses = loadToolStatuses();
             const entry = statuses[tool.name];
             const card = document.createElement('div');
@@ -1939,14 +2033,14 @@
             ownedBtn.type = 'button';
             ownedBtn.className = 'maintenance-mini-btn' + (entry && entry.status === 'owned' ? ' is-active' : '');
             ownedBtn.textContent = '✓ Owned';
-            ownedBtn.addEventListener('click', () => setHandToolStatus(tool.name, tool.category, 'owned'));
+            ownedBtn.addEventListener('click', () => setToolStatus(tool.name, tool.category, 'owned'));
             actions.appendChild(ownedBtn);
 
             const wishBtn = document.createElement('button');
             wishBtn.type = 'button';
             wishBtn.className = 'maintenance-mini-btn' + (entry && entry.status === 'wishlist' ? ' is-active' : '');
             wishBtn.textContent = '★ Wishlist';
-            wishBtn.addEventListener('click', () => setHandToolStatus(tool.name, tool.category, 'wishlist'));
+            wishBtn.addEventListener('click', () => setToolStatus(tool.name, tool.category, 'wishlist'));
             actions.appendChild(wishBtn);
 
             const shopLink = document.createElement('a');
@@ -1963,30 +2057,130 @@
             return card;
         }
 
-        function renderHandToolSearchResults() {
-            const input = document.getElementById('handToolSearchInput');
-            const resultsEl = document.getElementById('handToolSearchResults');
-            const emptyHint = document.getElementById('handToolSearchEmptyHint');
+        // With no query, browse the full catalog grouped by category — the section itself is
+        // still collapsed by default (see the <details> in the sidebar), so this only costs
+        // space once someone actually opens it, and it's what makes the list discoverable
+        // instead of requiring you to already know a tool's exact name to find it. Typing
+        // narrows down to matches, still grouped the same way.
+        function renderPowerToolSearchResults() {
+            const input = document.getElementById('smallPowerToolSearchInput');
+            const resultsEl = document.getElementById('smallPowerToolSearchResults');
+            const emptyHint = document.getElementById('smallPowerToolSearchEmptyHint');
             const query = input.value.trim().toLowerCase();
             resultsEl.innerHTML = '';
 
-            // Nothing renders until there's an actual query — a live, always-shown ~40-item list
-            // here is exactly the sidebar clutter this feature is supposed to avoid.
-            if (!query) {
-                emptyHint.style.display = 'none';
-                return;
-            }
-            const matches = HAND_TOOLS.filter(t => t.name.toLowerCase().includes(query) || t.category.toLowerCase().includes(query));
-            matches.forEach(tool => resultsEl.appendChild(buildHandToolResultCard(tool)));
+            const matches = query
+                ? SMALL_TOOLS.filter(t => t.name.toLowerCase().includes(query) || t.category.toLowerCase().includes(query))
+                : SMALL_TOOLS;
+
+            const groups = {};
+            matches.forEach(tool => {
+                if (!groups[tool.category]) groups[tool.category] = [];
+                groups[tool.category].push(tool);
+            });
+            Object.keys(groups).forEach(category => {
+                const heading = document.createElement('div');
+                heading.className = 'tool-search-category-heading';
+                heading.textContent = category;
+                resultsEl.appendChild(heading);
+                groups[category].forEach(tool => resultsEl.appendChild(buildToolResultCard(tool)));
+            });
             emptyHint.style.display = matches.length ? 'none' : 'block';
         }
 
-        function initHandToolSearch() {
+        function initPowerToolSearch() {
             // The category badge is the size of the searchable catalog (a fixed, informational
             // count), not a live result count — it shouldn't flicker between numbers as someone
             // types, only My Tools/Wishlist's badges reflect what's actually been added.
-            document.getElementById('handToolsCount').textContent = HAND_TOOLS.length;
-            document.getElementById('handToolSearchInput').addEventListener('input', renderHandToolSearchResults);
+            document.getElementById('smallPowerToolsCount').textContent = SMALL_TOOLS.length;
+            document.getElementById('smallPowerToolSearchInput').addEventListener('input', renderPowerToolSearchResults);
+        }
+
+        // Same card as buildToolResultCard, but floor tools have a real footprint worth
+        // showing (and worth saving into the status entry so the Insurance Report shows real
+        // dimensions) — small power tools don't have one, hence the separate builder rather
+        // than overloading buildToolResultCard with an optional dims argument.
+        function buildFloorToolResultCard(tool) {
+            const statuses = loadToolStatuses();
+            const entry = statuses[tool.name];
+            const card = document.createElement('div');
+            card.className = 'tool-box-item' + (entry ? (entry.status === 'owned' ? ' is-owned' : ' is-wishlist') : '');
+
+            const info = document.createElement('div');
+            const title = document.createElement('div');
+            title.className = 'tool-title';
+            title.textContent = tool.name;
+            info.appendChild(title);
+            const dims = document.createElement('div');
+            dims.className = 'tool-dims';
+            dims.textContent = `${tool.category} — ${tool.widthFt}' x ${tool.lengthFt}' Footprint`;
+            info.appendChild(dims);
+
+            const actions = document.createElement('div');
+            actions.className = 'hand-tool-actions';
+
+            const extraFields = { widthFt: tool.widthFt, lengthFt: tool.lengthFt, heightFt: tool.heightFt };
+
+            const ownedBtn = document.createElement('button');
+            ownedBtn.type = 'button';
+            ownedBtn.className = 'maintenance-mini-btn' + (entry && entry.status === 'owned' ? ' is-active' : '');
+            ownedBtn.textContent = '✓ Owned';
+            ownedBtn.addEventListener('click', () => setToolStatus(tool.name, tool.category, 'owned', extraFields));
+            actions.appendChild(ownedBtn);
+
+            const wishBtn = document.createElement('button');
+            wishBtn.type = 'button';
+            wishBtn.className = 'maintenance-mini-btn' + (entry && entry.status === 'wishlist' ? ' is-active' : '');
+            wishBtn.textContent = '★ Wishlist';
+            wishBtn.addEventListener('click', () => setToolStatus(tool.name, tool.category, 'wishlist', extraFields));
+            actions.appendChild(wishBtn);
+
+            const shopLink = document.createElement('a');
+            shopLink.className = 'maintenance-mini-btn';
+            shopLink.href = shopSearchUrl(tool.name);
+            shopLink.target = '_blank';
+            shopLink.rel = 'noopener noreferrer';
+            shopLink.textContent = '🔍 Shop';
+            shopLink.title = `Search for "${tool.name}" (opens in a new tab)`;
+            actions.appendChild(shopLink);
+
+            info.appendChild(actions);
+            card.appendChild(info);
+            return card;
+        }
+
+        // Same catalog/categories as the Workshop Layout Planner's draggable sidebar — browsable
+        // and searchable here too, so marking a table saw owned doesn't require switching pages.
+        // Placing it on an actual shop floor layout still only happens over there.
+        function renderFloorToolSection() {
+            const input = document.getElementById('floorToolSearchInput');
+            const resultsEl = document.getElementById('floorToolSearchResults');
+            const emptyHint = document.getElementById('floorToolSearchEmptyHint');
+            const query = input.value.trim().toLowerCase();
+            resultsEl.innerHTML = '';
+
+            const matches = query
+                ? FLOOR_TOOLS.filter(t => t.name.toLowerCase().includes(query) || t.category.toLowerCase().includes(query))
+                : FLOOR_TOOLS;
+
+            const groups = {};
+            matches.forEach(tool => {
+                if (!groups[tool.category]) groups[tool.category] = [];
+                groups[tool.category].push(tool);
+            });
+            Object.keys(groups).forEach(category => {
+                const heading = document.createElement('div');
+                heading.className = 'tool-search-category-heading';
+                heading.textContent = category;
+                resultsEl.appendChild(heading);
+                groups[category].forEach(tool => resultsEl.appendChild(buildFloorToolResultCard(tool)));
+            });
+            emptyHint.style.display = matches.length ? 'none' : 'block';
+        }
+
+        function initFloorToolSearch() {
+            document.getElementById('floorToolsCount').textContent = FLOOR_TOOLS.length;
+            document.getElementById('floorToolSearchInput').addEventListener('input', renderFloorToolSection);
         }
 
         /* ---------- INSURANCE INVENTORY REPORT (Premier) ----------
@@ -2010,7 +2204,7 @@
             let valuedCount = 0;
 
             const rows = owned.map(([name, entry]) => {
-                const dispName = entry.nickname ? `${entry.nickname} (${name})` : name;
+                const dispName = entry.nickname ? `${name} (${entry.nickname})` : name;
                 const dims = (entry.widthFt && entry.lengthFt)
                     ? `${entry.widthFt}' x ${entry.lengthFt}'${entry.heightFt ? ' x ' + entry.heightFt + '\'' : ''}`
                     : '—';
@@ -2099,7 +2293,8 @@
         initHeaderSignIn();
         initAccountPanel();
         initInsuranceReport();
-        initHandToolSearch();
+        initPowerToolSearch();
+        initFloorToolSearch();
         renderToolLists();
         renderHomeSnapshot();
     </script>

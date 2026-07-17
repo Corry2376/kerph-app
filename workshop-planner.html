@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <script>if (localStorage.getItem('kerphComingSoonBypass') !== 'true') { location.replace('coming-soon.html'); }</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kerph - Workshop Optimization Engine</title>
@@ -718,6 +719,16 @@
 
         .tool-title { font-weight: 700; font-size: 13px; color: #0f172a; }
         .tool-dims { font-size: 11px; color: #6b7280; margin-top: 1px; }
+
+        .tool-search-category-heading {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #6b7280;
+            margin: 10px 0 4px;
+        }
+        .tool-search-category-heading:first-child { margin-top: 2px; }
 
         .tool-status-controls {
             display: flex;
@@ -2324,6 +2335,21 @@
             </summary>
             <div class="category-items">
                 <div class="empty-hint" id="myToolsEmptyHint">Mark a tool as owned (&#10003;) to see it here.</div>
+            </div>
+        </details>
+
+        <details class="tool-category" id="smallPowerToolsCategory">
+            <summary class="category-header">
+                <span class="category-header-left">Small Power Tools <span class="category-count" id="smallPowerToolsCount">0</span></span>
+                <span class="category-chevron">&#9656;</span>
+            </summary>
+            <div class="category-items">
+                <div class="empty-hint">Drills, routers, circular saws, and other portable power tools that never sit on the shop floor &mdash; browse or search below. Same list as the home page's Small Power Tools.</div>
+                <div class="tool-search-wrap">
+                    <input type="text" class="input-box" id="smallPowerToolSearchInput" placeholder="&#128269; Search small power tools...">
+                </div>
+                <div class="empty-hint" id="smallPowerToolSearchEmptyHint" style="display:none;">No tools match your search.</div>
+                <div id="smallPowerToolSearchResults"></div>
             </div>
         </details>
 
@@ -4743,7 +4769,12 @@
         }
 
         function updateCategoryCounts() {
+            // Small Power Tools' badge is the size of the searchable catalog (a fixed,
+            // informational count set by renderPowerToolSection), not a live item count like
+            // every other category here — skip it so a search elsewhere on the page doesn't
+            // clobber it with a filtered number.
             document.querySelectorAll('.tool-category').forEach(cat => {
+                if (cat.id === 'smallPowerToolsCategory') return;
                 const countEl = cat.querySelector('.category-count');
                 if (!countEl) return;
                 countEl.textContent = cat.querySelectorAll('.category-items > .tool-box-item').length;
@@ -4876,6 +4907,190 @@
                     saveToolStatuses(statuses);
                 });
             }
+        }
+
+        // ---------- SMALL POWER TOOLS (drills, routers, circular saws, etc.) ----------
+        // Same catalog as index.html's Small Power Tools section (kept in sync) — handheld
+        // power tools that never sit on the shop floor, so they don't belong in the draggable
+        // catalog below, but still need to be ownable/wishlist-able here, not just on the home
+        // page, and show up in My Tools the same way floor tools do.
+        const SMALL_TOOLS = [
+            { name: 'Router (Fixed Base)', category: 'Routers' },
+            { name: 'Router (Plunge)', category: 'Routers' },
+            { name: 'Router (Trim/Palm)', category: 'Routers' },
+            { name: 'Router Table', category: 'Routers' },
+            { name: 'Festool OF 1400 EQ Router', category: 'Routers' },
+            { name: 'Festool MFK 700 Trim Router', category: 'Routers' },
+            { name: 'Random Orbital Sander', category: 'Sanders' },
+            { name: 'Belt Sander', category: 'Sanders' },
+            { name: 'Detail/Mouse Sander', category: 'Sanders' },
+            { name: 'Handheld Drum Sander', category: 'Sanders' },
+            { name: 'Festool RO 150 FEQ Rotex Sander', category: 'Sanders' },
+            { name: 'Circular Saw', category: 'Handheld Saws' },
+            { name: 'Jigsaw', category: 'Handheld Saws' },
+            { name: 'Reciprocating Saw', category: 'Handheld Saws' },
+            { name: 'Track Saw', category: 'Handheld Saws' },
+            { name: 'Handheld Miter Saw', category: 'Handheld Saws' },
+            { name: 'Festool TS 55 REQ Track Saw', category: 'Handheld Saws' },
+            { name: 'Festool Carvex PS 420 Jigsaw', category: 'Handheld Saws' },
+            { name: 'Festool Kapex KS 120 Miter Saw', category: 'Handheld Saws' },
+            { name: 'Cordless Drill/Driver', category: 'Drills & Drivers' },
+            { name: 'Impact Driver', category: 'Drills & Drivers' },
+            { name: 'Hammer Drill', category: 'Drills & Drivers' },
+            { name: 'Benchtop Drill Press', category: 'Drills & Drivers' },
+            { name: 'Festool T 18 Cordless Drill', category: 'Drills & Drivers' },
+            { name: 'Biscuit Joiner', category: 'Planes & Joinery' },
+            { name: 'Power Hand Planer', category: 'Planes & Joinery' },
+            { name: 'Festool Domino DF 500 Joiner', category: 'Planes & Joinery' },
+            { name: 'Portable Air Compressor', category: 'Air Tools' },
+            { name: 'Brad Nailer', category: 'Air Tools' },
+            { name: 'Finish Nailer', category: 'Air Tools' },
+            { name: 'Framing Nailer', category: 'Air Tools' },
+            { name: 'Pneumatic Staple Gun', category: 'Air Tools' },
+            { name: 'Chainsaw', category: 'Outdoor & Rough Tools' },
+            { name: 'Angle Grinder', category: 'Outdoor & Rough Tools' },
+            { name: 'Heat Gun', category: 'Outdoor & Rough Tools' },
+            { name: 'Handheld Shop Vacuum', category: 'Safety & Dust' },
+            { name: 'Festool CT 26 Dust Extractor', category: 'Safety & Dust' }
+        ];
+
+        // Builds one card, browsable (in the Small Power Tools list) or owned (relocated-style
+        // display in My Tools) — same tool-box-item/status-btn styling as the floor catalog,
+        // so it looks native to this page rather than importing the home page's card design.
+        // Brand/model name leads, nickname trails in parentheses — same order as My Tools/
+        // Wishlist everywhere else in the app.
+        function buildPowerToolCard(tool, statuses) {
+            const entry = statuses[tool.name];
+            const card = document.createElement('div');
+            card.className = 'tool-box-item' + (entry ? (entry.status === 'owned' ? ' is-owned' : ' is-wishlist') : '');
+            card.setAttribute('data-name', tool.name);
+
+            const info = document.createElement('div');
+            const title = document.createElement('div');
+            title.className = 'tool-title';
+            title.textContent = entry && entry.nickname ? `${tool.name} (${entry.nickname})` : tool.name;
+            info.appendChild(title);
+            const dims = document.createElement('div');
+            dims.className = 'tool-dims';
+            dims.textContent = tool.category;
+            info.appendChild(dims);
+
+            if (entry && entry.status === 'owned') {
+                const nicknameInput = document.createElement('input');
+                nicknameInput.type = 'text';
+                nicknameInput.className = 'nickname-input';
+                nicknameInput.placeholder = 'Nickname (e.g. "Dad\'s drill")';
+                nicknameInput.value = entry.nickname || '';
+                nicknameInput.addEventListener('click', (e) => e.stopPropagation());
+                nicknameInput.addEventListener('change', () => {
+                    const current = loadToolStatuses();
+                    if (current[tool.name]) {
+                        current[tool.name].nickname = nicknameInput.value;
+                        saveToolStatuses(current);
+                        renderPowerToolSection();
+                        renderOwnedPowerToolsInMyTools();
+                    }
+                });
+                info.appendChild(nicknameInput);
+            }
+
+            const controls = document.createElement('div');
+            controls.className = 'tool-status-controls';
+
+            const ownedBtn = document.createElement('button');
+            ownedBtn.type = 'button';
+            ownedBtn.className = 'status-btn owned-btn' + (entry && entry.status === 'owned' ? ' active' : '');
+            ownedBtn.title = 'Mark as Owned';
+            ownedBtn.textContent = '✓';
+            ownedBtn.addEventListener('click', () => togglePowerToolStatus(tool, 'owned'));
+            controls.appendChild(ownedBtn);
+
+            const wishlistBtn = document.createElement('button');
+            wishlistBtn.type = 'button';
+            wishlistBtn.className = 'status-btn wishlist-btn' + (entry && entry.status === 'wishlist' ? ' active' : '');
+            wishlistBtn.title = 'Add to Wishlist';
+            wishlistBtn.textContent = '★';
+            wishlistBtn.addEventListener('click', () => togglePowerToolStatus(tool, 'wishlist'));
+            controls.appendChild(wishlistBtn);
+
+            card.appendChild(info);
+            card.appendChild(controls);
+            return card;
+        }
+
+        function togglePowerToolStatus(tool, status) {
+            const statuses = loadToolStatuses();
+            const existing = statuses[tool.name];
+            if (existing && existing.status === status) {
+                delete statuses[tool.name];
+            } else {
+                statuses[tool.name] = {
+                    status,
+                    nickname: (existing && existing.nickname) || '',
+                    category: tool.category
+                };
+            }
+            saveToolStatuses(statuses);
+            renderPowerToolSection();
+            renderOwnedPowerToolsInMyTools();
+            updateCategoryCounts();
+            updateMyToolsEmptyState();
+        }
+
+        // With no query, browse the full catalog grouped by category — matches the home page's
+        // Small Power Tools section exactly, so the same list is discoverable on both pages.
+        function renderPowerToolSection() {
+            const input = document.getElementById('smallPowerToolSearchInput');
+            const resultsEl = document.getElementById('smallPowerToolSearchResults');
+            const emptyHint = document.getElementById('smallPowerToolSearchEmptyHint');
+            if (!input || !resultsEl) return;
+            const query = input.value.trim().toLowerCase();
+            const statuses = loadToolStatuses();
+            resultsEl.innerHTML = '';
+
+            const matches = query
+                ? SMALL_TOOLS.filter(t => t.name.toLowerCase().includes(query) || t.category.toLowerCase().includes(query))
+                : SMALL_TOOLS;
+
+            const groups = {};
+            matches.forEach(tool => {
+                if (!groups[tool.category]) groups[tool.category] = [];
+                groups[tool.category].push(tool);
+            });
+            Object.keys(groups).forEach(category => {
+                const heading = document.createElement('div');
+                heading.className = 'tool-search-category-heading';
+                heading.textContent = category;
+                resultsEl.appendChild(heading);
+                groups[category].forEach(tool => resultsEl.appendChild(buildPowerToolCard(tool, statuses)));
+            });
+            emptyHint.style.display = matches.length ? 'none' : 'block';
+            document.getElementById('smallPowerToolsCount').textContent = SMALL_TOOLS.length;
+        }
+
+        // Owned power tools don't exist as static DOM nodes in the floor catalog below (unlike
+        // machinery), so moveToolItem can't physically relocate them — instead they're rendered
+        // fresh into My Tools alongside the relocated floor items on every status change, tagged
+        // so they can be cleared and rebuilt without touching the floor tools' real DOM nodes.
+        function renderOwnedPowerToolsInMyTools() {
+            const container = document.querySelector('#myToolsCategory .category-items');
+            if (!container) return;
+            container.querySelectorAll('.power-tool-my-tools-card').forEach(el => el.remove());
+            const statuses = loadToolStatuses();
+            SMALL_TOOLS.forEach(tool => {
+                const entry = statuses[tool.name];
+                if (entry && entry.status === 'owned') {
+                    const card = buildPowerToolCard(tool, statuses);
+                    card.classList.add('power-tool-my-tools-card');
+                    container.appendChild(card);
+                }
+            });
+        }
+
+        function initPowerToolSearch() {
+            renderPowerToolSection();
+            renderOwnedPowerToolsInMyTools();
+            document.getElementById('smallPowerToolSearchInput').addEventListener('input', renderPowerToolSection);
         }
 
         function initToolStatusControls() {
@@ -7957,6 +8172,7 @@
         updateZoomControlBarPosition();
         initResizeHandles();
         initToolStatusControls();
+        initPowerToolSearch();
         initCustomTools();
         initLayers();
         initPlanSelector();

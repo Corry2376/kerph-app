@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Kerph — Coming Soon</title>
+<style>
+    * { box-sizing: border-box; }
+    body {
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+        background-color: #ffffff;
+        background-image:
+            linear-gradient(135deg, #ffffff 0%, #eef2ff 60%, #e0e7ff 100%),
+            repeating-linear-gradient(120deg, rgba(30, 58, 138, 0.04) 0px, rgba(30, 58, 138, 0.04) 2px, transparent 2px, transparent 14px);
+        padding: 20px;
+    }
+
+    .card {
+        width: 100%;
+        max-width: 420px;
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
+        border-top: 4px solid #b23b3b;
+        border-bottom: 4px solid #1e3a8a;
+        border-radius: 12px;
+        padding: 36px 32px 28px;
+        box-shadow: 0 20px 45px rgba(15, 23, 42, 0.12);
+        text-align: center;
+    }
+
+    .logo-spotlight {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 260px;
+        height: 72px;
+        margin: 0 auto 20px;
+    }
+    .logo-image {
+        width: 260px;
+        height: 72px;
+        object-fit: contain;
+        filter: drop-shadow(0 8px 16px rgba(15, 23, 42, 0.3));
+    }
+    .logo-tm {
+        position: absolute;
+        bottom: 4px;
+        right: 15px;
+        font-size: 9px;
+        font-weight: 800;
+        color: #1e3a8a;
+        line-height: 1;
+        pointer-events: none;
+    }
+
+    h1 {
+        font-size: 22px;
+        font-weight: 800;
+        color: #0f172a;
+        margin: 0 0 8px;
+    }
+    p.subtitle {
+        font-size: 14px;
+        color: #6b7280;
+        margin: 0 0 26px;
+        line-height: 1.5;
+    }
+
+    .field-label {
+        display: block;
+        text-align: left;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #6b7280;
+        margin: 0 0 4px;
+    }
+    .field-group { margin-bottom: 14px; }
+    input.gate-input {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        font-size: 14px;
+        font-family: inherit;
+    }
+    input.gate-input:focus {
+        outline: none;
+        border-color: #1e3a8a;
+        box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.12);
+    }
+
+    .enter-btn {
+        width: 100%;
+        margin-top: 6px;
+        padding: 11px;
+        border: none;
+        border-radius: 8px;
+        background-color: #1e3a8a;
+        color: #ffffff;
+        font-size: 14px;
+        font-weight: 700;
+        cursor: pointer;
+    }
+    .enter-btn:hover { background-color: #16296b; }
+
+    .gate-error {
+        display: none;
+        margin-top: 12px;
+        font-size: 12.5px;
+        color: #b91c1c;
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        border-radius: 6px;
+        padding: 8px 10px;
+    }
+    .gate-error.visible { display: block; }
+</style>
+</head>
+<body>
+
+    <div class="card">
+        <div class="logo-spotlight">
+            <img src="logo.png" alt="Kerph Logo" class="logo-image">
+            <span class="logo-tm">&trade;</span>
+        </div>
+        <h1>Coming Soon</h1>
+        <p class="subtitle">We're putting the finishing touches on Kerph. Check back soon — or sign in below if you already have preview access.</p>
+
+        <form id="gateForm" autocomplete="off">
+            <div class="field-group">
+                <label class="field-label" for="gateUsername">Username</label>
+                <input type="text" class="gate-input" id="gateUsername" autocomplete="username">
+            </div>
+            <div class="field-group">
+                <label class="field-label" for="gatePassword">Password</label>
+                <input type="password" class="gate-input" id="gatePassword" autocomplete="current-password">
+            </div>
+            <button type="submit" class="enter-btn">Enter</button>
+            <div class="gate-error" id="gateError">That username/password combination isn't recognized.</div>
+        </form>
+    </div>
+
+<script>
+    // Client-side only — good enough to keep casual visitors from stumbling onto the
+    // unfinished site, not a real security boundary (anyone reading this file's source can
+    // find the credentials). Cloudflare Access can layer real server-side auth on top later
+    // without touching this page.
+    var BYPASS_KEY = 'kerphComingSoonBypass';
+    var GATE_USERNAME = 'Corry';
+    var GATE_PASSWORD = 'Corry';
+
+    if (localStorage.getItem(BYPASS_KEY) === 'true') {
+        location.replace('index.html');
+    }
+
+    document.getElementById('gateForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+        var username = document.getElementById('gateUsername').value.trim();
+        var password = document.getElementById('gatePassword').value;
+        var errorEl = document.getElementById('gateError');
+
+        if (username === GATE_USERNAME && password === GATE_PASSWORD) {
+            localStorage.setItem(BYPASS_KEY, 'true');
+            location.replace('index.html');
+        } else {
+            errorEl.classList.add('visible');
+            document.getElementById('gatePassword').value = '';
+        }
+    });
+</script>
+
+</body>
+</html>
