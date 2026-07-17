@@ -971,6 +971,7 @@
                     <div class="viewer-hint" id="preview3DSelectionCoords" style="font-variant-numeric:tabular-nums; margin-bottom:8px; display:none;"></div>
                     <button type="button" id="preview3DFreeRotateBtn" class="mini-btn" style="width:100%;">&#128260; Free Rotate</button>
                     <button type="button" id="preview3DAlignBtn" class="mini-btn" style="width:100%; margin-top:8px;" title="Snap this piece flat on the floor (or onto the piece below), flush against its nearest neighbor, and square to level">&#128207; Align Flat/Flush/Level</button>
+                    <button type="button" id="preview3DDuplicateBtn" class="mini-btn" style="width:100%; margin-top:8px;" title="Duplicate this piece">&#10697; Copy</button>
                     <button type="button" id="preview3DRemoveBtn" class="mini-btn danger" style="width:100%; margin-top:8px;">Remove</button>
                     <div class="viewer-hint" id="preview3DSelectionHint"></div>
                 </div>
@@ -1879,6 +1880,25 @@
             renderAll();
         }
 
+        // Deep-clones a panel (dims/material/holes and, if it's already been placed, position/
+        // rotation too) under a new id — offsetting the copy a few inches on X/Z so it doesn't
+        // render exactly on top of the original in 3D, same "good enough, drag it into place"
+        // starting point as a brand-new piece. Bridges into the 3D module's undo stack when
+        // present so a sidebar-triggered copy is just as undoable as a 3D-view one.
+        function duplicatePanel(id) {
+            const original = panels.find(p => p.id === id);
+            if (!original) return;
+            if (typeof window.push3DUndoSnapshot === 'function') window.push3DUndoSnapshot();
+            const copy = JSON.parse(JSON.stringify(original));
+            copy.id = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+            copy.name = original.name + ' (Copy)';
+            if (typeof copy.xIn === 'number') copy.xIn += 4;
+            if (typeof copy.zIn === 'number') copy.zIn += 4;
+            panels.push(copy);
+            savePanels();
+            renderAll();
+        }
+
         function renderPanelList() {
             const container = document.getElementById('panelList');
             const hint = document.getElementById('panelListEmptyHint');
@@ -1902,6 +1922,13 @@
                 editBtn.textContent = 'Edit';
                 editBtn.addEventListener('click', () => openPanelModal(p));
 
+                const copyBtn = document.createElement('button');
+                copyBtn.type = 'button';
+                copyBtn.className = 'mini-btn';
+                copyBtn.textContent = 'Copy';
+                copyBtn.title = 'Duplicate this piece';
+                copyBtn.addEventListener('click', () => duplicatePanel(p.id));
+
                 const removeBtn = document.createElement('button');
                 removeBtn.type = 'button';
                 removeBtn.className = 'mini-btn danger';
@@ -1909,6 +1936,7 @@
                 removeBtn.addEventListener('click', () => deletePanel(p.id));
 
                 actions.appendChild(editBtn);
+                actions.appendChild(copyBtn);
                 actions.appendChild(removeBtn);
                 item.appendChild(actions);
                 container.appendChild(item);
@@ -2226,6 +2254,9 @@
 
         window.getLabels = () => labels;
         window.getMeasurements = () => measurementsData;
+        // Lets the classic-script sidebar (e.g. duplicatePanel) push onto the same undo stack
+        // as every 3D-view mutation, so a copy made from the panel list is just as undoable.
+        window.push3DUndoSnapshot = () => push3DUndoSnapshot();
         window.restoreLabelsAndMeasurements = function restoreLabelsAndMeasurements(newLabels, newMeasurements) {
             labels = Array.isArray(newLabels) ? newLabels : [];
             measurementsData = Array.isArray(newMeasurements) ? newMeasurements : [];
@@ -2835,6 +2866,7 @@
             // A billboard label or two-point measurement never gets Free Rotate either way.
             document.getElementById('preview3DFreeRotateBtn').style.display = (type === 'panel' && !explodedView) ? 'block' : 'none';
             document.getElementById('preview3DAlignBtn').style.display = (type === 'panel' && !explodedView) ? 'block' : 'none';
+            document.getElementById('preview3DDuplicateBtn').style.display = (type === 'panel' && !explodedView) ? 'block' : 'none';
             document.getElementById('preview3DRemoveBtn').style.display = explodedView ? 'none' : 'block';
             updateSelectionCoords(mesh);
             // Purple to match the selection outline used everywhere else in the app (e.g. the
@@ -2980,6 +3012,28 @@
             persistMeshPosition(selectedMesh);
             rebuildDimensionMeshes();
             window.showToast('Aligned flat, flush, and level.');
+        }
+
+        // Deep-clones the selected panel under a new id, offset a few inches on X/Z so it
+        // doesn't render exactly on top of the original — same starting point as commitQuickAdd's
+        // "New Piece", and likewise selects the copy right after so the very next thing to do is
+        // drag it (with face-snap) into place.
+        function duplicateSelected() {
+            if (!selectedMesh || selectedMesh.userData.type !== 'panel' || explodedView) return;
+            const original = findPanelData(selectedMesh.userData.panelId);
+            if (!original) return;
+            push3DUndoSnapshot();
+            const copy = JSON.parse(JSON.stringify(original));
+            copy.id = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+            copy.name = original.name + ' (Copy)';
+            if (typeof copy.xIn === 'number') copy.xIn += 4;
+            if (typeof copy.zIn === 'number') copy.zIn += 4;
+            const panelsArr = window.getPanels();
+            panelsArr.push(copy);
+            window.savePanels();
+            window.renderAll();
+            const created = panelMeshes.find(pm => pm.panelId === copy.id);
+            if (created) selectMesh(created.mesh);
         }
 
         function onPointerDown(e) {
@@ -3395,6 +3449,7 @@
             window.addEventListener('keydown', onKeyDown);
             document.getElementById('preview3DFreeRotateBtn').addEventListener('click', toggleFreeRotate);
             document.getElementById('preview3DAlignBtn').addEventListener('click', autoAlignSelected);
+            document.getElementById('preview3DDuplicateBtn').addEventListener('click', duplicateSelected);
             document.getElementById('preview3DUndoBtn').addEventListener('click', undo3D);
             document.getElementById('dimensionsToggleBtn').addEventListener('click', () => {
                 showDimensions = !showDimensions;
