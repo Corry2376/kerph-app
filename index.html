@@ -75,6 +75,21 @@
             filter: drop-shadow(0 18px 30px rgba(15, 23, 42, 0.5));
         }
 
+        .logo-tm {
+            /* Lower-right corner, inside the logo's own white background — clear of both the
+               navy border below it and the wordmark above it, so it doesn't need a badge/outline
+               to stay legible the way the earlier top-right placement did. */
+            position: absolute;
+            bottom: 6px;
+            right: 22px;
+            z-index: 2;
+            font-size: 12px;
+            font-weight: 800;
+            color: #1e3a8a;
+            line-height: 1;
+            pointer-events: none;
+        }
+
         .page-title-select {
             font-size: 15px;
             font-weight: 700;
@@ -210,6 +225,33 @@
             font-size: 11px;
         }
 
+        .header-sign-in-check {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            font-size: 10px;
+            font-weight: 600;
+            color: #64748b;
+            white-space: nowrap;
+        }
+
+        .header-sign-in-check input {
+            margin: 0;
+        }
+
+        .account-checkbox-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .account-checkbox-row input {
+            width: 16px;
+            height: 16px;
+            flex: none;
+        }
+
         .mini-btn {
             flex: 1;
             padding: 8px 10px;
@@ -338,6 +380,17 @@
             transform: translateX(-50%) translateY(0);
             pointer-events: auto;
         }
+        .upgrade-nudge-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 6px;
+            background-color: #d97706;
+            color: #ffffff;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .upgrade-nudge-btn:hover { background-color: #b45309; }
 
         /* ---------- LEFT SIDEBAR (My Tools / My Wishlist) ---------- */
         #sidebar-panel {
@@ -366,6 +419,45 @@
         }
 
         .empty-hint { font-size: 11px; color: #9ca3af; font-style: italic; padding: 6px 2px; }
+
+        /* ---------- COLLAPSIBLE SIDEBAR SECTIONS ----------
+           Same <details>/<summary> pattern as workshop-planner.html's catalog categories —
+           reused here so My Tools/My Wishlist/Hand & Power Tools can each be closed to cut
+           down on sidebar clutter, without needing a separate JS toggle (native <details>
+           handles open/closed state and the [open] selector alone drives the chevron). */
+        .tool-category { border: none; margin-bottom: 6px; }
+        .category-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            padding: 8px 6px;
+            cursor: pointer;
+            list-style: none;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #1e3a8a;
+            font-weight: 700;
+            border-radius: 6px;
+        }
+        .category-header::-webkit-details-marker { display: none; }
+        .category-header:hover { background-color: #eef2ff; }
+        .category-header-left { display: flex; align-items: center; gap: 8px; }
+        .category-count { background-color: #e0e7ff; color: #1e3a8a; font-size: 10px; font-weight: 700; padding: 1px 7px; border-radius: 999px; }
+        .category-chevron { font-size: 10px; color: #6b7280; transition: transform 0.15s ease; }
+        .tool-category[open] .category-chevron { transform: rotate(90deg); }
+        .category-items { padding: 4px 2px 2px; }
+
+        /* ---------- HAND & POWER TOOLS SEARCH ----------
+           Routers, sanders, drills, etc. never get placed on the shop floor layout, so they
+           stay out of the drag-and-drop catalog entirely — this is a separate, search-only
+           list (nothing renders until the user actually searches) that just needs to feed the
+           same kerphToolStatus store My Tools/Wishlist/the insurance report already read from. */
+        .tool-search-wrap { margin: 6px 0 8px; }
+        .hand-tool-actions { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; align-items: center; }
+        .hand-tool-actions a.maintenance-mini-btn { text-decoration: none; display: inline-flex; align-items: center; }
+        .maintenance-mini-btn.is-active { background-color: #1e3a8a; color: #ffffff; border-color: #1e3a8a; }
 
         .tool-box-item {
             position: relative;
@@ -443,10 +535,93 @@
             min-width: 0;
         }
 
+        /* ---------- INSURANCE INVENTORY (Premier) ----------
+           Value entry itself is open to every plan (no reason to block someone from typing a
+           number in), but generating the actual report is gated — see requirePremierAccess. */
+        .tool-value-row {
+            flex: 1 0 100%;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 6px;
+            padding-top: 6px;
+            border-top: 1px dashed #e2e8f0;
+            font-size: 11px;
+            color: #6b7280;
+        }
+        .tool-value-input {
+            width: 76px;
+            padding: 3px 6px;
+            border: 1px solid #cbd5e1;
+            border-radius: 5px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .tool-serial-row {
+            flex: 1 0 100%;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 4px;
+            font-size: 11px;
+            color: #6b7280;
+        }
+        .tool-serial-input {
+            width: 110px;
+            padding: 3px 6px;
+            border: 1px solid #cbd5e1;
+            border-radius: 5px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .insurance-report-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            width: 100%;
+            padding: 7px 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ca8a04;
+            border-radius: 6px;
+            background-color: #fffbeb;
+            color: #92400e;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .insurance-report-btn:hover { background-color: #fef3c7; }
+        .insurance-report-btn.locked { opacity: 0.7; }
+        .insurance-report-btn.locked::after { content: ' \1F512'; }
+
+        #insuranceReportPrintArea { display: none; }
+        @media print {
+            body.printing-insurance-report > *:not(#insuranceReportPrintArea) { display: none !important; }
+            body.printing-insurance-report { padding-top: 0 !important; background: #fff !important; }
+            body.printing-insurance-report #insuranceReportPrintArea {
+                display: block !important;
+                font-family: inherit;
+                color: #0f172a;
+            }
+            @page { size: portrait; margin: 0.6in; }
+            .ins-report-title { font-size: 22px; font-weight: 800; }
+            .ins-report-meta { font-size: 11px; color: #475569; margin-top: 4px; margin-bottom: 18px; }
+            .ins-report-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+            .ins-report-table th {
+                text-align: left; padding: 6px 8px; font-size: 9px; text-transform: uppercase;
+                letter-spacing: 0.04em; color: #64748b; border-bottom: 2px solid #1e3a8a;
+            }
+            .ins-report-table td { padding: 6px 8px; border-bottom: 1px solid #e2e8f0; }
+            .ins-report-table td.ins-value { text-align: right; font-variant-numeric: tabular-nums; }
+            .ins-report-total-row td { font-weight: 800; border-top: 2px solid #1e3a8a; border-bottom: none; }
+            .ins-report-disclaimer { margin-top: 22px; font-size: 10px; color: #6b7280; line-height: 1.6; border-top: 1px solid #e2e8f0; padding-top: 10px; }
+        }
+
         /* ---------- MAIN CONTENT ---------- */
         main {
             margin-left: 310px;
-            max-width: 980px;
+            max-width: 1360px;
             padding: 56px 24px 80px;
         }
 
@@ -460,10 +635,150 @@
         .intro-subtitle {
             font-size: 15px;
             color: #4b5563;
-            margin-bottom: 40px;
             max-width: 640px;
             line-height: 1.5;
         }
+
+        /* Uses the horizontal room a fixed-width single column left empty on wide screens:
+           a welcome/CTA on the left, a live snapshot of the user's own data on the right,
+           instead of just widening the tile grid into dead space. */
+        .hero-row {
+            display: flex;
+            gap: 28px;
+            align-items: stretch;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+
+        .hero-intro {
+            flex: 1 1 380px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .hero-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 18px;
+            align-self: flex-start;
+            background-color: #1e3a8a;
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 14px;
+            padding: 12px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: background-color 0.15s ease, transform 0.15s ease;
+        }
+
+        .hero-cta:hover {
+            background-color: #1e40af;
+            transform: translateY(-1px);
+        }
+
+        .snapshot-panel {
+            flex: 0 0 300px;
+            background-color: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 14px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
+        }
+
+        .snapshot-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #6b7280;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .snapshot-current {
+            margin-top: 14px;
+            padding-top: 14px;
+            border-top: 1px solid #e2e8f0;
+            font-size: 12.5px;
+            color: #334155;
+            line-height: 1.7;
+        }
+
+        .snapshot-current-empty {
+            font-size: 12px;
+            color: #9ca3af;
+            font-style: italic;
+            line-height: 1.5;
+        }
+
+        .snapshot-link {
+            display: inline-block;
+            margin-top: 6px;
+            font-size: 12px;
+            font-weight: 700;
+            color: #1e3a8a;
+            text-decoration: none;
+        }
+
+        .snapshot-link:hover { text-decoration: underline; }
+
+        /* Premier-only perk callout inside the snapshot panel — the first thing anyone sees
+           on the home page, and a much more discoverable spot for a Premier-gated action than
+           a plain button buried in the sidebar's My Tools list (which is where the same report
+           button also lives, for people already looking at their owned-tools list). */
+        .snapshot-premier-perk {
+            margin-top: 14px;
+            padding-top: 14px;
+            border-top: 1px dashed #fde68a;
+        }
+        .snapshot-premier-perk-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid #ca8a04;
+            border-radius: 6px;
+            background-color: #fffbeb;
+            color: #92400e;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .snapshot-premier-perk-btn:hover { background-color: #fef3c7; }
+        .snapshot-premier-perk-label {
+            font-size: 9.5px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #b45309;
+            margin-bottom: 6px;
+        }
+
+        /* The Workshop Layout Planner unlocks every other tool (dust collection, 3D viewer,
+           etc. all read the shop it produces), so it gets a wider, richer card instead of
+           sitting flush in the grid as just one more equal-weight tile. */
+        .tool-card-featured {
+            grid-column: 1 / -1;
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            padding: 28px 32px;
+            background-image: linear-gradient(120deg, #eef2ff 0%, #ffffff 65%);
+        }
+
+        .tool-card-featured .tool-card-icon {
+            width: 60px;
+            height: 60px;
+            font-size: 30px;
+            margin-bottom: 0;
+            flex-shrink: 0;
+        }
+
+        .tool-card-featured .tool-card-title { font-size: 20px; }
+        .tool-card-featured .tool-card-desc { font-size: 14px; max-width: 580px; }
 
         .tool-grid {
             display: grid;
@@ -549,6 +864,10 @@
             letter-spacing: 0.03em;
             vertical-align: middle;
         }
+            .header-quick-links { display: flex; align-items: center; gap: 6px; font-size: 11px; }
+        .header-quick-links a { color: #6b7280; font-weight: 600; text-decoration: none; }
+        .header-quick-links a:hover { color: #1e3a8a; text-decoration: underline; }
+        .header-quick-links-sep { color: #cbd5e1; }
     </style>
 </head>
 <body>
@@ -559,15 +878,18 @@
                 <a href="index.html" class="logo-link" title="Kerph Home">
                     <img src="logo.png" alt="Kerph Logo" class="logo-image">
                 </a>
+                <span class="logo-tm">&trade;</span>
             </div>
             <select class="page-title-select" id="pageNavSelect">
                 <option value="index.html" selected>Home</option>
                 <option value="workshop-planner.html">Workshop Layout Planner</option>
+                <option value="dust-collection.html">Dust Collection</option>
                 <option value="project-designer.html">Project Designer</option>
                 <option value="cutlist-optimizer.html">Cut List Optimizer</option>
-                <option value="dust-collection.html">Dust Collection</option>
                 <option value="find-a-builder.html">Find a Builder</option>
                 <option value="shop-3d-viewer.html">3D Shop Viewer</option>
+                <option value="tool-reviews.html">Cool Tool Reviews</option>
+                <option value="shop-showcase.html">Shop Showcase</option>
             </select>
         </div>
 
@@ -575,6 +897,10 @@
             <div class="header-sign-in" id="headerSignIn" title="Preview only — any username &amp; password signs you in locally in this browser.">
                 <input type="text" class="header-sign-in-input" id="headerSignInUsername" placeholder="Username" autocomplete="username">
                 <input type="password" class="header-sign-in-input" id="headerSignInPassword" placeholder="Password" autocomplete="current-password">
+                <label class="header-sign-in-check" title="Get reminders when tools you own are due for maintenance">
+                    <input type="checkbox" id="headerSignInReminders" checked>
+                    Reminders
+                </label>
                 <button type="button" id="headerSignInBtn" class="mini-btn" title="Sign In">Sign In</button>
             </div>
             <button type="button" id="accountBtn" class="account-btn plan-free" title="Account &amp; Plan Settings — border color shows your plan level" style="display:none;">
@@ -584,6 +910,11 @@
                     <span class="account-btn-plan" id="accountBtnPlan">Free</span>
                 </span>
             </button>
+            <div class="header-quick-links">
+                <a href="pricing.html">Plan Comparison</a>
+                <span class="header-quick-links-sep">&middot;</span>
+                <a href="help.html">Help &amp; Support</a>
+            </div>
             <select class="plan-select" id="planSelector" style="display:none;">
                 <option value="free">Free</option>
                 <option value="pro">Pro</option>
@@ -634,6 +965,13 @@
                 </select>
             </div>
 
+            <div class="header-field" style="width:100%; margin-top:10px;">
+                <label class="account-checkbox-row" for="accountRemindersCheckbox">
+                    <input type="checkbox" id="accountRemindersCheckbox">
+                    <span class="header-field-label" style="margin:0;">Tool Maintenance Reminders</span>
+                </label>
+            </div>
+
             <div class="header-field" style="width:100%; margin-top:14px;">
                 <label class="header-field-label">Saved Layouts</label>
                 <div id="accountLayoutsList" class="account-layouts-list"></div>
@@ -666,24 +1004,75 @@
     <div class="upgrade-nudge" id="upgradeNudge"></div>
 
     <div id="sidebar-panel">
-        <div class="sidebar-title">My Tools</div>
-        <div class="empty-hint" id="myToolsEmptyHint">No owned tools yet. Mark tools as owned in the Workshop Layout Planner and they'll show up here.</div>
-        <div id="myToolsList"></div>
+        <details class="tool-category" id="myToolsCategory" open>
+            <summary class="category-header">
+                <span class="category-header-left">My Tools <span class="category-count" id="myToolsCount">0</span></span>
+                <span class="category-chevron">&#9656;</span>
+            </summary>
+            <div class="category-items">
+                <button type="button" id="insuranceReportBtn" class="insurance-report-btn" title="Premier — generate a printable inventory of your owned tools, with estimated replacement values, for insurance documentation">&#128737;&#65039; Insurance Inventory Report</button>
+                <div class="empty-hint" id="myToolsEmptyHint">No owned tools yet. Mark tools as owned in the Workshop Layout Planner (or search Hand &amp; Power Tools below) and they'll show up here.</div>
+                <div id="myToolsList"></div>
+            </div>
+        </details>
 
-        <div class="sidebar-title" style="margin-top:20px;">My Wishlist</div>
-        <div class="empty-hint" id="wishlistEmptyHint">No wishlist tools yet.</div>
-        <div id="wishlistList"></div>
+        <details class="tool-category" id="wishlistCategory" open>
+            <summary class="category-header">
+                <span class="category-header-left">My Wishlist <span class="category-count" id="wishlistCount">0</span></span>
+                <span class="category-chevron">&#9656;</span>
+            </summary>
+            <div class="category-items">
+                <div class="empty-hint" id="wishlistEmptyHint">No wishlist tools yet.</div>
+                <div id="wishlistList"></div>
+            </div>
+        </details>
+
+        <details class="tool-category" id="handToolsCategory">
+            <summary class="category-header">
+                <span class="category-header-left">Hand &amp; Power Tools <span class="category-count" id="handToolsCount">0</span></span>
+                <span class="category-chevron">&#9656;</span>
+            </summary>
+            <div class="category-items">
+                <div class="empty-hint">Routers, sanders, drills, and other tools that never sit on the shop floor — search to add them to My Tools or your wishlist. They'll count in the Insurance Report either way.</div>
+                <div class="tool-search-wrap">
+                    <input type="text" class="input-box" id="handToolSearchInput" placeholder="&#128269; Search hand &amp; power tools...">
+                </div>
+                <div class="empty-hint" id="handToolSearchEmptyHint" style="display:none;">No tools match your search.</div>
+                <div id="handToolSearchResults"></div>
+            </div>
+        </details>
     </div>
 
+    <div id="insuranceReportPrintArea"></div>
+
     <main>
-        <div class="intro-title">Workshop &amp; project tools</div>
-        <div class="intro-subtitle">Pick a tool to get started. More will show up here over time.</div>
+        <div class="hero-row">
+            <div class="hero-intro">
+                <div class="intro-title" id="heroTitle">Workshop &amp; project tools</div>
+                <div class="intro-subtitle" id="heroSubtitle">Pick a tool to get started. More will show up here over time.</div>
+                <a href="workshop-planner.html" class="hero-cta">Open Workshop Layout Planner &rarr;</a>
+            </div>
+            <div class="snapshot-panel">
+                <div class="snapshot-title">Your shop at a glance</div>
+                <div class="account-stats-row" id="homeStatsRow"></div>
+                <div class="snapshot-current" id="snapshotCurrent"></div>
+                <div id="snapshotPremierPerk"></div>
+            </div>
+        </div>
 
         <div class="tool-grid">
-            <a href="workshop-planner.html" class="tool-card">
+            <a href="workshop-planner.html" class="tool-card tool-card-featured">
                 <div class="tool-card-icon">&#128736;</div>
-                <div class="tool-card-title">Workshop layout planner</div>
-                <div class="tool-card-desc">Lay out your shop floor to scale — tools, cabinets, dust collection, and lighting, all placed and sized for real.</div>
+                <div>
+                    <div class="tool-card-title">Workshop layout planner</div>
+                    <div class="tool-card-desc">Lay out your shop floor to scale — tools, cabinets, dust collection, and lighting, all placed and sized for real. Start here — everything else below builds on the shop you lay out.</div>
+                </div>
+            </a>
+
+            <a href="dust-collection.html" class="tool-card">
+                <div class="tool-card-icon">&#128168;</div>
+                <div class="tool-card-title">Dust collection <span class="badge-new">New</span></div>
+                <div class="tool-card-desc">Lay out dust collection gear on the same shop grid as your Workshop Layout Planner, plus a duct sizing calculator.</div>
             </a>
 
             <a href="project-designer.html" class="tool-card">
@@ -698,12 +1087,6 @@
                 <div class="tool-card-desc">Turn a parts list into an optimized cutting layout across sheets and boards, with diagrams and waste estimates.</div>
             </a>
 
-            <a href="dust-collection.html" class="tool-card">
-                <div class="tool-card-icon">&#128168;</div>
-                <div class="tool-card-title">Dust collection <span class="badge-new">New</span></div>
-                <div class="tool-card-desc">Lay out dust collection gear on the same shop grid as your Workshop Layout Planner, plus a duct sizing calculator.</div>
-            </a>
-
             <a href="find-a-builder.html" class="tool-card">
                 <div class="tool-card-icon">&#127959;&#65039;</div>
                 <div class="tool-card-title">Find a builder <span class="badge-new">New</span></div>
@@ -714,6 +1097,24 @@
                 <div class="tool-card-icon">&#129482;</div>
                 <div class="tool-card-title">3D shop viewer <span class="badge-new">New</span></div>
                 <div class="tool-card-desc">See the shop you built in the Workshop Layout Planner assembled in 3D — orbit, pan, and zoom around it.</div>
+            </a>
+
+            <a href="tool-reviews.html" class="tool-card">
+                <div class="tool-card-icon">&#11088;</div>
+                <div class="tool-card-title">Cool tool reviews <span class="badge-new">New</span></div>
+                <div class="tool-card-desc">Real feedback from real shops — browse tool reviews by category and star rating, or write your own.</div>
+            </a>
+
+            <a href="shop-showcase.html" class="tool-card">
+                <div class="tool-card-icon">&#128247;</div>
+                <div class="tool-card-title">Shop showcase <span class="badge-new">New</span></div>
+                <div class="tool-card-desc">Share photos of your shop layout and browse everyone else's for inspiration.</div>
+            </a>
+
+            <a href="help.html" class="tool-card">
+                <div class="tool-card-icon">&#10067;</div>
+                <div class="tool-card-title">Help &amp; tutorials <span class="badge-new">New</span></div>
+                <div class="tool-card-desc">Step-by-step walkthroughs for the trickier parts of the app, starting with dust collection port snapping.</div>
             </a>
 
             <div class="tool-card tool-card-placeholder">
@@ -730,6 +1131,68 @@
         const ACCOUNT_KEY = 'kerphAccount';
         const AUTH_KEY = 'kerphSignedIn';
         const TOOL_STATUS_KEY = 'kerphToolStatus';
+        const MAINTENANCE_REMINDERS_KEY = 'kerphMaintenanceRemindersEnabled';
+        const CURRENT_LAYOUT_KEY = 'kerphCurrentLayout';
+
+        /* ---------- HAND & POWER TOOLS ----------
+           A shop has hundreds of tools that never get a footprint on the floor plan — routers,
+           sanders, drills, hand tools — so unlike the Workshop Layout Planner's drag-and-drop
+           catalog, this never renders as a browsable list (that's exactly the clutter it's meant
+           to avoid). It only shows up as search results, and writes into the same kerphToolStatus
+           store as everything else, so it flows into My Tools/Wishlist/the Insurance Report for
+           free. This is a starter set covering common categories, not an exhaustive catalog —
+           built to be extended, not a claim of covering "every tool" out of the gate. */
+        const HAND_TOOLS = [
+            { name: 'Router (Fixed Base)', category: 'Routers' },
+            { name: 'Router (Plunge)', category: 'Routers' },
+            { name: 'Router (Trim/Palm)', category: 'Routers' },
+            { name: 'Router Table', category: 'Routers' },
+            { name: 'Random Orbital Sander', category: 'Sanders' },
+            { name: 'Belt Sander', category: 'Sanders' },
+            { name: 'Detail/Mouse Sander', category: 'Sanders' },
+            { name: 'Handheld Drum Sander', category: 'Sanders' },
+            { name: 'Circular Saw', category: 'Handheld Saws' },
+            { name: 'Jigsaw', category: 'Handheld Saws' },
+            { name: 'Reciprocating Saw', category: 'Handheld Saws' },
+            { name: 'Track Saw', category: 'Handheld Saws' },
+            { name: 'Handheld Miter Saw', category: 'Handheld Saws' },
+            { name: 'Cordless Drill/Driver', category: 'Drills & Drivers' },
+            { name: 'Impact Driver', category: 'Drills & Drivers' },
+            { name: 'Hammer Drill', category: 'Drills & Drivers' },
+            { name: 'Benchtop Drill Press', category: 'Drills & Drivers' },
+            { name: 'Hand Plane', category: 'Planes & Joinery' },
+            { name: 'Biscuit Joiner', category: 'Planes & Joinery' },
+            { name: 'Pocket Hole Jig', category: 'Planes & Joinery' },
+            { name: 'Doweling Jig', category: 'Planes & Joinery' },
+            { name: 'Power Hand Planer', category: 'Planes & Joinery' },
+            { name: 'Tape Measure', category: 'Measuring & Layout' },
+            { name: 'Combination Square', category: 'Measuring & Layout' },
+            { name: 'Marking Gauge', category: 'Measuring & Layout' },
+            { name: 'Digital Angle Finder', category: 'Measuring & Layout' },
+            { name: 'Laser Level', category: 'Measuring & Layout' },
+            { name: 'Bar Clamps (Set)', category: 'Clamps' },
+            { name: 'Pipe Clamps (Set)', category: 'Clamps' },
+            { name: 'Spring Clamps (Set)', category: 'Clamps' },
+            { name: 'Parallel Clamps (Set)', category: 'Clamps' },
+            { name: 'Portable Air Compressor', category: 'Air Tools' },
+            { name: 'Brad Nailer', category: 'Air Tools' },
+            { name: 'Finish Nailer', category: 'Air Tools' },
+            { name: 'Framing Nailer', category: 'Air Tools' },
+            { name: 'Pneumatic Staple Gun', category: 'Air Tools' },
+            { name: 'Chainsaw', category: 'Outdoor & Rough Tools' },
+            { name: 'Angle Grinder', category: 'Outdoor & Rough Tools' },
+            { name: 'Heat Gun', category: 'Outdoor & Rough Tools' },
+            { name: 'Handheld Shop Vacuum', category: 'Safety & Dust' },
+            { name: 'Respirator', category: 'Safety & Dust' },
+            { name: 'Chisel Set', category: 'Hand Tools' },
+            { name: 'Hand Saw', category: 'Hand Tools' },
+            { name: 'Coping Saw', category: 'Hand Tools' },
+            { name: 'Rasp/File Set', category: 'Hand Tools' }
+        ];
+
+        function maintenanceRemindersEnabled() {
+            return localStorage.getItem(MAINTENANCE_REMINDERS_KEY) !== 'false';
+        }
 
         function showToast(message) {
             const nudge = document.getElementById('upgradeNudge');
@@ -744,11 +1207,56 @@
             return localStorage.getItem(PLAN_KEY) || 'free';
         }
 
+        function isPremium() { return getPlan() === 'premier'; }
+
+        function applyPlanGating() {
+            // Only the Insurance Inventory Report is gated on this page so far — value entry
+            // itself stays open to every plan (see the "Est. value" input in buildToolCard).
+            if (typeof applyInsuranceGating === 'function') applyInsuranceGating();
+            // Also refreshes the snapshot panel's Premier-perk callout so switching plans
+            // shows/hides it immediately, not just after a reload.
+            if (typeof renderHomeSnapshot === 'function') renderHomeSnapshot();
+        }
+
+        function showUpgradeNudge(featureMessage) {
+            const nudge = document.getElementById('upgradeNudge');
+            nudge.innerHTML = '';
+            const text = document.createElement('span');
+            text.textContent = featureMessage + ' ';
+            nudge.appendChild(text);
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'upgrade-nudge-btn';
+            btn.textContent = 'Switch to Premier (preview)';
+            btn.addEventListener('click', () => {
+                localStorage.setItem(PLAN_KEY, 'premier');
+                const headerSelect = document.getElementById('planSelector');
+                if (headerSelect) headerSelect.value = 'premier';
+                applyPlanGating();
+                renderAccountBadge();
+                nudge.classList.remove('visible');
+                showToast('You are now on the Premier plan (preview).');
+            });
+            nudge.appendChild(btn);
+            nudge.classList.add('visible');
+            clearTimeout(showToast._timer);
+        }
+
+        function requirePremierAccess(featureMessage) {
+            if (!isPremium()) {
+                showUpgradeNudge(featureMessage);
+                return false;
+            }
+            return true;
+        }
+
         function initPlanSelector() {
             const select = document.getElementById('planSelector');
             select.value = getPlan();
             select.addEventListener('change', () => {
                 localStorage.setItem(PLAN_KEY, select.value);
+                renderAccountBadge();
+                applyPlanGating();
             });
         }
 
@@ -804,21 +1312,76 @@
             return div.innerHTML;
         }
 
-        function renderAccountStats() {
-            const row = document.getElementById('accountStatsRow');
-            if (!row) return;
+        function computeToolStats() {
             const statuses = loadToolStatuses();
             let owned = 0, wishlist = 0;
             Object.values(statuses).forEach(s => {
                 if (s.status === 'owned') owned++;
                 else if (s.status === 'wishlist') wishlist++;
             });
-            const layoutCount = loadLayouts().length;
-            row.innerHTML = `
-                <div class="account-stat"><div class="account-stat-value">${owned}</div><div class="account-stat-label">Owned</div></div>
-                <div class="account-stat"><div class="account-stat-value">${wishlist}</div><div class="account-stat-label">Wishlist</div></div>
-                <div class="account-stat"><div class="account-stat-value">${layoutCount}</div><div class="account-stat-label">Layouts</div></div>
+            return { owned, wishlist, layouts: loadLayouts().length };
+        }
+
+        function statsRowHtml(stats) {
+            return `
+                <div class="account-stat"><div class="account-stat-value">${stats.owned}</div><div class="account-stat-label">Owned</div></div>
+                <div class="account-stat"><div class="account-stat-value">${stats.wishlist}</div><div class="account-stat-label">Wishlist</div></div>
+                <div class="account-stat"><div class="account-stat-value">${stats.layouts}</div><div class="account-stat-label">Layouts</div></div>
             `;
+        }
+
+        function renderAccountStats() {
+            const row = document.getElementById('accountStatsRow');
+            if (!row) return;
+            row.innerHTML = statsRowHtml(computeToolStats());
+        }
+
+        // Turns the dead space beside the hero intro into a live read of the user's own
+        // data — same stat tiles as the account modal, plus whatever's in the shared
+        // kerphCurrentLayout (the same key workshop-planner.html/shop-3d-viewer.html use).
+        function renderHomeSnapshot() {
+            const statsRow = document.getElementById('homeStatsRow');
+            if (statsRow) statsRow.innerHTML = statsRowHtml(computeToolStats());
+
+            const currentEl = document.getElementById('snapshotCurrent');
+            if (currentEl) {
+                let current = null;
+                try { current = JSON.parse(localStorage.getItem(CURRENT_LAYOUT_KEY)); } catch (e) {}
+                if (current && current.widthFeet) {
+                    const itemCount = (current.tools || []).length;
+                    currentEl.innerHTML = `
+                        <div>Current shop: <strong>${current.widthFeet}&prime; &times; ${current.lengthFeet}&prime;</strong></div>
+                        <div>${itemCount} item${itemCount === 1 ? '' : 's'} placed</div>
+                        <a href="workshop-planner.html" class="snapshot-link">Continue editing &rarr;</a>
+                    `;
+                } else {
+                    currentEl.innerHTML = `
+                        <div class="snapshot-current-empty">No shop laid out yet.</div>
+                        <a href="workshop-planner.html" class="snapshot-link">Start your shop &rarr;</a>
+                    `;
+                }
+            }
+
+            const acc = loadAccount();
+            const titleEl = document.getElementById('heroTitle');
+            const subtitleEl = document.getElementById('heroSubtitle');
+            if (titleEl) titleEl.textContent = acc.username ? `Welcome back, ${acc.username}` : 'Workshop & project tools';
+            if (subtitleEl) subtitleEl.textContent = acc.username ? 'Jump back into your shop, or explore another tool below.' : 'Pick a tool to get started. More will show up here over time.';
+
+            // Surfaced here (not just the sidebar button) since this is the first thing
+            // anyone sees on the home page — a Premier subscriber who just upgraded shouldn't
+            // have to go hunting through My Tools to find what they unlocked.
+            const perkEl = document.getElementById('snapshotPremierPerk');
+            if (perkEl) {
+                perkEl.innerHTML = isPremium()
+                    ? `
+                        <div class="snapshot-premier-perk">
+                            <div class="snapshot-premier-perk-label">Premier perk</div>
+                            <button type="button" class="snapshot-premier-perk-btn" id="insuranceReportBtnSnapshot">&#128737;&#65039; Insurance Inventory Report</button>
+                        </div>
+                    `
+                    : '';
+            }
         }
 
         function renderAccountPlanCard() {
@@ -881,6 +1444,7 @@
             const avatarBtn = document.getElementById('accountAvatarBtn');
             const avatarLarge = document.getElementById('accountAvatarLarge');
             const unitsSelect = document.getElementById('accountUnitsSelect');
+            const remindersCheckbox = document.getElementById('accountRemindersCheckbox');
             const planSelect = document.getElementById('accountPlanSelect');
             const resetAllBtn = document.getElementById('accountResetAllBtn');
             let pendingAvatar = null;
@@ -891,6 +1455,7 @@
                 pendingAvatar = acc.avatar || null;
                 applyAvatarTo(avatarLarge, pendingAvatar);
                 unitsSelect.value = localStorage.getItem('kerphUnitSystem') || 'imperial';
+                remindersCheckbox.checked = maintenanceRemindersEnabled();
                 renderAccountMemberSince();
                 renderAccountStats();
                 renderAccountPlanCard();
@@ -921,7 +1486,10 @@
                 }
                 localStorage.setItem(ACCOUNT_KEY, JSON.stringify({ ...loadAccount(), username, avatar: pendingAvatar }));
                 localStorage.setItem('kerphUnitSystem', unitsSelect.value);
+                localStorage.setItem(MAINTENANCE_REMINDERS_KEY, remindersCheckbox.checked ? 'true' : 'false');
                 renderAccountBadge();
+                renderToolLists();
+                renderHomeSnapshot();
                 overlay.style.display = 'none';
                 showToast('Profile saved locally.');
             });
@@ -1038,7 +1606,10 @@
         function initHeaderSignIn() {
             const usernameInput = document.getElementById('headerSignInUsername');
             const passwordInput = document.getElementById('headerSignInPassword');
+            const remindersInput = document.getElementById('headerSignInReminders');
             const signInBtn = document.getElementById('headerSignInBtn');
+
+            remindersInput.checked = maintenanceRemindersEnabled();
 
             function attemptSignIn() {
                 const username = usernameInput.value.trim();
@@ -1047,9 +1618,12 @@
                     showToast('Enter a username and password to sign in.');
                     return;
                 }
+                localStorage.setItem(MAINTENANCE_REMINDERS_KEY, remindersInput.checked ? 'true' : 'false');
                 completeSignIn(username);
                 usernameInput.value = '';
                 passwordInput.value = '';
+                renderToolLists();
+                renderHomeSnapshot();
             }
 
             signInBtn.addEventListener('click', attemptSignIn);
@@ -1093,6 +1667,34 @@
             }
             localStorage.setItem(TOOL_STATUS_KEY, JSON.stringify(current));
             renderToolLists();
+        }
+
+        // User-entered replacement value, feeding the Insurance Inventory Report — never
+        // auto-filled from a catalog price, since no real product-price data exists yet (see
+        // the launch report's tool-database section). A blank/invalid entry just clears it.
+        function updateToolValue(name, value) {
+            const current = loadToolStatuses();
+            if (!current[name]) return;
+            const num = parseFloat(value);
+            if (value === '' || isNaN(num) || num < 0) {
+                delete current[name].replacementValue;
+            } else {
+                current[name].replacementValue = num;
+            }
+            localStorage.setItem(TOOL_STATUS_KEY, JSON.stringify(current));
+        }
+
+        // Same idea as updateToolValue — user-entered, feeds the Insurance Inventory Report.
+        // Serial numbers matter for an insurance claim (proves a specific unit was owned, not
+        // just "a table saw of this model"), so worth capturing even though nothing in this
+        // app can look one up or verify it.
+        function updateToolSerial(name, value) {
+            const current = loadToolStatuses();
+            if (!current[name]) return;
+            const trimmed = value.trim();
+            if (trimmed) current[name].serialNumber = trimmed;
+            else delete current[name].serialNumber;
+            localStorage.setItem(TOOL_STATUS_KEY, JSON.stringify(current));
         }
 
         function openMaintenanceForm(container, name) {
@@ -1214,8 +1816,40 @@
 
             card.appendChild(info);
 
-            if (entry.status === 'owned') {
+            if (entry.status === 'owned' && maintenanceRemindersEnabled()) {
                 card.appendChild(buildMaintenanceSection(name, entry));
+            }
+
+            if (entry.status === 'owned') {
+                const valueRow = document.createElement('div');
+                valueRow.className = 'tool-value-row';
+                const valueLabel = document.createElement('label');
+                valueLabel.textContent = 'Est. value $';
+                const valueInput = document.createElement('input');
+                valueInput.type = 'number';
+                valueInput.className = 'tool-value-input';
+                valueInput.min = '0';
+                valueInput.step = '1';
+                valueInput.placeholder = '0';
+                if (entry.replacementValue != null) valueInput.value = entry.replacementValue;
+                valueInput.addEventListener('change', () => updateToolValue(name, valueInput.value));
+                valueLabel.appendChild(valueInput);
+                valueRow.appendChild(valueLabel);
+                card.appendChild(valueRow);
+
+                const serialRow = document.createElement('div');
+                serialRow.className = 'tool-serial-row';
+                const serialLabel = document.createElement('label');
+                serialLabel.textContent = 'Serial #';
+                const serialInput = document.createElement('input');
+                serialInput.type = 'text';
+                serialInput.className = 'tool-serial-input';
+                serialInput.placeholder = 'e.g. SN-104829';
+                serialInput.value = entry.serialNumber || '';
+                serialInput.addEventListener('change', () => updateToolSerial(name, serialInput.value));
+                serialLabel.appendChild(serialInput);
+                serialRow.appendChild(serialLabel);
+                card.appendChild(serialRow);
             }
 
             const removeBtn = document.createElement('button');
@@ -1250,6 +1884,204 @@
 
             document.getElementById('myToolsEmptyHint').style.display = owned.length ? 'none' : 'block';
             document.getElementById('wishlistEmptyHint').style.display = wishlist.length ? 'none' : 'block';
+            document.getElementById('myToolsCount').textContent = owned.length;
+            document.getElementById('wishlistCount').textContent = wishlist.length;
+
+            // Search-result cards for hand/power tools show live Owned/Wishlist state on their
+            // own buttons — keep them in sync whenever the underlying status store changes,
+            // same as My Tools/Wishlist just did above.
+            if (typeof renderHandToolSearchResults === 'function') renderHandToolSearchResults();
+        }
+
+        // A genuine, working link (a retailer search for the exact tool name) rather than a fake
+        // "Buy Now" button — there's no real affiliate/product catalog behind this yet, and a
+        // button that looks like it purchases something but doesn't would be actively misleading.
+        function shopSearchUrl(name) {
+            return `https://www.amazon.com/s?k=${encodeURIComponent(name)}`;
+        }
+
+        function setHandToolStatus(name, category, status) {
+            const current = loadToolStatuses();
+            const existing = current[name];
+            // Clicking the already-active state again clears it — standard toggle-button feel,
+            // and matches the existing "✕ remove" affordance My Tools/Wishlist cards already have.
+            if (existing && existing.status === status) {
+                delete current[name];
+                showToast('Removed.');
+            } else {
+                current[name] = { status, category };
+                showToast(status === 'owned' ? 'Added to My Tools.' : 'Added to your Wishlist.');
+            }
+            localStorage.setItem(TOOL_STATUS_KEY, JSON.stringify(current));
+            renderToolLists();
+        }
+
+        function buildHandToolResultCard(tool) {
+            const statuses = loadToolStatuses();
+            const entry = statuses[tool.name];
+            const card = document.createElement('div');
+            card.className = 'tool-box-item' + (entry ? (entry.status === 'owned' ? ' is-owned' : ' is-wishlist') : '');
+
+            const info = document.createElement('div');
+            const title = document.createElement('div');
+            title.className = 'tool-title';
+            title.textContent = tool.name;
+            info.appendChild(title);
+            const dims = document.createElement('div');
+            dims.className = 'tool-dims';
+            dims.textContent = tool.category;
+            info.appendChild(dims);
+
+            const actions = document.createElement('div');
+            actions.className = 'hand-tool-actions';
+
+            const ownedBtn = document.createElement('button');
+            ownedBtn.type = 'button';
+            ownedBtn.className = 'maintenance-mini-btn' + (entry && entry.status === 'owned' ? ' is-active' : '');
+            ownedBtn.textContent = '✓ Owned';
+            ownedBtn.addEventListener('click', () => setHandToolStatus(tool.name, tool.category, 'owned'));
+            actions.appendChild(ownedBtn);
+
+            const wishBtn = document.createElement('button');
+            wishBtn.type = 'button';
+            wishBtn.className = 'maintenance-mini-btn' + (entry && entry.status === 'wishlist' ? ' is-active' : '');
+            wishBtn.textContent = '★ Wishlist';
+            wishBtn.addEventListener('click', () => setHandToolStatus(tool.name, tool.category, 'wishlist'));
+            actions.appendChild(wishBtn);
+
+            const shopLink = document.createElement('a');
+            shopLink.className = 'maintenance-mini-btn';
+            shopLink.href = shopSearchUrl(tool.name);
+            shopLink.target = '_blank';
+            shopLink.rel = 'noopener noreferrer';
+            shopLink.textContent = '🔍 Shop';
+            shopLink.title = `Search for "${tool.name}" (opens in a new tab)`;
+            actions.appendChild(shopLink);
+
+            info.appendChild(actions);
+            card.appendChild(info);
+            return card;
+        }
+
+        function renderHandToolSearchResults() {
+            const input = document.getElementById('handToolSearchInput');
+            const resultsEl = document.getElementById('handToolSearchResults');
+            const emptyHint = document.getElementById('handToolSearchEmptyHint');
+            const query = input.value.trim().toLowerCase();
+            resultsEl.innerHTML = '';
+
+            // Nothing renders until there's an actual query — a live, always-shown ~40-item list
+            // here is exactly the sidebar clutter this feature is supposed to avoid.
+            if (!query) {
+                emptyHint.style.display = 'none';
+                return;
+            }
+            const matches = HAND_TOOLS.filter(t => t.name.toLowerCase().includes(query) || t.category.toLowerCase().includes(query));
+            matches.forEach(tool => resultsEl.appendChild(buildHandToolResultCard(tool)));
+            emptyHint.style.display = matches.length ? 'none' : 'block';
+        }
+
+        function initHandToolSearch() {
+            // The category badge is the size of the searchable catalog (a fixed, informational
+            // count), not a live result count — it shouldn't flicker between numbers as someone
+            // types, only My Tools/Wishlist's badges reflect what's actually been added.
+            document.getElementById('handToolsCount').textContent = HAND_TOOLS.length;
+            document.getElementById('handToolSearchInput').addEventListener('input', renderHandToolSearchResults);
+        }
+
+        /* ---------- INSURANCE INVENTORY REPORT (Premier) ----------
+           Reuses the same window.print() pattern as the PDF exports elsewhere in the app —
+           no PDF library. Builds a dedicated print-only element (#insuranceReportPrintArea)
+           and toggles a body class that CSS uses to hide everything else during print (see
+           the @media print block). Every value in the report is either the tool's catalog
+           name/category/dimensions (already real, entered when it was placed) or the
+           replacementValue the user typed in themselves — nothing here is an invented price. */
+        function generateInsuranceReport() {
+            const statuses = loadToolStatuses();
+            const owned = Object.entries(statuses).filter(([, e]) => e.status === 'owned');
+            if (!owned.length) {
+                showToast('Mark some tools as owned first — there\'s nothing to put in the report yet.');
+                return;
+            }
+
+            const acc = loadAccount();
+            const today = new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+            let total = 0;
+            let valuedCount = 0;
+
+            const rows = owned.map(([name, entry]) => {
+                const dispName = entry.nickname ? `${entry.nickname} (${name})` : name;
+                const dims = (entry.widthFt && entry.lengthFt)
+                    ? `${entry.widthFt}' x ${entry.lengthFt}'${entry.heightFt ? ' x ' + entry.heightFt + '\'' : ''}`
+                    : '—';
+                const hasValue = entry.replacementValue != null;
+                if (hasValue) { total += entry.replacementValue; valuedCount++; }
+                const valueText = hasValue ? `$${entry.replacementValue.toLocaleString()}` : 'Not entered';
+                const serialText = entry.serialNumber || '—';
+                return `<tr>
+                    <td>${escapeHtml(dispName)}</td>
+                    <td>${escapeHtml(entry.category || '—')}</td>
+                    <td>${escapeHtml(dims)}</td>
+                    <td>${escapeHtml(serialText)}</td>
+                    <td class="ins-value">${escapeHtml(valueText)}</td>
+                </tr>`;
+            }).join('');
+
+            const printArea = document.getElementById('insuranceReportPrintArea');
+            printArea.innerHTML = `
+                <div class="ins-report-title">Shop Equipment Inventory</div>
+                <div class="ins-report-meta">
+                    Prepared via Kerph on ${today}${acc.username ? ` for ${escapeHtml(acc.username)}` : ''} &mdash; ${owned.length} item${owned.length === 1 ? '' : 's'}
+                </div>
+                <table class="ins-report-table">
+                    <thead><tr><th>Item</th><th>Category</th><th>Dimensions</th><th>Serial #</th><th>Est. Value</th></tr></thead>
+                    <tbody>
+                        ${rows}
+                        <tr class="ins-report-total-row">
+                            <td colspan="4">Total estimated replacement value</td>
+                            <td class="ins-value">$${total.toLocaleString()}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="ins-report-disclaimer">
+                    Values shown are estimates entered by the account holder, not a professional appraisal — ${valuedCount} of ${owned.length} item${owned.length === 1 ? '' : 's'} have a value entered.
+                    Dimensions come from tools placed in the Kerph Workshop Layout Planner; hand and power tools added via search have no floor footprint to report, so only name, category, and whatever value/serial number you entered are shown for those.
+                    Provide this alongside receipts or your own documentation when filing an insurance claim or setting coverage limits; consult your insurance provider for how they'd like replacement-cost documentation formatted.
+                </div>
+            `;
+
+            document.body.classList.add('printing-insurance-report');
+            window.print();
+            setTimeout(() => document.body.classList.remove('printing-insurance-report'), 500);
+        }
+
+        function applyInsuranceGating() {
+            const btn = document.getElementById('insuranceReportBtn');
+            if (btn) btn.classList.toggle('locked', !isPremium());
+        }
+
+        function initInsuranceReport() {
+            const btn = document.getElementById('insuranceReportBtn');
+            if (btn) {
+                btn.addEventListener('click', () => {
+                    if (!requirePremierAccess('Insurance inventory reports are a Premier feature.')) return;
+                    generateInsuranceReport();
+                });
+            }
+
+            // The snapshot-panel copy of this button is re-created on every renderHomeSnapshot()
+            // call (its parent's innerHTML gets replaced), so a listener attached once here
+            // would be lost on the next render — delegate to the panel itself instead, which
+            // is never replaced.
+            const perkEl = document.getElementById('snapshotPremierPerk');
+            if (perkEl) {
+                perkEl.addEventListener('click', (e) => {
+                    if (e.target && e.target.id === 'insuranceReportBtnSnapshot') generateInsuranceReport();
+                });
+            }
+
+            window.addEventListener('afterprint', () => document.body.classList.remove('printing-insurance-report'));
+            applyInsuranceGating();
         }
 
         // Keeps this page in sync if the workshop planner is open in another tab and
@@ -1258,13 +2090,18 @@
             if (e.key === TOOL_STATUS_KEY) renderToolLists();
             if (e.key === AUTH_KEY) updateHeaderSignInState();
             if (e.key === ACCOUNT_KEY) renderAccountBadge();
+            if (e.key === MAINTENANCE_REMINDERS_KEY) renderToolLists();
+            if (e.key === TOOL_STATUS_KEY || e.key === ACCOUNT_KEY || e.key === LAYOUTS_KEY || e.key === CURRENT_LAYOUT_KEY) renderHomeSnapshot();
         });
 
         document.getElementById('pageNavSelect').addEventListener('change', (e) => { window.location.href = e.target.value; });
         initPlanSelector();
         initHeaderSignIn();
         initAccountPanel();
+        initInsuranceReport();
+        initHandToolSearch();
         renderToolLists();
+        renderHomeSnapshot();
     </script>
 
 </body>

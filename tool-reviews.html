@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kerph - Find a Builder</title>
+    <title>Kerph - Cool Tool Reviews</title>
     <style>
         * {
             box-sizing: border-box;
@@ -73,8 +73,6 @@
         }
 
         .plan-badge-group { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; flex-shrink: 0; }
-        .plan-label { font-size: 11px; font-weight: 700; color: #4b5563; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
-        .plan-label abbr { cursor: help; text-decoration: none; }
         .plan-select {
             padding: 8px 12px;
             border: 1px solid #cbd5e1;
@@ -98,15 +96,12 @@
             transition: background-color 0.15s ease;
         }
         .account-btn:hover { background-color: #eef2ff; }
-
         .account-btn.plan-free { border-color: #16a34a; }
         .account-btn.plan-pro { border-color: #2563eb; }
         .account-btn.plan-premier { border-color: #ca8a04; }
-
         .account-btn-text { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.2; }
         .account-btn-name { font-size: 13px; font-weight: 700; color: #1e3a8a; }
         .account-btn-plan { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: #6b7280; }
-
         .account-avatar {
             width: 28px; height: 28px; border-radius: 50%;
             background-color: #e0e7ff; background-size: cover; background-position: center;
@@ -136,11 +131,14 @@
         .mini-btn:hover { background-color: #eef2ff; border-color: #2563eb; }
         .mini-btn.danger { color: #b91c1c; }
         .mini-btn.danger:hover { background-color: #fef2f2; border-color: #b91c1c; }
+        .mini-btn.primary { background-color: #1e3a8a; color: #ffffff; border-color: #1e3a8a; }
+        .mini-btn.primary:hover { background-color: #1e40af; }
 
         .input-box { width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; font-weight: 600; }
         .select-box { width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; font-weight: 600; background: #f8fafc; }
+        textarea.input-box { resize: vertical; min-height: 90px; font-family: inherit; font-weight: 400; }
 
-        .modal-overlay { position: fixed; inset: 0; background-color: rgba(15, 23, 42, 0.5); z-index: 3000; display: flex; align-items: center; justify-content: center; }
+        .modal-overlay { position: fixed; inset: 0; background-color: rgba(15, 23, 42, 0.5); z-index: 3000; display: flex; align-items: center; justify-content: center; padding: 24px; }
         .modal-box { background-color: #ffffff; border-radius: 12px; padding: 24px; width: 320px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4); }
         .account-modal-box { width: 380px; max-height: 88vh; overflow-y: auto; }
         .account-member-since { font-size: 10.5px; color: #94a3b8; font-weight: 600; margin-top: 6px; }
@@ -193,12 +191,12 @@
 
         /* ---------- PAGE CONTENT ---------- */
         main {
-            max-width: 720px;
+            max-width: 1100px;
             margin: 0 auto;
-            padding: 48px 24px 80px;
+            padding: 40px 24px 80px;
         }
 
-        .finder-eyebrow {
+        .reviews-eyebrow {
             font-size: 11px;
             font-weight: 700;
             text-transform: uppercase;
@@ -206,109 +204,106 @@
             color: #b23b3b;
             margin-bottom: 8px;
         }
+        .reviews-title { font-size: 28px; font-weight: 800; color: #0f172a; margin-bottom: 10px; }
+        .reviews-subtitle { font-size: 14.5px; color: #4b5563; line-height: 1.6; margin-bottom: 28px; max-width: 70ch; }
 
-        .finder-title { font-size: 28px; font-weight: 800; color: #0f172a; margin-bottom: 10px; }
-        .finder-subtitle { font-size: 14.5px; color: #4b5563; line-height: 1.6; margin-bottom: 32px; max-width: 60ch; }
-
-        .finder-card {
+        .reviews-toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 24px;
             background-color: #ffffff;
             border: 1px solid #cbd5e1;
-            border-radius: 14px;
-            padding: 28px;
-            box-shadow: 0 12px 30px -12px rgba(15, 23, 42, 0.15);
+            border-radius: 12px;
+            padding: 14px;
+        }
+        .reviews-toolbar .input-box, .reviews-toolbar .select-box { width: auto; }
+        #reviewSearchInput { flex: 1; min-width: 160px; }
+        #reviewCategoryFilter, #reviewSortSelect { min-width: 150px; }
+        #writeReviewBtn { flex: none; margin-left: auto; padding: 10px 18px; }
+
+        .reviews-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
         }
 
-        .finder-row { display: flex; gap: 10px; align-items: flex-end; }
-        .finder-row .header-field { flex: 1; display: flex; flex-direction: column; gap: 4px; }
-        #zipInput { font-size: 16px; letter-spacing: 0.02em; }
-        #zipSearchBtn {
-            flex: none;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 8px;
-            background-color: #1e3a8a;
-            color: #ffffff;
-            font-size: 13px;
-            font-weight: 700;
-            cursor: pointer;
-        }
-        #zipSearchBtn:hover { background-color: #1e40af; }
-
-        .zip-error { font-size: 12px; color: #b91c1c; margin-top: 6px; min-height: 16px; }
-
-        .category-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #6b7280; margin: 22px 0 10px; }
-        .category-chips { display: flex; flex-wrap: wrap; gap: 8px; }
-        .category-chip {
-            padding: 8px 14px;
+        .review-card {
+            background-color: #ffffff;
             border: 1px solid #cbd5e1;
-            border-radius: 999px;
-            background-color: #f8fafc;
-            font-size: 12.5px;
-            font-weight: 600;
-            color: #1e3a8a;
-            cursor: pointer;
+            border-radius: 12px;
+            padding: 18px;
+            box-shadow: 0 10px 25px -12px rgba(15, 23, 42, 0.15);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
-        .category-chip:hover { background-color: #eef2ff; border-color: #2563eb; }
 
-        .finder-secondary {
-            margin-top: 20px;
-            padding-top: 20px;
-            border-top: 1px solid #e2e8f0;
+        .review-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+        .review-tool-name { font-size: 15.5px; font-weight: 800; color: #0f172a; line-height: 1.3; }
+        .review-category-tag {
+            font-size: 9.5px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            color: #1e3a8a;
+            background-color: #e0e7ff;
+            padding: 3px 8px;
+            border-radius: 999px;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .star-rating { color: #d97706; font-size: 15px; letter-spacing: 1px; }
+        .star-rating .star-empty { color: #d1d5db; }
+
+        .review-text { font-size: 13px; color: #374151; line-height: 1.55; flex: 1; white-space: pre-wrap; }
+
+        .review-card-footer {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 12px;
-            flex-wrap: wrap;
+            gap: 8px;
+            padding-top: 8px;
+            border-top: 1px solid #f1f5f9;
+            font-size: 11.5px;
+            color: #6b7280;
         }
-        .finder-secondary-text { font-size: 12px; color: #6b7280; }
-        .finder-secondary a {
-            font-size: 12.5px;
+        .review-author { font-weight: 700; color: #1e293b; }
+        .review-date { color: #9ca3af; }
+
+        .helpful-btn {
+            border: 1px solid #cbd5e1;
+            background-color: #f8fafc;
+            border-radius: 999px;
+            padding: 4px 10px;
+            font-size: 11px;
             font-weight: 700;
-            color: #1e3a8a;
-            text-decoration: none;
+            color: #4b5563;
+            cursor: pointer;
             white-space: nowrap;
         }
-        .finder-secondary a:hover { text-decoration: underline; }
+        .helpful-btn:hover { background-color: #eef2ff; border-color: #2563eb; }
+        .helpful-btn.active { background-color: #dbeafe; border-color: #2563eb; color: #1e3a8a; }
 
-        .why-note {
-            margin-top: 24px;
-            font-size: 12px;
+        .reviews-empty {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 60px 20px;
             color: #6b7280;
-            line-height: 1.6;
-            background-color: rgba(30, 58, 138, 0.05);
-            border: 1px solid #dbe4ef;
-            border-left: 3px solid #1e3a8a;
-            border-radius: 8px;
-            padding: 12px 14px;
+            background-color: #ffffff;
+            border: 1px dashed #cbd5e1;
+            border-radius: 12px;
         }
-        .why-note b { color: #1e293b; }
+        .reviews-empty-icon { font-size: 40px; margin-bottom: 10px; }
+        .reviews-empty-title { font-size: 15px; font-weight: 700; color: #1e293b; margin-bottom: 6px; }
+        .reviews-empty-desc { font-size: 12.5px; max-width: 40ch; margin: 0 auto; line-height: 1.6; }
 
-        /* ---------- CONCIERGE QUOTE REQUEST (Premier) ---------- */
-        .concierge-card {
-            margin-top: 20px;
-            border-color: #eab308;
-            background-image: linear-gradient(160deg, #fffbeb 0%, #ffffff 45%);
-        }
-        .concierge-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
-        .concierge-eyebrow { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: #b45309; margin-bottom: 4px; }
-        .concierge-title { font-size: 17px; font-weight: 800; color: #0f172a; }
-        .premier-badge {
-            flex-shrink: 0;
-            background-color: #ca8a04;
-            color: #ffffff;
-            font-size: 10px;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 0.04em;
-            padding: 4px 10px;
-            border-radius: 999px;
-            margin-top: 2px;
-        }
-        .concierge-locked-note { font-size: 13px; color: #6b7280; line-height: 1.6; }
-        .concierge-desc { font-size: 12.5px; color: #6b7280; line-height: 1.5; margin-bottom: 14px; }
-        .concierge-next-note { font-size: 11.5px; color: #92400e; margin-top: 10px; line-height: 1.5; }
-        textarea.input-box { resize: vertical; font-family: inherit; }
-        #conciergeOutputText { font-family: ui-monospace, "Cascadia Code", Consolas, monospace; font-size: 12px; }
+        .star-picker { display: flex; gap: 4px; font-size: 26px; }
+        .star-picker span { cursor: pointer; color: #d1d5db; transition: color 0.1s ease; }
+        .star-picker span.filled { color: #d97706; }
+        .header-field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; width: 100%; }
             .header-quick-links { display: flex; align-items: center; gap: 6px; font-size: 11px; }
         .header-quick-links a { color: #6b7280; font-weight: 600; text-decoration: none; }
         .header-quick-links a:hover { color: #1e3a8a; text-decoration: underline; }
@@ -331,9 +326,9 @@
                 <option value="dust-collection.html">Dust Collection</option>
                 <option value="project-designer.html">Project Designer</option>
                 <option value="cutlist-optimizer.html">Cut List Optimizer</option>
-                <option value="find-a-builder.html" selected>Find a Builder</option>
+                <option value="find-a-builder.html">Find a Builder</option>
                 <option value="shop-3d-viewer.html">3D Shop Viewer</option>
-                <option value="tool-reviews.html">Cool Tool Reviews</option>
+                <option value="tool-reviews.html" selected>Cool Tool Reviews</option>
                 <option value="shop-showcase.html">Shop Showcase</option>
             </select>
         </div>
@@ -368,14 +363,14 @@
             <div class="modal-title">Account Settings</div>
             <div class="modal-warning">Saved locally in this browser only — real accounts, Google sign-in, and community features aren't connected yet.</div>
 
-            <div class="header-field" style="width:100%; margin-bottom:14px; display:flex; flex-direction:column; align-items:center;">
+            <div class="header-field" style="align-items:center;">
                 <div class="account-avatar-large" id="accountAvatarLarge">&#128100;</div>
                 <input type="file" id="accountAvatarInput" accept="image/*" style="display:none;">
                 <button type="button" id="accountAvatarBtn" class="mini-btn" style="margin-top:10px; flex:none;">Upload Photo</button>
                 <div class="account-member-since" id="accountMemberSince"></div>
             </div>
 
-            <div class="header-field" style="width:100%;">
+            <div class="header-field">
                 <label class="header-field-label" for="accountUsernameInput">Username</label>
                 <input type="text" class="input-box" id="accountUsernameInput" placeholder="Choose a username">
             </div>
@@ -397,7 +392,7 @@
                 <div class="account-plan-upsell" id="accountPlanUpsell" style="display:none;">Saved layouts, custom shapes, cabinetry, and more unlock on Pro.</div>
             </div>
 
-            <div class="header-field" style="width:100%; margin-top:10px;">
+            <div class="header-field" style="margin-top:10px;">
                 <label class="header-field-label" for="accountUnitsSelect">Preferred Units</label>
                 <select class="select-box" id="accountUnitsSelect">
                     <option value="imperial">Imperial (ft / in)</option>
@@ -405,7 +400,7 @@
                 </select>
             </div>
 
-            <div class="header-field" style="width:100%; margin-top:14px;">
+            <div class="header-field" style="margin-top:14px;">
                 <label class="header-field-label">Saved Layouts</label>
                 <div id="accountLayoutsList" class="account-layouts-list"></div>
             </div>
@@ -434,117 +429,67 @@
         </div>
     </div>
 
+    <div class="modal-overlay" id="reviewModalOverlay" style="display:none;">
+        <div class="modal-box" style="width:400px;">
+            <div class="modal-title">Write a Review</div>
+
+            <div class="header-field">
+                <label class="header-field-label" for="reviewToolName">Tool Name</label>
+                <input type="text" class="input-box" id="reviewToolName" placeholder="e.g. SawStop PCS175">
+            </div>
+
+            <div class="header-field">
+                <label class="header-field-label" for="reviewCategorySelect">Category</label>
+                <select class="select-box" id="reviewCategorySelect"></select>
+            </div>
+
+            <div class="header-field">
+                <label class="header-field-label">Your Rating</label>
+                <div class="star-picker" id="reviewStarPicker">
+                    <span data-value="1">&#9733;</span>
+                    <span data-value="2">&#9733;</span>
+                    <span data-value="3">&#9733;</span>
+                    <span data-value="4">&#9733;</span>
+                    <span data-value="5">&#9733;</span>
+                </div>
+            </div>
+
+            <div class="header-field">
+                <label class="header-field-label" for="reviewText">Review</label>
+                <textarea class="input-box" id="reviewText" placeholder="What do you like or dislike about it? Would you buy it again?"></textarea>
+            </div>
+
+            <div class="header-field">
+                <label class="header-field-label" for="reviewAuthorName">Your Name</label>
+                <input type="text" class="input-box" id="reviewAuthorName" placeholder="Anonymous">
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" id="reviewCancelBtn" class="mini-btn">Cancel</button>
+                <button type="button" id="reviewSubmitBtn" class="mini-btn modal-primary-btn">Post Review</button>
+            </div>
+        </div>
+    </div>
+
     <div class="upgrade-nudge" id="upgradeNudge"></div>
 
     <main>
-        <div class="finder-eyebrow">Resource &middot; not a Kerph directory</div>
-        <div class="finder-title">Find a pole barn / post-frame builder</div>
-        <div class="finder-subtitle">Designed your shop — now find someone to build it. Enter a zip code and we'll hand you straight to Google Maps, filtered to builders near you, with real ratings and reviews.</div>
+        <div class="reviews-eyebrow">Community</div>
+        <div class="reviews-title">Cool Tool Reviews</div>
+        <div class="reviews-subtitle">Real feedback from real shops — before you buy, see what other woodworkers actually think. Everything here is saved locally in your browser for now.</div>
 
-        <div class="finder-card">
-            <div class="finder-row">
-                <div class="header-field">
-                    <label class="header-field-label" for="zipInput">ZIP Code</label>
-                    <input type="text" class="input-box" id="zipInput" placeholder="e.g. 46601" inputmode="numeric" maxlength="5">
-                </div>
-                <button type="button" id="zipSearchBtn">Search Builders</button>
-            </div>
-            <div class="zip-error" id="zipError"></div>
-
-            <div class="category-label">Or search a more specific term near that zip</div>
-            <div class="category-chips" id="categoryChips">
-                <button type="button" class="category-chip" data-term="pole barn builders">Pole Barn Builders</button>
-                <button type="button" class="category-chip" data-term="post frame construction contractors">Post-Frame Contractors</button>
-                <button type="button" class="category-chip" data-term="metal building contractors">Metal Building Contractors</button>
-                <button type="button" class="category-chip" data-term="barndominium builders">Barndominium Builders</button>
-                <button type="button" class="category-chip" data-term="ag building contractors">Ag Building Contractors</button>
-            </div>
-
-            <div class="finder-secondary">
-                <span class="finder-secondary-text">Want reviews, forums, and price discussion beyond Maps listings?</span>
-                <a id="webSearchLink" href="#" target="_blank" rel="noopener">Search the web &#8594;</a>
-            </div>
+        <div class="reviews-toolbar">
+            <input type="text" class="input-box" id="reviewSearchInput" placeholder="&#128269; Search tool names&hellip;">
+            <select class="select-box" id="reviewCategoryFilter"></select>
+            <select class="select-box" id="reviewSortSelect">
+                <option value="newest">Newest</option>
+                <option value="highest">Highest Rated</option>
+                <option value="helpful">Most Helpful</option>
+            </select>
+            <button type="button" id="writeReviewBtn" class="mini-btn primary">+ Write a Review</button>
         </div>
 
-        <div class="finder-card concierge-card" id="conciergeCard">
-            <div class="concierge-header">
-                <div>
-                    <div class="concierge-eyebrow">Premier</div>
-                    <div class="concierge-title">Draft your builder quote request</div>
-                </div>
-                <span class="premier-badge">Premier</span>
-            </div>
-
-            <div class="concierge-locked-note" id="conciergeLockedNote">
-                Premier members can generate a polished, ready-to-send quote request pulled straight from their actual shop layout — no retyping the same project description for every builder you contact.
-                <div style="margin-top:10px;">
-                    <button type="button" class="mini-btn modal-primary-btn" id="conciergeUpgradeBtn">Switch to Premier (preview)</button>
-                </div>
-            </div>
-
-            <div id="conciergeForm" style="display:none;">
-                <p class="concierge-desc">Fill this out once — we'll draft a professional inquiry, pre-filled with your actual shop dimensions where available, that you can send to any builder you find above.</p>
-
-                <div class="header-field" style="margin-bottom:10px;">
-                    <label class="header-field-label" for="conciergeProjectType">Project</label>
-                    <select class="select-box" id="conciergeProjectType">
-                        <option value="pole barn / detached shop">Pole barn / detached shop</option>
-                        <option value="garage conversion">Garage conversion</option>
-                        <option value="post-frame addition">Post-frame addition</option>
-                        <option value="barndominium">Barndominium</option>
-                        <option value="other outbuilding">Other outbuilding</option>
-                    </select>
-                </div>
-
-                <div class="finder-row" style="margin-bottom:10px; align-items: stretch;">
-                    <div class="header-field">
-                        <label class="header-field-label" for="conciergeBudget">Budget range</label>
-                        <select class="select-box" id="conciergeBudget">
-                            <option value="not sure yet">Not sure yet</option>
-                            <option value="under $20,000">Under $20,000</option>
-                            <option value="$20,000-$50,000">$20,000&ndash;$50,000</option>
-                            <option value="$50,000-$100,000">$50,000&ndash;$100,000</option>
-                            <option value="$100,000+">$100,000+</option>
-                        </select>
-                    </div>
-                    <div class="header-field">
-                        <label class="header-field-label" for="conciergeTimeline">Timeline</label>
-                        <select class="select-box" id="conciergeTimeline">
-                            <option value="just exploring">Just exploring</option>
-                            <option value="within 3 months">Within 3 months</option>
-                            <option value="3-6 months">3&ndash;6 months</option>
-                            <option value="6-12 months">6&ndash;12 months</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="header-field" style="margin-bottom:10px;">
-                    <label class="header-field-label" for="conciergeNotes">Anything else the builder should know?</label>
-                    <textarea class="input-box" id="conciergeNotes" rows="3" placeholder="e.g. needs 200-amp service, gravel driveway access, HOA restrictions..."></textarea>
-                </div>
-
-                <div class="header-field" style="margin-bottom:14px;">
-                    <label class="header-field-label" for="conciergeContact">Your contact info (goes in the message)</label>
-                    <input type="text" class="input-box" id="conciergeContact" placeholder="Name, phone or email">
-                </div>
-
-                <button type="button" class="mini-btn modal-primary-btn" id="conciergeGenerateBtn" style="width:100%;">Draft My Quote Request</button>
-
-                <div id="conciergeOutput" style="display:none; margin-top:16px;">
-                    <label class="header-field-label" for="conciergeOutputText" style="display:block; margin-bottom:6px;">Your draft &mdash; copy it or open it in email</label>
-                    <textarea class="input-box" id="conciergeOutputText" rows="9" readonly></textarea>
-                    <div style="display:flex; gap:8px; margin-top:8px;">
-                        <button type="button" class="mini-btn" id="conciergeCopyBtn" style="flex:1;">&#128203; Copy Request</button>
-                        <button type="button" class="mini-btn" id="conciergeEmailBtn" style="flex:1;">&#9993;&#65039; Open in Email</button>
-                    </div>
-                    <div class="concierge-next-note">Next: search above, then send this to your top picks &mdash; most Maps listings show a phone number or a website with a contact form right on the card.</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="why-note">
-            <b>Why we link out instead of hosting our own list:</b> Google Maps' listings, ratings, and reviews stay current on their own — a directory we maintained ourselves would go stale and risks pointing you to bad contact info. This always shows real, live listings for your area.
-        </div>
+        <div class="reviews-grid" id="reviewsGrid"></div>
     </main>
 
     <script>
@@ -552,6 +497,9 @@
         const PLAN_KEY = 'kerphPlan';
         const ACCOUNT_KEY = 'kerphAccount';
         const AUTH_KEY = 'kerphSignedIn';
+        const TOOL_STATUS_KEY = 'kerphToolStatus';
+        const LAYOUTS_KEY = 'kerphSavedLayouts';
+        const LAYOUT_TYPE_LABELS = { workshop: 'Workshop', 'dust-collection': 'Dust Collection', lighting: 'Lighting' };
 
         function showToast(message) {
             const nudge = document.getElementById('upgradeNudge');
@@ -561,27 +509,26 @@
             showToast._timer = setTimeout(() => nudge.classList.remove('visible'), 3500);
         }
 
-        function getPlan() { return localStorage.getItem(PLAN_KEY) || 'free'; }
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str == null ? '' : String(str);
+            return div.innerHTML;
+        }
 
+        function getPlan() { return localStorage.getItem(PLAN_KEY) || 'free'; }
         function initPlanSelector() {
             const select = document.getElementById('planSelector');
             select.value = getPlan();
-            select.addEventListener('change', () => {
-                localStorage.setItem(PLAN_KEY, select.value);
-                renderAccountBadge();
-                if (typeof applyPlanGating === 'function') applyPlanGating();
-            });
+            select.addEventListener('change', () => { localStorage.setItem(PLAN_KEY, select.value); });
         }
 
         function loadAccount() {
             try { return JSON.parse(localStorage.getItem(ACCOUNT_KEY)) || {}; } catch (e) { return {}; }
         }
-
         function applyAvatarTo(el, dataUrl) {
             if (dataUrl) { el.style.backgroundImage = `url(${dataUrl})`; el.textContent = ''; }
             else { el.style.backgroundImage = ''; el.textContent = '\u{1F464}'; }
         }
-
         function renderAccountBadge() {
             const acc = loadAccount();
             document.getElementById('accountBtnLabel').textContent = acc.username || 'Account';
@@ -594,30 +541,13 @@
             if (btn) btn.className = 'account-btn plan-' + (plan === 'pro' || plan === 'premier' ? plan : 'free');
         }
 
-        /* ---------- Account extras shared with the other pages: tool-status stats, saved
-           layouts (read-only view — editing lives in Workshop Layout Planner), plan card,
-           member-since, danger zone. ---------- */
-        const TOOL_STATUS_KEY = 'kerphToolStatus';
-        const LAYOUTS_KEY = 'kerphSavedLayouts';
-        const LAYOUT_TYPE_LABELS = { workshop: 'Workshop', 'dust-collection': 'Dust Collection', lighting: 'Lighting' };
-
         function loadToolStatuses() {
             try { return JSON.parse(localStorage.getItem(TOOL_STATUS_KEY)) || {}; } catch (e) { return {}; }
         }
-
         function loadLayouts() {
             try { return JSON.parse(localStorage.getItem(LAYOUTS_KEY)) || []; } catch (e) { return []; }
         }
-
-        function persistLayouts(list) {
-            localStorage.setItem(LAYOUTS_KEY, JSON.stringify(list));
-        }
-
-        function escapeHtml(str) {
-            const div = document.createElement('div');
-            div.textContent = str == null ? '' : String(str);
-            return div.innerHTML;
-        }
+        function persistLayouts(list) { localStorage.setItem(LAYOUTS_KEY, JSON.stringify(list)); }
 
         function renderAccountStats() {
             const row = document.getElementById('accountStatsRow');
@@ -635,7 +565,6 @@
                 <div class="account-stat"><div class="account-stat-value">${layoutCount}</div><div class="account-stat-label">Layouts</div></div>
             `;
         }
-
         function renderAccountPlanCard() {
             const nameEl = document.getElementById('accountPlanName');
             const select = document.getElementById('accountPlanSelect');
@@ -647,7 +576,6 @@
             select.value = plan;
             upsell.style.display = plan === 'free' ? 'block' : 'none';
         }
-
         function renderAccountLayoutsList() {
             const list = document.getElementById('accountLayoutsList');
             if (!list) return;
@@ -672,7 +600,6 @@
                 });
             });
         }
-
         function renderAccountMemberSince() {
             const el = document.getElementById('accountMemberSince');
             if (!el) return;
@@ -735,7 +662,6 @@
                     localStorage.setItem(PLAN_KEY, planSelect.value);
                     const headerSelect = document.getElementById('planSelector');
                     if (headerSelect) headerSelect.value = planSelect.value;
-                    if (typeof applyPlanGating === 'function') applyPlanGating();
                     renderAccountPlanCard();
                     renderAccountBadge();
                     showToast(`Switched to the ${planSelect.value[0].toUpperCase()}${planSelect.value.slice(1)} plan (preview).`);
@@ -799,13 +725,11 @@
         }
 
         function isSignedIn() { return localStorage.getItem(AUTH_KEY) === 'true'; }
-
         function updateHeaderSignInState() {
             const signedIn = isSignedIn();
             document.getElementById('headerSignIn').style.display = signedIn ? 'none' : 'flex';
             document.getElementById('accountBtn').style.display = signedIn ? 'flex' : 'none';
         }
-
         function completeSignIn(username) {
             localStorage.setItem(AUTH_KEY, 'true');
             const acc = loadAccount();
@@ -815,14 +739,11 @@
             renderAccountBadge();
             updateHeaderSignInState();
         }
-
         function signOut() { localStorage.removeItem(AUTH_KEY); updateHeaderSignInState(); }
-
         function initHeaderSignIn() {
             const usernameInput = document.getElementById('headerSignInUsername');
             const passwordInput = document.getElementById('headerSignInPassword');
             const signInBtn = document.getElementById('headerSignInBtn');
-
             function attemptSignIn() {
                 const username = usernameInput.value.trim();
                 const password = passwordInput.value;
@@ -831,170 +752,193 @@
                 usernameInput.value = '';
                 passwordInput.value = '';
             }
-
             signInBtn.addEventListener('click', attemptSignIn);
             [usernameInput, passwordInput].forEach(input => {
                 input.addEventListener('keydown', (e) => { if (e.key === 'Enter') attemptSignIn(); });
             });
-
             updateHeaderSignInState();
         }
 
-        /* ---------- BUILDER FINDER ---------- */
-        function isValidZip(zip) {
-            return /^\d{5}$/.test(zip);
+        /* ---------- TOOL REVIEWS ----------
+           Purely local (kerphToolReviews in localStorage) — there's no backend yet, so this is
+           a self-contained preview of the feature: write/read/sort/filter/search all work,
+           "helpful" is a per-browser toggle (kerphReviewsUpvoted) rather than a real vote count. */
+        const REVIEWS_KEY = 'kerphToolReviews';
+        const UPVOTED_KEY = 'kerphReviewsUpvoted';
+        const REVIEW_CATEGORIES = [
+            'Table Saws', 'Bandsaws', 'Jointers & Planers', 'Sanding', 'Drilling & Boring',
+            'Turning', 'Routing', 'Crosscut & Miter', 'Dust Collection', 'Hand Tools',
+            'Measuring & Layout', 'Finishing', 'Storage', 'Other'
+        ];
+
+        function loadReviews() {
+            try { return JSON.parse(localStorage.getItem(REVIEWS_KEY)) || []; } catch (e) { return []; }
+        }
+        function saveReviews(list) { localStorage.setItem(REVIEWS_KEY, JSON.stringify(list)); }
+
+        function loadUpvoted() {
+            try { return new Set(JSON.parse(localStorage.getItem(UPVOTED_KEY)) || []); } catch (e) { return new Set(); }
+        }
+        function saveUpvoted(set) { localStorage.setItem(UPVOTED_KEY, JSON.stringify(Array.from(set))); }
+
+        function starsHtml(rating) {
+            let html = '';
+            for (let i = 1; i <= 5; i++) {
+                html += i <= rating ? '&#9733;' : '<span class="star-empty">&#9733;</span>';
+            }
+            return html;
         }
 
-        function mapsSearchUrl(term, zip) {
-            return 'https://www.google.com/maps/search/' + encodeURIComponent(term + ' near ' + zip);
+        function populateCategorySelects() {
+            const filterSel = document.getElementById('reviewCategoryFilter');
+            filterSel.innerHTML = '<option value="">All Categories</option>' +
+                REVIEW_CATEGORIES.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+
+            const formSel = document.getElementById('reviewCategorySelect');
+            formSel.innerHTML = REVIEW_CATEGORIES.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
         }
 
-        function webSearchUrl(term, zip) {
-            return 'https://www.google.com/search?q=' + encodeURIComponent(term + ' near ' + zip + ' reviews');
-        }
+        function renderReviews() {
+            const grid = document.getElementById('reviewsGrid');
+            const query = document.getElementById('reviewSearchInput').value.trim().toLowerCase();
+            const category = document.getElementById('reviewCategoryFilter').value;
+            const sort = document.getElementById('reviewSortSelect').value;
+            const upvoted = loadUpvoted();
 
-        function currentZip() {
-            return document.getElementById('zipInput').value.trim();
-        }
+            let reviews = loadReviews();
+            if (query) reviews = reviews.filter(r => r.toolName.toLowerCase().includes(query));
+            if (category) reviews = reviews.filter(r => r.category === category);
 
-        function initBuilderFinder() {
-            const zipInput = document.getElementById('zipInput');
-            const zipError = document.getElementById('zipError');
-            const searchBtn = document.getElementById('zipSearchBtn');
-            const webLink = document.getElementById('webSearchLink');
+            reviews = reviews.slice();
+            if (sort === 'newest') reviews.sort((a, b) => b.date.localeCompare(a.date));
+            else if (sort === 'highest') reviews.sort((a, b) => b.rating - a.rating || b.date.localeCompare(a.date));
+            else if (sort === 'helpful') reviews.sort((a, b) => (b.helpful || 0) - (a.helpful || 0) || b.date.localeCompare(a.date));
 
-            function runSearch(term) {
-                const zip = currentZip();
-                if (!isValidZip(zip)) {
-                    zipError.textContent = 'Enter a valid 5-digit ZIP code first.';
-                    zipInput.focus();
-                    return;
-                }
-                zipError.textContent = '';
-                window.open(mapsSearchUrl(term, zip), '_blank', 'noopener');
+            if (!reviews.length) {
+                const hasAny = loadReviews().length > 0;
+                grid.innerHTML = `
+                    <div class="reviews-empty">
+                        <div class="reviews-empty-icon">${hasAny ? '&#128269;' : '&#11088;'}</div>
+                        <div class="reviews-empty-title">${hasAny ? 'No reviews match your search' : 'No reviews yet'}</div>
+                        <div class="reviews-empty-desc">${hasAny ? 'Try a different search term or category.' : 'Be the first to review a tool — click "+ Write a Review" above.'}</div>
+                    </div>
+                `;
+                return;
             }
 
-            searchBtn.addEventListener('click', () => runSearch('pole barn builders'));
-            zipInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') runSearch('pole barn builders'); });
-            zipInput.addEventListener('input', () => {
-                zipInput.value = zipInput.value.replace(/\D/g, '').slice(0, 5);
-                zipError.textContent = '';
+            grid.innerHTML = reviews.map(r => {
+                const dateStr = new Date(r.date).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+                const isUpvoted = upvoted.has(r.id);
+                return `
+                    <div class="review-card">
+                        <div class="review-card-top">
+                            <div class="review-tool-name">${escapeHtml(r.toolName)}</div>
+                            <div class="review-category-tag">${escapeHtml(r.category)}</div>
+                        </div>
+                        <div class="star-rating">${starsHtml(r.rating)}</div>
+                        <div class="review-text">${escapeHtml(r.text)}</div>
+                        <div class="review-card-footer">
+                            <span><span class="review-author">${escapeHtml(r.author || 'Anonymous')}</span> &middot; <span class="review-date">${dateStr}</span></span>
+                            <button type="button" class="helpful-btn${isUpvoted ? ' active' : ''}" data-id="${r.id}">&#128077; Helpful${r.helpful ? ' (' + r.helpful + ')' : ''}</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            grid.querySelectorAll('.helpful-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const id = btn.getAttribute('data-id');
+                    const list = loadReviews();
+                    const review = list.find(r => r.id === id);
+                    if (!review) return;
+                    const set = loadUpvoted();
+                    if (set.has(id)) {
+                        set.delete(id);
+                        review.helpful = Math.max(0, (review.helpful || 0) - 1);
+                    } else {
+                        set.add(id);
+                        review.helpful = (review.helpful || 0) + 1;
+                    }
+                    saveUpvoted(set);
+                    saveReviews(list);
+                    renderReviews();
+                });
             });
-
-            document.querySelectorAll('.category-chip').forEach(chip => {
-                chip.addEventListener('click', () => runSearch(chip.getAttribute('data-term')));
-            });
-
-            webLink.addEventListener('click', (e) => {
-                const zip = currentZip();
-                if (!isValidZip(zip)) {
-                    e.preventDefault();
-                    zipError.textContent = 'Enter a valid 5-digit ZIP code first.';
-                    zipInput.focus();
-                    return;
-                }
-                webLink.href = webSearchUrl('pole barn builders', zip);
-            });
         }
 
-        /* ---------- CONCIERGE QUOTE REQUEST (Premier) ----------
-           No real vetted-builder database or outbound email service exists yet (see the
-           why-note above — this page deliberately doesn't host its own directory), so this
-           can't literally "auto-send to 3 vetted builders" without either fabricating builder
-           contacts or building real backend infrastructure. What it can honestly do today:
-           draft the inquiry once — pulling real data from the user's own shop layout — so they
-           aren't retyping the same project description into every builder's contact form. */
-        function isPremium() { return getPlan() === 'premier'; }
+        function initReviewModal() {
+            const overlay = document.getElementById('reviewModalOverlay');
+            const openBtn = document.getElementById('writeReviewBtn');
+            const cancelBtn = document.getElementById('reviewCancelBtn');
+            const submitBtn = document.getElementById('reviewSubmitBtn');
+            const toolNameInput = document.getElementById('reviewToolName');
+            const categorySelect = document.getElementById('reviewCategorySelect');
+            const textInput = document.getElementById('reviewText');
+            const authorInput = document.getElementById('reviewAuthorName');
+            const starPicker = document.getElementById('reviewStarPicker');
+            let selectedRating = 0;
 
-        function applyPlanGating() {
-            const locked = !isPremium();
-            const lockedNote = document.getElementById('conciergeLockedNote');
-            const form = document.getElementById('conciergeForm');
-            if (lockedNote) lockedNote.style.display = locked ? 'block' : 'none';
-            if (form) form.style.display = locked ? 'none' : 'block';
-        }
-
-        // Reads the same shared kerphCurrentLayout key the Workshop Layout Planner autosaves
-        // to, so the drafted request can reference the user's real planned shop size instead
-        // of asking them to type it in a third time.
-        function loadCurrentShopSummary() {
-            try {
-                const layout = JSON.parse(localStorage.getItem('kerphCurrentLayout'));
-                if (!layout || !layout.widthFeet || !layout.lengthFeet) return null;
-                return { widthFeet: layout.widthFeet, lengthFeet: layout.lengthFeet, itemCount: (layout.tools || []).length };
-            } catch (e) { return null; }
-        }
-
-        function buildQuoteRequestText() {
-            const projectType = document.getElementById('conciergeProjectType').value;
-            const budget = document.getElementById('conciergeBudget').value;
-            const timeline = document.getElementById('conciergeTimeline').value;
-            const notes = document.getElementById('conciergeNotes').value.trim();
-            const contact = document.getElementById('conciergeContact').value.trim();
-            const zip = currentZip();
-            const shop = loadCurrentShopSummary();
-
-            const lines = [];
-            lines.push(`Hi — I'm looking for a quote on a ${projectType}${zip ? ` near ${zip}` : ''}.`);
-            lines.push('');
-            if (shop) {
-                lines.push(`Planned size: ${shop.widthFeet}' x ${shop.lengthFeet}'${shop.itemCount ? ` (already laid out with ${shop.itemCount} tool/equipment placements in Kerph)` : ''}.`);
-            }
-            lines.push(`Budget: ${budget}.`);
-            lines.push(`Timeline: ${timeline}.`);
-            if (notes) { lines.push(''); lines.push(notes); }
-            lines.push('');
-            lines.push(`Could you let me know if this is something you'd be able to quote, and what you'd need from me to get started?`);
-            if (contact) { lines.push(''); lines.push('Thanks,'); lines.push(contact); }
-            return lines.join('\n');
-        }
-
-        function initConcierge() {
-            const upgradeBtn = document.getElementById('conciergeUpgradeBtn');
-            if (upgradeBtn) {
-                upgradeBtn.addEventListener('click', () => {
-                    localStorage.setItem(PLAN_KEY, 'premier');
-                    const headerSelect = document.getElementById('planSelector');
-                    if (headerSelect) headerSelect.value = 'premier';
-                    applyPlanGating();
-                    renderAccountBadge();
-                    showToast('Switched to the Premier plan (preview).');
+            function renderStarPicker() {
+                starPicker.querySelectorAll('span').forEach(s => {
+                    s.classList.toggle('filled', parseInt(s.getAttribute('data-value'), 10) <= selectedRating);
                 });
             }
-
-            const output = document.getElementById('conciergeOutput');
-            const outputText = document.getElementById('conciergeOutputText');
-
-            document.getElementById('conciergeGenerateBtn').addEventListener('click', () => {
-                outputText.value = buildQuoteRequestText();
-                output.style.display = 'block';
-                output.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-            });
-
-            document.getElementById('conciergeCopyBtn').addEventListener('click', () => {
-                navigator.clipboard.writeText(outputText.value).then(() => {
-                    showToast('Request copied — paste it into an email or contact form.');
-                }).catch(() => {
-                    outputText.select();
-                    showToast('Select-all applied — copy with Ctrl/Cmd+C.');
+            starPicker.querySelectorAll('span').forEach(s => {
+                s.addEventListener('click', () => {
+                    selectedRating = parseInt(s.getAttribute('data-value'), 10);
+                    renderStarPicker();
                 });
             });
 
-            document.getElementById('conciergeEmailBtn').addEventListener('click', () => {
-                const subject = encodeURIComponent(`Quote request: ${document.getElementById('conciergeProjectType').value}`);
-                const body = encodeURIComponent(outputText.value);
-                window.location.href = `mailto:?subject=${subject}&body=${body}`;
-            });
+            function openModal() {
+                toolNameInput.value = '';
+                categorySelect.value = REVIEW_CATEGORIES[0];
+                textInput.value = '';
+                authorInput.value = '';
+                selectedRating = 0;
+                renderStarPicker();
+                overlay.style.display = 'flex';
+                toolNameInput.focus();
+            }
 
-            applyPlanGating();
+            openBtn.addEventListener('click', openModal);
+            cancelBtn.addEventListener('click', () => { overlay.style.display = 'none'; });
+
+            submitBtn.addEventListener('click', () => {
+                const toolName = toolNameInput.value.trim();
+                const text = textInput.value.trim();
+                if (!toolName) { showToast('Enter the tool name.'); toolNameInput.focus(); return; }
+                if (!selectedRating) { showToast('Pick a star rating.'); return; }
+                if (!text) { showToast('Write a few words about it.'); textInput.focus(); return; }
+
+                const list = loadReviews();
+                list.push({
+                    id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+                    toolName,
+                    category: categorySelect.value,
+                    rating: selectedRating,
+                    text,
+                    author: authorInput.value.trim(),
+                    date: new Date().toISOString(),
+                    helpful: 0
+                });
+                saveReviews(list);
+                overlay.style.display = 'none';
+                showToast('Review posted.');
+                renderReviews();
+            });
         }
 
         document.getElementById('pageNavSelect').addEventListener('change', (e) => { window.location.href = e.target.value; });
         initPlanSelector();
         initHeaderSignIn();
         initAccountPanel();
-        initBuilderFinder();
-        initConcierge();
+        populateCategorySelects();
+        initReviewModal();
+        document.getElementById('reviewSearchInput').addEventListener('input', renderReviews);
+        document.getElementById('reviewCategoryFilter').addEventListener('change', renderReviews);
+        document.getElementById('reviewSortSelect').addEventListener('change', renderReviews);
+        renderReviews();
     </script>
 </body>
 </html>

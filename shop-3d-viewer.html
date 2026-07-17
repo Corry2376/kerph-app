@@ -68,6 +68,20 @@
             filter: drop-shadow(0 18px 30px rgba(15, 23, 42, 0.5));
         }
 
+        .logo-tm {
+            /* Lower-right corner, inside the logo's own white background — clear of both the
+               navy border below it and the wordmark above it. */
+            position: absolute;
+            bottom: 6px;
+            right: 22px;
+            z-index: 2;
+            font-size: 12px;
+            font-weight: 800;
+            color: #1e3a8a;
+            line-height: 1;
+            pointer-events: none;
+        }
+
         .page-title-select {
             font-size: 15px;
             font-weight: 700;
@@ -306,25 +320,33 @@
         }
 
         .viewer-legend { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
-        .viewer-legend-row { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #334155; }
+        .viewer-legend-row { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #334155; cursor: pointer; }
+        .viewer-legend-row input[type="checkbox"] { margin: 0; flex-shrink: 0; }
         .viewer-legend-swatch { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
         .viewer-hint { font-size: 11.5px; color: #6b7280; line-height: 1.5; margin-top: 4px; }
 
-        #viewer3dTooltip {
+        #toolHoverPreview {
             position: fixed;
             display: none;
-            background-color: rgba(15, 23, 42, 0.92);
-            color: #ffffff;
-            font-size: 12.5px;
-            padding: 8px 12px;
-            border-radius: 8px;
+            width: 200px;
+            background-color: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            box-shadow: 0 12px 30px -8px rgba(15, 23, 42, 0.3);
+            padding: 12px 14px;
+            z-index: 1700;
             pointer-events: none;
-            z-index: 1600;
-            max-width: 220px;
-            transform: translate(14px, 14px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            transform: translate(16px, 16px);
         }
-        #viewer3dTooltip strong { display: block; font-size: 13px; margin-bottom: 2px; }
+        #toolHoverPreview .preview-icon { font-size: 20px; margin-bottom: 4px; }
+        #toolHoverPreview .preview-title { font-size: 13.5px; font-weight: 700; color: #0f172a; margin-bottom: 2px; }
+        #toolHoverPreview .preview-category { font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 8px; }
+        #toolHoverPreview .preview-row { display: flex; justify-content: space-between; gap: 10px; font-size: 12px; color: #334155; padding: 4px 0; border-top: 1px solid #f1f5f9; }
+        #toolHoverPreview .preview-row span:first-child { color: #94a3b8; }
+            .header-quick-links { display: flex; align-items: center; gap: 6px; font-size: 11px; }
+        .header-quick-links a { color: #6b7280; font-weight: 600; text-decoration: none; }
+        .header-quick-links a:hover { color: #1e3a8a; text-decoration: underline; }
+        .header-quick-links-sep { color: #cbd5e1; }
     </style>
 </head>
 <body>
@@ -335,15 +357,18 @@
                 <a href="index.html" class="logo-link" title="Kerph Home">
                     <img src="logo.png" alt="Kerph Logo" class="logo-image">
                 </a>
+                <span class="logo-tm">&trade;</span>
             </div>
             <select class="page-title-select" id="pageNavSelect">
                 <option value="index.html">Home</option>
                 <option value="workshop-planner.html">Workshop Layout Planner</option>
+                <option value="dust-collection.html">Dust Collection</option>
                 <option value="project-designer.html">Project Designer</option>
                 <option value="cutlist-optimizer.html">Cut List Optimizer</option>
-                <option value="dust-collection.html">Dust Collection</option>
                 <option value="find-a-builder.html">Find a Builder</option>
                 <option value="shop-3d-viewer.html" selected>3D Shop Viewer</option>
+                <option value="tool-reviews.html">Cool Tool Reviews</option>
+                <option value="shop-showcase.html">Shop Showcase</option>
             </select>
         </div>
         <div class="plan-badge-group">
@@ -359,6 +384,11 @@
                     <span class="account-btn-plan" id="accountBtnPlan">Free</span>
                 </span>
             </button>
+            <div class="header-quick-links">
+                <a href="pricing.html">Plan Comparison</a>
+                <span class="header-quick-links-sep">&middot;</span>
+                <a href="help.html">Help &amp; Support</a>
+            </div>
             <select class="plan-select" id="planSelector" style="display:none;">
                 <option value="free">Free</option>
                 <option value="pro">Pro</option>
@@ -445,14 +475,27 @@
     <div class="floating-panel" id="viewerControlsPanel" style="display:none;">
         <div class="floating-panel-title">3D Shop Viewer</div>
         <button type="button" id="refresh3dBtn" class="mini-btn" style="width:100%;">&#8635; Refresh from Layout</button>
-        <div class="viewer-hint">Drag empty space to orbit &middot; right-drag to pan &middot; scroll to zoom &middot; drag a tool or cabinet to move it.</div>
+        <div class="viewer-hint">Drag empty space to orbit &middot; right-drag to pan &middot; scroll to zoom &middot; drag any item to move it &middot; wall features slide along their wall.</div>
         <div class="viewer-legend">
-            <div class="viewer-legend-row"><span class="viewer-legend-swatch" style="background:#1e3a8a;"></span>Tools</div>
-            <div class="viewer-legend-row"><span class="viewer-legend-swatch" style="background:#8a5a34;"></span>Cabinets</div>
-            <div class="viewer-legend-row"><span class="viewer-legend-swatch" style="background:#94a3b8;"></span>Dust collection</div>
-            <div class="viewer-legend-row"><span class="viewer-legend-swatch" style="background:#f2df8a;"></span>Lighting</div>
+            <label class="viewer-legend-row"><input type="checkbox" class="layer-visibility-checkbox" data-layer-key="tools" checked><span class="viewer-legend-swatch" style="background:#4d7ac2;"></span>Tools</label>
+            <label class="viewer-legend-row"><input type="checkbox" class="layer-visibility-checkbox" data-layer-key="cabinets" checked><span class="viewer-legend-swatch" style="background:#b9895c;"></span>Cabinets</label>
+            <label class="viewer-legend-row"><input type="checkbox" class="layer-visibility-checkbox" data-layer-key="dust-collection" checked><span class="viewer-legend-swatch" style="background:#94a3b8;"></span>Dust collection</label>
+            <label class="viewer-legend-row"><input type="checkbox" class="layer-visibility-checkbox" data-layer-key="lighting" checked><span class="viewer-legend-swatch" style="background:#f2df8a;"></span>Lighting</label>
         </div>
-        <div class="viewer-hint">Dust collection, lighting, and wall features are read-only for now — edit those in the Workshop Layout Planner.</div>
+    </div>
+
+    <div class="floating-panel" id="addItemPanel" style="display:none; top:410px;">
+        <div class="floating-panel-title">Add Item</div>
+        <div class="header-field" style="width:100%; margin-bottom:8px;">
+            <label class="header-field-label" for="addItemCategorySelect">Category</label>
+            <select class="select-box" id="addItemCategorySelect" style="width:100%;"></select>
+        </div>
+        <div class="header-field" style="width:100%; margin-bottom:8px;">
+            <label class="header-field-label" for="addItemSelect">Item</label>
+            <select class="select-box" id="addItemSelect" style="width:100%;"></select>
+        </div>
+        <button type="button" id="addItemBtn" class="mini-btn" style="width:100%;">+ Add to Shop</button>
+        <div class="viewer-hint">Drops it in the center of the shop — drag it into place after. Cabinets are pulled from what you've already built with the cabinet builder in the Workshop Layout Planner.</div>
     </div>
 
     <div class="floating-panel" id="selectionPanel" style="display:none; left:24px; right:auto;">
@@ -462,11 +505,17 @@
             <button type="button" id="rotateSelectedBtn" class="mini-btn" style="flex:1;">&#8635; Rotate 90&deg;</button>
             <button type="button" id="removeSelectedBtn" class="mini-btn danger" style="flex:1;">Remove</button>
         </div>
+        <button type="button" id="freeRotateBtn" class="mini-btn" style="width:100%; margin-top:8px;">&#128260; Free Rotate</button>
+        <div id="dropAttachRow" style="display:none; gap:8px; margin-top:8px;">
+            <button type="button" id="addBlastGateToDropBtn" class="mini-btn" style="flex:1;">+ Blast Gate</button>
+            <button type="button" id="addYJointToDropBtn" class="mini-btn" style="flex:1;">+ Y-Joint</button>
+        </div>
         <div class="viewer-hint">Drag to move it &middot; click empty space to deselect.</div>
     </div>
 
-    <div id="viewer3dTooltip"></div>
+    <div id="toolHoverPreview"></div>
 
+    <script src="catalog-data.js"></script>
     <script type="importmap">
     {
         "imports": {
@@ -478,6 +527,7 @@
     <script type="module">
         import * as THREE from 'three';
         import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { TransformControls } from 'three/addons/controls/TransformControls.js';
 
         /* ---------- SHARED HEADER / ACCOUNT (same pattern as every other page) ---------- */
         const PLAN_KEY = 'kerphPlan';
@@ -486,6 +536,25 @@
         const TOOL_STATUS_KEY = 'kerphToolStatus';
         const CURRENT_LAYOUT_KEY = 'kerphCurrentLayout';
         const BASE_PPI = 30;
+        // A Duct Drop's TOP is anchored to this elevation — the same default mount height
+        // every other overhead dust-collection run uses (see the `physFt || 7` fallback in
+        // addToolMesh) — so it always terminates level with the run it's dropping from,
+        // never poking up above it regardless of how long the drop itself is configured to
+        // be. The BOTTOM then hangs down from there by the drop's own length, clamped so it
+        // can't cross below DROP_BOTTOM_MIN_FT (floor clearance near the tool/blast gate).
+        // Shared between addToolMesh's own rendering and the "+ Blast Gate"/"+ Y-Joint"
+        // attach shortcuts in the selection panel, which need the same numbers to line a new
+        // fitting up with a specific drop's actual top/bottom.
+        const DROP_TOP_ELEV_FT = 7;
+        const DROP_BOTTOM_MIN_FT = 2;
+
+        function getDropTopFt(ceilingFt) {
+            return Math.min(DROP_TOP_ELEV_FT, ceilingFt - 0.3);
+        }
+
+        function getDropBottomFt(pipeLenFt, ceilingFt) {
+            return Math.max(getDropTopFt(ceilingFt) - pipeLenFt, DROP_BOTTOM_MIN_FT);
+        }
 
         function showToast(message) {
             const nudge = document.getElementById('upgradeNudge');
@@ -763,28 +832,70 @@
             wall: 0xf3f1ea,
             innerWall: 0xece6d8,
             floor: 0xd7cdb8,
-            tool: 0x1e3a8a,
-            cabinet: 0x8a5a34,
+            tool: 0x4d7ac2,
+            cabinet: 0xb9895c,
             duct: 0x94a3b8,
+            dcDrop: 0xf97316,
             lighting: 0xf2df8a,
             door: 0x8a5a34,
             window: 0x9fd3f0,
             outlet: 0xd97706,
             switch: 0xd97706,
             panel: 0xb91c1c,
-            minisplit: 0x475569
+            minisplit: 0x475569,
+            // Decorative sub-parts for the composed wall-feature meshes below — these are
+            // what actually render now; the flat colors above are kept only as hit-target
+            // bookkeeping (WALL_FEATURE_DEFAULTS) and are otherwise unused.
+            doorPanel: 0x6b4423,
+            doorFrame: 0x4a2f18,
+            doorKnob: 0xd4af37,
+            windowFrame: 0xf5f1e6,
+            plate: 0xf1ede0,
+            plateAccent: 0x334155,
+            panelBody: 0x6b7280,
+            panelDoor: 0x4b5563,
+            panelHandle: 0xd1d5db,
+            minisplitBody: 0xf1f5f9,
+            minisplitVent: 0x94a3b8,
+            minisplitLed: 0x38bdf8,
+            // Accents for the per-category tool/cabinet decorations below (buildToolDecoration)
+            // — kept neutral/metal-ish so they read consistently against either the blue tool
+            // body color or the brown cabinet body color.
+            toolAccentDark: 0x34495e,
+            toolAccentMetal: 0xb8c0c9,
+            toolAccentBlade: 0x1c2a38,
+            cabinetAccentDark: 0x8a6440,
+            cabinetHandle: 0xe8ddc8
         };
 
         // Real-world default heights for wall features that don't carry stored height
-        // data today (see the plan: only outlets store a real mountHeightIn).
+        // data today (see the plan: only outlets store a real mountHeightIn). Also used
+        // to decide where doors/windows leave a real gap in the wall (see
+        // addWallSegmentWithOpenings) rather than just sitting on top of a solid wall.
         const WALL_FEATURE_DEFAULTS = {
-            door: { bottomIn: 0, heightIn: 80, color: COLORS.door, opacity: 1 },
-            window: { bottomIn: 36, heightIn: 36, color: COLORS.window, opacity: 0.55 },
-            switch: { bottomIn: 48, heightIn: 4, color: COLORS.switch, opacity: 1 },
-            outlet: { bottomIn: null, heightIn: 4, color: COLORS.outlet, opacity: 1 },
-            panel: { bottomIn: 60, heightIn: 14, color: COLORS.panel, opacity: 1 },
-            minisplit: { bottomIn: 84, heightIn: 10, color: COLORS.minisplit, opacity: 1 }
+            door: { bottomIn: 0, heightIn: 80 },
+            window: { bottomIn: 36, heightIn: 36 },
+            switch: { bottomIn: 48, heightIn: 4 },
+            outlet: { bottomIn: null, heightIn: 4 },
+            panel: { bottomIn: 60, heightIn: 14 },
+            minisplit: { bottomIn: 84, heightIn: 10 }
         };
+
+        // Sourced from catalog-data.js (window.TOOL_SPECS / window.CATALOG_ITEMS) — single
+        // source of truth shared with workshop-planner.html, see the <script src> tag above.
+        const TOOL_SPECS = window.TOOL_SPECS;
+        const CATALOG_ITEMS = window.CATALOG_ITEMS;
+
+        // Primary label is always the catalog brand/model name (e.g. "SawStop PCS175") — if
+        // the tool has an owned-tool nickname set in the 2D planner (kerphToolStatus.nickname,
+        // baked into a placed instance's displayName at drop time) and it differs from the
+        // catalog name, it's appended in parens rather than replacing it outright, since two
+        // placed instances of the same model would otherwise both just read as their nickname.
+        function formatToolDisplayName(t) {
+            const catalogName = t.label || t.displayName || 'Item';
+            const nickname = t.displayName && t.displayName !== t.label ? t.displayName : '';
+            return nickname ? `${catalogName} (${nickname})` : catalogName;
+        }
 
         let scene, camera, renderer, controls, raycaster, mouse;
         let sharedLayout = null;
@@ -798,6 +909,41 @@
         const dragPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
         const dragPoint = new THREE.Vector3();
         let currentShopWidthFt = 20, currentShopLengthFt = 24;
+        // Tracks which draggable mesh the hover preview card is currently showing, so
+        // onHoverMove only rebuilds the card's HTML when the hovered item actually changes
+        // instead of on every single mousemove frame.
+        let hoveredMesh = null;
+        // Every exterior + interior wall segment ({a, b, thicknessFt}), rebuilt each
+        // buildScene() — used by findWallLineForFeature to figure out which wall a wall
+        // feature is constrained to slide along while it's being dragged.
+        let allWallSegments = [];
+        // Lazily created on first "Free Rotate" toggle, reused after that (see
+        // toggleFreeRotate) — a single Y-axis-only rotate gizmo for floor items.
+        let transformControls = null;
+        // Per-layer show/hide, driven by the checkboxes in the legend — matches the same
+        // four groups the legend already displayed. "Tools" and "Cabinets" are both stored
+        // under sharedLayout layer 'tools', distinguished only by cabType, so they need a
+        // small helper (getLayerVisibilityKey) rather than a direct layer-string lookup.
+        const layerVisibility = { tools: true, cabinets: true, 'dust-collection': true, lighting: true };
+
+        function getLayerVisibilityKey(t) {
+            if (t.layer === 'dust-collection') return 'dust-collection';
+            if (t.layer === 'lighting') return 'lighting';
+            return t.cabType ? 'cabinets' : 'tools';
+        }
+
+        // Collector units (JET DC-1100VX, Oneida Super Dust Deputy XL) are floor-standing
+        // machines AND the anchor of the duct network, so they belong to both the "Tools"
+        // and "Dust collection" legend groups — hiding either one alone shouldn't hide them,
+        // only hiding both should. See addToolMesh for the render-branch use of this same check.
+        function isCollectorLabel(label) {
+            return /DC-1100VX|Dust Deputy/.test(label || '');
+        }
+
+        function isToolVisible(t) {
+            if (isCollectorLabel(t.label)) return layerVisibility.tools || layerVisibility['dust-collection'];
+            return layerVisibility[getLayerVisibilityKey(t)];
+        }
 
         function ftFromPx(px) { return (parseFloat(px) || 0) / BASE_PPI; }
 
@@ -820,6 +966,7 @@
             // onPointerDownCapture's comment for why this ordering matters.
             canvasWrap.addEventListener('pointerdown', onPointerDownCapture, { capture: true });
             renderer.domElement.addEventListener('pointermove', onHoverMove);
+            renderer.domElement.addEventListener('pointerleave', hideHoverPreview);
             window.addEventListener('resize', onWindowResize);
 
             animate();
@@ -853,17 +1000,180 @@
             return points.map((p, i) => [p, points[(i + 1) % points.length]]);
         }
 
-        function addWallSegment(a, b, thicknessFt, heightFt, color) {
-            const dx = b.x - a.x, dy = b.y - a.y;
-            const length = Math.hypot(dx, dy);
-            if (length < 0.05) return;
-            const angle = Math.atan2(dy, dx);
-            const geo = new THREE.BoxGeometry(length, heightFt, thicknessFt);
-            const mat = new THREE.MeshStandardMaterial({ color });
+        // Builds one wall sub-box spanning [tStart, tEnd] along the segment direction
+        // (ax,az)+(dirX,dirZ)*t and [yBottom, yTop] vertically — the shared primitive
+        // addWallSegment/addWallSegmentWithOpenings both build walls out of.
+        function addWallBox(ax, az, dirX, dirZ, tStart, tEnd, thicknessFt, yBottom, yTop, color) {
+            const len = tEnd - tStart;
+            const h = yTop - yBottom;
+            if (len < 0.03 || h < 0.03) return;
+            const midT = (tStart + tEnd) / 2;
+            const geo = new THREE.BoxGeometry(len, h, thicknessFt);
+            const mat = new THREE.MeshStandardMaterial({ color, transparent: true, opacity: 0.65 });
             const mesh = new THREE.Mesh(geo, mat);
-            mesh.position.set((a.x + b.x) / 2, heightFt / 2, (a.y + b.y) / 2);
-            mesh.rotation.y = -angle;
+            mesh.position.set(ax + dirX * midT, yBottom + h / 2, az + dirZ * midT);
+            mesh.rotation.y = -Math.atan2(dirZ, dirX);
             scene.add(mesh);
+        }
+
+        function addWallSegment(a, b, thicknessFt, heightFt, color) {
+            const dx = b.x - a.x, dz = b.y - a.y;
+            const length = Math.hypot(dx, dz);
+            if (length < 0.05) return;
+            addWallBox(a.x, a.y, dx / length, dz / length, 0, length, thicknessFt, 0, heightFt, color);
+        }
+
+        // Finds door/window features that lie along this wall segment, so
+        // addWallSegmentWithOpenings can leave a real gap for them. wallFeatures don't
+        // store a wall/segment id today, so this projects each feature's position onto the
+        // segment line and keeps it if it's close enough to the line (within the wall's
+        // thickness) and falls within the segment's length.
+        function findFeaturesOnSegment(a, b, thicknessFt, features) {
+            const dx = b.x - a.x, dz = b.y - a.y;
+            const segLen = Math.hypot(dx, dz);
+            if (segLen < 0.05) return [];
+            const ux = dx / segLen, uz = dz / segLen;
+            const matches = [];
+            features.forEach(f => {
+                const xFt = ftFromPx(f.x), zFt = ftFromPx(f.y);
+                const vx = xFt - a.x, vz = zFt - a.y;
+                const t = vx * ux + vz * uz;
+                const perp = vx * -uz + vz * ux;
+                const halfLen = (f.lengthFt || 1) / 2;
+                if (Math.abs(perp) <= thicknessFt / 2 + 0.15 && t >= -halfLen - 0.2 && t <= segLen + halfLen + 0.2) {
+                    matches.push({ f, t: Math.max(halfLen, Math.min(t, segLen - halfLen)) });
+                }
+            });
+            matches.sort((m1, m2) => m1.t - m2.t);
+            return matches;
+        }
+
+        // Renders a wall segment as several sub-boxes with a real gap for any door/window
+        // along it (header above a door; sill+header around a window) instead of one solid
+        // box with a feature mesh just overlaid on top of it.
+        function addWallSegmentWithOpenings(a, b, thicknessFt, heightFt, color, doorWindowFeatures) {
+            const dx = b.x - a.x, dz = b.y - a.y;
+            const segLen = Math.hypot(dx, dz);
+            if (segLen < 0.05) return;
+            const ux = dx / segLen, uz = dz / segLen;
+            const openings = findFeaturesOnSegment(a, b, thicknessFt, doorWindowFeatures);
+            if (!openings.length) {
+                addWallBox(a.x, a.y, ux, uz, 0, segLen, thicknessFt, 0, heightFt, color);
+                return;
+            }
+
+            let cursor = 0;
+            openings.forEach(({ f, t }) => {
+                const halfLen = (f.lengthFt || 1) / 2;
+                const tStart = Math.max(cursor, t - halfLen), tEnd = t + halfLen;
+                if (tStart > cursor) addWallBox(a.x, a.y, ux, uz, cursor, tStart, thicknessFt, 0, heightFt, color);
+
+                const def = WALL_FEATURE_DEFAULTS[f.type];
+                if (f.type === 'door') {
+                    const doorTopFt = def.heightIn / 12;
+                    if (heightFt > doorTopFt + 0.05) addWallBox(a.x, a.y, ux, uz, tStart, tEnd, thicknessFt, doorTopFt, heightFt, color);
+                } else {
+                    const sillFt = Math.min(def.bottomIn / 12, heightFt);
+                    const headFt = Math.min(sillFt + def.heightIn / 12, heightFt);
+                    if (sillFt > 0.05) addWallBox(a.x, a.y, ux, uz, tStart, tEnd, thicknessFt, 0, sillFt, color);
+                    if (headFt < heightFt - 0.05) addWallBox(a.x, a.y, ux, uz, tStart, tEnd, thicknessFt, headFt, heightFt, color);
+                }
+                cursor = Math.max(cursor, tEnd);
+            });
+            if (cursor < segLen) addWallBox(a.x, a.y, ux, uz, cursor, segLen, thicknessFt, 0, heightFt, color);
+        }
+
+        // Finds which wall segment a wall feature currently sits on (same projection test as
+        // findFeaturesOnSegment, just run the other direction — one feature against every
+        // segment — and keeping the closest match) so a drag on it can be constrained to slide
+        // along that same line instead of moving freely in the floor plane.
+        function findWallLineForFeature(f) {
+            const xFt = ftFromPx(f.x), zFt = ftFromPx(f.y);
+            const halfLen = (f.lengthFt || 1) / 2;
+            let best = null, bestPerp = Infinity;
+            allWallSegments.forEach(seg => {
+                const dx = seg.b.x - seg.a.x, dz = seg.b.y - seg.a.y;
+                const segLen = Math.hypot(dx, dz);
+                if (segLen < 0.05) return;
+                const ux = dx / segLen, uz = dz / segLen;
+                const vx = xFt - seg.a.x, vz = zFt - seg.a.y;
+                const t = vx * ux + vz * uz;
+                const perp = Math.abs(vx * -uz + vz * ux);
+                if (perp <= seg.thicknessFt / 2 + 0.15 && t >= -halfLen - 0.2 && t <= segLen + halfLen + 0.2 && perp < bestPerp) {
+                    bestPerp = perp;
+                    best = { ax: seg.a.x, az: seg.a.y, ux, uz, segLen, halfLen: Math.min(halfLen, segLen / 2) };
+                }
+            });
+            return best;
+        }
+
+        // Custom rectangular grid (instead of THREE.GridHelper, which is always square)
+        // so the grid lines stop exactly at the shop footprint on non-square shops instead
+        // of overhanging past the walls on the shorter axis.
+        function buildFloorGrid(widthFt, lengthFt) {
+            const positions = [];
+            for (let x = 0; x <= widthFt + 1e-6; x += 1) {
+                const xc = Math.min(x, widthFt);
+                positions.push(xc, 0, 0, xc, 0, lengthFt);
+            }
+            for (let z = 0; z <= lengthFt + 1e-6; z += 1) {
+                const zc = Math.min(z, lengthFt);
+                positions.push(0, 0, zc, widthFt, 0, zc);
+            }
+            const geo = new THREE.BufferGeometry();
+            geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+            const mat = new THREE.LineBasicMaterial({ color: 0xbdb193, transparent: true, opacity: 0.6 });
+            return new THREE.LineSegments(geo, mat);
+        }
+
+        function formatFeetLabel(ft) {
+            const rounded = Math.round(ft * 10) / 10;
+            return Number.isInteger(rounded) ? `${rounded} ft` : `${rounded.toFixed(1)} ft`;
+        }
+
+        // Shared canvas-text billboard sprite factory — used both for the outside dimension
+        // labels (bordered, larger) and the per-tool name labels (borderless, smaller).
+        function makeLabelSprite(text, opts) {
+            const { fontSize = 64, worldHeight = 1.1, bordered = true, subtext = '' } = opts || {};
+            const subFontSize = Math.round(fontSize * 0.62);
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            ctx.font = `600 ${fontSize}px system-ui, sans-serif`;
+            const mainWidth = ctx.measureText(text).width;
+            ctx.font = `500 ${subFontSize}px system-ui, sans-serif`;
+            const subWidth = subtext ? ctx.measureText(subtext).width : 0;
+            canvas.width = Math.ceil(Math.max(mainWidth, subWidth) + 44);
+            const lineGap = subtext ? subFontSize + 6 : 0;
+            canvas.height = fontSize + 36 + lineGap;
+
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.88)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            if (bordered) {
+                ctx.strokeStyle = '#94836a';
+                ctx.lineWidth = 3;
+                ctx.strokeRect(1.5, 1.5, canvas.width - 3, canvas.height - 3);
+            }
+            ctx.textBaseline = 'middle';
+            ctx.textAlign = 'center';
+            const mainY = subtext ? canvas.height / 2 - lineGap / 2 : canvas.height / 2 + 2;
+            ctx.font = `600 ${fontSize}px system-ui, sans-serif`;
+            ctx.fillStyle = '#2b2418';
+            ctx.fillText(text, canvas.width / 2, mainY);
+            if (subtext) {
+                ctx.font = `500 ${subFontSize}px system-ui, sans-serif`;
+                ctx.fillStyle = '#5b5142';
+                ctx.fillText(subtext, canvas.width / 2, mainY + lineGap);
+            }
+
+            const texture = new THREE.CanvasTexture(canvas);
+            texture.minFilter = THREE.LinearFilter;
+            const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, transparent: true }));
+            sprite.scale.set(worldHeight * (canvas.width / canvas.height), worldHeight, 1);
+            return sprite;
+        }
+
+        function makeDimensionSprite(text) {
+            return makeLabelSprite(text, { fontSize: 64, worldHeight: 1.1, bordered: true });
         }
 
         function addToolMesh(t, ceilingFt, index) {
@@ -875,11 +1185,64 @@
             const rotY = -THREE.MathUtils.degToRad(t.rotation || 0);
             let mesh;
 
-            if (layer === 'dust-collection') {
+            // Collector units (JET DC-1100VX, Oneida Super Dust Deputy XL) live on the
+            // dust-collection layer like ducts/fittings, but they're floor-standing machines,
+            // not elevated pipe runs — physicalHeight for them is the unit's own height, so
+            // they fall through to the generic floor-item branch below instead.
+            if (layer === 'dust-collection' && !isCollectorLabel(t.label)) {
                 // physicalHeight is a mount ELEVATION for this layer, not the object's own
                 // thickness (every duct/fitting shares a uniform catalog placeholder) — see plan.
                 const elevFt = physFt || 7;
                 const pipeRadius = Math.max(Math.min(wFt, hFt) / 2, 0.08);
+                const isDrop = (t.label || '').includes('Duct Drop');
+                if (isDrop) {
+                    // The one dust-collection piece that isn't a flat overhead run — a drop
+                    // is the vertical connector from the overhead trunk down to the blast gate
+                    // at the tool, so unlike every other duct/fitting mesh here it's a real
+                    // vertical cylinder, not a horizontal pipe at a fixed mount elevation. See
+                    // the Help page's dust-collection tutorial for why this piece exists.
+                    // physicalHeight on a drop means its own drop length here (user-set via
+                    // the catalog card's inline input), not a mount elevation like every other
+                    // dust-collection piece — the TOP stays pinned level with the overhead run
+                    // (getDropTopFt) and the bottom hangs down from there by that length, so a
+                    // longer drop reaches further toward the floor instead of poking its top up
+                    // above the run it's supposed to be dropping from.
+                    const pipeLen = Math.max(physFt || 5, 1);
+                    const topFt = getDropTopFt(ceilingFt);
+                    const bottomFt = getDropBottomFt(pipeLen, ceilingFt);
+                    const actualLen = topFt - bottomFt;
+                    const geo = new THREE.CylinderGeometry(pipeRadius, pipeRadius, actualLen, 12);
+                    const mat = new THREE.MeshStandardMaterial({ color: COLORS.dcDrop });
+                    mesh = new THREE.Mesh(geo, mat);
+                    mesh.position.set(centerX, bottomFt + actualLen / 2, centerZ);
+
+                    // A 90-degree elbow at the top, where the drop actually meets the overhead
+                    // run — without it the pipe just dead-ends in mid-air with nothing showing
+                    // it connects to anything. The knuckle is direction-agnostic (always reads
+                    // as "a fitting is here" from any angle); the stub is rotated to the piece's
+                    // own 2D-authored angle (t.rotation), matching whichever way the overhead
+                    // run it was snapped to in the 2D planner actually runs.
+                    const elbowGroup = new THREE.Group();
+                    const knuckle = new THREE.Mesh(new THREE.SphereGeometry(pipeRadius * 1.35, 12, 10), mat);
+                    knuckle.position.set(0, actualLen / 2, 0);
+                    elbowGroup.add(knuckle);
+                    const stubLen = pipeRadius * 5;
+                    const stub = new THREE.Mesh(new THREE.CylinderGeometry(pipeRadius, pipeRadius, stubLen, 12), mat);
+                    stub.rotation.z = Math.PI / 2;
+                    stub.position.set(stubLen / 2, actualLen / 2, 0);
+                    elbowGroup.add(stub);
+                    elbowGroup.rotation.y = rotY;
+                    mesh.add(elbowGroup);
+
+                    mesh.userData.draggable = true;
+                    mesh.userData.toolIndex = index;
+                    mesh.userData.name = formatToolDisplayName(t);
+                    mesh.userData.catalogName = t.label || t.displayName || 'Item';
+                    mesh.userData.dims = t.displayDims || '';
+                    scene.add(mesh);
+                    clickableMeshes.push(mesh);
+                    return;
+                }
                 const pipeLen = Math.max(wFt, hFt);
                 const geo = new THREE.CylinderGeometry(pipeRadius, pipeRadius, pipeLen, 12);
                 const mat = new THREE.MeshStandardMaterial({ color: COLORS.duct });
@@ -887,6 +1250,11 @@
                 mesh.rotation.z = Math.PI / 2;
                 mesh.position.set(centerX, elevFt, centerZ);
                 mesh.rotation.y = rotY;
+                // Draggable in XZ only — elevation stays fixed since onDragMove never
+                // touches position.y. No port-snapping/duct-auto-reconnect parity with the
+                // 2D planner, see the plan.
+                mesh.userData.draggable = true;
+                mesh.userData.toolIndex = index;
             } else if (layer === 'lighting') {
                 const elevFt = physFt || (ceilingFt - 0.3);
                 const geo = new THREE.BoxGeometry(Math.max(wFt, 0.3), 0.15, Math.max(hFt, 0.3));
@@ -894,9 +1262,14 @@
                 mesh = new THREE.Mesh(geo, mat);
                 mesh.position.set(centerX, elevFt, centerZ);
                 mesh.rotation.y = rotY;
+                mesh.userData.draggable = true;
+                mesh.userData.toolIndex = index;
+                // Parented (unlike the label sprite) so it rides along during drag for free —
+                // safe here because THREE.Light has no .geometry, so unlike a mesh child it
+                // doesn't get picked up by selectMesh()'s BoxHelper bounding-box calculation.
                 const point = new THREE.PointLight(0xfff4d6, 0.7, 14);
-                point.position.set(centerX, elevFt - 0.15, centerZ);
-                scene.add(point);
+                point.position.set(0, -0.15, 0);
+                mesh.add(point);
             } else {
                 const boxH = physFt || 3;
                 const geo = new THREE.BoxGeometry(wFt, boxH, hFt);
@@ -908,12 +1281,253 @@
                 // and lighting stay elevation-positioned/read-only, see the plan.
                 mesh.userData.draggable = true;
                 mesh.userData.toolIndex = index;
+                mesh.userData.heightFt = boxH;
+                mesh.userData.cabType = !!t.cabType;
+
+                // A recognizable per-category shape (table saw, drill press, cabinet, etc.)
+                // instead of a plain box — see buildToolDecoration/TOOL_CATEGORY_SHAPES. Custom/
+                // manual tools with no catalog match fall back to the plain box unchanged. The
+                // decoration is parented directly to the mesh (not kept separate like the label
+                // sprite) since it's real visual geometry roughly within the box's own footprint,
+                // so it's fine — even correct — for selectMesh()'s BoxHelper to wrap it too.
+                const catalogEntry = CATALOG_ITEMS.find(c => c.name === t.label);
+                const category = catalogEntry ? catalogEntry.category : null;
+                if (t.cabType || TOOL_CATEGORY_SHAPES.has(category)) {
+                    const decoGroup = new THREE.Group();
+                    buildToolDecoration(decoGroup, category, !!t.cabType, wFt, hFt, boxH);
+                    mesh.add(decoGroup);
+                    // Hide only this mesh's own material, not mesh.visible — three.js's
+                    // renderer skips an object's entire child subtree when the object itself
+                    // is invisible (unlike raycasting, which ignores .visible altogether), so
+                    // mesh.visible = false would have silently hidden decoGroup too.
+                    mesh.material.visible = false;
+                }
+
             }
 
-            mesh.userData.name = t.displayName || t.label || 'Item';
+            // No always-on floating name tag — with a shop full of tools/cabinets these piled
+            // up into overlapping clutter and mostly duplicated what's already one hover away.
+            // Full info (name, category, footprint, power/voltage) lives entirely in the hover
+            // preview card now — see buildToolPreviewHtml/onHoverMove — and the selection panel
+            // for whatever's currently clicked. mesh.userData.catalogName is the pure brand/
+            // model string (for TOOL_SPECS lookups); .name is that plus " (nickname)" when the
+            // owned-tool nickname set in the 2D planner differs from it, for display only.
+            mesh.userData.name = formatToolDisplayName(t);
+            mesh.userData.catalogName = t.label || t.displayName || 'Item';
             mesh.userData.dims = t.displayDims || '';
             scene.add(mesh);
             clickableMeshes.push(mesh);
+        }
+
+        // Lightens (positive percent) or darkens (negative) a 0xRRGGBB color number — used to
+        // derive a matching inset-panel shade from a user-picked door color, so a custom color
+        // still reads as a raised panel instead of one flat slab.
+        function shadeColor(hex, percent) {
+            const r = (hex >> 16) & 0xff, g = (hex >> 8) & 0xff, b = hex & 0xff;
+            const adjust = (c) => Math.max(0, Math.min(255, Math.round(c * (1 + percent / 100))));
+            return (adjust(r) << 16) | (adjust(g) << 8) | adjust(b);
+        }
+
+        function addPart(group, w, h, d, x, y, z, color, opacity) {
+            const mat = new THREE.MeshStandardMaterial(
+                opacity != null ? { color, transparent: true, opacity } : { color }
+            );
+            const mesh = new THREE.Mesh(new THREE.BoxGeometry(Math.max(w, 0.01), Math.max(h, 0.01), Math.max(d, 0.01)), mat);
+            mesh.position.set(x, y, z);
+            group.add(mesh);
+            return mesh;
+        }
+
+        // Same idea as addPart but for round details (wheels, columns, spindles, casters).
+        // axis picks which local axis the cylinder's own height runs along before it's placed
+        // ('y' — the geometry's native axis — is the default, e.g. a drill-press column).
+        function addCylinderPart(group, radius, height, x, y, z, color, axis) {
+            const mesh = new THREE.Mesh(
+                new THREE.CylinderGeometry(radius, radius, Math.max(height, 0.01), 14),
+                new THREE.MeshStandardMaterial({ color })
+            );
+            if (axis === 'x') mesh.rotation.z = Math.PI / 2;
+            else if (axis === 'z') mesh.rotation.x = Math.PI / 2;
+            mesh.position.set(x, y, z);
+            group.add(mesh);
+            return mesh;
+        }
+
+        // Builds a small multi-part decoration (frame/panel/knob/vents/etc.) for a wall
+        // feature, in its own local space: local X runs along its length, Y is up, Z is the
+        // wall's thickness direction — matching the invisible hit-box's orientation in
+        // addWallFeatureMesh, so these line up with the raycast target with no extra math.
+        function buildWallFeatureDecoration(group, type, lengthFt, heightFt, thicknessFt, customColorHex) {
+            if (type === 'door') {
+                // A user-picked color (see the door tab's color swatch in workshop-planner.html)
+                // recolors the slab and its raised-panel insets; the frame trim and knob stay
+                // neutral regardless, so the door still reads as trimmed/hardware'd at any color.
+                const panelColor = customColorHex != null ? customColorHex : COLORS.doorPanel;
+                const insetColor = customColorHex != null ? shadeColor(customColorHex, -25) : COLORS.doorFrame;
+                addPart(group, lengthFt * 0.92, heightFt * 0.97, thicknessFt * 0.5, 0, 0, 0, panelColor);
+                addPart(group, lengthFt * 0.62, heightFt * 0.36, 0.03, 0, heightFt * 0.24, thicknessFt * 0.26, insetColor);
+                addPart(group, lengthFt * 0.62, heightFt * 0.36, 0.03, 0, -heightFt * 0.24, thicknessFt * 0.26, insetColor);
+                addPart(group, 0.05, heightFt, thicknessFt + 0.06, -lengthFt / 2, 0, 0, COLORS.doorFrame);
+                addPart(group, 0.05, heightFt, thicknessFt + 0.06, lengthFt / 2, 0, 0, COLORS.doorFrame);
+                addPart(group, lengthFt + 0.1, 0.05, thicknessFt + 0.06, 0, heightFt / 2, 0, COLORS.doorFrame);
+                const knob = new THREE.Mesh(new THREE.SphereGeometry(0.045, 10, 10), new THREE.MeshStandardMaterial({ color: COLORS.doorKnob }));
+                knob.position.set(lengthFt * 0.36, -heightFt * 0.05, thicknessFt * 0.3);
+                group.add(knob);
+            } else if (type === 'window') {
+                addPart(group, lengthFt, 0.05, thicknessFt + 0.04, 0, heightFt / 2, 0, COLORS.windowFrame);
+                addPart(group, lengthFt, 0.05, thicknessFt + 0.04, 0, -heightFt / 2, 0, COLORS.windowFrame);
+                addPart(group, 0.05, heightFt, thicknessFt + 0.04, -lengthFt / 2, 0, 0, COLORS.windowFrame);
+                addPart(group, 0.05, heightFt, thicknessFt + 0.04, lengthFt / 2, 0, 0, COLORS.windowFrame);
+                addPart(group, lengthFt * 0.88, heightFt * 0.86, 0.03, 0, 0, 0, COLORS.window, 0.5);
+                addPart(group, lengthFt * 0.88, 0.03, thicknessFt * 0.4, 0, 0, 0, COLORS.windowFrame);
+                addPart(group, 0.03, heightFt * 0.86, thicknessFt * 0.4, 0, 0, 0, COLORS.windowFrame);
+            } else if (type === 'switch') {
+                addPart(group, lengthFt * 0.9, heightFt * 0.9, thicknessFt * 0.35, 0, 0, 0, COLORS.plate);
+                addPart(group, lengthFt * 0.22, heightFt * 0.4, 0.05, 0, 0, thicknessFt * 0.35, COLORS.plateAccent);
+            } else if (type === 'outlet') {
+                addPart(group, lengthFt * 0.9, heightFt * 0.9, thicknessFt * 0.35, 0, 0, 0, COLORS.plate);
+                addPart(group, lengthFt * 0.16, heightFt * 0.28, 0.02, -lengthFt * 0.16, 0, thicknessFt * 0.35, COLORS.plateAccent);
+                addPart(group, lengthFt * 0.16, heightFt * 0.28, 0.02, lengthFt * 0.16, 0, thicknessFt * 0.35, COLORS.plateAccent);
+            } else if (type === 'panel') {
+                addPart(group, lengthFt, heightFt, thicknessFt * 0.7, 0, 0, 0, COLORS.panelBody);
+                addPart(group, lengthFt * 0.85, heightFt * 0.85, 0.03, 0, 0, thicknessFt * 0.37, COLORS.panelDoor);
+                addPart(group, 0.05, heightFt * 0.14, 0.04, lengthFt * 0.34, 0, thicknessFt * 0.4, COLORS.panelHandle);
+            } else if (type === 'minisplit') {
+                addPart(group, lengthFt, heightFt, thicknessFt, 0, 0, 0, COLORS.minisplitBody);
+                for (let i = -1; i <= 1; i++) {
+                    addPart(group, lengthFt * 0.85, 0.02, 0.02, 0, i * heightFt * 0.22, thicknessFt * 0.5 + 0.01, COLORS.minisplitVent);
+                }
+                const led = new THREE.Mesh(new THREE.SphereGeometry(0.025, 8, 8), new THREE.MeshStandardMaterial({ color: COLORS.minisplitLed, emissive: COLORS.minisplitLed, emissiveIntensity: 0.6 }));
+                led.position.set(lengthFt * 0.4, -heightFt * 0.3, thicknessFt * 0.5 + 0.02);
+                group.add(led);
+            }
+        }
+
+        // Categories with a bespoke shape below — anything else (a custom/manual tool with no
+        // catalog match, or a catalog category not listed here) falls back to the plain box,
+        // same as before this feature existed. "Dust Collection" catalog items are excluded on
+        // purpose: those are placed on the dust-collection layer, which addToolMesh renders
+        // via a totally different branch (an elevated pipe segment) that never reaches here.
+        const TOOL_CATEGORY_SHAPES = new Set([
+            'Table Saws', 'Bandsaws', 'Jointers & Planers', 'Sanding', 'Drilling & Boring',
+            'Turning', 'Routing', 'Crosscut & Miter', 'CNC & Digital Fab',
+            'Assembly & Storage', 'Tool Storage', 'Dust Collection'
+        ]);
+
+        // Builds a small multi-part shape approximating the given catalog category (or, for
+        // cabType != null, a generic cabinet), in the tool mesh's own local space: X is its
+        // footprint width, Z its footprint depth, Y is up with 0 at the mesh's vertical
+        // center (so -boxH/2 is the floor and +boxH/2 is the top, matching the invisible
+        // BoxGeometry hit-target this is parented to in addToolMesh). Every category reuses
+        // the same two colors as the flat-box fallback (COLORS.tool / COLORS.cabinet) for the
+        // body, plus a couple of shared neutral accents, so the Tools/Cabinets legend swatches
+        // still mean the same thing at a glance.
+        function buildToolDecoration(group, category, cabType, wFt, hFt, boxH) {
+            const body = cabType ? COLORS.cabinet : COLORS.tool;
+            const dark = cabType ? COLORS.cabinetAccentDark : COLORS.toolAccentDark;
+            const metal = COLORS.toolAccentMetal;
+
+            // Foot pads (a flat little plate under each leg, just wider than the leg itself)
+            // are what actually reads as "standing on the floor" instead of "balanced on
+            // toothpicks" at this low a part count — cheap to add and the single biggest fix
+            // for the "clunky" feedback across every legged category below.
+            function addLegs(insetFrac, legW, topY, bottomY) {
+                const lx = wFt / 2 - insetFrac, lz = hFt / 2 - insetFrac;
+                [[-lx, -lz], [lx, -lz], [-lx, lz], [lx, lz]].forEach(([x, z]) => {
+                    addPart(group, legW, topY - bottomY, legW, x, (topY + bottomY) / 2, z, dark);
+                    addPart(group, legW * 2, 0.03, legW * 2, x, bottomY + 0.015, z, dark);
+                });
+            }
+
+            if (cabType) {
+                addPart(group, wFt * 0.98, boxH * 0.98, hFt * 0.98, 0, 0, 0, body);
+                addPart(group, wFt * 0.85, boxH * 0.85, 0.02, 0, 0, hFt / 2 + 0.01, dark);
+                addPart(group, 0.04, boxH * 0.12, 0.03, wFt * 0.32, 0, hFt / 2 + 0.03, COLORS.cabinetHandle);
+                addPart(group, wFt * 0.85, 0.015, 0.01, 0, boxH * 0.15, hFt / 2 + 0.015, dark);
+                addPart(group, wFt * 0.85, 0.015, 0.01, 0, -boxH * 0.15, hFt / 2 + 0.015, dark);
+                return;
+            }
+
+            if (category === 'Table Saws') {
+                addPart(group, wFt * 0.98, boxH * 0.06, hFt * 0.98, 0, boxH * 0.42, 0, body);
+                addLegs(0.15, 0.08, boxH * 0.39, -boxH / 2);
+                addPart(group, 0.04, boxH * 0.08, hFt * 0.7, 0, boxH * 0.46, 0, COLORS.toolAccentBlade);
+                addPart(group, wFt * 0.9, 0.05, 0.05, 0, boxH * 0.46, hFt * 0.3, metal);
+            } else if (category === 'Bandsaws') {
+                addPart(group, wFt * 0.9, boxH * 0.25, hFt * 0.9, 0, -boxH * 0.375, 0, body);
+                addPart(group, wFt * 0.25, boxH * 0.9, hFt * 0.25, 0, 0, -hFt * 0.15, body);
+                addPart(group, wFt * 0.7, 0.05, hFt * 0.5, 0, -boxH * 0.05, hFt * 0.08, metal);
+                addCylinderPart(group, Math.min(wFt, hFt) * 0.32, 0.12, 0, boxH * 0.4, -hFt * 0.15, dark, 'z');
+                addCylinderPart(group, Math.min(wFt, hFt) * 0.32, 0.12, 0, -boxH * 0.15, -hFt * 0.15, dark, 'z');
+            } else if (category === 'Jointers & Planers') {
+                addPart(group, wFt * 0.42, boxH * 0.06, hFt * 0.9, -wFt * 0.24, boxH * 0.15, 0, body);
+                addPart(group, wFt * 0.42, boxH * 0.06, hFt * 0.9, wFt * 0.24, boxH * 0.19, 0, body);
+                // Cutterhead bridging the infeed/outfeed step — without it the two tables
+                // above just read as disconnected floating slabs with a gap between them.
+                addCylinderPart(group, Math.min(wFt, hFt) * 0.06, hFt * 0.88, 0, boxH * 0.17, 0, COLORS.toolAccentBlade, 'z');
+                addPart(group, wFt * 0.85, boxH * 0.68, hFt * 0.65, 0, -boxH * 0.3, 0, dark);
+                addLegs(0.12, 0.07, -boxH * 0.04, -boxH / 2);
+            } else if (category === 'Sanding') {
+                addPart(group, wFt * 0.85, boxH * 0.06, hFt * 0.85, 0, boxH * 0.05, 0, body);
+                addPart(group, wFt * 0.7, boxH * 0.5, hFt * 0.6, 0, -boxH * 0.3, 0, body);
+                addCylinderPart(group, Math.min(wFt, hFt) * 0.15, boxH * 0.35, 0, boxH * 0.26, 0, metal);
+                // Motor housing tucked behind the drum, plus a dust port stub — the bare
+                // table+base+cylinder combo alone reads as too sparse/generic to place.
+                addPart(group, wFt * 0.35, boxH * 0.22, hFt * 0.22, 0, -boxH * 0.42, -hFt * 0.32, dark);
+                addCylinderPart(group, 0.05, hFt * 0.14, 0, -boxH * 0.35, -hFt * 0.42, dark, 'z');
+            } else if (category === 'Drilling & Boring') {
+                addPart(group, wFt * 0.8, boxH * 0.06, hFt * 0.8, 0, -boxH * 0.47, 0, body);
+                addCylinderPart(group, Math.min(wFt, hFt) * 0.12, boxH * 0.85, -wFt * 0.15, 0, -hFt * 0.15, dark);
+                addPart(group, wFt * 0.5, 0.05, hFt * 0.5, -wFt * 0.15, -boxH * 0.05, 0, metal);
+                addPart(group, wFt * 0.4, boxH * 0.22, hFt * 0.35, -wFt * 0.15, boxH * 0.35, -hFt * 0.1, body);
+                addCylinderPart(group, 0.05, boxH * 0.15, -wFt * 0.15, boxH * 0.18, 0.05, COLORS.toolAccentBlade);
+            } else if (category === 'Turning') {
+                addPart(group, wFt * 0.9, boxH * 0.15, hFt * 0.35, 0, -boxH * 0.1, 0, body);
+                addPart(group, wFt * 0.22, boxH * 0.35, hFt * 0.45, -wFt * 0.35, boxH * 0.08, 0, body);
+                addPart(group, wFt * 0.15, boxH * 0.25, hFt * 0.35, wFt * 0.38, boxH * 0.02, 0, metal);
+                addCylinderPart(group, 0.04, wFt * 0.55, 0, boxH * 0.08, 0, metal, 'x');
+                // Tool rest — a small angled block riding the bed between headstock and
+                // tailstock — is what actually reads as "lathe" rather than just "two blocks
+                // joined by a rod"; the bare bed+headstock+tailstock+spindle was too sparse.
+                addPart(group, wFt * 0.1, boxH * 0.1, hFt * 0.12, -wFt * 0.05, boxH * 0.02, 0, dark);
+                addLegs(0.1, 0.07, -boxH * 0.18, -boxH / 2);
+            } else if (category === 'Routing') {
+                addPart(group, wFt * 0.95, boxH * 0.06, hFt * 0.95, 0, boxH * 0.42, 0, body);
+                addLegs(0.15, 0.07, boxH * 0.39, -boxH / 2);
+                addCylinderPart(group, 0.08, boxH * 0.15, 0, boxH * 0.5, 0, dark);
+                addPart(group, wFt * 0.85, 0.08, 0.06, 0, boxH * 0.46, hFt * 0.25, metal);
+            } else if (category === 'Crosscut & Miter') {
+                addPart(group, wFt * 0.95, boxH * 0.08, hFt * 0.6, 0, -boxH * 0.05, 0, body);
+                addPart(group, wFt * 0.95, boxH * 0.25, 0.06, 0, boxH * 0.13, -hFt * 0.28, metal);
+                addPart(group, wFt * 0.12, boxH * 0.35, hFt * 0.15, 0, boxH * 0.25, -hFt * 0.15, dark);
+                addCylinderPart(group, hFt * 0.18, 0.04, 0, boxH * 0.42, -hFt * 0.1, COLORS.toolAccentBlade, 'z');
+            } else if (category === 'CNC & Digital Fab') {
+                addPart(group, wFt * 0.92, boxH * 0.6, hFt * 0.92, 0, -boxH * 0.05, 0, body);
+                addPart(group, wFt * 0.92, 0.06, hFt * 0.15, 0, boxH * 0.42, -hFt * 0.35, metal);
+                addPart(group, wFt * 0.25, boxH * 0.2, 0.03, wFt * 0.3, boxH * 0.1, hFt / 2 + 0.02, dark);
+            } else if (category === 'Assembly & Storage') {
+                addPart(group, wFt * 0.98, boxH * 0.08, hFt * 0.98, 0, boxH * 0.42, 0, body);
+                addLegs(0.12, 0.08, boxH * 0.38, -boxH / 2);
+                addPart(group, wFt * 0.9, 0.04, hFt * 0.9, 0, -boxH * 0.3, 0, metal);
+            } else if (category === 'Tool Storage') {
+                addPart(group, wFt * 0.95, boxH * 0.82, hFt * 0.95, 0, -boxH * 0.06, 0, body);
+                addPart(group, wFt * 0.85, 0.015, 0.01, 0, boxH * 0.18, hFt / 2 + 0.01, dark);
+                addPart(group, wFt * 0.85, 0.015, 0.01, 0, -boxH * 0.02, hFt / 2 + 0.01, dark);
+                addPart(group, wFt * 0.85, 0.015, 0.01, 0, -boxH * 0.22, hFt / 2 + 0.01, dark);
+                const lx = wFt / 2 - 0.12, lz = hFt / 2 - 0.12;
+                [[-lx, -lz], [lx, -lz], [-lx, lz], [lx, lz]].forEach(([x, z]) => {
+                    addCylinderPart(group, 0.06, 0.05, x, -boxH / 2, z, COLORS.toolAccentBlade, 'x');
+                });
+            } else if (category === 'Dust Collection') {
+                // Collector units (JET DC-1100VX, Oneida Super Dust Deputy XL) — a standing
+                // drum with a smaller motor/filter housing on top and a side inlet stub where
+                // the ductwork connects in, so they read as a collector rather than a plain box.
+                const r = Math.min(wFt, hFt) * 0.42;
+                addCylinderPart(group, r, boxH * 0.62, 0, -boxH * 0.19, 0, body);
+                addCylinderPart(group, r * 0.62, boxH * 0.34, 0, boxH * 0.29, 0, dark);
+                const stubLen = Math.min(wFt, hFt) * 0.3;
+                addCylinderPart(group, r * 0.16, stubLen, r + stubLen / 2, -boxH * 0.05, 0, metal, 'x');
+            }
         }
 
         function addWallFeatureMesh(f) {
@@ -925,15 +1539,41 @@
             const bottomIn = f.type === 'outlet' ? (parseFloat(f.mountHeightIn) || 18) : def.bottomIn;
             const heightFt = def.heightIn / 12;
             const bottomFt = bottomIn / 12;
+            const angleRad = -THREE.MathUtils.degToRad(f.angle || 0);
+            const centerY = bottomFt + heightFt / 2;
 
-            const geo = new THREE.BoxGeometry(lengthFt, heightFt, thicknessFt);
-            const mat = new THREE.MeshStandardMaterial({ color: def.color, transparent: def.opacity < 1, opacity: def.opacity });
-            const mesh = new THREE.Mesh(geo, mat);
-            mesh.position.set(xFt, bottomFt + heightFt / 2, zFt);
-            mesh.rotation.y = -THREE.MathUtils.degToRad(f.angle || 0);
-            mesh.userData = { name: f.label || f.type, dims: `${lengthFt.toFixed(2)} ft wide` };
-            scene.add(mesh);
-            clickableMeshes.push(mesh);
+            // Invisible hit target sized to the feature's full footprint — three.js
+            // raycasting still finds invisible objects, so this keeps the existing
+            // click/hover/tooltip logic (which expects one Mesh with userData in
+            // clickableMeshes) unchanged while the visible decoration below is built from
+            // several small parts instead of one flat box.
+            const hitMesh = new THREE.Mesh(
+                new THREE.BoxGeometry(lengthFt, heightFt, thicknessFt),
+                new THREE.MeshBasicMaterial()
+            );
+            hitMesh.visible = false;
+            hitMesh.position.set(xFt, centerY, zFt);
+            hitMesh.rotation.y = angleRad;
+            hitMesh.userData = {
+                name: f.label || f.type,
+                dims: `${lengthFt.toFixed(2)} ft wide`,
+                type: f.type,
+                // Draggable (slides along the wall it's already on — see findWallLineForFeature)
+                // but keeps no toolIndex, which is what keeps wall features out of the floor-
+                // item collision check in isOverlappingOtherFloorItems.
+                draggable: true,
+                wallFeatureId: f.id
+            };
+            scene.add(hitMesh);
+            clickableMeshes.push(hitMesh);
+
+            const group = new THREE.Group();
+            group.position.set(xFt, centerY, zFt);
+            group.rotation.y = angleRad;
+            const customColorHex = f.color ? parseInt(f.color.replace('#', ''), 16) : null;
+            buildWallFeatureDecoration(group, f.type, lengthFt, heightFt, thicknessFt, customColorHex);
+            scene.add(group);
+            hitMesh.userData.decorationGroup = group;
         }
 
         function frameCamera(widthFt, lengthFt, ceilingFt) {
@@ -946,8 +1586,13 @@
         function buildScene() {
             clearScene();
 
-            const widthFt = parseFloat(sharedLayout.widthFeet) || 20;
-            const lengthFt = parseFloat(sharedLayout.lengthFeet) || 24;
+            // workshop-planner.html sizes the 2D board's CSS width from lengthFeet and its
+            // CSS height from widthFeet (see getShopWidthFeet/getShopLengthFeet usage there),
+            // so every tool/wall-feature left/top position spans lengthFeet horizontally and
+            // widthFeet in depth. Match that here (X = lengthFeet, Z = widthFeet) or the
+            // walls/floor/grid drift out of sync with placed items on non-square shops.
+            const widthFt = parseFloat(sharedLayout.lengthFeet) || 24;
+            const lengthFt = parseFloat(sharedLayout.widthFeet) || 20;
             const ceilingFt = parseFloat(sharedLayout.ceilingHeightFt) || 10;
             const wallThicknessFt = 0.35;
             currentShopWidthFt = widthFt;
@@ -966,23 +1611,42 @@
             floor.position.set(widthFt / 2, 0, lengthFt / 2);
             scene.add(floor);
 
-            const gridSize = Math.max(widthFt, lengthFt);
-            const grid = new THREE.GridHelper(gridSize, Math.max(Math.round(gridSize), 1), 0xffffff, 0xbdb193);
-            grid.position.set(widthFt / 2, 0.01, lengthFt / 2);
+            const grid = buildFloorGrid(widthFt, lengthFt);
+            grid.position.y = 0.01;
             scene.add(grid);
 
-            getWallSegmentsFt(widthFt, lengthFt).forEach(([a, b]) => addWallSegment(a, b, wallThicknessFt, ceilingFt, COLORS.wall));
+            const doorWindowFeatures = (sharedLayout.wallFeatures || []).filter(f => f.type === 'door' || f.type === 'window');
+            const exteriorSegments = getWallSegmentsFt(widthFt, lengthFt);
+            allWallSegments = exteriorSegments.map(([a, b]) => ({ a, b, thicknessFt: wallThicknessFt }));
+            exteriorSegments.forEach(([a, b]) => addWallSegmentWithOpenings(a, b, wallThicknessFt, ceilingFt, COLORS.wall, doorWindowFeatures));
+
+            // Overall-footprint dimension labels, offset just outside the exterior walls.
+            const dimMargin = 2.2;
+            const xDimLabel = makeDimensionSprite(formatFeetLabel(widthFt));
+            xDimLabel.position.set(widthFt / 2, 1, -dimMargin);
+            scene.add(xDimLabel);
+            const zDimLabel = makeDimensionSprite(formatFeetLabel(lengthFt));
+            zDimLabel.position.set(-dimMargin, 1, lengthFt / 2);
+            scene.add(zDimLabel);
 
             (sharedLayout.internalWalls || []).forEach(w => {
                 const a = { x: ftFromPx(w.x1), y: ftFromPx(w.y1) };
                 const b = { x: ftFromPx(w.x2), y: ftFromPx(w.y2) };
-                addWallSegment(a, b, w.thicknessFt || 0.35, ceilingFt, COLORS.innerWall);
+                const thicknessFt = w.thicknessFt || 0.35;
+                allWallSegments.push({ a, b, thicknessFt });
+                addWallSegmentWithOpenings(a, b, thicknessFt, ceilingFt, COLORS.innerWall, doorWindowFeatures);
             });
 
-            (sharedLayout.tools || []).forEach((t, i) => addToolMesh(t, ceilingFt, i));
+            (sharedLayout.tools || []).forEach((t, i) => {
+                if (isToolVisible(t)) addToolMesh(t, ceilingFt, i);
+            });
             (sharedLayout.wallFeatures || []).forEach(f => addWallFeatureMesh(f));
 
             // A rebuild (after a rotate/remove, or reload) always starts with nothing selected.
+            // Detach (not commit — buildScene() already has the latest data) the free-rotate
+            // gizmo too, since its .object would otherwise point at a mesh this rebuild just
+            // threw away.
+            if (transformControls) transformControls.detach();
             selectedMesh = null;
             selectionHelper = null;
             const selPanel = document.getElementById('selectionPanel');
@@ -1006,20 +1670,12 @@
             raycaster.setFromCamera(mouse, camera);
         }
 
-        function showTooltipFor(e, obj) {
-            const tooltip = document.getElementById('viewer3dTooltip');
-            if (obj) {
-                tooltip.innerHTML = `<strong>${escapeHtml(obj.userData.name)}</strong>${obj.userData.dims ? escapeHtml(obj.userData.dims) : ''}`;
-                tooltip.style.display = 'block';
-                tooltip.style.left = e.clientX + 'px';
-                tooltip.style.top = e.clientY + 'px';
-            } else {
-                tooltip.style.display = 'none';
-            }
-        }
-
         function selectMesh(mesh) {
             if (selectionHelper) { scene.remove(selectionHelper); selectionHelper = null; }
+            // The free-rotate gizmo only ever makes sense attached to the current selection —
+            // detach it (without committing, since a plain re-select isn't a drag-end) whenever
+            // selection moves away from whatever it was on.
+            if (transformControls && transformControls.object !== mesh) transformControls.detach();
             selectedMesh = mesh;
             const panel = document.getElementById('selectionPanel');
             if (mesh && mesh.userData.draggable) {
@@ -1027,6 +1683,22 @@
                 scene.add(selectionHelper);
                 document.getElementById('selectionPanelName').textContent = mesh.userData.name;
                 panel.style.display = 'block';
+                // Wall features are constrained to slide along the wall they're already on
+                // (see findWallLineForFeature) — rotating them in place doesn't make sense,
+                // so only floor items (tools/cabinets/dust-collection/lighting) get to rotate.
+                const isWallFeature = mesh.userData.wallFeatureId != null;
+                document.getElementById('rotateSelectedBtn').style.display = isWallFeature ? 'none' : '';
+                const freeRotateBtn = document.getElementById('freeRotateBtn');
+                if (freeRotateBtn) freeRotateBtn.style.display = isWallFeature ? 'none' : '';
+                // A drop is the one dust-collection piece worth a direct "attach here" shortcut
+                // in 3D — there's no real port-snapping engine in this view (see the plan), but
+                // a drop's top/bottom are two fixed, known elevations (see addToolMesh), so a
+                // Blast Gate/Y-Joint can be placed exactly on one of them without needing one.
+                const dropAttachRow = document.getElementById('dropAttachRow');
+                if (dropAttachRow) {
+                    const isDrop = mesh.userData.toolIndex != null && (mesh.userData.name || '').includes('Duct Drop');
+                    dropAttachRow.style.display = isDrop ? 'flex' : 'none';
+                }
             } else {
                 panel.style.display = 'none';
             }
@@ -1039,11 +1711,14 @@
         // edited tool's index to re-select the same item afterward — e.g. so clicking
         // Rotate repeatedly keeps rotating the same object instead of needing a re-click
         // between every step. Omit it (e.g. after a delete) to leave nothing selected.
-        function persistAndRebuild(reselectToolIndex) {
+        function persistAndRebuild(reselectToolIndex, reselectWallFeatureId) {
             localStorage.setItem(CURRENT_LAYOUT_KEY, JSON.stringify(sharedLayout));
             buildScene();
             if (reselectToolIndex != null) {
                 const mesh = clickableMeshes.find(m => m.userData.toolIndex === reselectToolIndex);
+                if (mesh) selectMesh(mesh);
+            } else if (reselectWallFeatureId != null) {
+                const mesh = clickableMeshes.find(m => m.userData.wallFeatureId === reselectWallFeatureId);
                 if (mesh) selectMesh(mesh);
             }
         }
@@ -1060,35 +1735,66 @@
 
             if (!hits.length) {
                 selectMesh(null);
-                document.getElementById('viewer3dTooltip').style.display = 'none';
+                hideHoverPreview();
                 return;
             }
 
             const obj = hits[0].object;
             selectMesh(obj);
 
+            // Every clickableMeshes entry is draggable now (tools/cabinets, dust-collection,
+            // lighting, and wall features all set userData.draggable — see addToolMesh /
+            // addWallFeatureMesh), so there's no remaining non-draggable case here; the hover
+            // preview card (onHoverMove) covers the old click-for-tooltip info for all of them.
             if (obj.userData.draggable) {
-                // The selection panel already names the item — skip the hover tooltip
-                // here, it would just be immediately covered by the drag anyway.
-                document.getElementById('viewer3dTooltip').style.display = 'none';
+                hideHoverPreview();
                 e.stopPropagation();
                 e.preventDefault();
                 raycaster.ray.intersectPlane(dragPlane, dragPoint);
-                dragState = { offsetX: obj.position.x - dragPoint.x, offsetZ: obj.position.z - dragPoint.z };
-                controls.enabled = false;
-                renderer.domElement.style.cursor = 'grabbing';
-                window.addEventListener('pointermove', onDragMove);
-                window.addEventListener('pointerup', onDragEnd);
-            } else {
-                showTooltipFor(e, obj);
+
+                if (obj.userData.wallFeatureId != null) {
+                    const f = (sharedLayout.wallFeatures || []).find(wf => wf.id === obj.userData.wallFeatureId);
+                    const line = f ? findWallLineForFeature(f) : null;
+                    if (line) {
+                        const t0 = (obj.position.x - line.ax) * line.ux + (obj.position.z - line.az) * line.uz;
+                        const tp0 = (dragPoint.x - line.ax) * line.ux + (dragPoint.z - line.az) * line.uz;
+                        dragState = { isWallFeature: true, wallFeatureId: obj.userData.wallFeatureId, line, tOffset: t0 - tp0 };
+                    }
+                } else {
+                    dragState = {
+                        offsetX: obj.position.x - dragPoint.x,
+                        offsetZ: obj.position.z - dragPoint.z,
+                        // Cached so the collision soft-warning tint (onDragMove) can be
+                        // reverted without guessing what color the mesh started as.
+                        originalColor: obj.material && obj.material.color ? obj.material.color.getHex() : null
+                    };
+                }
+
+                if (dragState) {
+                    controls.enabled = false;
+                    renderer.domElement.style.cursor = 'grabbing';
+                    window.addEventListener('pointermove', onDragMove);
+                    window.addEventListener('pointerup', onDragEnd);
+                }
             }
         }
 
         // Rotated-AABB half-extents (mirrors getRotatedAabb() in workshop-planner.html) so a
         // drag clamp keeps the object's whole footprint inside the shop, not just its center.
         function getMeshHalfExtentsFt(mesh) {
-            const w = mesh.geometry.parameters.width || 1;
-            const d = mesh.geometry.parameters.depth || 1;
+            // Duct segments are a CylinderGeometry lying on its side (see addToolMesh's
+            // dust-collection branch) — its footprint is height x radius*2, not
+            // width/depth like the BoxGeometry every other draggable mesh uses.
+            const p = mesh.geometry.parameters;
+            // A duct drop is the one cylinder that stands upright instead of lying on its
+            // side (rotation.z stays 0 — see the isDrop branch in addToolMesh), so its actual
+            // XZ footprint is just its own pipe diameter, not its (vertical) height.
+            if (p.radiusTop != null && mesh.rotation.z === 0) {
+                const dia = p.radiusTop * 2;
+                return { halfW: dia / 2, halfD: dia / 2 };
+            }
+            const w = p.width || p.height || 1;
+            const d = p.depth || (p.radiusTop != null ? p.radiusTop * 2 : 1);
             const rot = mesh.rotation.y;
             return {
                 halfW: (Math.abs(w * Math.cos(rot)) + Math.abs(d * Math.sin(rot))) / 2,
@@ -1096,16 +1802,56 @@
             };
         }
 
+        // Simple axis-aligned rectangle overlap test in shop XZ space (half-extents already
+        // account for each mesh's own Y rotation via getMeshHalfExtentsFt).
+        function rectsOverlap(ax, az, ahW, ahD, bx, bz, bhW, bhD) {
+            return Math.abs(ax - bx) < (ahW + bhW) && Math.abs(az - bz) < (ahD + bhD);
+        }
+
+        // Soft-warning only (see the plan) — used to tint the dragged mesh red, never to
+        // block the drop. Checks against every other floor item (tools/cabinets/dust-
+        // collection/lighting all carry toolIndex); wall features aren't included (no
+        // toolIndex) since they can't be on the floor to begin with.
+        function isOverlappingOtherFloorItems(mesh, x, z) {
+            const { halfW, halfD } = getMeshHalfExtentsFt(mesh);
+            return clickableMeshes.some(other => {
+                if (other === mesh || other.userData.toolIndex == null) return false;
+                const o = getMeshHalfExtentsFt(other);
+                return rectsOverlap(x, z, halfW, halfD, other.position.x, other.position.z, o.halfW, o.halfD);
+            });
+        }
+
         function onDragMove(e) {
             if (!dragState || !selectedMesh) return;
             raycastFromEvent(e);
             if (!raycaster.ray.intersectPlane(dragPlane, dragPoint)) return;
+
+            if (dragState.isWallFeature) {
+                const { line } = dragState;
+                const tp = (dragPoint.x - line.ax) * line.ux + (dragPoint.z - line.az) * line.uz;
+                const newT = Math.max(line.halfLen, Math.min(tp + dragState.tOffset, line.segLen - line.halfLen));
+                const newX = line.ax + line.ux * newT, newZ = line.az + line.uz * newT;
+                selectedMesh.position.x = newX;
+                selectedMesh.position.z = newZ;
+                if (selectedMesh.userData.decorationGroup) {
+                    selectedMesh.userData.decorationGroup.position.x = newX;
+                    selectedMesh.userData.decorationGroup.position.z = newZ;
+                }
+                if (selectionHelper) selectionHelper.update();
+                return;
+            }
+
             const { halfW, halfD } = getMeshHalfExtentsFt(selectedMesh);
             const newX = Math.max(halfW, Math.min(dragPoint.x + dragState.offsetX, currentShopWidthFt - halfW));
             const newZ = Math.max(halfD, Math.min(dragPoint.z + dragState.offsetZ, currentShopLengthFt - halfD));
             selectedMesh.position.x = newX;
             selectedMesh.position.z = newZ;
             if (selectionHelper) selectionHelper.update();
+
+            if (dragState.originalColor != null && selectedMesh.material && selectedMesh.material.color) {
+                const overlapping = isOverlappingOtherFloorItems(selectedMesh, newX, newZ);
+                selectedMesh.material.color.setHex(overlapping ? 0xef4444 : dragState.originalColor);
+            }
         }
 
         function onDragEnd() {
@@ -1114,28 +1860,136 @@
             controls.enabled = true;
             renderer.domElement.style.cursor = '';
             if (dragState && selectedMesh) {
-                const t = sharedLayout.tools[selectedMesh.userData.toolIndex];
-                if (t) {
-                    const wFt = ftFromPx(t.width) || 1, hFt = ftFromPx(t.height) || 1;
-                    t.left = (selectedMesh.position.x - wFt / 2) * BASE_PPI;
-                    t.top = (selectedMesh.position.z - hFt / 2) * BASE_PPI;
-                    localStorage.setItem(CURRENT_LAYOUT_KEY, JSON.stringify(sharedLayout));
-                    showToast('Saved.');
+                if (dragState.isWallFeature) {
+                    const f = (sharedLayout.wallFeatures || []).find(wf => wf.id === dragState.wallFeatureId);
+                    if (f) {
+                        f.x = selectedMesh.position.x * BASE_PPI;
+                        f.y = selectedMesh.position.z * BASE_PPI;
+                        // Unlike a floor-item drop, this needs a real rebuild — the wall gap
+                        // for a door/window was never re-cut during the drag itself (see
+                        // onDragMove), so persistAndRebuild() is what actually moves it now.
+                        persistAndRebuild(null, f.id);
+                        showToast('Saved.');
+                    }
+                } else {
+                    if (dragState.originalColor != null && selectedMesh.material && selectedMesh.material.color) {
+                        selectedMesh.material.color.setHex(dragState.originalColor);
+                    }
+                    const t = sharedLayout.tools[selectedMesh.userData.toolIndex];
+                    if (t) {
+                        const wFt = ftFromPx(t.width) || 1, hFt = ftFromPx(t.height) || 1;
+                        t.left = (selectedMesh.position.x - wFt / 2) * BASE_PPI;
+                        t.top = (selectedMesh.position.z - hFt / 2) * BASE_PPI;
+                        localStorage.setItem(CURRENT_LAYOUT_KEY, JSON.stringify(sharedLayout));
+                        showToast('Saved.');
+                    }
                 }
             }
             dragState = null;
         }
 
+        function hideHoverPreview() {
+            hoveredMesh = null;
+            document.getElementById('toolHoverPreview').style.display = 'none';
+        }
+
+        // Icon per wall-feature type for the hover preview card — door/window/switch/outlet/
+        // panel/minisplit are the only WALL_FEATURE_DEFAULTS keys, see buildWallFeatureDecoration.
+        const WALL_FEATURE_ICONS = { door: '\u{1F6AA}', window: '\u{1FA9F}', switch: '\u{1F39B}️', outlet: '\u{1F50C}', panel: '⚡', minisplit: '❄️' };
+
+        function buildToolPreviewHtml(mesh) {
+            const ud = mesh.userData;
+            if (ud.wallFeatureId != null) {
+                const icon = WALL_FEATURE_ICONS[ud.type] || '\u{1F6AA}';
+                const category = ud.type ? ud.type.charAt(0).toUpperCase() + ud.type.slice(1) : 'Wall Feature';
+                return `
+                    <div class="preview-icon">${icon}</div>
+                    <div class="preview-title">${escapeHtml(ud.name)}</div>
+                    <div class="preview-category">${escapeHtml(category)}</div>
+                    <div class="preview-row"><span>Size</span><span>${escapeHtml(ud.dims || '—')}</span></div>
+                `;
+            }
+            const icon = ud.cabType ? '\u{1F4E6}' : '\u{1F6E0}️';
+            const category = ud.cabType ? 'Cabinet' : 'Tool';
+            const specs = ud.cabType ? null : TOOL_SPECS[ud.catalogName || ud.name];
+            const specRows = specs
+                ? `<div class="preview-row"><span>Power</span><span>${escapeHtml(specs.power)}</span></div>
+                   <div class="preview-row"><span>Voltage</span><span>${escapeHtml(specs.voltage)}</span></div>`
+                : '';
+            return `
+                <div class="preview-icon">${icon}</div>
+                <div class="preview-title">${escapeHtml(ud.name)}</div>
+                <div class="preview-category">${escapeHtml(category)}</div>
+                <div class="preview-row"><span>Footprint</span><span>${escapeHtml(ud.dims || '—')}</span></div>
+                <div class="preview-row"><span>Height</span><span>${ud.heightFt ? escapeHtml(formatFeetLabel(ud.heightFt)) : '—'}</span></div>
+                ${specRows}
+            `;
+        }
+
         // Hover-only affordance (not drag-initiating) — separate from the capture-phase
-        // pointerdown above, safe to register normally on the canvas itself.
+        // pointerdown above, safe to register normally on the canvas itself. Also drives the
+        // tool preview card, mirroring the 2D sidebar's hover popover (see the plan) but only
+        // from data already available on the mesh — rebuilds the card's HTML only when the
+        // hovered mesh actually changes, not on every mousemove frame.
         function onHoverMove(e) {
             if (dragState) return;
             raycastFromEvent(e);
             const hits = raycaster.intersectObjects(clickableMeshes, false);
-            renderer.domElement.style.cursor = (hits.length && hits[0].object.userData.draggable) ? 'grab' : '';
+            const top = hits.length ? hits[0].object : null;
+            const isDraggableHit = !!(top && top.userData.draggable);
+            renderer.domElement.style.cursor = isDraggableHit ? 'grab' : '';
+
+            const preview = document.getElementById('toolHoverPreview');
+            if (isDraggableHit) {
+                if (hoveredMesh !== top) {
+                    hoveredMesh = top;
+                    preview.innerHTML = buildToolPreviewHtml(top);
+                }
+                preview.style.display = 'block';
+                preview.style.left = e.clientX + 'px';
+                preview.style.top = e.clientY + 'px';
+            } else if (hoveredMesh) {
+                hideHoverPreview();
+            }
+        }
+
+        // Writes the gizmo's live Y rotation back to sharedLayout on drag-end — no rebuild
+        // (unlike Rotate 90°/Remove), since only rotation changed, not wall openings, and a
+        // rebuild would destroy the very mesh the gizmo is still attached to mid-interaction.
+        function commitFreeRotation() {
+            if (!selectedMesh || selectedMesh.userData.toolIndex == null) return;
+            const t = sharedLayout.tools[selectedMesh.userData.toolIndex];
+            if (!t) return;
+            t.rotation = ((THREE.MathUtils.radToDeg(selectedMesh.rotation.y) % 360) + 360) % 360;
+            localStorage.setItem(CURRENT_LAYOUT_KEY, JSON.stringify(sharedLayout));
+            if (selectionHelper) selectionHelper.update();
+        }
+
+        function toggleFreeRotate() {
+            if (!selectedMesh || selectedMesh.userData.wallFeatureId != null) return;
+            if (!transformControls) {
+                transformControls = new TransformControls(camera, renderer.domElement);
+                transformControls.setMode('rotate');
+                transformControls.showX = false;
+                transformControls.showZ = false;
+                transformControls.addEventListener('dragging-changed', (e) => {
+                    controls.enabled = !e.value;
+                    if (!e.value) commitFreeRotation();
+                });
+                // TransformControls' visible gizmo is a separate helper object as of the
+                // three.js versions with getHelper(); older versions add the controls object
+                // itself directly. Support both so this keeps working across a version bump.
+                scene.add(transformControls.getHelper ? transformControls.getHelper() : transformControls);
+            }
+            if (transformControls.object === selectedMesh) {
+                transformControls.detach();
+            } else {
+                transformControls.attach(selectedMesh);
+            }
         }
 
         function initSelectionPanel() {
+            document.getElementById('freeRotateBtn').addEventListener('click', toggleFreeRotate);
             document.getElementById('rotateSelectedBtn').addEventListener('click', () => {
                 if (!selectedMesh || !selectedMesh.userData.draggable) return;
                 const idx = selectedMesh.userData.toolIndex;
@@ -1146,9 +2000,65 @@
             });
             document.getElementById('removeSelectedBtn').addEventListener('click', () => {
                 if (!selectedMesh || !selectedMesh.userData.draggable) return;
-                sharedLayout.tools.splice(selectedMesh.userData.toolIndex, 1);
+                if (selectedMesh.userData.wallFeatureId != null) {
+                    sharedLayout.wallFeatures = (sharedLayout.wallFeatures || []).filter(f => f.id !== selectedMesh.userData.wallFeatureId);
+                } else {
+                    // toolIndex is a real array index (0 is valid) — must check with != null,
+                    // not truthiness, or item 0 could never be removed this way.
+                    if (selectedMesh.userData.toolIndex == null) return;
+                    sharedLayout.tools.splice(selectedMesh.userData.toolIndex, 1);
+                }
                 persistAndRebuild();
                 showToast('Removed.');
+            });
+
+            // "Attach" here means position, not a real port-snap (this view has no
+            // port-snapping engine — see the plan) — a drop's top and bottom are two known
+            // elevations though (getDropTopFt/getDropBottomFt, same ones addToolMesh uses to
+            // render the drop itself), so the new fitting can still land exactly on one of
+            // them and visually read as connected.
+            function addFittingAtDrop(catalogName, elevFt) {
+                if (!selectedMesh || selectedMesh.userData.toolIndex == null) return;
+                const dropTool = sharedLayout.tools[selectedMesh.userData.toolIndex];
+                const item = CATALOG_ITEMS.find(i => i.name === catalogName);
+                if (!dropTool || !item) return;
+                const centerLeft = dropTool.left + (parseFloat(dropTool.width) || 0) / 2;
+                const centerTop = dropTool.top + (parseFloat(dropTool.height) || 0) / 2;
+                sharedLayout.tools.push({
+                    left: centerLeft - (item.widthFt * BASE_PPI) / 2,
+                    top: centerTop - (item.lengthFt * BASE_PPI) / 2,
+                    width: item.widthFt * BASE_PPI,
+                    height: item.lengthFt * BASE_PPI,
+                    rotation: 0,
+                    layer: 'dust-collection',
+                    label: item.name,
+                    displayName: item.name,
+                    displayDims: `${item.widthFt.toFixed(1)}' x ${item.lengthFt.toFixed(1)}'`,
+                    physicalHeight: elevFt,
+                    cabType: null
+                });
+                const newIndex = sharedLayout.tools.length - 1;
+                persistAndRebuild(newIndex);
+                showToast(`Added ${item.name} at the drop.`);
+            }
+
+            document.getElementById('addBlastGateToDropBtn').addEventListener('click', () => {
+                if (!selectedMesh || selectedMesh.userData.toolIndex == null) return;
+                const dropTool = sharedLayout.tools[selectedMesh.userData.toolIndex];
+                if (!dropTool) return;
+                const sizeClass = (dropTool.label || '').startsWith('6in') ? '6in' : '4in';
+                const ceilingFt = parseFloat(sharedLayout.ceilingHeightFt) || 10;
+                const pipeLenFt = Math.max(parseFloat(dropTool.physicalHeight) || 5, 1);
+                addFittingAtDrop(sizeClass === '6in' ? '6in Blast Gate' : 'Blast Gate', getDropBottomFt(pipeLenFt, ceilingFt));
+            });
+
+            document.getElementById('addYJointToDropBtn').addEventListener('click', () => {
+                if (!selectedMesh || selectedMesh.userData.toolIndex == null) return;
+                const dropTool = sharedLayout.tools[selectedMesh.userData.toolIndex];
+                if (!dropTool) return;
+                const sizeClass = (dropTool.label || '').startsWith('6in') ? '6in' : '4in';
+                const ceilingFt = parseFloat(sharedLayout.ceilingHeightFt) || 10;
+                addFittingAtDrop(sizeClass === '6in' ? '6in Duct Y-Joint' : '4in Duct Y-Joint', getDropTopFt(ceilingFt));
             });
         }
 
@@ -1162,20 +2072,137 @@
 
             const emptyState = document.getElementById('empty3dState');
             const controlsPanel = document.getElementById('viewerControlsPanel');
-            document.getElementById('viewer3dTooltip').style.display = 'none';
 
             if (!sharedLayout || !sharedLayout.widthFeet) {
                 emptyState.style.display = 'block';
                 canvasWrap.style.display = 'none';
                 controlsPanel.style.display = 'none';
+                document.getElementById('addItemPanel').style.display = 'none';
                 return;
             }
 
             emptyState.style.display = 'none';
             canvasWrap.style.display = 'block';
             controlsPanel.style.display = 'block';
+            document.getElementById('addItemPanel').style.display = 'block';
             buildScene();
             onWindowResize();
+        }
+
+        // Cabinets aren't a static catalog list like everything else in CATALOG_ITEMS — they're
+        // whatever the user has already built with the cabinet builder in workshop-planner.html,
+        // saved under this same shared localStorage key. Read fresh each time the panel is
+        // opened/populated so a cabinet built in another tab shows up without a reload.
+        const CABINET_TEMPLATES_KEY = 'kerphCabinetTemplates';
+        function loadCabinetTemplates3D() {
+            try {
+                return JSON.parse(localStorage.getItem(CABINET_TEMPLATES_KEY)) || [];
+            } catch (e) {
+                return [];
+            }
+        }
+
+        // Category -> item pickers for placing a brand-new item. Sourced from CATALOG_ITEMS
+        // (the full ~61-item catalog, via catalog-data.js) plus a synthetic "Cabinets" category
+        // backed by the user's own saved cabinet templates, since those aren't static catalog
+        // data — see loadCabinetTemplates3D.
+        function populateAddItemCategories() {
+            const categorySelect = document.getElementById('addItemCategorySelect');
+            const categories = [...new Set(CATALOG_ITEMS.map(i => i.category))];
+            categories.push('Cabinets');
+            categorySelect.innerHTML = categories.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+        }
+
+        function populateAddItemsForCategory() {
+            const category = document.getElementById('addItemCategorySelect').value;
+            const itemSelect = document.getElementById('addItemSelect');
+            if (category === 'Cabinets') {
+                const templates = loadCabinetTemplates3D();
+                itemSelect.innerHTML = templates.length
+                    ? templates.map(t => `<option value="${escapeHtml(t.id)}">${escapeHtml(t.name)} — ${t.widthIn}"x${t.depthIn}"</option>`).join('')
+                    : `<option value="" disabled selected>No saved cabinets yet</option>`;
+                return;
+            }
+            const items = CATALOG_ITEMS.filter(i => i.category === category);
+            itemSelect.innerHTML = items.map(i => `<option value="${escapeHtml(i.name)}">${escapeHtml(i.name)}</option>`).join('');
+        }
+
+        function initAddItemPanel() {
+            populateAddItemCategories();
+            populateAddItemsForCategory();
+            document.getElementById('addItemCategorySelect').addEventListener('change', populateAddItemsForCategory);
+            document.getElementById('addItemBtn').addEventListener('click', () => {
+                const category = document.getElementById('addItemCategorySelect').value;
+                const value = document.getElementById('addItemSelect').value;
+                if (!value || !sharedLayout) return;
+                sharedLayout.tools = sharedLayout.tools || [];
+
+                if (category === 'Cabinets') {
+                    const template = loadCabinetTemplates3D().find(t => t.id === value);
+                    if (!template) {
+                        showToast('Build a cabinet in the Workshop Layout Planner first.');
+                        return;
+                    }
+                    const centerLeftFt = Math.max(0, currentShopWidthFt / 2 - template.widthFeet / 2);
+                    const centerTopFt = Math.max(0, currentShopLengthFt / 2 - template.depthFeet / 2);
+                    let displayDims = `${template.widthIn}"W x ${template.depthIn}"D`;
+                    if (template.hasDrawers && template.drawers && template.drawers.length) {
+                        displayDims += ` +${template.drawers.length} drwrs`;
+                    }
+                    sharedLayout.tools.push({
+                        left: centerLeftFt * BASE_PPI,
+                        top: centerTopFt * BASE_PPI,
+                        width: template.widthFeet * BASE_PPI,
+                        height: template.depthFeet * BASE_PPI,
+                        rotation: 0,
+                        layer: 'cabinets',
+                        label: template.name,
+                        displayName: template.name,
+                        displayDims,
+                        physicalHeight: template.heightFeet,
+                        cabType: template.type
+                    });
+                    const newIndex = sharedLayout.tools.length - 1;
+                    persistAndRebuild(newIndex);
+                    showToast(`Added ${template.name} — drag it into place.`);
+                    return;
+                }
+
+                const item = CATALOG_ITEMS.find(i => i.name === value);
+                if (!item) return;
+                const centerLeftFt = Math.max(0, currentShopWidthFt / 2 - item.widthFt / 2);
+                const centerTopFt = Math.max(0, currentShopLengthFt / 2 - item.lengthFt / 2);
+                sharedLayout.tools.push({
+                    left: centerLeftFt * BASE_PPI,
+                    top: centerTopFt * BASE_PPI,
+                    width: item.widthFt * BASE_PPI,
+                    height: item.lengthFt * BASE_PPI,
+                    rotation: 0,
+                    layer: item.layer,
+                    label: item.name,
+                    displayName: item.name,
+                    displayDims: `${item.widthFt.toFixed(1)}' x ${item.lengthFt.toFixed(1)}'`,
+                    physicalHeight: item.heightFt,
+                    cabType: null
+                });
+                const newIndex = sharedLayout.tools.length - 1;
+                persistAndRebuild(newIndex);
+                showToast(`Added ${value} — drag it into place.`);
+            });
+        }
+
+        // Legend checkboxes double as show/hide toggles per layer — unchecking one just
+        // rebuilds the scene skipping that layer's items (see the layerVisibility check in
+        // buildScene's tools loop), the same "mutate state → rebuild from source of truth"
+        // pattern used everywhere else on this page. Doesn't touch sharedLayout itself, so
+        // hidden items aren't deleted, just not rendered until re-checked.
+        function initLayerVisibilityCheckboxes() {
+            document.querySelectorAll('.layer-visibility-checkbox').forEach(cb => {
+                cb.addEventListener('change', () => {
+                    layerVisibility[cb.dataset.layerKey] = cb.checked;
+                    if (sharedLayout) buildScene();
+                });
+            });
         }
 
         document.getElementById('refresh3dBtn').addEventListener('click', () => {
@@ -1193,6 +2220,8 @@
         initAccountPanel();
         initThree();
         initSelectionPanel();
+        initAddItemPanel();
+        initLayerVisibilityCheckboxes();
         loadSharedLayout();
     </script>
 

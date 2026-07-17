@@ -77,6 +77,20 @@
             filter: drop-shadow(0 18px 30px rgba(15, 23, 42, 0.5));
         }
 
+        .logo-tm {
+            /* Lower-right corner, inside the logo's own white background — clear of both the
+               navy border below it and the wordmark above it. */
+            position: absolute;
+            bottom: 6px;
+            right: 22px;
+            z-index: 2;
+            font-size: 12px;
+            font-weight: 800;
+            color: #1e3a8a;
+            line-height: 1;
+            pointer-events: none;
+        }
+
         .page-title-select {
             font-size: 15px;
             font-weight: 700;
@@ -104,6 +118,20 @@
             letter-spacing: 0.05em;
             color: #6b7280;
         }
+
+        /* ---------- HEADER: SAVED PROJECTS ---------- */
+        .project-fields-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        .header-field-wide { width: 380px; }
+
+        .header-compound-row { display: flex; gap: 6px; }
+        .header-compound-row .input-box, .header-compound-row .select-box { flex: 1; min-width: 0; padding: 7px 8px; font-size: 12px; }
+        .header-compound-row .mini-btn { flex: none; padding: 7px 9px; font-size: 11px; }
 
         .new-layout-btn {
             padding: 8px 14px;
@@ -248,6 +276,8 @@
         .mini-btn:hover { background-color: #eef2ff; border-color: #2563eb; }
         .mini-btn.danger { color: #b91c1c; }
         .mini-btn.danger:hover { background-color: #fef2f2; border-color: #b91c1c; }
+        .mini-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+        .mini-btn:disabled:hover { background-color: #ffffff; border-color: #cbd5e1; }
 
         .input-box { width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; font-weight: 600; }
         .select-box { width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; font-weight: 600; background: #f8fafc; }
@@ -403,6 +433,26 @@
             margin: 60px auto 0;
         }
 
+        /* ---------- WHOLE-PAGE PAYWALL (Pro/Premier only) ----------
+           Sits in the exact space #sidebar-panel + #canvas-area occupy (both are independently
+           position:absolute below the 150px header, not nested in a shared wrapper — see their
+           own rules above/below), so gating the page means hiding both of those plus the notes
+           panel and showing this instead, rather than hiding one parent. */
+        #projectDesignerPaywall {
+            position: absolute;
+            top: 150px;
+            left: 0;
+            width: 100%;
+            height: calc(100vh - 150px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background-color: #f8fafc;
+        }
+        #projectDesignerPaywall .placeholder-box { margin-top: 0; }
+        .paywall-tier-list { text-align: left; font-size: 12.5px; color: #374151; line-height: 1.7; margin-top: 14px; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 16px; }
+        .paywall-tier-list strong { color: #0f172a; }
+
         .placeholder-icon { font-size: 40px; margin-bottom: 16px; }
 
         .placeholder-title {
@@ -486,6 +536,125 @@
         .hardware-item-name { flex: 1; font-size: 13px; font-weight: 600; color: #0f172a; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .hardware-item-qty { font-size: 11px; color: #6b7280; font-variant-numeric: tabular-nums; flex-shrink: 0; }
         .hardware-item-remove { border: none; background: none; color: #b91c1c; cursor: pointer; font-size: 14px; padding: 0 4px; flex-shrink: 0; }
+
+        /* ---------- CUT LIST / 3D PREVIEW TABS ---------- */
+        .view-tabs { display: flex; gap: 8px; margin-bottom: 20px; max-width: 900px; margin-left: auto; margin-right: auto; }
+        .view-tabs .new-layout-btn { flex: none; }
+
+        /* ---------- 3D PREVIEW (mirrors shop-3d-viewer.html's floating-panel look, which
+           this page never needed before now) ---------- */
+        #projectPreview3D {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        #preview3DCanvasWrap {
+            position: relative;
+            width: 100%;
+            height: 560px;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            overflow: hidden;
+            background-color: #eef1f6;
+        }
+        #preview3DCanvasWrap canvas { display: block; width: 100%; height: 100%; }
+        .preview3d-hint {
+            font-size: 11.5px;
+            color: #9ca3af;
+            margin-top: 8px;
+            text-align: center;
+        }
+        .floating-panel {
+            position: absolute;
+            top: 14px;
+            left: 14px;
+            width: 220px;
+            background-color: rgba(255, 255, 255, 0.97);
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            padding: 12px;
+            box-shadow: 0 8px 20px -6px rgba(15, 23, 42, 0.25);
+            z-index: 10;
+        }
+        .floating-panel-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #6b7280;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        .viewer-hint { font-size: 11px; color: #9ca3af; line-height: 1.4; margin-top: 8px; }
+        #preview3DEmptyHint {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 13px;
+            color: #9ca3af;
+            font-style: italic;
+            text-align: center;
+            pointer-events: none;
+        }
+
+        /* ---------- PROJECT NOTES (fixed to the empty space on the right, visible on
+           either tab — not scoped to 3D Preview, since a note is just as relevant while
+           looking at the cut list) ---------- */
+        .notes-panel {
+            position: fixed;
+            top: 170px;
+            /* .floating-panel sets left:14px; without resetting it here, left+width+right are
+               all non-auto and the box is over-constrained, so the browser drops `right` per
+               spec and pins this to the left edge instead — left:auto is what actually makes
+               `right` take effect. */
+            left: auto;
+            right: 24px;
+            width: 250px;
+            z-index: 50;
+        }
+        .notes-textarea {
+            width: 100%;
+            min-height: 340px;
+            resize: vertical;
+            font-family: inherit;
+            line-height: 1.5;
+        }
+
+        /* ---------- 3D PREVIEW TOOLBAR (Add Label / Measure) ---------- */
+        .preview3d-toolbar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        .preview3d-toolbar .mini-btn { flex: none; padding: 7px 12px; }
+        .mini-btn-active {
+            background-color: #1e3a8a !important;
+            color: #ffffff !important;
+            border-color: #1e3a8a !important;
+        }
+        .preview3d-tool-hint {
+            font-size: 11.5px;
+            color: #92400e;
+            font-weight: 600;
+        }
+        #labelInputPopover, #quickAddPopover {
+            position: absolute;
+            bottom: 14px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 240px;
+            top: auto;
+        }
+        .quickadd-dims-row { display: flex; gap: 6px; margin-top: 6px; }
+        .quickadd-dims-row .input-box { width: 33%; padding: 6px 4px; font-size: 12px; text-align: center; }
+        .selection-pos-labels-row { display: flex; gap: 5px; margin-bottom: 2px; }
+        .selection-pos-labels-row span { width: 33%; text-align: center; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: #6b7280; }
+        .selection-pos-row { display: flex; gap: 5px; margin-bottom: 8px; }
+        .selection-pos-row .input-box { width: 33%; padding: 5px 4px; font-size: 11.5px; text-align: center; font-variant-numeric: tabular-nums; }
+            .header-quick-links { display: flex; align-items: center; gap: 6px; font-size: 11px; }
+        .header-quick-links a { color: #6b7280; font-weight: 600; text-decoration: none; }
+        .header-quick-links a:hover { color: #1e3a8a; text-decoration: underline; }
+        .header-quick-links-sep { color: #cbd5e1; }
     </style>
 </head>
 <body>
@@ -496,16 +665,37 @@
                 <a href="index.html" class="logo-link" title="Kerph Home">
                     <img src="logo.png" alt="Kerph Logo" class="logo-image">
                 </a>
+                <span class="logo-tm">&trade;</span>
             </div>
             <select class="page-title-select" id="pageNavSelect">
                 <option value="index.html">Home</option>
                 <option value="workshop-planner.html">Workshop Layout Planner</option>
+                <option value="dust-collection.html">Dust Collection</option>
                 <option value="project-designer.html" selected>Project Designer</option>
                 <option value="cutlist-optimizer.html">Cut List Optimizer</option>
-                <option value="dust-collection.html">Dust Collection</option>
                 <option value="find-a-builder.html">Find a Builder</option>
                 <option value="shop-3d-viewer.html">3D Shop Viewer</option>
+                <option value="tool-reviews.html">Cool Tool Reviews</option>
+                <option value="shop-showcase.html">Shop Showcase</option>
             </select>
+        </div>
+        <div class="project-fields-group">
+            <div class="header-field header-field-wide">
+                <label class="header-field-label" for="projectNameInput">Project Name</label>
+                <div class="header-compound-row">
+                    <input type="text" class="input-box" id="projectNameInput" placeholder="Untitled Project">
+                    <button type="button" id="saveProjectBtn" class="mini-btn">Save</button>
+                </div>
+            </div>
+            <div class="header-field header-field-wide">
+                <label class="header-field-label" id="savedProjectsCountLabel" for="savedProjectsSelect">My Projects</label>
+                <div class="header-compound-row">
+                    <select class="select-box" id="savedProjectsSelect"></select>
+                    <button type="button" id="loadProjectBtn" class="mini-btn">Load</button>
+                    <button type="button" id="newProjectBtn" class="mini-btn" title="Start a new blank project">+ New</button>
+                    <button type="button" id="deleteProjectBtn" class="mini-btn danger" title="Delete this project">&#10005;</button>
+                </div>
+            </div>
         </div>
         <div class="plan-badge-group">
             <div class="header-sign-in" id="headerSignIn" title="Preview only — any username &amp; password signs you in locally in this browser.">
@@ -520,6 +710,11 @@
                     <span class="account-btn-plan" id="accountBtnPlan">Free</span>
                 </span>
             </button>
+            <div class="header-quick-links">
+                <a href="pricing.html">Plan Comparison</a>
+                <span class="header-quick-links-sep">&middot;</span>
+                <a href="help.html">Help &amp; Support</a>
+            </div>
             <select class="plan-select" id="planSelector" style="display:none;">
                 <option value="free">Free</option>
                 <option value="pro">Pro</option>
@@ -635,10 +830,90 @@
                 <input type="number" class="input-box" id="panelQtyInput" min="1" step="1" value="1">
             </div>
 
+            <div class="header-field" style="width:100%; margin-top:10px;">
+                <label class="header-field-label">Position (in) &mdash; leave blank to auto-place</label>
+                <div style="display:flex; gap:8px;">
+                    <input type="number" class="input-box" id="panelXInput" placeholder="X" step="0.0625">
+                    <input type="number" class="input-box" id="panelYInput" placeholder="Y" step="0.0625">
+                    <input type="number" class="input-box" id="panelZInput" placeholder="Z" step="0.0625">
+                </div>
+            </div>
+            <div class="header-field" style="width:100%; margin-top:10px;">
+                <label class="header-field-label" for="panelOrientationSelect">Orientation (quick-set the rotation below)</label>
+                <select class="select-box" id="panelOrientationSelect">
+                    <option value="standing-front">Standing (facing front)</option>
+                    <option value="standing-side">Standing (facing side)</option>
+                    <option value="flat">Flat (horizontal)</option>
+                </select>
+            </div>
+            <div class="header-field" style="width:100%; margin-top:10px;">
+                <label class="header-field-label">Rotation (degrees)</label>
+                <div style="display:flex; gap:8px;">
+                    <input type="number" class="input-box" id="panelRotXInput" placeholder="X" step="1" value="0">
+                    <input type="number" class="input-box" id="panelRotYInput" placeholder="Y" step="1" value="0">
+                    <input type="number" class="input-box" id="panelRotZInput" placeholder="Z" step="1" value="0">
+                </div>
+            </div>
+
+            <div class="header-field" style="width:100%; margin-top:14px; border-top:1px solid #e5e7eb; padding-top:10px;">
+                <label class="header-field-label">Holes &amp; Cutouts &mdash; X/Y measured from the piece's center; shown in 3D as dark markers on the surface, not yet a real material cut</label>
+                <div id="panelHolesList" style="margin-bottom:8px;"></div>
+                <div style="display:flex; gap:6px; align-items:flex-end;">
+                    <div style="flex:1.2;">
+                        <label class="header-field-label" style="font-size:10px;">Shape</label>
+                        <select class="select-box" id="holeShapeSelect">
+                            <option value="circle">Circle</option>
+                            <option value="rect">Rectangle</option>
+                        </select>
+                    </div>
+                    <div style="flex:1;">
+                        <label class="header-field-label" style="font-size:10px;">X</label>
+                        <input type="number" class="input-box" id="holeXInput" step="0.0625" value="0">
+                    </div>
+                    <div style="flex:1;">
+                        <label class="header-field-label" style="font-size:10px;">Y</label>
+                        <input type="number" class="input-box" id="holeYInput" step="0.0625" value="0">
+                    </div>
+                    <div style="flex:1;">
+                        <label class="header-field-label" style="font-size:10px;" id="holeSizeALabel">Dia</label>
+                        <input type="number" class="input-box" id="holeSizeAInput" step="0.0625" min="0.0625" placeholder="0.25">
+                    </div>
+                    <div style="flex:1;" id="holeSizeBField">
+                        <label class="header-field-label" style="font-size:10px;">Height</label>
+                        <input type="number" class="input-box" id="holeSizeBInput" step="0.0625" min="0.0625" placeholder="1">
+                    </div>
+                    <button type="button" class="mini-btn" id="addHoleBtn" style="flex:none;">+ Add</button>
+                </div>
+            </div>
+
             <div class="modal-actions">
                 <button type="button" id="panelCancelBtn" class="mini-btn">Cancel</button>
                 <button type="button" id="panelSaveBtn" class="mini-btn modal-primary-btn">Save Panel</button>
             </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="confirmModalOverlay" style="display:none;">
+        <div class="modal-box">
+            <div class="modal-title">Are you sure?</div>
+            <p id="confirmModalMessage" style="font-size:13px; color:#374151; line-height:1.5; margin:0;"></p>
+            <div class="modal-actions">
+                <button type="button" id="confirmModalCancelBtn" class="mini-btn">Cancel</button>
+                <button type="button" id="confirmModalOkBtn" class="mini-btn modal-primary-btn">Continue</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="projectDesignerPaywall">
+        <div class="placeholder-box">
+            <div class="placeholder-icon">&#128274;</div>
+            <div class="placeholder-title">Project Designer is a Pro feature</div>
+            <div class="placeholder-desc">Build panel-by-panel cut lists, preview your build in 3D, and save named project designs — upgrade to Pro or Premier to unlock it.</div>
+            <div class="paywall-tier-list">
+                <div><strong>Pro</strong> &mdash; full access, 5 saved projects</div>
+                <div><strong>Premier</strong> &mdash; full access, unlimited saved projects</div>
+            </div>
+            <div class="placeholder-desc" style="margin-top:14px;">Use the Plan selector in the top right to switch plans.</div>
         </div>
     </div>
 
@@ -649,11 +924,80 @@
         <button type="button" class="mini-btn" id="addPanelBtn" style="width:100%;">+ Add Panel</button>
     </div>
 
+    <div class="floating-panel notes-panel" id="notesPanel">
+        <div class="floating-panel-title">Project Notes</div>
+        <textarea id="projectNotesInput" class="input-box notes-textarea" placeholder="Assembly order, reminders, cut notes, anything worth remembering about this project..."></textarea>
+    </div>
+
     <div id="canvas-area">
+        <div class="view-tabs" id="viewTabs">
+            <button type="button" class="new-layout-btn" id="cutListTabBtn">Cut List</button>
+            <button type="button" class="new-layout-btn new-layout-btn-secondary" id="preview3DTabBtn">3D Preview</button>
+        </div>
+
         <div class="placeholder-box" id="emptyProjectState">
             <div class="placeholder-icon">&#128208;</div>
             <div class="placeholder-title">Start your project</div>
             <div class="placeholder-desc">Add panels on the left — sides, shelves, doors, whatever this piece needs — and a live cut list preview will build here as you go.</div>
+        </div>
+
+        <div id="projectPreview3D" style="display:none;">
+            <div class="preview3d-toolbar">
+                <button type="button" class="mini-btn" id="addPieceToolBtn">&#10133; New Piece</button>
+                <button type="button" class="mini-btn" id="addLabelToolBtn">&#127991;&#65039; Add Label</button>
+                <button type="button" class="mini-btn" id="measureToolBtn">&#128207; Measure</button>
+                <button type="button" class="mini-btn" id="dimensionsToggleBtn" title="Show a size label next to every piece">&#128209; Dimensions</button>
+                <button type="button" class="mini-btn" id="explodeToggleBtn">&#128165; Exploded View</button>
+                <button type="button" class="mini-btn" id="preview3DUndoBtn" title="Undo (Ctrl+Z)" disabled>&#8617; Undo</button>
+                <span class="preview3d-tool-hint" id="preview3dToolHint"></span>
+            </div>
+            <div class="preview3d-toolbar" id="explodeAmountRow" style="display:none; margin-top:-4px;">
+                <label class="header-field-label" for="explodeAmountSlider" style="margin:0;">Spread</label>
+                <input type="range" id="explodeAmountSlider" min="0" max="100" value="40" style="flex:1; max-width:220px;">
+            </div>
+            <div id="preview3DCanvasWrap">
+                <div id="preview3DEmptyHint">Add panels on the left, or use "New Piece" above, to see them here.</div>
+                <div class="floating-panel" id="preview3DSelectionPanel" style="display:none;">
+                    <div class="floating-panel-title">Selected</div>
+                    <div class="viewer-hint" id="preview3DSelectionName" style="font-weight:700; color:#0f172a; margin-top:-4px; margin-bottom:2px;"></div>
+                    <div class="selection-pos-labels-row" id="preview3DPosLabelsRow">
+                        <span>X (in)</span><span>Y (in)</span><span>Z (in)</span>
+                    </div>
+                    <div class="selection-pos-row" id="preview3DPosFields">
+                        <input type="number" step="0.25" class="input-box" id="preview3DPosX" title="X (in)">
+                        <input type="number" step="0.25" class="input-box" id="preview3DPosY" title="Y (in)">
+                        <input type="number" step="0.25" class="input-box" id="preview3DPosZ" title="Z (in)">
+                    </div>
+                    <div class="viewer-hint" id="preview3DSelectionCoords" style="font-variant-numeric:tabular-nums; margin-bottom:8px; display:none;"></div>
+                    <button type="button" id="preview3DFreeRotateBtn" class="mini-btn" style="width:100%;">&#128260; Free Rotate</button>
+                    <button type="button" id="preview3DAlignBtn" class="mini-btn" style="width:100%; margin-top:8px;" title="Snap this piece flat on the floor (or onto the piece below), flush against its nearest neighbor, and square to level">&#128207; Align Flat/Flush/Level</button>
+                    <button type="button" id="preview3DRemoveBtn" class="mini-btn danger" style="width:100%; margin-top:8px;">Remove</button>
+                    <div class="viewer-hint" id="preview3DSelectionHint"></div>
+                </div>
+                <div class="floating-panel" id="labelInputPopover" style="display:none;">
+                    <div class="floating-panel-title">Label Text</div>
+                    <input type="text" class="input-box" id="labelTextInput" placeholder="e.g. Grain direction, Drill here...">
+                    <div style="display:flex; gap:8px; margin-top:8px;">
+                        <button type="button" class="mini-btn" id="labelInputCancelBtn" style="flex:1;">Cancel</button>
+                        <button type="button" class="mini-btn modal-primary-btn" id="labelInputAddBtn" style="flex:1;">Add</button>
+                    </div>
+                </div>
+                <div class="floating-panel" id="quickAddPopover" style="display:none;">
+                    <div class="floating-panel-title">New Piece</div>
+                    <input type="text" class="input-box" id="quickAddNameInput" placeholder="Name (e.g. Shelf)">
+                    <div class="quickadd-dims-row">
+                        <input type="number" class="input-box" id="quickAddWidthInput" placeholder="W&quot;" step="0.125" min="0.125">
+                        <input type="number" class="input-box" id="quickAddHeightInput" placeholder="H&quot;" step="0.125" min="0.125">
+                        <input type="number" class="input-box" id="quickAddThicknessInput" placeholder="T&quot;" step="0.125" min="0.125">
+                    </div>
+                    <select class="input-box" id="quickAddMaterialSelect" style="margin-top:6px;"></select>
+                    <div style="display:flex; gap:8px; margin-top:8px;">
+                        <button type="button" class="mini-btn" id="quickAddCancelBtn" style="flex:1;">Cancel</button>
+                        <button type="button" class="mini-btn modal-primary-btn" id="quickAddAddBtn" style="flex:1;">Add</button>
+                    </div>
+                </div>
+            </div>
+            <div class="preview3d-hint">Drag a piece near another's edge to snap them flush — the outline turns green when it locks. Hold Alt while dragging (or Alt+arrow keys) to bypass snapping for micro-adjustments. Type exact X/Y/Z above, or use the panel's Edit form on the left, for precise placement.</div>
         </div>
 
         <div id="cutListPreview" style="display:none;">
@@ -715,8 +1059,13 @@
         function initPlanSelector() {
             const select = document.getElementById('planSelector');
             select.value = getPlan();
+            applyProjectDesignerAccessGate();
             select.addEventListener('change', () => {
                 localStorage.setItem(PLAN_KEY, select.value);
+                applyProjectDesignerAccessGate();
+                // The saved-projects limit (5/unlimited) depends on plan, so the count label
+                // and Save button's behavior need to reflect a plan change immediately.
+                if (typeof renderSavedProjectsPicker === 'function') renderSavedProjectsPicker();
             });
         }
 
@@ -1042,17 +1391,36 @@
         const PANELS_KEY = 'kerphProjectPanels';
         const CUTLIST_HANDOFF_KEY = 'kerphCutListHandoff';
 
-        // Shared with cutlist-optimizer.html — 'sheet' materials get 2D-packed onto sheet
-        // goods, 'linear' materials get 1D-packed along board lengths.
+        // Shared with cutlist-optimizer.html (keep both copies in sync) — 'sheet' materials get
+        // 2D-packed onto sheet goods, 'linear' materials get 1D-packed along board lengths.
+        // Species-specific entries exist so two panels using the same generic "hardwood"/
+        // "plywood" category — e.g. a maple-ply carcase with a walnut face frame — still get
+        // distinct 3D colors (see MATERIAL_COLORS) instead of looking identical. `group` just
+        // drives the Material dropdown's <optgroup> sections, nothing functional.
         const MATERIALS = {
-            'plywood-34': { label: '3/4" Plywood', type: 'sheet', thicknessIn: 0.75 },
-            'plywood-12': { label: '1/2" Plywood', type: 'sheet', thicknessIn: 0.5 },
-            'plywood-14': { label: '1/4" Plywood', type: 'sheet', thicknessIn: 0.25 },
-            'mdf-34': { label: '3/4" MDF', type: 'sheet', thicknessIn: 0.75 },
-            'pine-1x': { label: '1x Pine (Nominal)', type: 'linear', thicknessIn: 0.75 },
-            'lumber-2x4': { label: '2x4 (Nominal)', type: 'linear', thicknessIn: 1.5 },
-            'hardwood': { label: 'Hardwood Board', type: 'linear', thicknessIn: 0.75 },
-            'custom': { label: 'Custom / Other', type: 'sheet', thicknessIn: 0.75 }
+            'plywood-34': { label: '3/4" Plywood (Generic)', type: 'sheet', thicknessIn: 0.75, group: 'Sheet Goods' },
+            'plywood-12': { label: '1/2" Plywood (Generic)', type: 'sheet', thicknessIn: 0.5, group: 'Sheet Goods' },
+            'plywood-14': { label: '1/4" Plywood (Generic)', type: 'sheet', thicknessIn: 0.25, group: 'Sheet Goods' },
+            'plywood-maple-34': { label: 'Maple Plywood (3/4")', type: 'sheet', thicknessIn: 0.75, group: 'Sheet Goods' },
+            'plywood-birch-34': { label: 'Birch Plywood (3/4")', type: 'sheet', thicknessIn: 0.75, group: 'Sheet Goods' },
+            'plywood-baltic-birch-34': { label: 'Baltic Birch Plywood (3/4")', type: 'sheet', thicknessIn: 0.75, group: 'Sheet Goods' },
+            'plywood-oak-34': { label: 'Red Oak Plywood (3/4")', type: 'sheet', thicknessIn: 0.75, group: 'Sheet Goods' },
+            'plywood-walnut-34': { label: 'Walnut Plywood (3/4")', type: 'sheet', thicknessIn: 0.75, group: 'Sheet Goods' },
+            'mdf-34': { label: '3/4" MDF', type: 'sheet', thicknessIn: 0.75, group: 'Sheet Goods' },
+            'pine-1x': { label: '1x Pine (Nominal)', type: 'linear', thicknessIn: 0.75, group: 'Solid Wood' },
+            'lumber-2x4': { label: '2x4 (Nominal)', type: 'linear', thicknessIn: 1.5, group: 'Solid Wood' },
+            'hardwood': { label: 'Hardwood Board (Generic)', type: 'linear', thicknessIn: 0.75, group: 'Solid Wood' },
+            'hardwood-maple': { label: 'Maple', type: 'linear', thicknessIn: 0.75, group: 'Solid Wood' },
+            'hardwood-walnut': { label: 'Black Walnut', type: 'linear', thicknessIn: 0.75, group: 'Solid Wood' },
+            'hardwood-red-oak': { label: 'Red Oak', type: 'linear', thicknessIn: 0.75, group: 'Solid Wood' },
+            'hardwood-white-oak': { label: 'White Oak', type: 'linear', thicknessIn: 0.75, group: 'Solid Wood' },
+            'hardwood-cherry': { label: 'Cherry', type: 'linear', thicknessIn: 0.75, group: 'Solid Wood' },
+            'hardwood-ash': { label: 'Ash', type: 'linear', thicknessIn: 0.75, group: 'Solid Wood' },
+            'hardwood-hickory': { label: 'Hickory', type: 'linear', thicknessIn: 0.75, group: 'Solid Wood' },
+            'hardwood-poplar': { label: 'Poplar', type: 'linear', thicknessIn: 0.75, group: 'Solid Wood' },
+            'hardwood-cedar': { label: 'Cedar', type: 'linear', thicknessIn: 0.75, group: 'Solid Wood' },
+            'hardwood-mahogany': { label: 'Mahogany', type: 'linear', thicknessIn: 0.75, group: 'Solid Wood' },
+            'custom': { label: 'Custom / Other', type: 'sheet', thicknessIn: 0.75, group: 'Other' }
         };
 
         function escapeHtml(str) {
@@ -1086,6 +1454,201 @@
 
         function saveHardware() {
             localStorage.setItem(HARDWARE_KEY, JSON.stringify(hardware));
+        }
+
+        /* ---------- SAVED PROJECTS ----------
+           panels/hardware/notes/labels/measurements (above and in the 3D module) are always
+           the "live" working project — autosaved continuously under their own keys exactly as
+           before, regardless of this feature. Saved Projects is a separate layer on top: a named
+           snapshot of all of those bundled together under one entry in kerphSavedProjects, so a
+           user can keep several distinct projects and switch between them. Free/Pro/Premier get
+           2/8/unlimited *saved* projects — the live working project itself is never gated.
+        */
+        const SAVED_PROJECTS_KEY = 'kerphSavedProjects';
+        let currentProjectId = null;
+
+        function getSavedProjects() {
+            try {
+                return JSON.parse(localStorage.getItem(SAVED_PROJECTS_KEY)) || [];
+            } catch (e) {
+                return [];
+            }
+        }
+
+        function persistSavedProjects(list) {
+            localStorage.setItem(SAVED_PROJECTS_KEY, JSON.stringify(list));
+        }
+
+        function getMaxSavedProjects() {
+            const plan = getPlan();
+            if (plan === 'premier') return Infinity;
+            if (plan === 'pro') return 5;
+            return 0; // Free can't reach Project Designer at all — see applyProjectDesignerAccessGate.
+        }
+
+        // Project Designer is Pro/Premier only — Free sees a paywall instead of the tool.
+        // #sidebar-panel, .project-fields-group (header), .notes-panel, and #canvas-area are all
+        // independently position:absolute siblings (not nested in one shared wrapper — see their
+        // own CSS rules), so each has to be hidden individually rather than one parent toggle.
+        function applyProjectDesignerAccessGate() {
+            const hasAccess = getPlan() !== 'free';
+            document.getElementById('projectDesignerPaywall').style.display = hasAccess ? 'none' : 'flex';
+            document.getElementById('sidebar-panel').style.display = hasAccess ? 'block' : 'none';
+            document.getElementById('canvas-area').style.display = hasAccess ? 'block' : 'none';
+            document.getElementById('notesPanel').style.display = hasAccess ? 'block' : 'none';
+            document.querySelector('.project-fields-group').style.display = hasAccess ? 'flex' : 'none';
+        }
+
+        // A native confirm() would work for a real user, but it's styled outside the page (no
+        // match for the rest of the app's UI) and this app has no other native dialogs — so this
+        // reuses the existing .modal-overlay look instead, wired up as a one-shot promise so
+        // callers can just `await` it like a real confirm().
+        function showConfirmModal(message) {
+            return new Promise(resolve => {
+                document.getElementById('confirmModalMessage').textContent = message;
+                document.getElementById('confirmModalOverlay').style.display = 'flex';
+                const okBtn = document.getElementById('confirmModalOkBtn');
+                const cancelBtn = document.getElementById('confirmModalCancelBtn');
+                function cleanup(result) {
+                    document.getElementById('confirmModalOverlay').style.display = 'none';
+                    okBtn.removeEventListener('click', onOk);
+                    cancelBtn.removeEventListener('click', onCancel);
+                    resolve(result);
+                }
+                function onOk() { cleanup(true); }
+                function onCancel() { cleanup(false); }
+                okBtn.addEventListener('click', onOk);
+                cancelBtn.addEventListener('click', onCancel);
+            });
+        }
+
+        // Only asks before something that would actually discard work — an empty canvas has
+        // nothing to lose, so New/Load proceed silently in that case.
+        async function confirmDiscardIfNeeded(message) {
+            const notesVal = (document.getElementById('projectNotesInput').value || '').trim();
+            const hasContent = panels.length > 0 || hardware.length > 0 || notesVal.length > 0;
+            return !hasContent || (await showConfirmModal(message));
+        }
+
+        function serializeCurrentProject(name) {
+            return {
+                id: currentProjectId || (Date.now().toString(36) + Math.random().toString(36).slice(2, 6)),
+                name,
+                savedAt: new Date().toISOString(),
+                panels: JSON.parse(JSON.stringify(panels)),
+                hardware: JSON.parse(JSON.stringify(hardware)),
+                notes: document.getElementById('projectNotesInput').value || '',
+                labels: typeof window.getLabels === 'function' ? JSON.parse(JSON.stringify(window.getLabels())) : [],
+                measurements: typeof window.getMeasurements === 'function' ? JSON.parse(JSON.stringify(window.getMeasurements())) : []
+            };
+        }
+
+        function restoreProject(project) {
+            panels = Array.isArray(project.panels) ? project.panels : [];
+            savePanels();
+            hardware = Array.isArray(project.hardware) ? project.hardware : [];
+            saveHardware();
+            const notesInput = document.getElementById('projectNotesInput');
+            notesInput.value = project.notes || '';
+            localStorage.setItem(NOTES_KEY, notesInput.value);
+            if (typeof window.restoreLabelsAndMeasurements === 'function') {
+                window.restoreLabelsAndMeasurements(project.labels, project.measurements);
+            }
+            currentProjectId = project.id;
+            document.getElementById('projectNameInput').value = project.name;
+            renderAll();
+        }
+
+        function renderSavedProjectsPicker() {
+            const list = getSavedProjects();
+            const max = getMaxSavedProjects();
+            const select = document.getElementById('savedProjectsSelect');
+            select.innerHTML = '';
+            if (!list.length) {
+                const opt = document.createElement('option');
+                opt.value = '';
+                opt.textContent = 'No saved projects yet';
+                select.appendChild(opt);
+            } else {
+                list.forEach(p => {
+                    const opt = document.createElement('option');
+                    opt.value = p.id;
+                    opt.textContent = p.name;
+                    if (p.id === currentProjectId) opt.selected = true;
+                    select.appendChild(opt);
+                });
+            }
+            document.getElementById('loadProjectBtn').disabled = !list.length;
+            document.getElementById('deleteProjectBtn').disabled = !list.length;
+            document.getElementById('savedProjectsCountLabel').textContent =
+                `My Projects (${list.length}/${max === Infinity ? '∞' : max})`;
+        }
+
+        function saveCurrentProject() {
+            const name = document.getElementById('projectNameInput').value.trim() || 'Untitled Project';
+            const list = getSavedProjects();
+            const existingIdx = currentProjectId ? list.findIndex(p => p.id === currentProjectId) : -1;
+
+            // Overwriting an already-saved project never grows the count, so only a save-as-new
+            // needs to respect the plan's limit.
+            if (existingIdx === -1) {
+                const max = getMaxSavedProjects();
+                if (list.length >= max) {
+                    const plan = getPlan();
+                    const upgradeTo = plan === 'free' ? 'Pro (5 projects) or Premier (unlimited)' : 'Premier (unlimited projects)';
+                    showToast(`You've saved ${max} of ${max} projects on your plan. Delete one, or upgrade to ${upgradeTo}.`);
+                    return;
+                }
+            }
+
+            const snapshot = serializeCurrentProject(name);
+            if (existingIdx === -1) {
+                list.push(snapshot);
+            } else {
+                list[existingIdx] = snapshot;
+            }
+            persistSavedProjects(list);
+            currentProjectId = snapshot.id;
+            document.getElementById('projectNameInput').value = name;
+            renderSavedProjectsPicker();
+            showToast(`Saved "${name}".`);
+        }
+
+        async function loadSelectedProject() {
+            const id = document.getElementById('savedProjectsSelect').value;
+            const project = getSavedProjects().find(p => p.id === id);
+            if (!project) return;
+            if (!(await confirmDiscardIfNeeded('Loading this project will replace your current unsaved work. Continue?'))) return;
+            restoreProject(project);
+            renderSavedProjectsPicker();
+            showToast(`Loaded "${project.name}".`);
+        }
+
+        function deleteSelectedProject() {
+            const id = document.getElementById('savedProjectsSelect').value;
+            if (!id) return;
+            const list = getSavedProjects().filter(p => p.id !== id);
+            persistSavedProjects(list);
+            if (currentProjectId === id) currentProjectId = null;
+            renderSavedProjectsPicker();
+            showToast('Project deleted.');
+        }
+
+        async function startNewProject() {
+            if (!(await confirmDiscardIfNeeded('Starting a new project will clear your current unsaved work. Continue?'))) return;
+            panels = [];
+            savePanels();
+            hardware = [];
+            saveHardware();
+            const notesInput = document.getElementById('projectNotesInput');
+            notesInput.value = '';
+            localStorage.setItem(NOTES_KEY, '');
+            if (typeof window.restoreLabelsAndMeasurements === 'function') window.restoreLabelsAndMeasurements([], []);
+            currentProjectId = null;
+            document.getElementById('projectNameInput').value = '';
+            renderAll();
+            renderSavedProjectsPicker();
+            showToast('Started a new project.');
         }
 
         function addHardwareItem() {
@@ -1160,18 +1723,89 @@
 
         function populateMaterialSelect(select) {
             select.innerHTML = '';
+            const groups = {};
             Object.keys(MATERIALS).forEach(key => {
-                const opt = document.createElement('option');
-                opt.value = key;
-                opt.textContent = MATERIALS[key].label;
-                select.appendChild(opt);
+                const groupName = MATERIALS[key].group || 'Other';
+                (groups[groupName] = groups[groupName] || []).push(key);
+            });
+            Object.keys(groups).forEach(groupName => {
+                const optgroup = document.createElement('optgroup');
+                optgroup.label = groupName;
+                groups[groupName].forEach(key => {
+                    const opt = document.createElement('option');
+                    opt.value = key;
+                    opt.textContent = MATERIALS[key].label;
+                    optgroup.appendChild(opt);
+                });
+                select.appendChild(optgroup);
             });
         }
 
         let editingPanelId = null;
+        // Holes are edited in this local buffer while the modal is open (mirrors every other
+        // modal field) and only written into the real panel on Save — so Cancel truly cancels,
+        // including any holes added/removed during this edit session.
+        let editingHoles = [];
+
+        function renderPanelHolesList() {
+            const container = document.getElementById('panelHolesList');
+            container.innerHTML = '';
+            if (!editingHoles.length) return;
+            editingHoles.forEach(h => {
+                const row = document.createElement('div');
+                row.className = 'hardware-item';
+                const desc = document.createElement('span');
+                desc.className = 'hardware-item-name';
+                desc.textContent = h.shape === 'circle'
+                    ? `○ ⌀${h.dIn}" at (${h.xIn}, ${h.yIn})`
+                    : `▭ ${h.wIn}"x${h.hIn}" at (${h.xIn}, ${h.yIn})`;
+                const removeBtn = document.createElement('button');
+                removeBtn.className = 'hardware-item-remove';
+                removeBtn.textContent = '✕';
+                removeBtn.title = 'Remove';
+                removeBtn.addEventListener('click', () => {
+                    editingHoles = editingHoles.filter(x => x.id !== h.id);
+                    renderPanelHolesList();
+                });
+                row.appendChild(desc);
+                row.appendChild(removeBtn);
+                container.appendChild(row);
+            });
+        }
+
+        function updateHoleShapeFields() {
+            const isCircle = document.getElementById('holeShapeSelect').value === 'circle';
+            document.getElementById('holeSizeALabel').textContent = isCircle ? 'Dia' : 'Width';
+            document.getElementById('holeSizeBField').style.display = isCircle ? 'none' : 'block';
+        }
+
+        function addHoleFromModalFields() {
+            const shape = document.getElementById('holeShapeSelect').value;
+            const xIn = parseFloat(document.getElementById('holeXInput').value) || 0;
+            const yIn = parseFloat(document.getElementById('holeYInput').value) || 0;
+            const sizeA = parseFloat(document.getElementById('holeSizeAInput').value);
+            const sizeB = parseFloat(document.getElementById('holeSizeBInput').value);
+            const id = 'hole_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+            if (shape === 'circle') {
+                if (!sizeA || sizeA <= 0) { showToast('Give the hole a diameter greater than 0.'); return; }
+                editingHoles.push({ id, shape, xIn, yIn, dIn: sizeA });
+            } else {
+                if (!sizeA || sizeA <= 0 || !sizeB || sizeB <= 0) { showToast('Give the cutout a width and height greater than 0.'); return; }
+                editingHoles.push({ id, shape, xIn, yIn, wIn: sizeA, hIn: sizeB });
+            }
+            renderPanelHolesList();
+            document.getElementById('holeXInput').value = 0;
+            document.getElementById('holeYInput').value = 0;
+            document.getElementById('holeSizeAInput').value = '';
+            document.getElementById('holeSizeBInput').value = '';
+        }
 
         function openPanelModal(panel) {
             editingPanelId = panel ? panel.id : null;
+            editingHoles = (panel && panel.holes) ? JSON.parse(JSON.stringify(panel.holes)) : [];
+            renderPanelHolesList();
+            document.getElementById('holeShapeSelect').value = 'circle';
+            updateHoleShapeFields();
             document.getElementById('panelModalTitle').textContent = panel ? 'Edit Panel' : 'Add Panel';
             document.getElementById('panelNameInput').value = panel ? panel.name : '';
             document.getElementById('panelWidthInput').value = panel ? panel.widthIn : '';
@@ -1180,6 +1814,18 @@
             document.getElementById('panelMaterialSelect').value = material;
             document.getElementById('panelThicknessInput').value = panel ? panel.thicknessIn : MATERIALS[material].thicknessIn;
             document.getElementById('panelQtyInput').value = panel ? panel.qty : 1;
+            // Position stays blank for a brand-new panel (auto-placed the first time the 3D
+            // tab opens — see rebuild3DPreviewMeshes) unless editing one that already has it.
+            document.getElementById('panelXInput').value = (panel && panel.xIn != null) ? panel.xIn : '';
+            document.getElementById('panelYInput').value = (panel && panel.yIn != null) ? panel.yIn : '';
+            document.getElementById('panelZInput').value = (panel && panel.zIn != null) ? panel.zIn : '';
+            document.getElementById('panelRotXInput').value = (panel && panel.rotXDeg != null) ? panel.rotXDeg : 0;
+            document.getElementById('panelRotYInput').value = (panel && panel.rotYDeg != null) ? panel.rotYDeg : 0;
+            document.getElementById('panelRotZInput').value = (panel && panel.rotZDeg != null) ? panel.rotZDeg : 0;
+            // Orientation is a quick-set convenience, not its own stored value (see the Position
+            // Modal section of the plan) — always starts at the same default regardless of the
+            // panel's actual current rotation, which is shown in the 3 fields above it instead.
+            document.getElementById('panelOrientationSelect').value = 'standing-front';
             document.getElementById('panelModalOverlay').style.display = 'flex';
             document.getElementById('panelNameInput').focus();
         }
@@ -1197,16 +1843,29 @@
             const material = document.getElementById('panelMaterialSelect').value;
             const qty = Math.max(1, parseInt(document.getElementById('panelQtyInput').value, 10) || 1);
 
+            // Blank position fields stay undefined (JSON.stringify drops them entirely), which
+            // is exactly what marks a panel as "not yet placed" for the 3D view's auto-arrange.
+            const xRaw = parseFloat(document.getElementById('panelXInput').value);
+            const yRaw = parseFloat(document.getElementById('panelYInput').value);
+            const zRaw = parseFloat(document.getElementById('panelZInput').value);
+            const xIn = isNaN(xRaw) ? undefined : xRaw;
+            const yIn = isNaN(yRaw) ? undefined : yRaw;
+            const zIn = isNaN(zRaw) ? undefined : zRaw;
+            const rotXDeg = parseFloat(document.getElementById('panelRotXInput').value) || 0;
+            const rotYDeg = parseFloat(document.getElementById('panelRotYInput').value) || 0;
+            const rotZDeg = parseFloat(document.getElementById('panelRotZInput').value) || 0;
+
             if (!name) { showToast('Give this panel a name.'); return; }
             if (!widthIn || !heightIn || !thicknessIn) { showToast('Width, height, and thickness must be greater than 0.'); return; }
 
+            const holes = editingHoles;
             if (editingPanelId) {
                 const existing = panels.find(p => p.id === editingPanelId);
-                if (existing) Object.assign(existing, { name, widthIn, heightIn, thicknessIn, material, qty });
+                if (existing) Object.assign(existing, { name, widthIn, heightIn, thicknessIn, material, qty, xIn, yIn, zIn, rotXDeg, rotYDeg, rotZDeg, holes });
             } else {
                 panels.push({
                     id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
-                    name, widthIn, heightIn, thicknessIn, material, qty
+                    name, widthIn, heightIn, thicknessIn, material, qty, xIn, yIn, zIn, rotXDeg, rotYDeg, rotZDeg, holes
                 });
             }
             savePanels();
@@ -1263,13 +1922,14 @@
             const empty = document.getElementById('emptyProjectState');
             const preview = document.getElementById('cutListPreview');
 
+            // Only touches the Cut List tab's own visibility — when the 3D Preview tab is
+            // active, switchTab() already hid both of these, and this function shouldn't
+            // fight that just because a panel was added/edited while looking at the 3D view.
             if (!panels.length) {
-                empty.style.display = 'block';
-                preview.style.display = 'none';
+                if (activeTab === 'cutlist') { empty.style.display = 'block'; preview.style.display = 'none'; }
                 return;
             }
-            empty.style.display = 'none';
-            preview.style.display = 'block';
+            if (activeTab === 'cutlist') { empty.style.display = 'none'; preview.style.display = 'block'; }
 
             const groups = {};
             let sheetAreaSqFt = 0;
@@ -1314,6 +1974,11 @@
             renderPanelList();
             renderCutListPreview();
             renderHardwareList();
+            // Keeps the 3D view live-synced with edits made while it's the visible tab (add/
+            // edit/delete a panel without having to leave and reopen the tab to see it update).
+            if (activeTab === '3d' && typeof window.rebuild3DPreviewMeshes === 'function') {
+                window.rebuild3DPreviewMeshes();
+            }
         }
 
         document.getElementById('addHardwareBtn').addEventListener('click', addHardwareItem);
@@ -1330,13 +1995,1500 @@
             if (mat) document.getElementById('panelThicknessInput').value = mat.thicknessIn;
         });
 
+        document.getElementById('holeShapeSelect').addEventListener('change', updateHoleShapeFields);
+        document.getElementById('addHoleBtn').addEventListener('click', addHoleFromModalFields);
+
+        // Quick-set convenience — writes a preset combo into the 3 real rotation fields
+        // rather than being its own stored value (see savePanelFromModal/openPanelModal).
+        const ORIENTATION_PRESETS = {
+            'standing-front': [0, 0, 0],
+            'standing-side': [0, 90, 0],
+            'flat': [90, 0, 0]
+        };
+        document.getElementById('panelOrientationSelect').addEventListener('change', (e) => {
+            const preset = ORIENTATION_PRESETS[e.target.value];
+            if (!preset) return;
+            document.getElementById('panelRotXInput').value = preset[0];
+            document.getElementById('panelRotYInput').value = preset[1];
+            document.getElementById('panelRotZInput').value = preset[2];
+        });
+
         document.getElementById('openFullCutListBtn').addEventListener('click', () => {
             localStorage.setItem(CUTLIST_HANDOFF_KEY, JSON.stringify(panels));
             window.location.href = 'cutlist-optimizer.html';
         });
 
+        /* ---------- CUT LIST / 3D PREVIEW TAB SWITCH ---------- */
+        let activeTab = 'cutlist';
+
+        /* ---------- PROJECT NOTES ----------
+           Deliberately independent of the panels/labels/measurements data and of which tab is
+           active — freeform text about the project (assembly order, "use pocket screws here",
+           reminders) is useful regardless of whether you're looking at the cut list or the 3D
+           view, so it lives in the always-visible fixed panel rather than being scoped to
+           either tab. No Three.js involvement needed, so unlike panels this never needs a
+           window bridge to the module. */
+        const NOTES_KEY = 'kerphProjectNotes';
+
+        function initProjectNotes() {
+            const input = document.getElementById('projectNotesInput');
+            input.value = localStorage.getItem(NOTES_KEY) || '';
+            let saveTimer = null;
+            input.addEventListener('input', () => {
+                clearTimeout(saveTimer);
+                saveTimer = setTimeout(() => localStorage.setItem(NOTES_KEY, input.value), 400);
+            });
+        }
+        initProjectNotes();
+
+        function switchTab(tab) {
+            activeTab = tab;
+            document.getElementById('cutListTabBtn').className = 'new-layout-btn' + (tab === 'cutlist' ? '' : ' new-layout-btn-secondary');
+            document.getElementById('preview3DTabBtn').className = 'new-layout-btn' + (tab === '3d' ? '' : ' new-layout-btn-secondary');
+            if (tab === 'cutlist') {
+                document.getElementById('projectPreview3D').style.display = 'none';
+                renderCutListPreview();
+            } else {
+                document.getElementById('emptyProjectState').style.display = 'none';
+                document.getElementById('cutListPreview').style.display = 'none';
+                document.getElementById('projectPreview3D').style.display = 'block';
+                if (typeof window.init3DPreviewScene === 'function') window.init3DPreviewScene();
+            }
+        }
+
+        document.getElementById('cutListTabBtn').addEventListener('click', () => switchTab('cutlist'));
+        document.getElementById('preview3DTabBtn').addEventListener('click', () => switchTab('3d'));
+
+        /* ---------- BRIDGE TO THE 3D PREVIEW MODULE ----------
+           The 3D preview lives in a separate <script type="module"> block below (needs ES
+           module imports for Three.js) — module scripts have their own top-level scope and
+           can't see this classic script's `let`/`const` bindings directly the way two classic
+           scripts can see each other's, so the state the module needs is deliberately exposed
+           on `window` here rather than assumed reachable. `getPanels` is a live getter (not a
+           snapshot) so it keeps working correctly even after `panels` gets reassigned (e.g.
+           deletePanel's `panels = panels.filter(...)`), since a closure always reads the
+           current value of the variable it closes over. */
+        window.getPanels = () => panels;
+        window.savePanels = savePanels;
+        window.MATERIALS = MATERIALS;
+        window.escapeHtml = escapeHtml;
+        window.renderAll = renderAll;
+
+        document.getElementById('saveProjectBtn').addEventListener('click', saveCurrentProject);
+        document.getElementById('loadProjectBtn').addEventListener('click', loadSelectedProject);
+        document.getElementById('newProjectBtn').addEventListener('click', startNewProject);
+        document.getElementById('deleteProjectBtn').addEventListener('click', deleteSelectedProject);
+        document.getElementById('projectNameInput').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') saveCurrentProject();
+        });
+
         populateMaterialSelect(document.getElementById('panelMaterialSelect'));
         renderAll();
+        renderSavedProjectsPicker();
+    </script>
+
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+            "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+        }
+    }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { TransformControls } from 'three/addons/controls/TransformControls.js';
+
+        // Sheet goods in tan/birch tones, solid lumber in browns — so material differences read
+        // at a glance without needing to click each panel. Keyed identically to the classic
+        // script's MATERIALS (window.MATERIALS), one entry per key there — species-specific
+        // entries get genuinely distinct tones (e.g. light maple vs near-black walnut) so a
+        // maple-ply carcase and a walnut face frame are unmistakable in the 3D view even though
+        // both would otherwise just be "plywood" / "hardwood".
+        const MATERIAL_COLORS = {
+            'plywood-34': 0xd8bd8a,
+            'plywood-12': 0xdfc79a,
+            'plywood-14': 0xe6d1ab,
+            'plywood-maple-34': 0xe8d9b0,
+            'plywood-birch-34': 0xe3cda0,
+            'plywood-baltic-birch-34': 0xefe0b8,
+            'plywood-oak-34': 0xc9976a,
+            'plywood-walnut-34': 0x5c4030,
+            'mdf-34': 0xc7bfae,
+            'pine-1x': 0xe8c48a,
+            'lumber-2x4': 0xdac39c,
+            'hardwood': 0x9c6b3f,
+            'hardwood-maple': 0xe6d2a8,
+            'hardwood-walnut': 0x4a2f22,
+            'hardwood-red-oak': 0xb97a4e,
+            'hardwood-white-oak': 0xc2a878,
+            'hardwood-cherry': 0x8b4a35,
+            'hardwood-ash': 0xdcc9a3,
+            'hardwood-hickory': 0xd4a25a,
+            'hardwood-poplar': 0xa8a172,
+            'hardwood-cedar': 0xb5603a,
+            'hardwood-mahogany': 0x6b3226,
+            'custom': 0xb8bcc4
+        };
+
+        let scene, camera, renderer, controls, raycaster, transformControls, selectionHelper;
+        let sceneReady = false;
+        let hasFramedCamera = false;
+        let panelMeshes = []; // one entry per panels[] row: { mesh, panelId }
+        let labelMeshes = []; // one entry per labels[] row: { mesh (Sprite), labelId }
+        let measurementMeshes = []; // one entry per measurementsData[] row: { group, textMesh, measurementId }
+        let selectedMesh = null;
+        let dragState = null;
+        let activeTool = null; // null | 'label' | 'measure'
+        let measureFirstPoint = null;
+        let tempMeasureMarker = null;
+        let pendingLabelPoint = null;
+        let pendingLabelNormal = null;
+        // Exploded view is a pure display transform — mesh.position gets moved for the camera's
+        // benefit, but nothing here ever calls persistMeshPosition/savePanels while it's active,
+        // so panels[] (the real data) never sees it. That's what makes it safe to leave
+        // read-only: there's nothing to "undo" going back to Assembled, just a position reset.
+        let explodedView = false;
+        let explodeLabelMeshes = []; // dimension tags, one per panel while exploded
+        let explodeLineMeshes = []; // ghost lines from assembled -> exploded position
+        let showDimensions = false; // Dimensions toolbar toggle — size label next to every panel, assembled view only
+        let dimensionMeshes = []; // one entry per panel while showDimensions is on: { sprite, line }
+        // Undo is a plain snapshot stack (panels/labels/measurements together, same trio a
+        // Saved Project bundles) rather than per-field diffs — simplest correct way to cover every
+        // mutation path (drag, rotate, nudge, typed position, add/remove) with one mechanism.
+        // Deliberately excludes exploded view, same reasoning as explodedView above: it's a pure
+        // display transform with nothing persisted to undo.
+        let undo3DStack = [];
+        const MAX_UNDO_3D = 30;
+        let lastNudgeUndoTime = 0;
+        let lastNudgeUndoMeshId = null;
+        const dragPoint = new THREE.Vector3();
+        // Every drag/nudge lands on a multiple of this — turns "drop it wherever the mouse
+        // happened to be" into "drop it on a real woodworking measurement," which is most of
+        // what made free-floating drag feel klunky in the first place.
+        const SNAP_IN = 0.5;
+        // How close two panels' faces have to be (in inches) before a drag snaps them flush.
+        // Bigger than SNAP_IN on purpose — this is a coarser "did you mean to butt these
+        // together" check applied on top of the grid-snapped position, not a replacement for it.
+        const FACE_SNAP_THRESHOLD_IN = 1.5;
+        const SELECT_COLOR = 0x7c3aed;
+        const SNAP_COLOR = 0x16a34a;
+
+        // Labels/measurements have no cut-list relevance, so unlike panels they're read/written
+        // directly here, entirely module-local — except for the 3 small bridge functions below,
+        // which exist solely so the classic script's Saved Projects feature can bundle these into
+        // (and restore them from) a named snapshot alongside panels/hardware/notes.
+        const LABELS_KEY = 'kerphProjectLabels3D';
+        const MEASUREMENTS_KEY = 'kerphProjectMeasurements3D';
+        let labels = [];
+        let measurementsData = [];
+        try { labels = JSON.parse(localStorage.getItem(LABELS_KEY)) || []; } catch (e) { labels = []; }
+        try { measurementsData = JSON.parse(localStorage.getItem(MEASUREMENTS_KEY)) || []; } catch (e) { measurementsData = []; }
+        function saveLabelsData() { localStorage.setItem(LABELS_KEY, JSON.stringify(labels)); }
+        function saveMeasurementsData() { localStorage.setItem(MEASUREMENTS_KEY, JSON.stringify(measurementsData)); }
+
+        // Called at the START of every mutating gesture (drag arm, rotate arm, nudge, typed
+        // edit, add, remove) — not after — so Undo always rewinds to the state right before
+        // that action, matching the same "push on gesture start" convention already used for
+        // undo in workshop-planner.html.
+        function push3DUndoSnapshot() {
+            undo3DStack.push({
+                panels: JSON.parse(JSON.stringify(window.getPanels())),
+                labels: JSON.parse(JSON.stringify(labels)),
+                measurements: JSON.parse(JSON.stringify(measurementsData))
+            });
+            if (undo3DStack.length > MAX_UNDO_3D) undo3DStack.shift();
+            updateUndo3DBtnState();
+        }
+
+        function updateUndo3DBtnState() {
+            const btn = document.getElementById('preview3DUndoBtn');
+            if (btn) btn.disabled = !undo3DStack.length || explodedView;
+        }
+
+        function undo3D() {
+            if (document.getElementById('projectPreview3D').style.display === 'none') return;
+            if (explodedView || !undo3DStack.length) return;
+            const snap = undo3DStack.pop();
+            const p = window.getPanels();
+            p.splice(0, p.length, ...snap.panels);
+            labels = snap.labels;
+            measurementsData = snap.measurements;
+            window.savePanels();
+            saveLabelsData();
+            saveMeasurementsData();
+            selectMesh(null);
+            window.renderAll();
+            updateUndo3DBtnState();
+        }
+
+        window.getLabels = () => labels;
+        window.getMeasurements = () => measurementsData;
+        window.restoreLabelsAndMeasurements = function restoreLabelsAndMeasurements(newLabels, newMeasurements) {
+            labels = Array.isArray(newLabels) ? newLabels : [];
+            measurementsData = Array.isArray(newMeasurements) ? newMeasurements : [];
+            saveLabelsData();
+            saveMeasurementsData();
+            // Called on every project switch (load/new/delete) — the snapshot stack is only ever
+            // valid within a single project, so a switch invalidates it rather than leaving stale
+            // undo steps that would rewind into a *different* project's data.
+            undo3DStack = [];
+            updateUndo3DBtnState();
+            // Both rebuild functions already no-op if the 3D scene hasn't been initialized yet
+            // (see their own sceneReady guards) — safe to call unconditionally here.
+            rebuildLabelMeshes();
+            rebuildMeasurementMeshes();
+            rebuildDimensionMeshes();
+        };
+
+        function snap(val) {
+            return Math.round(val / SNAP_IN) * SNAP_IN;
+        }
+
+        // Shared canvas-sprite builder — badges, sticky-note labels, and measurement distance
+        // tags are all the same "rounded box + centered text" shape, just different colors.
+        function makeTextSprite(text, opts) {
+            const o = Object.assign({ bg: 'rgba(15, 23, 42, 0.85)', border: null, ink: '#ffffff', fontSize: 26, worldHeight: 5, padding: 20 }, opts || {});
+            const measureCtx = document.createElement('canvas').getContext('2d');
+            measureCtx.font = `700 ${o.fontSize}px system-ui, sans-serif`;
+            const textWidth = measureCtx.measureText(text).width;
+            const canvas = document.createElement('canvas');
+            canvas.width = Math.ceil(textWidth) + o.padding * 2;
+            canvas.height = o.fontSize + o.padding * 1.6;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = o.bg;
+            if (o.border) { ctx.strokeStyle = o.border; ctx.lineWidth = 3; }
+            ctx.beginPath();
+            ctx.roundRect(2, 2, canvas.width - 4, canvas.height - 4, 8);
+            ctx.fill();
+            if (o.border) ctx.stroke();
+            ctx.fillStyle = o.ink;
+            ctx.font = `700 ${o.fontSize}px system-ui, sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(text, canvas.width / 2, canvas.height / 2 + 1);
+            const texture = new THREE.CanvasTexture(canvas);
+            texture.minFilter = THREE.LinearFilter;
+            const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, transparent: true }));
+            sprite.scale.set(o.worldHeight * (canvas.width / canvas.height), o.worldHeight, 1);
+            return sprite;
+        }
+
+        function makeBadgeSprite(text) {
+            return makeTextSprite(text, { bg: 'rgba(15, 23, 42, 0.85)', ink: '#ffffff', fontSize: 26, worldHeight: 5, padding: 20 });
+        }
+
+        function makeLabelSprite(text) {
+            return makeTextSprite(text, { bg: '#fef9c3', border: '#ca8a04', ink: '#713f12', fontSize: 24, worldHeight: 4, padding: 18 });
+        }
+
+        function makeMeasurementSprite(text) {
+            return makeTextSprite(text, { bg: '#dbeafe', border: '#1e3a8a', ink: '#1e3a8a', fontSize: 22, worldHeight: 3.4, padding: 16 });
+        }
+
+        function makeDimensionSprite(text) {
+            return makeTextSprite(text, { bg: 'rgba(255, 255, 255, 0.94)', border: '#475569', ink: '#0f172a', fontSize: 20, worldHeight: 3, padding: 14 });
+        }
+
+        // Simple left-to-right row packing for any panel with no xIn set yet — a reasonable
+        // starting layout the user is expected to drag/rotate from, not a real solver. Mutates
+        // the panel objects in place (same array reference the classic script holds via its
+        // getPanels() closure) and reports whether anything changed so the caller knows to
+        // persist via window.savePanels().
+        function autoArrangeUnpositioned(panels) {
+            let cursorX = 0, cursorZ = 0, rowDepth = 0;
+            const maxRowWidth = 96;
+            let changed = false;
+            panels.forEach(p => {
+                if (p.xIn != null && p.yIn != null && p.zIn != null) return;
+                if (cursorX > 0 && cursorX + p.widthIn > maxRowWidth) {
+                    cursorX = 0;
+                    cursorZ += rowDepth + 6;
+                    rowDepth = 0;
+                }
+                p.xIn = cursorX + p.widthIn / 2;
+                p.yIn = p.heightIn / 2;
+                p.zIn = cursorZ + p.thicknessIn / 2;
+                if (p.rotXDeg == null) p.rotXDeg = 0;
+                if (p.rotYDeg == null) p.rotYDeg = 0;
+                if (p.rotZDeg == null) p.rotZDeg = 0;
+                cursorX += p.widthIn + 6;
+                rowDepth = Math.max(rowDepth, p.thicknessIn);
+                changed = true;
+            });
+            return changed;
+        }
+
+        // Holes aren't real geometry cuts (no CSG/boolean subtraction here — that's a much
+        // heavier lift than this static-CDN, zero-build setup wants to take on) — instead each
+        // hole is a thin dark cylinder/box, sized to just barely poke out of both faces, added
+        // as a CHILD of the panel mesh. Being a child means it's positioned in the panel's own
+        // local width/height/thickness space and automatically inherits the panel's position and
+        // rotation — no separate tracking needed for drag/rotate/persist. Since raycasting in
+        // this file always calls intersectObjects(..., false) (non-recursive), these children are
+        // also automatically invisible to click-selection, so they can't interfere with picking
+        // the panel itself.
+        function addHoleMeshes(mesh, holes, thicknessIn) {
+            if (!holes || !holes.length) return;
+            const holeMat = new THREE.MeshBasicMaterial({ color: 0x1f2430 });
+            const depth = thicknessIn + 0.1;
+            holes.forEach(h => {
+                let holeMesh;
+                if (h.shape === 'circle') {
+                    holeMesh = new THREE.Mesh(new THREE.CylinderGeometry(h.dIn / 2, h.dIn / 2, depth, 20), holeMat);
+                    holeMesh.rotation.x = Math.PI / 2; // cylinder's default axis is Y; holes go through local Z (thickness)
+                } else {
+                    holeMesh = new THREE.Mesh(new THREE.BoxGeometry(h.wIn, h.hIn, depth), holeMat);
+                }
+                holeMesh.position.set(h.xIn, h.yIn, 0);
+                mesh.add(holeMesh);
+            });
+        }
+
+        function clearPanelMeshes() {
+            panelMeshes.forEach(({ mesh }) => {
+                if (mesh.userData.badge) scene.remove(mesh.userData.badge);
+                // Hole markers are children of mesh (see addHoleMeshes), so scene.remove(mesh)
+                // already drops them from the render graph — but three.js never auto-frees GPU
+                // buffers, so their geometry/material still need explicit disposal here.
+                mesh.children.forEach(child => {
+                    if (child.geometry) child.geometry.dispose();
+                    if (child.material) child.material.dispose();
+                });
+                scene.remove(mesh);
+                mesh.geometry.dispose();
+                mesh.material.dispose();
+            });
+            panelMeshes = [];
+            selectedMesh = null;
+            if (selectionHelper) {
+                scene.remove(selectionHelper);
+                selectionHelper.dispose();
+                selectionHelper = null;
+            }
+            if (transformControls) transformControls.detach();
+            document.getElementById('preview3DSelectionPanel').style.display = 'none';
+        }
+
+        window.rebuild3DPreviewMeshes = function rebuild3DPreviewMeshes() {
+            if (!sceneReady) return;
+            // Fresh meshes have no assembledPosition to fall back to, so a rebuild while
+            // exploded (e.g. a panel got edited/added/removed from the Cut List tab in another
+            // tab-switch) would otherwise leave the explode toggle saying "exploded" over pieces
+            // that just rendered in their normal assembled spots. Resetting is simpler and safer
+            // than trying to re-derive an explode state that may not even apply to a changed set.
+            if (explodedView) { explodedView = false; clearExplodeExtras(); updateExplodeUI(); }
+            const panels = window.getPanels();
+            const changed = autoArrangeUnpositioned(panels);
+            if (changed) window.savePanels();
+
+            clearPanelMeshes();
+            document.getElementById('preview3DEmptyHint').style.display = panels.length ? 'none' : 'block';
+
+            panels.forEach(p => {
+                const color = MATERIAL_COLORS[p.material] != null ? MATERIAL_COLORS[p.material] : MATERIAL_COLORS.custom;
+                const geo = new THREE.BoxGeometry(p.widthIn, p.heightIn, p.thicknessIn);
+                const mat = new THREE.MeshStandardMaterial({ color });
+                const mesh = new THREE.Mesh(geo, mat);
+                mesh.position.set(p.xIn, p.yIn, p.zIn);
+                mesh.rotation.set(
+                    THREE.MathUtils.degToRad(p.rotXDeg || 0),
+                    THREE.MathUtils.degToRad(p.rotYDeg || 0),
+                    THREE.MathUtils.degToRad(p.rotZDeg || 0)
+                );
+                mesh.userData.panelId = p.id;
+                mesh.userData.name = p.name;
+                mesh.userData.type = 'panel';
+                scene.add(mesh);
+                addHoleMeshes(mesh, p.holes, p.thicknessIn);
+
+                if (p.qty > 1) {
+                    const badgeOffsetY = p.heightIn / 2 + 4;
+                    const badge = makeBadgeSprite('×' + p.qty);
+                    badge.position.set(p.xIn, p.yIn + badgeOffsetY, p.zIn);
+                    scene.add(badge);
+                    mesh.userData.badge = badge;
+                    mesh.userData.badgeOffsetY = badgeOffsetY;
+                }
+
+                panelMeshes.push({ mesh, panelId: p.id });
+            });
+
+            rebuildLabelMeshes();
+            rebuildMeasurementMeshes();
+            rebuildDimensionMeshes();
+        };
+
+        function clearLabelMeshes() {
+            labelMeshes.forEach(({ mesh }) => {
+                if (mesh.userData.dot) scene.remove(mesh.userData.dot);
+                if (mesh.userData.leaderLine) scene.remove(mesh.userData.leaderLine);
+                scene.remove(mesh);
+            });
+            labelMeshes = [];
+        }
+
+        // A label sits a little off its actual attachment point (the exact spot the user
+        // clicked), with a small dot + leader line back to that point — otherwise the text
+        // sprite would sit flush on/inside the surface it's marking, unreadable and prone to
+        // losing the raycast hit-test to the panel's own solid geometry sitting right at the
+        // same spot. l.offX/offY/offZ is that fixed local offset (sprite position minus anchor
+        // position) — stored once at placement time along whichever direction actually clears
+        // the surface (see raycastScenePoint's normal), not always straight up, since a
+        // "standing" panel's face points sideways, not up.
+        function rebuildLabelMeshes() {
+            if (!sceneReady) return;
+            clearLabelMeshes();
+            labels.forEach(l => {
+                const offset = new THREE.Vector3(l.offX || 0, l.offY != null ? l.offY : 3, l.offZ || 0);
+                const sprite = makeLabelSprite(l.text);
+                sprite.position.set(l.xIn, l.yIn, l.zIn);
+                sprite.userData.type = 'label';
+                sprite.userData.labelId = l.id;
+                sprite.userData.name = l.text;
+                sprite.userData.anchorOffset = offset;
+
+                const anchor = sprite.position.clone().sub(offset);
+                const dot = new THREE.Mesh(new THREE.SphereGeometry(0.35, 8, 8), new THREE.MeshBasicMaterial({ color: 0xca8a04 }));
+                dot.position.copy(anchor);
+                scene.add(dot);
+
+                const lineGeo = new THREE.BufferGeometry().setFromPoints([anchor, sprite.position.clone()]);
+                const line = new THREE.Line(lineGeo, new THREE.LineBasicMaterial({ color: 0xca8a04 }));
+                scene.add(line);
+
+                sprite.userData.dot = dot;
+                sprite.userData.leaderLine = line;
+                scene.add(sprite);
+                labelMeshes.push({ mesh: sprite, labelId: l.id });
+            });
+        }
+
+        function clearMeasurementMeshes() {
+            measurementMeshes.forEach(({ group, textMesh }) => {
+                scene.remove(group);
+                scene.remove(textMesh);
+            });
+            measurementMeshes = [];
+        }
+
+        function formatInches(n) {
+            return n.toFixed(2) + '"';
+        }
+
+        function rebuildMeasurementMeshes() {
+            if (!sceneReady) return;
+            clearMeasurementMeshes();
+            measurementsData.forEach(m => {
+                const a = new THREE.Vector3(m.ax, m.ay, m.az);
+                const b = new THREE.Vector3(m.bx, m.by, m.bz);
+                const mid = a.clone().lerp(b, 0.5);
+                const dist = a.distanceTo(b);
+                const name = formatInches(dist) + ' measurement';
+
+                const group = new THREE.Group();
+                const lineGeo = new THREE.BufferGeometry().setFromPoints([a, b]);
+                group.add(new THREE.Line(lineGeo, new THREE.LineBasicMaterial({ color: 0x1e3a8a })));
+                // The endpoint dots are tagged and returned as hit targets too (see
+                // getAllSelectableMeshes) — the distance-label sprite at the midpoint is a small,
+                // easy-to-miss click target on its own, so both ends of the line give a second,
+                // bigger chance to select (and then Remove) a measurement.
+                const dots = [a, b].map(pt => {
+                    const dot = new THREE.Mesh(new THREE.SphereGeometry(0.3, 8, 8), new THREE.MeshBasicMaterial({ color: 0x1e3a8a }));
+                    dot.position.copy(pt);
+                    dot.userData.type = 'measurement';
+                    dot.userData.measurementId = m.id;
+                    dot.userData.name = name;
+                    group.add(dot);
+                    return dot;
+                });
+                scene.add(group);
+
+                const textMesh = makeMeasurementSprite(formatInches(dist));
+                textMesh.position.copy(mid);
+                textMesh.userData.type = 'measurement';
+                textMesh.userData.measurementId = m.id;
+                textMesh.userData.name = name;
+                scene.add(textMesh);
+
+                measurementMeshes.push({ group, textMesh, dots, measurementId: m.id });
+            });
+        }
+
+        function findPanelData(panelId) {
+            return window.getPanels().find(p => p.id === panelId);
+        }
+
+        // Labels/measurements are tied to a specific spot on the assembled model — with pieces
+        // scattered apart they'd float in disconnected space and just add noise, so they're left
+        // out of both the selectable set and (via visible=false, see setExplodedView) the render
+        // while exploded.
+        function getAllSelectableMeshes() {
+            if (explodedView) return panelMeshes.map(pm => pm.mesh);
+            return [
+                ...panelMeshes.map(pm => pm.mesh),
+                ...labelMeshes.map(lm => lm.mesh),
+                ...measurementMeshes.map(mm => mm.textMesh),
+                ...measurementMeshes.flatMap(mm => mm.dots)
+            ];
+        }
+
+        function clearDimensionMeshes() {
+            dimensionMeshes.forEach(({ sprite, line }) => {
+                scene.remove(sprite);
+                scene.remove(line);
+            });
+            dimensionMeshes = [];
+        }
+
+        // Toggle-able size callout next to every panel (assembled view only — exploded already
+        // shows name+dims via rebuildExplodeExtras, and mid-explode positions are synthetic
+        // display coordinates, not real placements worth annotating). Full rebuild rather than
+        // incremental per-panel sync: called from every place a panel's position/rotation gets
+        // persisted, and a furniture-scale project has few enough panels that redoing all of them
+        // is cheap, so a second, cheaper "just move this one" path isn't worth the complexity.
+        function rebuildDimensionMeshes() {
+            clearDimensionMeshes();
+            if (!showDimensions || explodedView || !sceneReady) return;
+            panelMeshes.forEach(pm => {
+                const p = findPanelData(pm.panelId);
+                if (!p) return;
+                const box = getPanelBox3(pm.mesh);
+                const center = box.getCenter(new THREE.Vector3());
+                const anchor = new THREE.Vector3(box.max.x, center.y, center.z);
+                const labelPos = new THREE.Vector3(box.max.x + 6, center.y, center.z);
+
+                const sprite = makeDimensionSprite(`${p.widthIn}" x ${p.heightIn}" x ${p.thicknessIn}"`);
+                sprite.position.copy(labelPos);
+                scene.add(sprite);
+
+                const lineGeo = new THREE.BufferGeometry().setFromPoints([anchor, labelPos]);
+                const line = new THREE.Line(lineGeo, new THREE.LineBasicMaterial({ color: 0x94a3b8 }));
+                scene.add(line);
+
+                dimensionMeshes.push({ sprite, line });
+            });
+        }
+
+        function getExplodeFactor() {
+            const slider = document.getElementById('explodeAmountSlider');
+            return slider ? parseInt(slider.value, 10) / 100 : 0.6;
+        }
+
+        // Radial explode from the assembly's centroid — every panel moves straight away from
+        // the group's center, farther pieces moving farther, which is the standard "exploded
+        // parts diagram" convention. A panel sitting exactly on the centroid (e.g. a single-panel
+        // project) has no direction to explode along, so it falls back to straight up.
+        function computeExplodeTargets(factor) {
+            const panels = window.getPanels();
+            if (!panels.length) return [];
+            const cx = panels.reduce((s, p) => s + p.xIn, 0) / panels.length;
+            const cy = panels.reduce((s, p) => s + p.yIn, 0) / panels.length;
+            const cz = panels.reduce((s, p) => s + p.zIn, 0) / panels.length;
+            return panels.map(p => {
+                const d = new THREE.Vector3(p.xIn - cx, p.yIn - cy, p.zIn - cz);
+                const len = d.length();
+                const dir = len < 0.01 ? new THREE.Vector3(0, 1, 0) : d.clone().normalize();
+                // Was 6 + len*2.5 — at the old 60% default that pushed pieces to ~2.5x their
+                // assembled distance from center, easily further than the camera's assembled-view
+                // framing could show. Gentler now, and setExplodedView re-frames the camera to
+                // whatever's actually on screen besides, so pieces stay visible either way.
+                const extra = 4 + len * factor * 1.2;
+                const exploded = new THREE.Vector3(p.xIn, p.yIn, p.zIn).addScaledVector(dir, extra);
+                exploded.y = Math.max(1, exploded.y);
+                return {
+                    panelId: p.id,
+                    name: p.name,
+                    dims: `${p.widthIn}" x ${p.heightIn}" x ${p.thicknessIn}"`,
+                    heightIn: p.heightIn,
+                    assembled: new THREE.Vector3(p.xIn, p.yIn, p.zIn),
+                    exploded
+                };
+            });
+        }
+
+        function clearExplodeExtras() {
+            explodeLabelMeshes.forEach(mesh => scene.remove(mesh));
+            explodeLabelMeshes = [];
+            explodeLineMeshes.forEach(line => scene.remove(line));
+            explodeLineMeshes = [];
+        }
+
+        function rebuildExplodeExtras(targets) {
+            clearExplodeExtras();
+            targets.forEach(t => {
+                const sprite = makeDimensionSprite(`${t.name} — ${t.dims}`);
+                sprite.position.set(t.exploded.x, t.exploded.y + t.heightIn / 2 + 3, t.exploded.z);
+                scene.add(sprite);
+                explodeLabelMeshes.push(sprite);
+
+                const lineGeo = new THREE.BufferGeometry().setFromPoints([t.assembled, t.exploded]);
+                const line = new THREE.Line(lineGeo, new THREE.LineBasicMaterial({ color: 0x94a3b8, transparent: true, opacity: 0.6 }));
+                scene.add(line);
+                explodeLineMeshes.push(line);
+            });
+        }
+
+        // Applies (or re-applies, when the amount slider moves) the explode transform to every
+        // current panel mesh. Purely a display transform — see the explodedView declaration for
+        // why this never touches panels[]/localStorage.
+        function applyExplodedPositions() {
+            const targets = computeExplodeTargets(getExplodeFactor());
+            panelMeshes.forEach(pm => {
+                const t = targets.find(x => x.panelId === pm.panelId);
+                if (!t) return;
+                if (!pm.mesh.userData.assembledPosition) pm.mesh.userData.assembledPosition = t.assembled.clone();
+                pm.mesh.position.copy(t.exploded);
+                syncAttachments(pm.mesh);
+            });
+            rebuildExplodeExtras(targets);
+        }
+
+        function restoreAssembledPositions() {
+            panelMeshes.forEach(pm => {
+                if (pm.mesh.userData.assembledPosition) {
+                    pm.mesh.position.copy(pm.mesh.userData.assembledPosition);
+                    delete pm.mesh.userData.assembledPosition;
+                    syncAttachments(pm.mesh);
+                }
+            });
+            clearExplodeExtras();
+        }
+
+        function updateExplodeUI() {
+            const btn = document.getElementById('explodeToggleBtn');
+            btn.classList.toggle('mini-btn-active', explodedView);
+            btn.textContent = explodedView ? '💥 Back to Assembled' : '💥 Exploded View';
+            document.getElementById('explodeAmountRow').style.display = explodedView ? 'flex' : 'none';
+            // These tools all mutate panels[] or need a real assembled surface to click on —
+            // neither makes sense mid-explode, so they're disabled rather than silently broken.
+            ['addPieceToolBtn', 'addLabelToolBtn', 'measureToolBtn'].forEach(id => {
+                document.getElementById(id).disabled = explodedView;
+            });
+            updateUndo3DBtnState();
+        }
+
+        function setExplodedView(on) {
+            if (on === explodedView) return;
+            explodedView = on;
+            selectMesh(null);
+            if (on) {
+                applyExplodedPositions();
+            } else {
+                restoreAssembledPositions();
+            }
+            labelMeshes.forEach(lm => {
+                lm.mesh.visible = !on;
+                if (lm.mesh.userData.dot) lm.mesh.userData.dot.visible = !on;
+                if (lm.mesh.userData.leaderLine) lm.mesh.userData.leaderLine.visible = !on;
+            });
+            measurementMeshes.forEach(mm => { mm.group.visible = !on; mm.textMesh.visible = !on; });
+            rebuildDimensionMeshes();
+            updateExplodeUI();
+            // The whole point of exploding is to see every piece clearly — re-fit the camera to
+            // whatever's actually on screen now (scattered on explode, back together on
+            // collapse) instead of leaving it framed for the assembled size while pieces move
+            // well outside that view. Only on toggle, not on every Spread-slider tick — a camera
+            // that jumps mid-drag would fight the user's own orbit/zoom instead of just helping
+            // them get oriented once.
+            frameCameraToPanels();
+        }
+
+        function raycastFromEvent(e, canvas) {
+            const rect = canvas.getBoundingClientRect();
+            const mouse = new THREE.Vector2(
+                ((e.clientX - rect.left) / rect.width) * 2 - 1,
+                -((e.clientY - rect.top) / rect.height) * 2 + 1
+            );
+            raycaster.setFromCamera(mouse, camera);
+        }
+
+        // Keeps a panel's qty badge and a label's dot/leader-line glued to their parent
+        // through drag/nudge — both are separate scene objects (not children of the mesh)
+        // so selectMesh()'s BoxHelper doesn't try to wrap them too.
+        function syncAttachments(mesh) {
+            if (mesh.userData.badge) {
+                mesh.userData.badge.position.set(mesh.position.x, mesh.position.y + mesh.userData.badgeOffsetY, mesh.position.z);
+            }
+            if (mesh.userData.dot) {
+                const anchor = mesh.position.clone().sub(mesh.userData.anchorOffset);
+                mesh.userData.dot.position.copy(anchor);
+                const positions = mesh.userData.leaderLine.geometry.attributes.position;
+                positions.setXYZ(0, anchor.x, anchor.y, anchor.z);
+                positions.setXYZ(1, mesh.position.x, mesh.position.y, mesh.position.z);
+                positions.needsUpdate = true;
+            }
+        }
+
+        // Raycasts against existing panels/labels first (so a click on a panel's face measures
+        // or labels *that exact surface point*), falling back to the floor plane so a label or
+        // measurement point can still be placed in open space (e.g. an overall envelope
+        // dimension that isn't flush against any single panel). Also returns the world-space
+        // surface normal at the hit point — a label needs to be offset *away from the surface*
+        // to avoid being swallowed by the panel's own geometry, and "away" means straight up
+        // for the floor but sideways for a standing panel's face, so a fixed +Y offset can't
+        // work in general (see rebuildLabelMeshes).
+        function raycastScenePoint() {
+            const hits = raycaster.intersectObjects(panelMeshes.map(pm => pm.mesh), false);
+            if (hits.length) {
+                const normal = hits[0].face.normal.clone().transformDirection(hits[0].object.matrixWorld).normalize();
+                return { point: hits[0].point.clone(), normal };
+            }
+            const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+            const pt = new THREE.Vector3();
+            if (!raycaster.ray.intersectPlane(plane, pt)) return null;
+            // A grazing camera angle (looking near the horizon) can put this floor-plane
+            // intersection hundreds of inches out — technically a valid point, but effectively
+            // offscreen and useless for a label/measurement. Same ±120in work-area bound already
+            // used to clamp panel dragging (see onDragMove), so "too far to place a point" means
+            // the same thing everywhere in this view.
+            const bound = 120;
+            if (Math.abs(pt.x) > bound || Math.abs(pt.z) > bound) return null;
+            return { point: pt.clone(), normal: new THREE.Vector3(0, 1, 0) };
+        }
+
+        // A measurement's "position" is two fixed endpoints, not a single point, so it keeps
+        // the old read-only text line; panels/labels get live-editable X/Y/Z number fields
+        // instead — typing an exact value is the fast path for "get these two pieces flush"
+        // when eyeballing a drag is too fiddly.
+        function updateSelectionCoords(mesh) {
+            const textEl = document.getElementById('preview3DSelectionCoords');
+            const fieldsEl = document.getElementById('preview3DPosFields');
+            const labelsEl = document.getElementById('preview3DPosLabelsRow');
+            if (!textEl || !mesh) return;
+            if (mesh.userData.type === 'measurement') {
+                fieldsEl.style.display = 'none';
+                if (labelsEl) labelsEl.style.display = 'none';
+                textEl.style.display = 'block';
+                textEl.textContent = mesh.userData.name;
+            } else if (explodedView) {
+                // mesh.position is the synthetic exploded coordinate here, not the real
+                // assembled position — showing it in editable fields (and letting an edit
+                // persist it) would silently corrupt the panel's real placement. Dimensions are
+                // the useful, unambiguous thing to show instead.
+                fieldsEl.style.display = 'none';
+                if (labelsEl) labelsEl.style.display = 'none';
+                textEl.style.display = 'block';
+                const params = mesh.geometry && mesh.geometry.parameters;
+                textEl.textContent = params ? `${params.width}" x ${params.height}" x ${params.depth}"` : '';
+            } else {
+                textEl.style.display = 'none';
+                if (labelsEl) labelsEl.style.display = 'flex';
+                fieldsEl.style.display = 'flex';
+                if (document.activeElement !== document.getElementById('preview3DPosX')) document.getElementById('preview3DPosX').value = round2(mesh.position.x);
+                if (document.activeElement !== document.getElementById('preview3DPosY')) document.getElementById('preview3DPosY').value = round2(mesh.position.y);
+                if (document.activeElement !== document.getElementById('preview3DPosZ')) document.getElementById('preview3DPosZ').value = round2(mesh.position.z);
+            }
+        }
+
+        function round2(n) {
+            return Math.round(n * 100) / 100;
+        }
+
+        // Typed values are applied exactly as entered — no grid/face snapping — since typing a
+        // precise number is the deliberate alternative to snap-assisted dragging, not another
+        // input to the same snap logic. Refuses to run in exploded view too (belt-and-suspenders
+        // alongside the fields being hidden there — see updateSelectionCoords).
+        function applyPositionFieldEdit() {
+            if (!selectedMesh || selectedMesh.userData.type === 'measurement' || explodedView) return;
+            push3DUndoSnapshot();
+            const x = parseFloat(document.getElementById('preview3DPosX').value);
+            const y = parseFloat(document.getElementById('preview3DPosY').value);
+            const z = parseFloat(document.getElementById('preview3DPosZ').value);
+            if (!isNaN(x)) selectedMesh.position.x = x;
+            if (!isNaN(y)) selectedMesh.position.y = Math.max(0, y);
+            if (!isNaN(z)) selectedMesh.position.z = z;
+            syncAttachments(selectedMesh);
+            persistMeshPosition(selectedMesh);
+            rebuildDimensionMeshes();
+        }
+
+        const SELECTION_HINTS = {
+            panel: 'Drag to move (X/Z) · Shift+drag to move up/down · arrow keys to nudge · hold Alt to bypass snapping · click empty space to deselect.',
+            label: 'Drag to reposition · Shift+drag to move up/down · click empty space to deselect.',
+            measurement: 'Click empty space to deselect.'
+        };
+
+        function selectMesh(mesh) {
+            selectedMesh = mesh;
+            if (selectionHelper) {
+                scene.remove(selectionHelper);
+                selectionHelper.dispose();
+                selectionHelper = null;
+            }
+            const panelEl = document.getElementById('preview3DSelectionPanel');
+            if (!mesh) {
+                panelEl.style.display = 'none';
+                if (transformControls) transformControls.detach();
+                return;
+            }
+            const type = mesh.userData.type || 'panel';
+            panelEl.style.display = 'block';
+            document.getElementById('preview3DSelectionName').textContent = mesh.userData.name || 'Panel';
+            document.getElementById('preview3DSelectionHint').textContent = explodedView
+                ? 'Exploded view is read-only — switch back to Assembled to drag, rotate, or remove.'
+                : (SELECTION_HINTS[type] || SELECTION_HINTS.panel);
+            // Rotation and removal both write back to the real panel — neither makes sense on a
+            // synthetic exploded position, so both stay hidden until back in Assembled view.
+            // A billboard label or two-point measurement never gets Free Rotate either way.
+            document.getElementById('preview3DFreeRotateBtn').style.display = (type === 'panel' && !explodedView) ? 'block' : 'none';
+            document.getElementById('preview3DAlignBtn').style.display = (type === 'panel' && !explodedView) ? 'block' : 'none';
+            document.getElementById('preview3DRemoveBtn').style.display = explodedView ? 'none' : 'block';
+            updateSelectionCoords(mesh);
+            // Purple to match the selection outline used everywhere else in the app (e.g. the
+            // 2D planners' .selected-node dashed outline) — makes it unambiguous which box is
+            // actually selected instead of having to infer it from the floating panel alone.
+            // Only real Mesh objects (panels) get one — a BoxHelper on a billboard Sprite
+            // computes a degenerate, camera-relative box that doesn't mean anything useful.
+            if (mesh.isMesh) {
+                selectionHelper = new THREE.BoxHelper(mesh, SELECT_COLOR);
+                scene.add(selectionHelper);
+            }
+        }
+
+        function commitFreeRotation() {
+            if (!selectedMesh) return;
+            const p = findPanelData(selectedMesh.userData.panelId);
+            if (!p) return;
+            p.rotXDeg = THREE.MathUtils.radToDeg(selectedMesh.rotation.x);
+            p.rotYDeg = THREE.MathUtils.radToDeg(selectedMesh.rotation.y);
+            p.rotZDeg = THREE.MathUtils.radToDeg(selectedMesh.rotation.z);
+            window.savePanels();
+        }
+
+        function toggleFreeRotate() {
+            if (!selectedMesh) return;
+            if (!transformControls) {
+                transformControls = new TransformControls(camera, renderer.domElement);
+                transformControls.setMode('rotate');
+                // Unrestricted (unlike the shop viewer's Y-only tool gizmo) — a furniture panel
+                // genuinely needs arbitrary orientation, not just a spin around one axis.
+                transformControls.addEventListener('dragging-changed', (e) => {
+                    controls.enabled = !e.value;
+                    if (e.value) push3DUndoSnapshot();
+                    else { commitFreeRotation(); rebuildDimensionMeshes(); }
+                });
+                scene.add(transformControls.getHelper ? transformControls.getHelper() : transformControls);
+            }
+            if (transformControls.object === selectedMesh) {
+                transformControls.detach();
+            } else {
+                transformControls.attach(selectedMesh);
+            }
+        }
+
+        // Box3().setFromObject(mesh) would also sweep in any hole-marker children (see
+        // addHoleMeshes), which are deliberately sized a hair deeper than the panel itself so
+        // they poke through both faces — that'd inflate every overlap/snap check by that sliver.
+        // This measures only the panel's own BoxGeometry, transformed by its current world
+        // matrix, matching what setFromObject would give a mesh with no children.
+        function getPanelBox3(mesh) {
+            mesh.updateWorldMatrix(true, false);
+            const { width, height, depth } = mesh.geometry.parameters;
+            const box = new THREE.Box3(
+                new THREE.Vector3(-width / 2, -height / 2, -depth / 2),
+                new THREE.Vector3(width / 2, height / 2, depth / 2)
+            );
+            return box.applyMatrix4(mesh.matrixWorld);
+        }
+
+        function isOverlappingOtherPanels(mesh) {
+            const box = getPanelBox3(mesh);
+            return panelMeshes.some(pm => {
+                if (pm.mesh === mesh) return false;
+                return box.intersectsBox(getPanelBox3(pm.mesh));
+            });
+        }
+
+        // Finds the nearest other panel face within FACE_SNAP_THRESHOLD_IN along one world axis
+        // and returns the delta to add to mesh.position[axis] to land flush against it — this is
+        // what makes "get two pieces to touch" a drag-near-it instead of a fiddly pixel-hunt.
+        // Uses each mesh's axis-aligned bounding box (not its literal rotated faces), which is
+        // the right target for a rotated panel too: touching AABB edges is still "these two
+        // pieces are now next to each other," even if the true geometric faces are angled.
+        function computeFaceSnapOffset(mesh, axis) {
+            const box = getPanelBox3(mesh);
+            const size = new THREE.Vector3();
+            box.getSize(size);
+            const half = (axis === 'x' ? size.x : axis === 'y' ? size.y : size.z) / 2;
+            const center = mesh.position[axis];
+            const thisEdges = [center - half, center + half];
+
+            let best = null;
+            panelMeshes.forEach(pm => {
+                if (pm.mesh === mesh) return;
+                const obox = getPanelBox3(pm.mesh);
+                const otherEdges = axis === 'x' ? [obox.min.x, obox.max.x] : axis === 'y' ? [obox.min.y, obox.max.y] : [obox.min.z, obox.max.z];
+                otherEdges.forEach(target => {
+                    thisEdges.forEach(edge => {
+                        const delta = target - edge;
+                        if (Math.abs(delta) < FACE_SNAP_THRESHOLD_IN && (best === null || Math.abs(delta) < Math.abs(best))) {
+                            best = delta;
+                        }
+                    });
+                });
+            });
+            return best;
+        }
+
+        // Persists whatever moved — branches on type since panels/labels write back into
+        // different backing arrays (panels via the classic-script bridge, labels module-local).
+        function persistMeshPosition(mesh) {
+            const type = mesh.userData.type || 'panel';
+            if (type === 'panel') {
+                const p = findPanelData(mesh.userData.panelId);
+                if (p) { p.xIn = mesh.position.x; p.yIn = mesh.position.y; p.zIn = mesh.position.z; window.savePanels(); }
+            } else if (type === 'label') {
+                const l = labels.find(l => l.id === mesh.userData.labelId);
+                if (l) { l.xIn = mesh.position.x; l.yIn = mesh.position.y; l.zIn = mesh.position.z; saveLabelsData(); }
+            }
+        }
+
+        // One-click "make it neat": squares the piece's rotation to the nearest 90° on every
+        // axis (Level), then reuses the same face-snap check drag already does to rest it flush
+        // on whatever's directly below (or the floor, if nothing's there — Flat), and pulls it
+        // flush against the nearest neighbor on X/Z if one's close enough (Flush). Same
+        // FACE_SNAP_THRESHOLD_IN tolerance as drag-snapping, so "close enough to butt up
+        // against" means the same thing here as it does everywhere else in the app.
+        function autoAlignSelected() {
+            if (!selectedMesh || selectedMesh.userData.type !== 'panel' || explodedView) return;
+            push3DUndoSnapshot();
+
+            const HALF_PI = Math.PI / 2;
+            selectedMesh.rotation.x = Math.round(selectedMesh.rotation.x / HALF_PI) * HALF_PI;
+            selectedMesh.rotation.y = Math.round(selectedMesh.rotation.y / HALF_PI) * HALF_PI;
+            selectedMesh.rotation.z = Math.round(selectedMesh.rotation.z / HALF_PI) * HALF_PI;
+
+            const snapY = computeFaceSnapOffset(selectedMesh, 'y');
+            if (snapY !== null) {
+                selectedMesh.position.y = Math.max(0, selectedMesh.position.y + snapY);
+            } else {
+                const box = getPanelBox3(selectedMesh);
+                selectedMesh.position.y = (box.max.y - box.min.y) / 2;
+            }
+
+            const snapX = computeFaceSnapOffset(selectedMesh, 'x');
+            if (snapX !== null) selectedMesh.position.x += snapX;
+            const snapZ = computeFaceSnapOffset(selectedMesh, 'z');
+            if (snapZ !== null) selectedMesh.position.z += snapZ;
+
+            syncAttachments(selectedMesh);
+            updateSelectionCoords(selectedMesh);
+            commitFreeRotation();
+            persistMeshPosition(selectedMesh);
+            rebuildDimensionMeshes();
+            window.showToast('Aligned flat, flush, and level.');
+        }
+
+        function onPointerDown(e) {
+            const canvas = renderer.domElement;
+            raycastFromEvent(e, canvas);
+
+            if (activeTool === 'label') {
+                const hit = raycastScenePoint();
+                if (!hit) { window.showToast('Click closer to the model to place a label.'); return; }
+                pendingLabelPoint = hit.point;
+                pendingLabelNormal = hit.normal;
+                const popover = document.getElementById('labelInputPopover');
+                popover.style.display = 'block';
+                const input = document.getElementById('labelTextInput');
+                input.value = '';
+                input.focus();
+                return;
+            }
+
+            if (activeTool === 'measure') {
+                const hit = raycastScenePoint();
+                if (!hit) { window.showToast('Click closer to the model to place a measurement point.'); return; }
+                const point = hit.point;
+                if (!measureFirstPoint) {
+                    measureFirstPoint = point;
+                    showTempMeasureMarker(point);
+                } else {
+                    push3DUndoSnapshot();
+                    const id = 'meas_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+                    measurementsData.push({ id, ax: measureFirstPoint.x, ay: measureFirstPoint.y, az: measureFirstPoint.z, bx: point.x, by: point.y, bz: point.z });
+                    saveMeasurementsData();
+                    rebuildMeasurementMeshes();
+                    measureFirstPoint = null;
+                    clearTempMeasureMarker();
+                    activeTool = null;
+                }
+                updateToolButtonStates();
+                return;
+            }
+
+            const hits = raycaster.intersectObjects(getAllSelectableMeshes(), false);
+            if (!hits.length) {
+                selectMesh(null);
+                return;
+            }
+            const mesh = hits[0].object;
+            selectMesh(mesh);
+
+            // Exploded positions are synthetic display coordinates (see setExplodedView) — a
+            // piece is still clickable to see its name/dimensions, but dragging it would have
+            // nothing real to persist to, so selection is as far as it goes here.
+            if (explodedView) return;
+
+            // Measurements mark two fixed points, not a single draggable position — selectable
+            // (for Remove) but not draggable, so stop here rather than arming a drag.
+            if (mesh.userData.type === 'measurement') return;
+
+            push3DUndoSnapshot();
+
+            // Shift+drag moves the item up/down instead of along the floor — without this the
+            // only way to change a panel's height was typing into the Y field by hand, which
+            // was most of what made "moving pieces" feel incomplete rather than klunky.
+            // Uses raw screen-Y delta rather than raycasting against a camera-facing plane —
+            // the plane approach is what real 3D tools use, but its up/down correspondence to
+            // screen-Y flips depending on which side of the plane the camera ends up on for a
+            // given orbit angle, which measured as *inverted* drag direction here. Screen-delta
+            // is unambiguous: dragging up always raises the item, regardless of camera angle.
+            if (e.shiftKey) {
+                const dist = camera.position.distanceTo(mesh.position);
+                const vFOV = THREE.MathUtils.degToRad(camera.fov);
+                const visibleHeightAtDist = 2 * Math.tan(vFOV / 2) * dist;
+                const sensitivity = visibleHeightAtDist / renderer.domElement.clientHeight;
+                dragState = { vertical: true, startClientY: e.clientY, startY: mesh.position.y, sensitivity };
+            } else {
+                if (!raycaster.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0), -mesh.position.y), dragPoint)) return;
+                dragState = {
+                    vertical: false,
+                    offsetX: mesh.position.x - dragPoint.x,
+                    offsetZ: mesh.position.z - dragPoint.z,
+                    planeY: mesh.position.y,
+                    originalColor: mesh.userData.type === 'panel' ? mesh.material.color.getHex() : null
+                };
+            }
+            controls.enabled = false;
+            renderer.domElement.style.cursor = 'grabbing';
+            window.addEventListener('pointermove', onDragMove);
+            window.addEventListener('pointerup', onDragEnd);
+        }
+
+        function onDragMove(e) {
+            if (!dragState || !selectedMesh) return;
+            const isPanel = selectedMesh.userData.type === 'panel';
+            let snapped = false;
+            // Alt held = raw, unsnapped positioning — the override for micro-adjustments once
+            // grid-snap or face-snap has gotten a piece close but not exactly where it's wanted.
+            const freeform = e.altKey;
+
+            if (dragState.vertical) {
+                const deltaScreenY = dragState.startClientY - e.clientY; // up on screen = positive
+                const rawY = Math.max(0, dragState.startY + deltaScreenY * dragState.sensitivity);
+                if (freeform) {
+                    selectedMesh.position.y = rawY;
+                } else {
+                    selectedMesh.position.y = snap(rawY);
+                    if (isPanel) {
+                        const snapY = computeFaceSnapOffset(selectedMesh, 'y');
+                        if (snapY !== null) { selectedMesh.position.y = Math.max(0, selectedMesh.position.y + snapY); snapped = true; }
+                    }
+                }
+            } else {
+                raycastFromEvent(e, renderer.domElement);
+                const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -dragState.planeY);
+                if (!raycaster.ray.intersectPlane(plane, dragPoint)) return;
+                const bound = 120;
+                const rawX = Math.max(-bound, Math.min(dragPoint.x + dragState.offsetX, bound));
+                const rawZ = Math.max(-bound, Math.min(dragPoint.z + dragState.offsetZ, bound));
+
+                if (freeform) {
+                    selectedMesh.position.x = rawX;
+                    selectedMesh.position.z = rawZ;
+                } else {
+                    selectedMesh.position.x = snap(rawX);
+                    selectedMesh.position.z = snap(rawZ);
+
+                    // Face-snap refines the grid-snapped position further, pulling it flush against
+                    // a nearby panel's edge when within tolerance — this is what makes "get two
+                    // pieces to touch" a matter of dragging *near* the target instead of pixel-hunting.
+                    if (isPanel) {
+                        const snapX = computeFaceSnapOffset(selectedMesh, 'x');
+                        if (snapX !== null) { selectedMesh.position.x += snapX; snapped = true; }
+                        const snapZ = computeFaceSnapOffset(selectedMesh, 'z');
+                        if (snapZ !== null) { selectedMesh.position.z += snapZ; snapped = true; }
+                    }
+                }
+
+                // Soft warning only — mirrors the shop-3d-viewer.html pattern (red tint while
+                // overlapping, drop still allowed on release). Panels only; a label overlapping
+                // a panel it's marking is normal, not a problem worth flagging.
+                if (dragState.originalColor != null) {
+                    const overlapping = isOverlappingOtherPanels(selectedMesh);
+                    selectedMesh.material.color.setHex(overlapping ? 0xef4444 : dragState.originalColor);
+                }
+            }
+            // Green outline is the "it locked" signal — cheap to show since selectionHelper
+            // already tracks selectedMesh every frame, no extra geometry needed.
+            if (selectionHelper) selectionHelper.material.color.setHex(snapped ? SNAP_COLOR : SELECT_COLOR);
+            syncAttachments(selectedMesh);
+            updateSelectionCoords(selectedMesh);
+        }
+
+        function onDragEnd() {
+            window.removeEventListener('pointermove', onDragMove);
+            window.removeEventListener('pointerup', onDragEnd);
+            controls.enabled = true;
+            renderer.domElement.style.cursor = '';
+            if (dragState && selectedMesh) {
+                if (dragState.originalColor != null) selectedMesh.material.color.setHex(dragState.originalColor);
+                if (selectionHelper) selectionHelper.material.color.setHex(SELECT_COLOR);
+                persistMeshPosition(selectedMesh);
+                rebuildDimensionMeshes();
+            }
+            dragState = null;
+        }
+
+        function onHoverMove(e) {
+            if (dragState) return; // onDragMove already owns the cursor mid-drag
+            raycastFromEvent(e, renderer.domElement);
+            const hits = raycaster.intersectObjects(getAllSelectableMeshes(), false);
+            // 'grab' promises a drag exploded view doesn't allow (see onPointerDown) — 'pointer'
+            // still signals "clickable" without that promise.
+            renderer.domElement.style.cursor = hits.length ? (activeTool ? 'crosshair' : (explodedView ? 'pointer' : 'grab')) : (activeTool ? 'crosshair' : '');
+        }
+
+        // Fine nudge for Alt+Arrow — the keyboard equivalent of Alt+drag, for the "just a hair
+        // more" adjustment once the piece is already close.
+        const FINE_NUDGE_IN = 0.0625;
+
+        // Arrow keys nudge whatever's selected by one snap increment — precise, mouse-free
+        // fine-tuning, the same role keyboard nudging plays in real CAD tools. Shift+Up/Down
+        // moves vertically instead of front/back, matching the Shift+drag convention above.
+        // Alt swaps the increment to FINE_NUDGE_IN for micro-adjustments. Measurements aren't
+        // nudgeable (same reasoning as the drag skip above).
+        function onKeyDown(e) {
+            if (document.getElementById('projectPreview3D').style.display === 'none') return;
+            const tag = document.activeElement && document.activeElement.tagName;
+            if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+
+            // Ctrl/Cmd+Z works regardless of what's selected (or nothing at all) — it's not a
+            // per-piece action, so it doesn't belong behind the selection guard below.
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+                e.preventDefault();
+                undo3D();
+                return;
+            }
+
+            if (!selectedMesh || selectedMesh.userData.type === 'measurement' || explodedView) return;
+
+            const step = e.altKey ? FINE_NUDGE_IN : SNAP_IN;
+            let dx = 0, dz = 0, dy = 0;
+            if (e.key === 'ArrowLeft') dx = -step;
+            else if (e.key === 'ArrowRight') dx = step;
+            else if (e.key === 'ArrowUp') { if (e.shiftKey) dy = step; else dz = -step; }
+            else if (e.key === 'ArrowDown') { if (e.shiftKey) dy = -step; else dz = step; }
+            else return;
+
+            e.preventDefault();
+
+            // Coalesces a held-down/rapid-repeat arrow key into a single undo step instead of
+            // one per keystroke — same reasoning as commit-on-blur for the typed position
+            // fields, applied to nudging: only the state right before the *burst* is worth
+            // rewinding to.
+            const now = Date.now();
+            if (now - lastNudgeUndoTime > 600 || lastNudgeUndoMeshId !== selectedMesh.uuid) {
+                push3DUndoSnapshot();
+            }
+            lastNudgeUndoTime = now;
+            lastNudgeUndoMeshId = selectedMesh.uuid;
+
+            selectedMesh.position.x += dx;
+            selectedMesh.position.z += dz;
+            selectedMesh.position.y = Math.max(0, selectedMesh.position.y + dy);
+            syncAttachments(selectedMesh);
+            updateSelectionCoords(selectedMesh);
+            persistMeshPosition(selectedMesh);
+            rebuildDimensionMeshes();
+        }
+
+        function showTempMeasureMarker(point) {
+            clearTempMeasureMarker();
+            tempMeasureMarker = new THREE.Mesh(new THREE.SphereGeometry(0.4, 8, 8), new THREE.MeshBasicMaterial({ color: 0x1e3a8a }));
+            tempMeasureMarker.position.copy(point);
+            scene.add(tempMeasureMarker);
+        }
+
+        function clearTempMeasureMarker() {
+            if (tempMeasureMarker) { scene.remove(tempMeasureMarker); tempMeasureMarker = null; }
+        }
+
+        function updateToolButtonStates() {
+            document.getElementById('measureToolBtn').classList.toggle('mini-btn-active', activeTool === 'measure');
+            document.getElementById('addLabelToolBtn').classList.toggle('mini-btn-active', activeTool === 'label');
+            const hint = document.getElementById('preview3dToolHint');
+            if (activeTool === 'measure') hint.textContent = measureFirstPoint ? 'Click the second point…' : 'Click the first point to measure from…';
+            else if (activeTool === 'label') hint.textContent = 'Click a panel or the floor to place the label…';
+            else hint.textContent = '';
+        }
+
+        function cancelPendingLabel() {
+            pendingLabelPoint = null;
+            pendingLabelNormal = null;
+            document.getElementById('labelInputPopover').style.display = 'none';
+            activeTool = null;
+            updateToolButtonStates();
+        }
+
+        function commitPendingLabel() {
+            const text = document.getElementById('labelTextInput').value.trim();
+            if (text && pendingLabelPoint) {
+                push3DUndoSnapshot();
+                // Offset the sprite 3in off the clicked surface along its own normal (not a
+                // fixed +Y) so it clears the panel's geometry regardless of that panel's
+                // orientation — see rebuildLabelMeshes for why a fixed +Y offset fails here.
+                const offset = pendingLabelNormal.clone().multiplyScalar(3);
+                const pos = pendingLabelPoint.clone().add(offset);
+                labels.push({
+                    id: 'lbl_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), text,
+                    xIn: pos.x, yIn: pos.y, zIn: pos.z,
+                    offX: offset.x, offY: offset.y, offZ: offset.z
+                });
+                saveLabelsData();
+                rebuildLabelMeshes();
+            }
+            cancelPendingLabel();
+        }
+
+        function populateQuickAddMaterialSelect() {
+            const select = document.getElementById('quickAddMaterialSelect');
+            select.innerHTML = '';
+            const groups = {};
+            Object.keys(window.MATERIALS).forEach(key => {
+                const groupName = window.MATERIALS[key].group || 'Other';
+                (groups[groupName] = groups[groupName] || []).push(key);
+            });
+            Object.keys(groups).forEach(groupName => {
+                const optgroup = document.createElement('optgroup');
+                optgroup.label = groupName;
+                groups[groupName].forEach(key => {
+                    const opt = document.createElement('option');
+                    opt.value = key;
+                    opt.textContent = window.MATERIALS[key].label;
+                    optgroup.appendChild(opt);
+                });
+                select.appendChild(optgroup);
+            });
+        }
+
+        function openQuickAddPopover() {
+            cancelPendingLabel();
+            activeTool = null;
+            measureFirstPoint = null;
+            clearTempMeasureMarker();
+            updateToolButtonStates();
+            document.getElementById('quickAddPopover').style.display = 'block';
+            document.getElementById('quickAddNameInput').value = '';
+            document.getElementById('quickAddWidthInput').value = '';
+            document.getElementById('quickAddHeightInput').value = '';
+            document.getElementById('quickAddThicknessInput').value = '';
+            document.getElementById('quickAddNameInput').focus();
+        }
+
+        function closeQuickAddPopover() {
+            document.getElementById('quickAddPopover').style.display = 'none';
+        }
+
+        // Builds a real panel row (the same data model the sidebar's Add Panel modal writes)
+        // with no xIn/yIn/zIn — that's what tells rebuild3DPreviewMeshes' auto-arrange to place
+        // it, exactly like a brand-new panel added from the Cut List tab. Selecting it right
+        // after means the very next thing the user can do is drag it (with face-snap) into place,
+        // without ever leaving the 3D view or hunting for it in the sidebar list.
+        function commitQuickAdd() {
+            const name = document.getElementById('quickAddNameInput').value.trim() || 'New Piece';
+            const widthIn = parseFloat(document.getElementById('quickAddWidthInput').value);
+            const heightIn = parseFloat(document.getElementById('quickAddHeightInput').value);
+            const thicknessIn = parseFloat(document.getElementById('quickAddThicknessInput').value);
+            const material = document.getElementById('quickAddMaterialSelect').value;
+            if (!widthIn || !heightIn || !thicknessIn) {
+                window.showToast('Width, height, and thickness must be greater than 0.');
+                return;
+            }
+            push3DUndoSnapshot();
+            const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+            const panels = window.getPanels();
+            panels.push({
+                id, name, widthIn, heightIn, thicknessIn, material, qty: 1,
+                xIn: undefined, yIn: undefined, zIn: undefined, rotXDeg: 0, rotYDeg: 0, rotZDeg: 0
+            });
+            window.savePanels();
+            window.renderAll();
+            closeQuickAddPopover();
+            const created = panelMeshes.find(pm => pm.panelId === id);
+            if (created) selectMesh(created.mesh);
+        }
+
+        // Points the camera at the actual project instead of a fixed, project-size-agnostic
+        // spot — a 12" jewelry box and an 80" wardrobe both used to load at the same fixed
+        // camera position, which meant one was a speck and the other was clipped/too close.
+        // Runs once per page load (see hasFramedCamera), not on every edit, so it doesn't yank
+        // the view out from under someone mid-adjustment.
+        function frameCameraToPanels() {
+            if (!panelMeshes.length) return;
+            const box = new THREE.Box3();
+            panelMeshes.forEach(pm => box.expandByObject(pm.mesh));
+            if (box.isEmpty()) return;
+            const center = box.getCenter(new THREE.Vector3());
+            const size = box.getSize(new THREE.Vector3());
+            const dist = Math.max(size.length() * 1.1, 24);
+            controls.target.copy(center);
+            camera.position.set(center.x + dist * 0.55, center.y + dist * 0.5, center.z + dist * 0.75);
+            camera.near = Math.max(0.05, dist / 200);
+            camera.far = dist * 20;
+            camera.updateProjectionMatrix();
+            controls.update();
+        }
+
+        function onResize() {
+            const wrap = document.getElementById('preview3DCanvasWrap');
+            if (!wrap || !camera || !renderer) return;
+            camera.aspect = wrap.clientWidth / Math.max(wrap.clientHeight, 1);
+            camera.updateProjectionMatrix();
+            renderer.setSize(wrap.clientWidth, wrap.clientHeight);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            if (controls) controls.update();
+            // Keeps the outline glued to the mesh through both drag and the free-rotate
+            // gizmo — simplest correct way to track a box that can change every frame from
+            // either interaction, rather than trying to hook both individually.
+            if (selectionHelper) selectionHelper.update();
+            if (renderer && scene && camera) renderer.render(scene, camera);
+        }
+
+        window.init3DPreviewScene = function init3DPreviewScene() {
+            if (sceneReady) {
+                window.rebuild3DPreviewMeshes();
+                return;
+            }
+            const wrap = document.getElementById('preview3DCanvasWrap');
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0xeef1f6);
+            camera = new THREE.PerspectiveCamera(50, wrap.clientWidth / Math.max(wrap.clientHeight, 1), 0.1, 2000);
+            camera.position.set(70, 60, 100);
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(wrap.clientWidth, wrap.clientHeight);
+            wrap.appendChild(renderer.domElement);
+
+            controls = new OrbitControls(camera, renderer.domElement);
+            controls.target.set(0, 20, 0);
+            controls.update();
+
+            scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+            const dirLight = new THREE.DirectionalLight(0xffffff, 0.7);
+            dirLight.position.set(80, 120, 60);
+            scene.add(dirLight);
+
+            const grid = new THREE.GridHelper(240, 24, 0xb8c0cc, 0xd6dce4);
+            scene.add(grid);
+
+            raycaster = new THREE.Raycaster();
+
+            renderer.domElement.addEventListener('pointerdown', onPointerDown);
+            renderer.domElement.addEventListener('pointermove', onHoverMove);
+            window.addEventListener('keydown', onKeyDown);
+            document.getElementById('preview3DFreeRotateBtn').addEventListener('click', toggleFreeRotate);
+            document.getElementById('preview3DAlignBtn').addEventListener('click', autoAlignSelected);
+            document.getElementById('preview3DUndoBtn').addEventListener('click', undo3D);
+            document.getElementById('dimensionsToggleBtn').addEventListener('click', () => {
+                showDimensions = !showDimensions;
+                document.getElementById('dimensionsToggleBtn').classList.toggle('mini-btn-active', showDimensions);
+                rebuildDimensionMeshes();
+            });
+            document.getElementById('preview3DRemoveBtn').addEventListener('click', () => {
+                if (!selectedMesh) return;
+                push3DUndoSnapshot();
+                const type = selectedMesh.userData.type || 'panel';
+                if (type === 'label') {
+                    labels = labels.filter(l => l.id !== selectedMesh.userData.labelId);
+                    saveLabelsData();
+                    selectMesh(null);
+                    rebuildLabelMeshes();
+                } else if (type === 'measurement') {
+                    measurementsData = measurementsData.filter(m => m.id !== selectedMesh.userData.measurementId);
+                    saveMeasurementsData();
+                    selectMesh(null);
+                    rebuildMeasurementMeshes();
+                } else {
+                    const panels = window.getPanels();
+                    const idx = panels.findIndex(p => p.id === selectedMesh.userData.panelId);
+                    if (idx === -1) { undo3DStack.pop(); updateUndo3DBtnState(); return; }
+                    panels.splice(idx, 1);
+                    window.savePanels();
+                    selectMesh(null);
+                    // renderAll() refreshes the sidebar panel list/cut-list data too, and
+                    // already calls rebuild3DPreviewMeshes() itself since the 3D tab is the
+                    // active one right now (see the classic script's renderAll) — no need to
+                    // call it twice.
+                    window.renderAll();
+                }
+            });
+
+            document.getElementById('addLabelToolBtn').addEventListener('click', () => {
+                closeQuickAddPopover();
+                activeTool = activeTool === 'label' ? null : 'label';
+                measureFirstPoint = null;
+                clearTempMeasureMarker();
+                updateToolButtonStates();
+            });
+            document.getElementById('measureToolBtn').addEventListener('click', () => {
+                closeQuickAddPopover();
+                activeTool = activeTool === 'measure' ? null : 'measure';
+                measureFirstPoint = null;
+                clearTempMeasureMarker();
+                updateToolButtonStates();
+            });
+            document.getElementById('labelInputAddBtn').addEventListener('click', commitPendingLabel);
+            document.getElementById('labelInputCancelBtn').addEventListener('click', cancelPendingLabel);
+            document.getElementById('labelTextInput').addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') commitPendingLabel();
+                else if (e.key === 'Escape') cancelPendingLabel();
+            });
+
+            populateQuickAddMaterialSelect();
+            document.getElementById('addPieceToolBtn').addEventListener('click', () => {
+                if (document.getElementById('quickAddPopover').style.display === 'block') { closeQuickAddPopover(); return; }
+                openQuickAddPopover();
+            });
+            document.getElementById('quickAddAddBtn').addEventListener('click', commitQuickAdd);
+            document.getElementById('quickAddCancelBtn').addEventListener('click', closeQuickAddPopover);
+            [document.getElementById('quickAddNameInput'), document.getElementById('quickAddWidthInput'), document.getElementById('quickAddHeightInput'), document.getElementById('quickAddThicknessInput')].forEach(input => {
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') commitQuickAdd();
+                    else if (e.key === 'Escape') closeQuickAddPopover();
+                });
+            });
+
+            // Typed X/Y/Z is the numeric alternative to dragging — commits on blur/Enter so a
+            // half-typed number never mid-edits the mesh, then behaves exactly like a drag/nudge
+            // for persistence (syncAttachments + persistMeshPosition, see applyPositionFieldEdit).
+            [document.getElementById('preview3DPosX'), document.getElementById('preview3DPosY'), document.getElementById('preview3DPosZ')].forEach(input => {
+                input.addEventListener('change', applyPositionFieldEdit);
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') input.blur();
+                });
+            });
+
+            document.getElementById('explodeToggleBtn').addEventListener('click', () => setExplodedView(!explodedView));
+            document.getElementById('explodeAmountSlider').addEventListener('input', () => {
+                if (explodedView) applyExplodedPositions();
+            });
+
+            window.addEventListener('resize', onResize);
+            sceneReady = true;
+            animate();
+            window.rebuild3DPreviewMeshes();
+            if (!hasFramedCamera) {
+                frameCameraToPanels();
+                hasFramedCamera = true;
+            }
+        };
     </script>
 
 </body>

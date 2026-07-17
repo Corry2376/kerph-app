@@ -168,6 +168,15 @@
             width: 190px;
         }
 
+        /* Wider than .header-field-wide's default — a saved layout's name plus its "Load"
+           and delete buttons were splitting 190px three ways, truncating most real names.
+           This is just the fallback before JS measures the actual selected name and sets an
+           inline width (see resizeSavedLayoutsField) — kept within [200, 420]px either way so
+           one long name can't blow out the header layout. */
+        #savedLayoutsField {
+            width: 220px;
+        }
+
         .header-divider {
             width: 1px;
             align-self: stretch;
@@ -527,6 +536,20 @@
             filter: drop-shadow(0 18px 30px rgba(15, 23, 42, 0.5));
         }
 
+        .logo-tm {
+            /* Lower-right corner, inside the logo's own white background — clear of both the
+               navy border below it and the wordmark above it. */
+            position: absolute;
+            bottom: 6px;
+            right: 22px;
+            z-index: 2;
+            font-size: 12px;
+            font-weight: 800;
+            color: #1e3a8a;
+            line-height: 1;
+            pointer-events: none;
+        }
+
         .page-title-select {
             font-size: 15px;
             font-weight: 700;
@@ -664,6 +687,19 @@
             color: #14532d;
         }
 
+        .attach-dc-label {
+            flex-basis: 100%;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 10.5px;
+            font-weight: 600;
+            color: #475569;
+            cursor: pointer;
+            margin-top: 4px;
+        }
+        .attach-dc-label input { cursor: pointer; }
+
         .tool-box-item:hover {
             border-color: #2563eb;
             border-left-color: #2563eb;
@@ -762,6 +798,49 @@
             opacity: 1;
             transform: translateX(-50%) translateY(0);
             pointer-events: auto;
+        }
+
+        /* Multi-tab sync notice — shown (not auto-applied) when kerphCurrentLayout changes in
+           another tab, since a silent reload here could stomp an open modal, undo history, or
+           a mid-drag. Unlike .upgrade-nudge this doesn't auto-hide; the user has to act on it. */
+        .external-change-banner {
+            position: fixed;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #fef9c3;
+            border: 1px solid #eab308;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            padding: 8px 10px 8px 14px;
+            font-size: 12.5px;
+            font-weight: 600;
+            color: #713f12;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+            z-index: 3000;
+            display: none;
+            align-items: center;
+            gap: 10px;
+        }
+        .external-change-banner.visible { display: flex; }
+        .external-change-banner-btn {
+            padding: 4px 10px;
+            border: 1px solid #eab308;
+            border-radius: 6px;
+            background-color: #ffffff;
+            color: #713f12;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .external-change-banner-dismiss {
+            border: none;
+            background: none;
+            color: #92720c;
+            font-size: 15px;
+            line-height: 1;
+            cursor: pointer;
+            padding: 2px 4px;
         }
 
         .upgrade-nudge-btn {
@@ -1093,6 +1172,40 @@
 
         .measure-btn:hover { background-color: #eef2ff; border-color: #2563eb; }
 
+        /* Centered over the actual visible grid/ruler, vertically midway between the toolbar
+           row and the ruler (both kept in sync by JS — see updateZoomControlBarPosition), not
+           just glued under the toolbar or centered on the whole canvas viewport (which can
+           have dead space beside a narrower shop, or be scrolled). top/left are set inline by
+           JS as the exact center point; translate(-50%,-50%) does the rest. One pill-shaped
+           card (matching .floating-panel's white/shadow look, just compact) rather than bare
+           buttons floating in empty grid space — see the .measure-btn override below, which
+           strips each button's own border/shadow so they read as one widget, not three. */
+        .zoom-control-bar {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1500;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            background-color: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 999px;
+            padding: 4px 6px;
+            box-shadow: 0 8px 20px -6px rgba(15, 23, 42, 0.25);
+        }
+
+        .zoom-control-bar .measure-btn {
+            border: none;
+            box-shadow: none;
+            border-radius: 999px;
+        }
+
+        .zoom-control-bar .measure-btn:hover {
+            border-color: transparent;
+        }
+
         .zoom-level-display {
             font-size: 11px;
             font-weight: 700;
@@ -1220,6 +1333,17 @@
             right: 24px;
         }
 
+        /* Capped + independently scrollable so a long list (lots of placed items, or a
+           dust-collection run with dozens of duct/fitting pieces) can never push the total
+           and "Refresh List" button off the bottom of the screen the way an unbounded list
+           did before. */
+        #costList {
+            max-height: 320px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding-right: 4px;
+        }
+
         .cost-group-label {
             font-size: 9.5px;
             font-weight: 800;
@@ -1230,6 +1354,28 @@
             margin-bottom: 2px;
         }
         .cost-group-label:first-child { margin-top: 0; }
+
+        /* Dust collection runs can add up to dozens of rows — nested under a collapsed-by-
+           default dropdown (native <details>, same collapse pattern as the sidebar catalog
+           categories) instead of a flat group, so it doesn't dominate the list. */
+        .cost-group-collapsible { margin-top: 8px; }
+        .cost-group-collapsible:first-child { margin-top: 0; }
+        .cost-group-summary {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 6px;
+            cursor: pointer;
+            list-style: none;
+            border-radius: 4px;
+            padding: 2px 3px;
+            margin: 0 -3px;
+        }
+        .cost-group-summary::-webkit-details-marker { display: none; }
+        .cost-group-summary:hover { background-color: #eef2ff; }
+        .cost-group-summary .cost-group-label { margin: 0; }
+        .cost-group-summary-right { display: flex; align-items: center; gap: 6px; }
+        .cost-group-collapsible[open] > .cost-group-summary .category-chevron { transform: rotate(90deg); }
 
         .cost-item-row {
             display: flex;
@@ -1564,13 +1710,35 @@
         }
 
         /* Filled with the same pipe gray/slate as .pipe-node (not just an outline) so these
-           read as solid duct material with a silhouette, rather than a thin decorative line. */
+           read as solid duct material with a silhouette, rather than a thin decorative line.
+           No box background/border of their own — the mitered SVG shape (which already has
+           its own fill+stroke) is the entire visible node, instead of sitting inside the
+           square .placed-tool-node/.pipe-node box, whose corners the curve doesn't cover
+           made the fitting look boxed-in. */
         .placed-tool-node.elbow-node,
         .placed-tool-node.y-joint-node,
-        .placed-tool-node.t-joint-node {
+        .placed-tool-node.t-joint-node,
+        .placed-tool-node.drop-node {
+            background-color: transparent;
+            border: none;
+            border-radius: 0;
             background-repeat: no-repeat;
             background-position: center;
             background-size: 100% 100%;
+        }
+
+        /* A drop's real job (dropping from the overhead trunk down to the tool) only reads in
+           3D — in this top-down 2D view it's just a connection point, so the icon is a plain
+           bullseye ("looking straight down the pipe") rather than trying to fake elevation. */
+        /* Orange (not the purple already used for .selected-node's outline, not the red
+           already used for blast gates) so a drop reads as its own distinct thing at a
+           glance in a run full of neutral-gray duct/fittings. */
+        .placed-tool-node.drop-node.fitting-4in {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='18' fill='%23fdba74' stroke='%23c2410c' stroke-width='2'/%3E%3Ccircle cx='20' cy='20' r='8' fill='%23f97316' stroke='%23c2410c' stroke-width='1.5'/%3E%3C/svg%3E");
+        }
+
+        .placed-tool-node.drop-node.fitting-6in {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='19' fill='%23fdba74' stroke='%23c2410c' stroke-width='2'/%3E%3Ccircle cx='20' cy='20' r='9' fill='%23f97316' stroke='%23c2410c' stroke-width='1.5'/%3E%3C/svg%3E");
         }
 
         /* Band thickness is tuned per size class so the fitting's drawn "pipe" reads at the
@@ -1610,8 +1778,8 @@
         }
 
         .placed-tool-node.bracket-node {
-            background-color: #94a3b8;
-            border: 1px solid #475569;
+            background-color: #facc15;
+            border: 1px solid #a16207;
         }
 
         .placed-tool-node.selected-node {
@@ -1819,6 +1987,7 @@
         }
 
         .print-only-header { display: none; }
+        .print-watermark { display: none; }
 
         /* ---------- PRINT / PDF EXPORT ----------
            The board's on-screen layout is all position:absolute against viewport-relative
@@ -1843,6 +2012,21 @@
             }
             .print-only-header .print-title { font-size: 20px; font-weight: 800; color: #0f172a; }
             .print-only-header .print-meta { font-size: 12px; color: #475569; margin-top: 2px; }
+            .print-watermark.active {
+                display: block !important;
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%) rotate(-30deg);
+                font-family: inherit;
+                font-size: 60px;
+                font-weight: 800;
+                color: rgba(30, 58, 138, 0.16);
+                letter-spacing: 0.04em;
+                white-space: nowrap;
+                z-index: 9999;
+                pointer-events: none;
+            }
             #canvas-view-space, #canvas-scroll-area {
                 position: static !important;
                 width: auto !important;
@@ -1865,6 +2049,10 @@
             }
             .placed-tool-node.selected-node { outline: none !important; }
         }
+            .header-quick-links { display: flex; align-items: center; gap: 6px; font-size: 11px; }
+        .header-quick-links a { color: #6b7280; font-weight: 600; text-decoration: none; }
+        .header-quick-links a:hover { color: #1e3a8a; text-decoration: underline; }
+        .header-quick-links-sep { color: #cbd5e1; }
     </style>
 </head>
 <body>
@@ -1875,15 +2063,18 @@
                 <a href="index.html" class="logo-link" title="Kerph Home">
                     <img src="logo.png" alt="Kerph Logo" class="logo-image">
                 </a>
+                <span class="logo-tm">&trade;</span>
             </div>
             <select class="page-title-select" id="pageNavSelect">
                 <option value="index.html">Home</option>
                 <option value="workshop-planner.html" selected>Workshop Layout Planner</option>
+                <option value="dust-collection.html">Dust Collection</option>
                 <option value="project-designer.html">Project Designer</option>
                 <option value="cutlist-optimizer.html">Cut List Optimizer</option>
-                <option value="dust-collection.html">Dust Collection</option>
                 <option value="find-a-builder.html">Find a Builder</option>
                 <option value="shop-3d-viewer.html">3D Shop Viewer</option>
+                <option value="tool-reviews.html">Cool Tool Reviews</option>
+                <option value="shop-showcase.html">Shop Showcase</option>
             </select>
         </div>
         <div class="header-controls">
@@ -1934,6 +2125,11 @@
                     <span class="account-btn-plan" id="accountBtnPlan">Free</span>
                 </span>
             </button>
+            <div class="header-quick-links">
+                <a href="pricing.html">Plan Comparison</a>
+                <span class="header-quick-links-sep">&middot;</span>
+                <a href="help.html">Help &amp; Support</a>
+            </div>
             <select class="plan-select" id="planSelector" style="display:none;">
                 <option value="free">Free</option>
                 <option value="pro">Pro</option>
@@ -1941,6 +2137,12 @@
             </select>
         </div>
     </header>
+
+    <div class="external-change-banner" id="externalChangeBanner">
+        <span>This shop's layout changed in another tab.</span>
+        <button type="button" class="external-change-banner-btn" id="externalChangeReloadBtn">Reload</button>
+        <button type="button" class="external-change-banner-dismiss" id="externalChangeDismissBtn" title="Dismiss">&#10005;</button>
+    </div>
 
     <div class="modal-overlay" id="customToolModalOverlay" style="display:none;">
         <div class="modal-box">
@@ -2376,7 +2578,7 @@
 
                 <details class="tool-category tool-subcategory">
                     <summary class="category-header">
-                        <span class="category-header-left">4" Ducts &amp; Fittings <span class="category-count">10</span></span>
+                        <span class="category-header-left">4" Ducts &amp; Fittings <span class="category-count">12</span></span>
                         <span class="category-chevron">&#9656;</span>
                     </summary>
                     <div class="category-items">
@@ -2410,6 +2612,13 @@
                         </div>
                         <div class="tool-box-item" draggable="true" data-layer="dust-collection" data-width="0.35" data-length="10.0" data-height="7.0" data-name="4in Dust Duct 10ft">
                             <div><div class="tool-title">4" Dust Duct (10ft run)</div><div class="tool-dims">0.35' x 10.0' Footprint</div></div>
+                            <div class="tool-status-controls">
+                                <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
+                                <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
+                            </div>
+                        </div>
+                        <div class="tool-box-item" draggable="true" data-layer="dust-collection" data-width="0.35" data-length="5" data-height="7.0" data-name="4in Dust Duct Custom">
+                            <div><div class="tool-title">4" Dust Duct (Custom Length)</div><div class="tool-dims"><input type="number" class="input-box custom-duct-length-input" value="5" min="0.5" step="0.5" style="width:56px; display:inline-block; padding:2px 4px; font-size:11px;" draggable="false"> ft</div></div>
                             <div class="tool-status-controls">
                                 <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
                                 <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
@@ -2450,12 +2659,19 @@
                                 <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
                             </div>
                         </div>
+                        <div class="tool-box-item" draggable="true" data-layer="dust-collection" data-width="0.35" data-length="0.5" data-height="5" data-name="4in Duct Drop">
+                            <div><div class="tool-title">4" Duct Drop (to tool)</div><div class="tool-dims">Drops <input type="number" class="input-box custom-drop-length-input" value="5" min="1" max="20" step="0.5" style="width:56px; display:inline-block; padding:2px 4px; font-size:11px;" draggable="false"> ft from the run</div></div>
+                            <div class="tool-status-controls">
+                                <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
+                                <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
+                            </div>
+                        </div>
                     </div>
                 </details>
 
                 <details class="tool-category tool-subcategory">
                     <summary class="category-header">
-                        <span class="category-header-left">6" Ducts &amp; Fittings <span class="category-count">10</span></span>
+                        <span class="category-header-left">6" Ducts &amp; Fittings <span class="category-count">12</span></span>
                         <span class="category-chevron">&#9656;</span>
                     </summary>
                     <div class="category-items">
@@ -2494,6 +2710,13 @@
                                 <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
                             </div>
                         </div>
+                        <div class="tool-box-item" draggable="true" data-layer="dust-collection" data-width="0.5" data-length="5" data-height="7.0" data-name="6in Dust Duct Custom">
+                            <div><div class="tool-title">6" Dust Duct (Custom Length)</div><div class="tool-dims"><input type="number" class="input-box custom-duct-length-input" value="5" min="0.5" step="0.5" style="width:56px; display:inline-block; padding:2px 4px; font-size:11px;" draggable="false"> ft</div></div>
+                            <div class="tool-status-controls">
+                                <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
+                                <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
+                            </div>
+                        </div>
                         <div class="tool-box-item" draggable="true" data-layer="dust-collection" data-width="0.8" data-length="0.8" data-height="7.0" data-name="6in Duct Elbow">
                             <div><div class="tool-title">6" Duct Elbow (90&deg;)</div><div class="tool-dims">0.8' x 0.8' Footprint</div></div>
                             <div class="tool-status-controls">
@@ -2524,6 +2747,13 @@
                         </div>
                         <div class="tool-box-item" draggable="true" data-layer="dust-collection" data-width="0.5" data-length="0.6" data-height="7.0" data-name="6in Blast Gate">
                             <div><div class="tool-title">6" Blast Gate</div><div class="tool-dims">0.5' x 0.6' Footprint</div></div>
+                            <div class="tool-status-controls">
+                                <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
+                                <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
+                            </div>
+                        </div>
+                        <div class="tool-box-item" draggable="true" data-layer="dust-collection" data-width="0.5" data-length="0.6" data-height="5" data-name="6in Duct Drop">
+                            <div><div class="tool-title">6" Duct Drop (to tool)</div><div class="tool-dims">Drops <input type="number" class="input-box custom-drop-length-input" value="5" min="1" max="20" step="0.5" style="width:56px; display:inline-block; padding:2px 4px; font-size:11px;" draggable="false"> ft from the run</div></div>
                             <div class="tool-status-controls">
                                 <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
                                 <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
@@ -2777,15 +3007,24 @@
         <button type="button" id="measureToggleBtn" class="measure-btn" title="Click and drag on the grid to measure a distance">📏 Measure</button>
         <button type="button" id="undoBtn" class="measure-btn" title="Undo (Ctrl+Z)" disabled>&#8630; Undo</button>
         <button type="button" id="measureClearBtn" class="measure-btn" title="Clear all measurements" style="display:none;">Clear</button>
-        <button type="button" id="zoomOutBtn" class="measure-btn" title="Zoom out">&#8722;</button>
-        <span class="zoom-level-display" id="zoomLevelDisplay" title="Ctrl+scroll to zoom">100%</span>
-        <button type="button" id="zoomInBtn" class="measure-btn" title="Zoom in">&#43;</button>
         <button type="button" id="zoomResetBtn" class="measure-btn" title="Reset zoom to 100%">Reset</button>
         <button type="button" id="hideDcLabelsBtn" class="measure-btn" title="Hide the text labels on dust collection ducts/fittings so you can see the pure shapes">&#127991;&#65039; Hide Labels</button>
+        <button type="button" id="view3dBtn" class="measure-btn" title="View this shop in 3D">&#129517; View in 3D</button>
         <button type="button" id="exportPdfBtn" class="measure-btn" title="Print or save this layout as a PDF">&#128196; Export PDF</button>
     </div>
 
+    <!-- Centered over the canvas viewport (not the draggable measureToolbar) in the same
+         reserved clean strip above the ruler — see #canvas-scroll-area's top offset — so it
+         always sits directly above the grid regardless of where the user has dragged the
+         rest of the toolbar. -->
+    <div class="zoom-control-bar" id="zoomControlBar">
+        <button type="button" id="zoomOutBtn" class="measure-btn" title="Zoom out">&#8722;</button>
+        <span class="zoom-level-display" id="zoomLevelDisplay" title="Ctrl+scroll to zoom">100%</span>
+        <button type="button" id="zoomInBtn" class="measure-btn" title="Zoom in">&#43;</button>
+    </div>
+
     <div class="print-only-header" id="printOnlyHeader"></div>
+    <div class="print-watermark" id="printWatermark">KERPH &mdash; FREE PLAN</div>
 
     <div class="floating-panel layers-panel collapsed" id="layersPanel">
         <div class="floating-panel-title" id="layersPanelHandle">Layers <span class="panel-toggle-chevron">&#9656;</span></div>
@@ -2830,6 +3069,10 @@
                 <div class="header-field">
                     <label class="header-field-label" for="wfDoorWidth">Width (in)</label>
                     <input type="number" class="input-box" id="wfDoorWidth" value="36" min="12">
+                </div>
+                <div class="header-field" style="flex:none;">
+                    <label class="header-field-label" for="wfDoorColor">Color</label>
+                    <input type="color" class="input-box" id="wfDoorColor" value="#8a5a34" style="padding:2px; height:34px; cursor:pointer;">
                 </div>
             </div>
         </div>
@@ -2988,6 +3231,7 @@
     <div class="upgrade-nudge" id="upgradeNudge"></div>
     <div class="tool-preview-popover" id="toolPreviewPopover"></div>
 
+    <script src="catalog-data.js"></script>
     <script>
         const board = document.getElementById('workshopBoard');
         let ppi = 30; // pixels per foot at 100% zoom — a live variable so zoom can scale it
@@ -3053,8 +3297,51 @@
             const lengthFeet = getShopLengthFeet() || 24;
             const scaleMultiplier = parseFloat(document.getElementById('inputScale').value) || 1.0;
 
+            // Snapshot which exterior wall each wall feature sits on, and how far along it
+            // (0-1 fraction from corner to corner), before resizing. A rectangle's corners
+            // don't all move together when width/length changes — the origin corner (0,0)
+            // stays put and only the far corner translates — so a door/outlet mounted on a
+            // wall that moves needs to move with it, or it's left stranded where the old
+            // wall used to be. Re-applied to the corresponding edge of the new rectangle
+            // below. Only handles the plain rectangle shape — a custom-drawn shape's edges
+            // don't map onto a width/length resize this cleanly.
+            let wallAnchors = null;
+            if (shapeMode === 'rectangle' && typeof wallFeatures !== 'undefined' && wallFeatures.length) {
+                const oldSegments = getWallSegments();
+                wallAnchors = wallFeatures.map(f => {
+                    let best = null;
+                    oldSegments.forEach(([a, b], edgeIndex) => {
+                        const proj = projectPointToSegment(f.x, f.y, a, b);
+                        const dist = Math.hypot(proj.x - f.x, proj.y - f.y);
+                        if (!best || dist < best.dist) {
+                            const dx = b.x - a.x, dy = b.y - a.y;
+                            const lenSq = dx * dx + dy * dy;
+                            const t = lenSq === 0 ? 0 : ((f.x - a.x) * dx + (f.y - a.y) * dy) / lenSq;
+                            best = { edgeIndex, dist, t };
+                        }
+                    });
+                    return best;
+                });
+            }
+
             board.style.width = (lengthFeet * ppi) + 'px';
             board.style.height = (widthFeet * ppi) + 'px';
+
+            if (wallAnchors) {
+                const newSegments = getWallSegments();
+                wallFeatures.forEach((f, i) => {
+                    const anchor = wallAnchors[i];
+                    // board.clientWidth/clientHeight (what getWallSegments() measures from)
+                    // run a few px short of the true wall edge because of the board's own
+                    // border (excluded from clientWidth by definition) — 10px comfortably
+                    // absorbs that without being anywhere close to false-matching a feature
+                    // to the wrong wall.
+                    if (!anchor || anchor.dist > 10) return;
+                    const [a, b] = newSegments[anchor.edgeIndex];
+                    f.x = a.x + (b.x - a.x) * anchor.t;
+                    f.y = a.y + (b.y - a.y) * anchor.t;
+                });
+            }
 
             const bgSize = scaleMultiplier * ppi;
             board.style.backgroundSize = `${bgSize}px ${bgSize}px`;
@@ -3062,6 +3349,7 @@
             if (typeof renderShapeOverlay === 'function') renderShapeOverlay();
             if (typeof renderMeasurements === 'function') renderMeasurements();
             if (typeof renderRulers === 'function') renderRulers();
+            if (typeof renderWallFeatures === 'function') renderWallFeatures();
         }
 
         function renderRulers() {
@@ -3099,6 +3387,34 @@
                     vRuler.appendChild(label);
                 }
             }
+
+            updateZoomControlBarPosition();
+        }
+
+        // Keeps the zoom control bar centered over the actual visible ruler/grid, not just the
+        // canvas viewport — a shop narrower than the viewport leaves dead space beside the
+        // board, and a wider one can be scrolled/panned, so centering on the viewport alone
+        // would drift off the real grid. Recomputed from the ruler's live on-screen rect
+        // (intersected with the scroll container's viewport, in case it's partly scrolled out
+        // of view) whenever the ruler is (re)drawn, the container scrolls, or the window resizes.
+        function updateZoomControlBarPosition() {
+            const ruler = document.getElementById('rulerTop');
+            const scrollArea = document.getElementById('canvas-scroll-area');
+            const toolbar = document.getElementById('measureToolbar');
+            const bar = document.getElementById('zoomControlBar');
+            if (!ruler || !scrollArea || !toolbar || !bar) return;
+            const rulerRect = ruler.getBoundingClientRect();
+            const viewportRect = scrollArea.getBoundingClientRect();
+            const visibleLeft = Math.max(rulerRect.left, viewportRect.left);
+            const visibleRight = Math.min(rulerRect.right, viewportRect.right);
+            if (visibleRight > visibleLeft) {
+                bar.style.left = ((visibleLeft + visibleRight) / 2) + 'px';
+            }
+            // Vertically midway between the toolbar row and the ruler, not glued to either —
+            // both are read live rather than hardcoded so this keeps working if either one's
+            // height or position ever changes.
+            const toolbarRect = toolbar.getBoundingClientRect();
+            bar.style.top = ((toolbarRect.bottom + rulerRect.top) / 2) + 'px';
         }
 
         /* ---------- ZOOM ----------
@@ -3254,6 +3570,7 @@
         const DUCT_PORTS = {
             duct: [{ fx: 0, fy: 0.5, angle: 180 }, { fx: 1, fy: 0.5, angle: 0 }],
             blastgate: [{ fx: 0, fy: 0.5, angle: 180 }, { fx: 1, fy: 0.5, angle: 0 }],
+            drop: [{ fx: 0, fy: 0.5, angle: 180 }, { fx: 1, fy: 0.5, angle: 0 }],
             elbow: [{ fx: 0, fy: 0.5, angle: 180 }, { fx: 0.5, fy: 1, angle: 90 }],
             tjoint: [{ fx: 0, fy: 0.5, angle: 180 }, { fx: 1, fy: 0.5, angle: 0 }, { fx: 0.5, fy: 1, angle: 90 }],
             yjoint: [{ fx: 0.5, fy: 1, angle: 90 }, { fx: 0.8536, fy: 0.1464, angle: 315 }, { fx: 0.1464, fy: 0.1464, angle: 225 }]
@@ -3262,6 +3579,7 @@
         function getPortItemType(name) {
             if (!name) return null;
             if (name === 'Blast Gate' || name === '6in Blast Gate') return 'blastgate';
+            if (name.includes('Duct Drop')) return 'drop';
             if (name.includes('Duct Elbow')) return 'elbow';
             if (name.includes('Y-Joint')) return 'yjoint';
             if (name.includes('T-Joint')) return 'tjoint';
@@ -3396,6 +3714,8 @@
             const sizeClass = name.startsWith('6in') ? 'fitting-6in' : 'fitting-4in';
             if (name === 'Blast Gate' || name === '6in Blast Gate') {
                 toolNode.classList.add('blast-gate-node');
+            } else if (name.includes('Duct Drop')) {
+                toolNode.classList.add('pipe-node', 'drop-node', sizeClass);
             } else if (name.includes('Duct Elbow')) {
                 toolNode.classList.add('pipe-node', 'elbow-node', sizeClass);
             } else if (name.includes('Y-Joint')) {
@@ -3407,6 +3727,288 @@
             } else if (name.includes('Dust Duct')) {
                 toolNode.classList.add('pipe-node');
             }
+        }
+
+        /* ---------- AUTO-ATTACH TO DUST COLLECTION ----------
+           When a tool with "Attach to dust collection?" checked (see wireToolStatusItem) is
+           placed, builds a starting duct run from the tool out to the nearest point on the
+           existing DC network — an open port on an already-placed duct/fitting, or an edge of
+           the collector itself if nothing else is placed yet — with a blast gate at the tool
+           end, one or two duct segments sized to fit exactly, and an elbow at the bend if the
+           run isn't a straight line. This is a starting scaffold, not a finished obstacle-
+           aware route: pieces are ordinary placed nodes afterward, so the user drags/rotates/
+           deletes them to fine-tune exactly like anything placed by hand. */
+        const NETWORK_PORT_TOL_WP = 3;
+
+        // Midpoint of whichever of a box's 4 edges most directly faces (towardX, towardY),
+        // with an outward-facing angle in the same 0/90/180/270 convention as DUCT_PORTS
+        // (0=+x/right, 90=+y/down, 180=-x/left, 270=-y/up).
+        function boxEdgeAttachPoint(left, top, w, h, towardX, towardY) {
+            const cx = left + w / 2, cy = top + h / 2;
+            const dx = towardX - cx, dy = towardY - cy;
+            if (Math.abs(dx) > Math.abs(dy)) {
+                return dx >= 0 ? { x: left + w, y: cy, angle: 0 } : { x: left, y: cy, angle: 180 };
+            }
+            return dy >= 0 ? { x: cx, y: top + h, angle: 90 } : { x: cx, y: top, angle: 270 };
+        }
+
+        // Every open (unmatched) port across all placed dust-collection fittings, plus each
+        // collector's four edge midpoints as fallback attachment points for when nothing else
+        // is placed yet.
+        function findDcAttachmentCandidates() {
+            const dcNodes = Array.from(document.querySelectorAll('.placed-tool-node[data-layer="dust-collection"]'));
+            const candidates = [];
+
+            dcNodes.forEach(el => {
+                const name = el.dataset.toolName || '';
+                const type = getPortItemType(name);
+                if (!type) return;
+                const sizeClass = getDuctSizeClass(name);
+                const left = parseFloat(el.style.left), top = parseFloat(el.style.top);
+                const w = parseFloat(el.style.width), h = parseFloat(el.style.height);
+                const rotation = parseFloat(el.dataset.rotation) || 0;
+                getWorldPorts(type, left, top, w, h, rotation).forEach(p => {
+                    const occupied = dcNodes.some(other => {
+                        if (other === el) return false;
+                        const oType = getPortItemType(other.dataset.toolName || '');
+                        if (!oType || getDuctSizeClass(other.dataset.toolName) !== sizeClass) return false;
+                        const oLeft = parseFloat(other.style.left), oTop = parseFloat(other.style.top);
+                        const oW = parseFloat(other.style.width), oH = parseFloat(other.style.height);
+                        const oRot = parseFloat(other.dataset.rotation) || 0;
+                        return getWorldPorts(oType, oLeft, oTop, oW, oH, oRot)
+                            .some(op => Math.hypot(op.x - p.x, op.y - p.y) < NETWORK_PORT_TOL_WP);
+                    });
+                    if (!occupied) candidates.push({ x: p.x, y: p.y, angle: p.angle, sizeClass });
+                });
+            });
+
+            dcNodes.forEach(el => {
+                const name = el.dataset.toolName || '';
+                if (!/DC-1100VX|Dust Deputy/.test(name)) return;
+                const left = parseFloat(el.style.left), top = parseFloat(el.style.top);
+                const w = parseFloat(el.style.width), h = parseFloat(el.style.height);
+                [[0, -1], [0, 1], [-1, 0], [1, 0]].forEach(([dx, dy]) => {
+                    const p = boxEdgeAttachPoint(left, top, w, h, left + w / 2 + dx * 1000, top + h / 2 + dy * 1000);
+                    candidates.push({ x: p.x, y: p.y, angle: p.angle, sizeClass: '4in', isCollector: true });
+                });
+            });
+
+            return candidates;
+        }
+
+        // Solves for the {left, top, rotation} of a wPx x hPx port-based piece so its
+        // DUCT_PORTS[type][portIndex] port lands exactly on targetPort, facing back at it
+        // (flow into flow) — the placement half of the same math findPortSnap uses for
+        // interactive dragging, but aimed at a known target instead of searching for one.
+        function computePlacementForPort(type, wPx, hPx, portIndex, targetPort) {
+            const localAngle = DUCT_PORTS[type][portIndex].angle;
+            const desiredAngle = (targetPort.angle + 180) % 360;
+            const rotation = ((desiredAngle - localAngle) % 360 + 360) % 360;
+            const probe = getWorldPorts(type, 0, 0, wPx, hPx, rotation)[portIndex];
+            const cx = targetPort.x - (probe.x - wPx / 2);
+            const cy = targetPort.y - (probe.y - hPx / 2);
+            return { left: cx - wPx / 2, top: cy - hPx / 2, rotation };
+        }
+
+        // Builds the chain of piece descriptors (live px — caller normalizes to BASE_PPI)
+        // from a tool's footprint out to the given target attachment point.
+        function buildDcRoutePieces(toolLeft, toolTop, toolW, toolH, target) {
+            const sizeClass = target.sizeClass || '4in';
+            const thicknessFt = sizeClass === '6in' ? 0.5 : 0.35;
+            const thicknessPx = thicknessFt * ppi;
+            const sizePrefix = sizeClass === '6in' ? '6in ' : '4in ';
+            const elbowW = (sizeClass === '6in' ? 0.8 : 0.6) * ppi, elbowH = elbowW;
+            const pieces = [];
+
+            // Finds which local elbow port (0 or 1), used as the incoming connection, makes
+            // the elbow's OTHER port face outgoingAngle — an elbow's two ports are always 90
+            // degrees apart, so fixing the incoming angle alone doesn't determine which way it
+            // bends; this resolves that ambiguity. Returns null only if outgoingAngle isn't
+            // actually perpendicular to the incoming angle (shouldn't happen given the callers
+            // below, which always pass a genuine 90-degree turn).
+            function resolveElbowOrientation(incomingAngle, outgoingAngle) {
+                for (const idx of [0, 1]) {
+                    const localAngle = DUCT_PORTS.elbow[idx].angle;
+                    const desiredAngle = (incomingAngle + 180) % 360;
+                    const rotation = ((desiredAngle - localAngle) % 360 + 360) % 360;
+                    const otherIdx = idx === 0 ? 1 : 0;
+                    const otherWorldAngle = Math.round((DUCT_PORTS.elbow[otherIdx].angle + rotation) % 360);
+                    if (otherWorldAngle === Math.round(outgoingAngle)) return { idx, otherIdx, rotation };
+                }
+                return null;
+            }
+
+            // An elbow has real size, so its incoming and outgoing ports aren't at the same
+            // point — this is the fixed world-space offset between them for a given turn,
+            // independent of where the elbow actually ends up sitting. A preceding duct
+            // segment's length is chosen to cancel this out (see the bend-point math below),
+            // so the run lands exactly on target instead of a few px short (which would read
+            // as "still open" to Check Duct Connections' port-distance tolerance).
+            function elbowOffset(orientation) {
+                const probes = getWorldPorts('elbow', 0, 0, elbowW, elbowH, orientation.rotation);
+                return { x: probes[orientation.otherIdx].x - probes[orientation.idx].x, y: probes[orientation.otherIdx].y - probes[orientation.idx].y };
+            }
+
+            // Places an elbow connecting to currentPort and bending onto outgoingAngle,
+            // returning the new current port.
+            function turnElbow(currentPort, outgoingAngle) {
+                const orientation = resolveElbowOrientation(currentPort.angle, outgoingAngle);
+                if (!orientation) return currentPort;
+                const placement = computePlacementForPort('elbow', elbowW, elbowH, orientation.idx, currentPort);
+                pieces.push({
+                    label: sizeClass === '6in' ? '6in Duct Elbow' : '4in Duct Elbow',
+                    left: placement.left, top: placement.top, width: elbowW, height: elbowH,
+                    rotation: placement.rotation, layer: 'dust-collection', physicalHeight: 7
+                });
+                return getWorldPorts('elbow', placement.left, placement.top, elbowW, elbowH, placement.rotation)[orientation.otherIdx];
+            }
+
+            const start = boxEdgeAttachPoint(toolLeft, toolTop, toolW, toolH, target.x, target.y);
+
+            const gateW = (sizeClass === '6in' ? 0.6 : 0.5) * ppi, gateH = thicknessPx;
+            const gatePlacement = computePlacementForPort('blastgate', gateW, gateH, 0, start);
+            pieces.push({
+                label: sizeClass === '6in' ? '6in Blast Gate' : 'Blast Gate',
+                left: gatePlacement.left, top: gatePlacement.top, width: gateW, height: gateH,
+                rotation: gatePlacement.rotation, layer: 'dust-collection', physicalHeight: 7
+            });
+            let currentPort = getWorldPorts('blastgate', gatePlacement.left, gatePlacement.top, gateW, gateH, gatePlacement.rotation)[1];
+
+            // A drop sits right behind the blast gate — the elevation change from the tool-
+            // height gate up to the overhead trunk (see the Help page for the real-world
+            // reasoning). It's a normal 2-port piece in this 2D graph, same shape as a duct,
+            // so it slots into the same connect-and-advance pattern as everything else here.
+            const dropW = (sizeClass === '6in' ? 0.6 : 0.5) * ppi, dropH = thicknessPx;
+            const dropPlacement = computePlacementForPort('drop', dropW, dropH, 0, currentPort);
+            pieces.push({
+                label: sizeClass === '6in' ? '6in Duct Drop' : '4in Duct Drop',
+                left: dropPlacement.left, top: dropPlacement.top, width: dropW, height: dropH,
+                // Unlike every other piece here, physicalHeight on a drop means its own
+                // vertical drop length (see the 3D viewer's addToolMesh), not a mount
+                // elevation — 5ft is the same default the catalog card's input starts at.
+                rotation: dropPlacement.rotation, layer: 'dust-collection', physicalHeight: 5
+            });
+            currentPort = getWorldPorts('drop', dropPlacement.left, dropPlacement.top, dropW, dropH, dropPlacement.rotation)[1];
+
+            // A drop is vertical pipe — connecting it into a horizontal trunk always needs an
+            // elbow right at that junction, regardless of which horizontal direction the trunk
+            // then runs (real ductwork can't transition planes without a fitting there). This
+            // is mandatory, unlike the bend below, which only happens if the target isn't
+            // already lined up with wherever this turn happens to leave the run.
+            const dropHorizontal = currentPort.angle === 0 || currentPort.angle === 180;
+            const mandatoryTurnAngle = dropHorizontal
+                ? (target.y > currentPort.y ? 90 : 270)
+                : (target.x > currentPort.x ? 0 : 180);
+            currentPort = turnElbow(currentPort, mandatoryTurnAngle);
+
+            function addDuctTo(pointX, pointY) {
+                const dist = Math.hypot(pointX - currentPort.x, pointY - currentPort.y);
+                if (dist < 0.05 * ppi) return;
+                const ductW = dist, ductH = thicknessPx;
+                const placement = computePlacementForPort('duct', ductW, ductH, 0, currentPort);
+                pieces.push({
+                    label: sizePrefix + 'Dust Duct',
+                    left: placement.left, top: placement.top, width: ductW, height: ductH,
+                    rotation: placement.rotation, layer: 'dust-collection', physicalHeight: 7
+                });
+                currentPort = getWorldPorts('duct', placement.left, placement.top, ductW, ductH, placement.rotation)[1];
+            }
+
+            // A duct can only extend forward along currentPort's own facing direction — it
+            // can't reach a point behind it. addDuctTo trusts its caller for this (it only
+            // ever looks at unsigned distance), so anything that computes a bend point must
+            // check this first: a bend point "computed toward target" can still land behind
+            // currentPort (see below), and silently building a duct "toward" it would actually
+            // extend the wrong way by the same distance.
+            function isForward(point) {
+                const dx = point.x - currentPort.x, dy = point.y - currentPort.y;
+                if (currentPort.angle === 0) return dx >= -0.01;
+                if (currentPort.angle === 180) return dx <= 0.01;
+                if (currentPort.angle === 90) return dy >= -0.01;
+                return dy <= 0.01;
+            }
+
+            // Turns toward target as many times as it takes to line up both axes, instead of
+            // assuming one more elbow is always enough. One mandatory turn is never quite
+            // "free" — an elbow has real size, so it always leaves currentPort's on-axis
+            // coordinate shifted by roughly its own half-width. When target sits exactly on
+            // the pivot axis (tool perfectly lined up with the collector), that shift can land
+            // on the side currentPort can no longer reach without turning again — a single
+            // extra elbow doesn't cover that case, so this loops (capped, so a geometry this
+            // couldn't resolve at all just stops instead of hanging).
+            for (let guard = 0; guard < 4; guard++) {
+                const horizontal = currentPort.angle === 0 || currentPort.angle === 180;
+                // currentPort can only travel along its own facing axis by extending a duct —
+                // the ON-axis distance to target doesn't matter (a duct can be any length),
+                // only whether the OFF-axis coordinate (the one it physically can't change
+                // without another turn) already matches target.
+                const offAxisDiff = horizontal ? Math.abs(currentPort.y - target.y) : Math.abs(currentPort.x - target.x);
+                if (offAxisDiff <= thicknessPx) break;
+
+                const outgoingAngle = horizontal
+                    ? (target.y > currentPort.y ? 90 : 270)
+                    : (target.x > currentPort.x ? 0 : 180);
+                const orientation = resolveElbowOrientation(currentPort.angle, outgoingAngle);
+                if (!orientation) break;
+
+                const offset = elbowOffset(orientation);
+                let bend = horizontal
+                    ? { x: target.x - offset.x, y: currentPort.y }
+                    : { x: currentPort.x, y: target.y - offset.y };
+                if (!isForward(bend)) {
+                    // The target-derived bend point is behind currentPort — reachable geometry
+                    // doesn't exist yet on this leg. Jog forward by one elbow-width instead (any
+                    // positive distance works — the next loop pass re-evaluates from there) so
+                    // progress is still made rather than silently building backwards.
+                    const jog = elbowW;
+                    bend = {
+                        x: currentPort.x + (currentPort.angle === 0 ? jog : currentPort.angle === 180 ? -jog : 0),
+                        y: currentPort.y + (currentPort.angle === 90 ? jog : currentPort.angle === 270 ? -jog : 0)
+                    };
+                }
+                addDuctTo(bend.x, bend.y);
+                currentPort = turnElbow(currentPort, outgoingAngle);
+            }
+
+            // Final leg — both axes now line up (or the guard above gave up), so just extend
+            // straight to target along currentPort's own facing axis.
+            const finalHorizontal = currentPort.angle === 0 || currentPort.angle === 180;
+            const endPoint = finalHorizontal ? { x: target.x, y: currentPort.y } : { x: currentPort.x, y: target.y };
+            addDuctTo(endPoint.x, endPoint.y);
+
+            return pieces;
+        }
+
+        // Entry point, called from the drop handler for any tool placed with "Attach to dust
+        // collection?" checked. toolLeft/toolTop/toolW/toolH are live px (matching the just-
+        // placed node's own style.left/top/width/height).
+        function autoRouteDustCollection(toolLeft, toolTop, toolW, toolH) {
+            const candidates = findDcAttachmentCandidates();
+            if (!candidates.length) {
+                showToast('Place a dust collector first to auto-connect this tool.');
+                return;
+            }
+            const toolCx = toolLeft + toolW / 2, toolCy = toolTop + toolH / 2;
+            let best = null;
+            candidates.forEach(c => {
+                const dist = Math.hypot(c.x - toolCx, c.y - toolCy);
+                if (!best || dist < best.dist) best = { ...c, dist };
+            });
+
+            const piecesPx = buildDcRoutePieces(toolLeft, toolTop, toolW, toolH, best);
+            const normFactor = BASE_PPI / ppi;
+            piecesPx.forEach(p => {
+                const node = createPlacedNodeFromDescriptor({
+                    label: p.label, displayName: p.label, displayDims: '',
+                    left: p.left * normFactor, top: p.top * normFactor,
+                    width: p.width * normFactor, height: p.height * normFactor,
+                    rotation: Math.round(p.rotation), layer: 'dust-collection',
+                    physicalHeight: p.physicalHeight, cabType: null
+                });
+                board.appendChild(node);
+            });
+            applyLayerVisibility();
+            showToast('Dust collection connected — drag any piece to fine-tune.');
         }
 
         // Tool Storage catalog items whose label should read "longways" along the box's long
@@ -3436,6 +4038,33 @@
 
         function initDragAndDropEngine() {
             document.querySelectorAll('.tool-box-item').forEach(wireToolDragStart);
+
+            // Custom-length duct catalog cards read their length from a live inline input
+            // instead of a fixed data-length — wireToolDragStart already reads data-length at
+            // drag time, so keeping that attribute in sync with the input is all that's
+            // needed; the drag/placement code itself doesn't need to know this card is special.
+            document.querySelectorAll('.custom-duct-length-input').forEach(input => {
+                const item = input.closest('.tool-box-item');
+                input.addEventListener('mousedown', (e) => e.stopPropagation());
+                input.addEventListener('click', (e) => e.stopPropagation());
+                input.addEventListener('input', () => {
+                    const ft = Math.max(0.5, parseFloat(input.value) || 0.5);
+                    item.setAttribute('data-length', ft);
+                });
+            });
+
+            // Same pattern as the custom duct length input above, but for a Duct Drop's
+            // vertical drop distance (data-height doubles as physicalHeight on placement,
+            // which the 3D viewer reads as the drop's actual length — see addToolMesh).
+            document.querySelectorAll('.custom-drop-length-input').forEach(input => {
+                const item = input.closest('.tool-box-item');
+                input.addEventListener('mousedown', (e) => e.stopPropagation());
+                input.addEventListener('click', (e) => e.stopPropagation());
+                input.addEventListener('input', () => {
+                    const ft = Math.max(1, parseFloat(input.value) || 5);
+                    item.setAttribute('data-height', ft);
+                });
+            });
 
             // Clicking empty grid space deselects whatever placed node was selected — but
             // not right after a click-drag pan, which would otherwise also land on `board`
@@ -3532,6 +4161,13 @@
                 if (internalDragData.cabType) makeElementResizable(toolNode);
                 if (internalDragData.layer === 'dust-collection') applyDustCollectionSnap(toolNode);
                 board.appendChild(toolNode);
+
+                if (!internalDragData.cabType && (internalDragData.layer || 'tools') === 'tools') {
+                    const statuses = loadToolStatuses();
+                    const entry = statuses[internalDragData.name];
+                    if (entry && entry.attachDC) autoRouteDustCollection(snapX, snapY, toolW, toolH);
+                }
+
                 internalDragData = null;
                 applyLayerVisibility();
             });
@@ -4180,6 +4816,7 @@
                     statuses[name] = {
                         status: 'owned',
                         nickname: (existing && existing.nickname) || '',
+                        attachDC: (existing && existing.attachDC) || false,
                         widthFt: parseFloat(item.getAttribute('data-width')) || null,
                         lengthFt: parseFloat(item.getAttribute('data-length')) || null,
                         heightFt: parseFloat(item.getAttribute('data-height')) || null,
@@ -4198,6 +4835,7 @@
                 } else {
                     statuses[name] = {
                         status: 'wishlist',
+                        attachDC: (existing && existing.attachDC) || false,
                         widthFt: parseFloat(item.getAttribute('data-width')) || null,
                         lengthFt: parseFloat(item.getAttribute('data-length')) || null,
                         heightFt: parseFloat(item.getAttribute('data-height')) || null,
@@ -4216,6 +4854,28 @@
                     saveToolStatuses(statuses);
                 }
             });
+
+            // "Attach to dust collection?" — tools only (not the dust-collection/lighting
+            // catalog items themselves, which have no data-layer attribute default of 'tools'
+            // vs an explicit one). Independent of owned/wishlist status, since it's a
+            // placement-time preference, not an ownership fact — see autoRouteDustCollection,
+            // wired into the drop handler in initDragAndDropEngine.
+            if ((item.getAttribute('data-layer') || 'tools') === 'tools') {
+                const attachLabel = document.createElement('label');
+                attachLabel.className = 'attach-dc-label';
+                attachLabel.innerHTML = '<input type="checkbox" class="attach-dc-checkbox"> Attach to dust collection?';
+                item.appendChild(attachLabel);
+                const attachCheckbox = attachLabel.querySelector('input');
+                attachCheckbox.checked = !!(statuses[name] && statuses[name].attachDC);
+                attachLabel.addEventListener('mousedown', (e) => e.stopPropagation());
+                attachLabel.addEventListener('click', (e) => e.stopPropagation());
+                attachCheckbox.addEventListener('change', () => {
+                    const existing = statuses[name] || {};
+                    existing.attachDC = attachCheckbox.checked;
+                    statuses[name] = existing;
+                    saveToolStatuses(statuses);
+                });
+            }
         }
 
         function initToolStatusControls() {
@@ -5379,6 +6039,34 @@
         // between them without disturbing their tool placement.
         const LAYOUT_TYPE_LABELS = { workshop: 'Workshop', 'dust-collection': 'Dust Collection', lighting: 'Lighting' };
 
+        // Sizes #savedLayoutsField to fit the currently *selected* option's text — a short
+        // name shouldn't waste header space, and a long one shouldn't get clipped behind the
+        // <select>'s own native dropdown arrow (which the old fixed 280px width did for
+        // anything much longer than "[Workshop] Garage Shop"). Clamped to [200, 420]px so one
+        // absurdly long name can't push other header controls off-screen.
+        function resizeSavedLayoutsField() {
+            const field = document.getElementById('savedLayoutsField');
+            const select = document.getElementById('savedLayoutsSelect');
+            if (!field || !select || !select.options.length) return;
+            const selected = select.options[select.selectedIndex];
+            const text = selected ? selected.text : '';
+
+            let measurer = document.getElementById('savedLayoutsMeasurer');
+            if (!measurer) {
+                measurer = document.createElement('span');
+                measurer.id = 'savedLayoutsMeasurer';
+                measurer.style.cssText = 'position:absolute; left:-9999px; top:-9999px; visibility:hidden; white-space:nowrap; font-size:13px; font-weight:600;';
+                document.body.appendChild(measurer);
+            }
+            measurer.textContent = text;
+            const textWidth = measurer.getBoundingClientRect().width;
+
+            // select's own left/right padding + native dropdown-arrow chrome + the gap/Load
+            // button/gap/delete button that share this same flex row.
+            const chrome = 20 + 24 + 6 + 50 + 6 + 26;
+            field.style.width = Math.min(420, Math.max(200, Math.ceil(textWidth) + chrome)) + 'px';
+        }
+
         function renderSavedLayoutsPicker() {
             const field = document.getElementById('savedLayoutsField');
             const select = document.getElementById('savedLayoutsSelect');
@@ -5401,6 +6089,7 @@
             } else {
                 select.value = layouts[layouts.length - 1].id;
             }
+            resizeSavedLayoutsField();
         }
 
         // Swaps in just one layer's items from a saved snapshot (Dust Collection/Lighting
@@ -5425,16 +6114,38 @@
 
             saveBtn.addEventListener('click', () => {
                 if (!requireProAccess('Saved shop layouts are a Pro feature.')) return;
-                const name = nameInput.value.trim() || `Shop Layout ${new Date().toLocaleString()}`;
+                const typedName = nameInput.value.trim();
                 const layouts = loadLayouts();
+
+                // Default to updating whichever layout is already selected (which defaults to
+                // the most recently saved one — see renderSavedLayoutsPicker) instead of piling
+                // up a new entry on every Save. Typing a genuinely different name is the signal
+                // for "save this as a separate layout" — leaving it blank, or leaving it exactly
+                // as-is, means "just re-save what I'm working on."
+                const targetId = select.value || (layouts.length ? layouts[layouts.length - 1].id : null);
+                const existing = targetId ? layouts.find(l => l.id === targetId) : null;
+                const isOverwrite = !!existing && (!typedName || typedName === existing.name);
+                const name = typedName || (existing ? existing.name : `Shop Layout ${new Date().toLocaleString()}`);
+
                 const layout = serializeCurrentLayout(name);
                 layout.layoutType = typeSelect.value;
-                layouts.push(layout);
-                persistLayouts(layouts);
-                nameInput.value = '';
-                renderSavedLayoutsPicker();
-                select.value = layouts[layouts.length - 1].id;
-                showToast(`Saved "${name}".`);
+
+                if (isOverwrite) {
+                    layout.id = existing.id;
+                    layouts[layouts.findIndex(l => l.id === existing.id)] = layout;
+                    persistLayouts(layouts);
+                    nameInput.value = '';
+                    renderSavedLayoutsPicker();
+                    select.value = layout.id;
+                    showToast(`Updated "${name}".`);
+                } else {
+                    layouts.push(layout);
+                    persistLayouts(layouts);
+                    nameInput.value = '';
+                    renderSavedLayoutsPicker();
+                    select.value = layouts[layouts.length - 1].id;
+                    showToast(`Saved "${name}".`);
+                }
             });
 
             document.getElementById('loadLayoutBtn').addEventListener('click', () => {
@@ -5459,73 +6170,15 @@
                 renderSavedLayoutsPicker();
             });
 
+            select.addEventListener('change', resizeSavedLayoutsField);
+
             renderSavedLayoutsPicker();
         }
 
         /* ---------- TOOL PREVIEW POPOVERS (generic icons, no product photos) ---------- */
-        const TOOL_SPECS = {
-            'SawStop PCS175': { power: '1.75 HP', voltage: '110V / 220V', weight: '~440 lbs' },
-            'SawStop ICS': { power: '3-5 HP', voltage: '220V (1 or 3-phase)', weight: '~600 lbs' },
-            'Delta 36-L352': { power: '3 HP', voltage: '220V', weight: '~480 lbs' },
-            'Laguna 14BX': { power: '1.75 HP', voltage: '110V / 220V', weight: '~275 lbs' },
-            'Rikon 10-326': { power: '2 HP', voltage: '220V', weight: '~300 lbs' },
-            'Grizzly G0513X2': { power: '3 HP', voltage: '220V', weight: '~455 lbs' },
-            'Powermatic PJ882': { power: '2 HP', voltage: '220V', weight: '~475 lbs' },
-            'Powermatic 201HH': { power: '3 HP', voltage: '220V', weight: '~450 lbs' },
-            'Hammer A3-31': { power: '4 HP', voltage: '220V / 3-phase', weight: '~750 lbs' },
-            'Grizzly G0771Z': { power: '1.5 HP', voltage: '110V / 220V', weight: '~200 lbs' },
-            'JET 22-44 Sander': { power: '3/4 HP', voltage: '110V', weight: '~250 lbs' },
-            'SuperMax 19-38': { power: '5 HP', voltage: '220V', weight: '~600 lbs' },
-            'Powermatic PM2800B': { power: '1 HP', voltage: '110V / 220V', weight: '~400 lbs' },
-            'General 75-510 M1': { power: '3/4 HP', voltage: '110V', weight: '~200 lbs' },
-            'Powermatic 3520C': { power: '2 HP', voltage: '220V', weight: '~600 lbs' },
-            'JET JWL-1640EVS': { power: '1.5 HP', voltage: '110V / 220V', weight: '~350 lbs' },
-            'SawStop RT': { power: 'N/A (table)', voltage: 'N/A', weight: '~120 lbs' },
-            'Kreg PRS2100': { power: 'N/A (table)', voltage: 'N/A', weight: '~85 lbs' },
-            'Festool Kapex KS 120': { power: '15A', voltage: '120V', weight: '~62 lbs + stand' },
-            'Bosch GTS1041A': { power: '15A', voltage: '120V', weight: '~13 lbs + stand' },
-            'JET DC-1100VX': { power: '1.5 HP', voltage: '110V / 220V', weight: '~230 lbs' },
-            'Oneida Super Dust Deputy XL': { power: 'Passive cyclone', voltage: 'N/A', weight: '~25 lbs' },
-            '4in Dust Duct 2ft': { power: 'N/A', voltage: 'N/A', weight: '~1 lb' },
-            '4in Dust Duct 4ft': { power: 'N/A', voltage: 'N/A', weight: '~2 lbs' },
-            '4in Dust Duct 6ft': { power: 'N/A', voltage: 'N/A', weight: '~3 lbs' },
-            '4in Dust Duct 8ft': { power: 'N/A', voltage: 'N/A', weight: '~4 lbs' },
-            '4in Dust Duct 10ft': { power: 'N/A', voltage: 'N/A', weight: '~5 lbs' },
-            '6in Dust Duct 2ft': { power: 'N/A', voltage: 'N/A', weight: '~1.5 lbs' },
-            '6in Dust Duct 4ft': { power: 'N/A', voltage: 'N/A', weight: '~3 lbs' },
-            '6in Dust Duct 6ft': { power: 'N/A', voltage: 'N/A', weight: '~4.5 lbs' },
-            '6in Dust Duct 8ft': { power: 'N/A', voltage: 'N/A', weight: '~6 lbs' },
-            '6in Dust Duct 10ft': { power: 'N/A', voltage: 'N/A', weight: '~7.5 lbs' },
-            'Blast Gate': { power: 'N/A', voltage: 'N/A', weight: '~1 lb' },
-            '6in Blast Gate': { power: 'N/A', voltage: 'N/A', weight: '~1.5 lbs' },
-            '4in Duct Elbow': { power: 'N/A', voltage: 'N/A', weight: '~1 lb' },
-            '6in Duct Elbow': { power: 'N/A', voltage: 'N/A', weight: '~1.5 lbs' },
-            '4in Duct Y-Joint': { power: 'N/A', voltage: 'N/A', weight: '~1.2 lbs' },
-            '6in Duct Y-Joint': { power: 'N/A', voltage: 'N/A', weight: '~1.8 lbs' },
-            '4in Duct T-Joint': { power: 'N/A', voltage: 'N/A', weight: '~1.2 lbs' },
-            '6in Duct T-Joint': { power: 'N/A', voltage: 'N/A', weight: '~1.8 lbs' },
-            '4in Pipe Bracket': { power: 'N/A', voltage: 'N/A', weight: '~0.3 lbs' },
-            '6in Pipe Bracket': { power: 'N/A', voltage: 'N/A', weight: '~0.4 lbs' },
-            'LED Shop Light 4ft': { power: '40W', voltage: '110V', weight: '~6 lbs' },
-            'High Bay LED Fixture': { power: '150W', voltage: '110V / 220V', weight: '~12 lbs' },
-            'Adjustable Task Light': { power: '10W', voltage: '110V', weight: '~3 lbs' },
-            'Shapeoko Pro XXL': { power: 'NEMA 23 steppers', voltage: '110V', weight: '~110 lbs' },
-            'Glowforge Pro': { power: '45W laser', voltage: '120V', weight: '~80 lbs' },
-            'Bambu Lab X1 Carbon': { power: '350W', voltage: '120V', weight: '~24 lbs' },
-            'Prusa MK4': { power: '240W', voltage: '110V / 220V', weight: '~18 lbs' },
-            'Creality K1 Max': { power: '1000W', voltage: '110V / 220V', weight: '~26 lbs' },
-            'Elegoo Saturn 4 Ultra': { power: '200W', voltage: '110V', weight: '~15 lbs' },
-            'Assembly Table': { power: 'N/A', voltage: 'N/A', weight: '~150 lbs' },
-            'Kreg Mobile Project Center': { power: 'N/A', voltage: 'N/A', weight: '~90 lbs' },
-            'Milwaukee PACKOUT Rolling Box': { power: 'N/A', voltage: 'N/A', weight: '~20 lbs empty' },
-            'DEWALT TOUGHSYSTEM 2.0': { power: 'N/A', voltage: 'N/A', weight: '~29 lbs empty' },
-            'Craftsman 26in Rolling Cabinet': { power: 'N/A', voltage: 'N/A', weight: '~150 lbs empty' },
-            'Kobalt 41in Rolling Chest': { power: 'N/A', voltage: 'N/A', weight: '~230 lbs empty' },
-            'US General 56in Roller Cabinet': { power: 'N/A', voltage: 'N/A', weight: '~340 lbs empty' },
-            'Husky 52in Mobile Workbench': { power: 'N/A', voltage: 'N/A', weight: '~300 lbs empty' },
-            'Snap-on KRL1023 Classic 78': { power: 'N/A', voltage: 'N/A', weight: '~700 lbs empty' },
-            'Husky 72in Tool Chest Combo': { power: 'N/A', voltage: 'N/A', weight: '~650 lbs empty' }
-        };
+        // Sourced from catalog-data.js (window.TOOL_SPECS) — single source of truth shared
+        // with shop-3d-viewer.html, see that file's <script src="catalog-data.js"> tag.
+        const TOOL_SPECS = window.TOOL_SPECS;
 
         /* ---------- ELECTRICAL LOAD CALCULATOR ----------
            Reads whatever's currently placed on the board and TOOL_SPECS' power/voltage
@@ -5685,6 +6338,11 @@
                 }
             }
             resultsEl.innerHTML = html;
+            // Belt-and-suspenders alongside the ResizeObserver in initPanelAutoStack() — this
+            // content can grow/shrink the panel without a collapse/expand toggle happening
+            // (Recalculate, service-size change), so the panels below need to be nudged
+            // explicitly too, not just rely on the observer noticing.
+            if (typeof arrangeFloatingPanels === 'function') arrangeFloatingPanels();
         }
 
         function initElectricalPanel() {
@@ -5830,6 +6488,11 @@
                 const itemCount = flaggedEls.size;
                 resultEl.innerHTML = `<div class="elec-status-badge warn">&#9888; ${issueCount} tight spot${issueCount === 1 ? '' : 's'} across ${itemCount} item${itemCount === 1 ? '' : 's'} — flagged in red on the grid</div>`;
             }
+            // Belt-and-suspenders alongside the ResizeObserver in initPanelAutoStack() — this
+            // content can grow/shrink the panel without a collapse/expand toggle happening
+            // (Check, min-width change), so the panels below need to be nudged explicitly
+            // too, not just rely on the observer noticing.
+            if (typeof arrangeFloatingPanels === 'function') arrangeFloatingPanels();
         }
 
         function initClearancePanel() {
@@ -5872,6 +6535,7 @@
             if (!items.length) {
                 listEl.innerHTML = '<div class="elec-empty">Nothing placed yet — drag tools onto the grid.</div>';
                 updateCostTotal();
+                if (typeof arrangeFloatingPanels === 'function') arrangeFloatingPanels();
                 return;
             }
             const groups = {};
@@ -5879,21 +6543,47 @@
                 if (!groups[it.layer]) groups[it.layer] = [];
                 groups[it.layer].push(it);
             });
+
+            const renderRow = (it) => {
+                const rowIndex = costRowNodes.push(it.el) - 1;
+                const val = it.el.dataset.estCost || '';
+                return `
+                    <div class="cost-item-row">
+                        <span class="cost-item-name">${escapeHtml(it.label)}</span>
+                        <input type="number" class="cost-item-input" min="0" step="1" data-row-index="${rowIndex}" placeholder="$0" value="${escapeHtml(val)}">
+                    </div>`;
+            };
+
             let html = '';
             Object.keys(groups).forEach(layerKey => {
-                html += `<div class="cost-group-label">${escapeHtml(COST_LAYER_LABELS[layerKey] || layerKey)}</div>`;
-                groups[layerKey].forEach(it => {
-                    const rowIndex = costRowNodes.push(it.el) - 1;
-                    const val = it.el.dataset.estCost || '';
-                    html += `
-                        <div class="cost-item-row">
-                            <span class="cost-item-name">${escapeHtml(it.label)}</span>
-                            <input type="number" class="cost-item-input" min="0" step="1" data-row-index="${rowIndex}" placeholder="$0" value="${escapeHtml(val)}">
-                        </div>`;
-                });
+                const groupItems = groups[layerKey];
+                const label = COST_LAYER_LABELS[layerKey] || layerKey;
+                if (layerKey === 'dust-collection') {
+                    html += `<details class="cost-group-collapsible">
+                        <summary class="cost-group-summary">
+                            <span class="cost-group-label">${escapeHtml(label)}</span>
+                            <span class="cost-group-summary-right"><span class="category-count">${groupItems.length}</span><span class="category-chevron">&#9656;</span></span>
+                        </summary>
+                        ${groupItems.map(renderRow).join('')}
+                    </details>`;
+                } else {
+                    html += `<div class="cost-group-label">${escapeHtml(label)}</div>`;
+                    html += groupItems.map(renderRow).join('');
+                }
             });
             listEl.innerHTML = html;
             updateCostTotal();
+            // Belt-and-suspenders alongside the ResizeObserver in initPanelAutoStack() — this
+            // content can grow/shrink the panel without a collapse/expand toggle happening
+            // (Refresh List, or the native Dust Collection <details> dropdown opening/
+            // closing), so the panels below need to be nudged explicitly too, not just rely
+            // on the observer noticing.
+            listEl.querySelectorAll('.cost-group-collapsible').forEach(details => {
+                details.addEventListener('toggle', () => {
+                    if (typeof arrangeFloatingPanels === 'function') arrangeFloatingPanels();
+                });
+            });
+            if (typeof arrangeFloatingPanels === 'function') arrangeFloatingPanels();
         }
 
         function initCostPanel() {
@@ -5931,11 +6621,17 @@
                 const scale = Math.min(1, PRINT_AREA_W / board.scrollWidth, PRINT_AREA_H / board.scrollHeight);
                 board.style.setProperty('--print-zoom', scale);
 
+                // Free-plan exports carry a watermark — clean exports are a Pro+ perk (see
+                // the launch report's tier sheet). Real enforcement needs a real backend —
+                // this is the same client-side "Plan (Preview)" gate used everywhere else.
+                document.getElementById('printWatermark').classList.toggle('active', getPlan() === 'free');
+
                 window.print();
             });
 
             window.addEventListener('afterprint', () => {
                 board.style.removeProperty('--print-zoom');
+                document.getElementById('printWatermark').classList.remove('active');
             });
         }
 
@@ -6626,6 +7322,7 @@
                 const el = document.createElement('div');
                 el.className = `wall-feature-node wall-feature-${f.type}`;
                 el.dataset.id = f.id;
+                if (f.color) el.style.backgroundColor = f.color;
                 el.style.width = lenPx + 'px';
                 el.style.height = thickPx + 'px';
                 el.style.left = (f.x - lenPx / 2) + 'px';
@@ -6851,13 +7548,14 @@
                 if (!snapped) return;
 
                 const type = wallFeatureMode;
-                let lengthFt, thicknessFt, label, voltage = null, widthIn = null;
+                let lengthFt, thicknessFt, label, voltage = null, widthIn = null, color = null;
 
                 if (type === 'door') {
                     widthIn = parseFloat(doorWidth.value) || 36;
                     lengthFt = widthIn / 12;
                     thicknessFt = 0.3;
                     label = document.getElementById('wfDoorLabel').value.trim() || 'Door';
+                    color = document.getElementById('wfDoorColor').value || null;
                 } else if (type === 'window') {
                     widthIn = parseFloat(windowWidth.value) || 36;
                     lengthFt = widthIn / 12;
@@ -6908,7 +7606,7 @@
                     return;
                 }
 
-                finalizeWallFeaturePlacement({ type, placeX, placeY, angle: clamped.angle, lengthFt, thicknessFt, label, voltage, widthIn });
+                finalizeWallFeaturePlacement({ type, placeX, placeY, angle: clamped.angle, lengthFt, thicknessFt, label, voltage, widthIn, color });
             });
 
             setActiveTab('door');
@@ -6920,7 +7618,7 @@
                 id: Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
                 type: p.type, x: p.placeX, y: p.placeY, angle: p.angle,
                 lengthFt: p.lengthFt, thicknessFt: p.thicknessFt, label: p.label, voltage: p.voltage, widthIn: p.widthIn,
-                mountHeightIn: mountHeightIn || null
+                mountHeightIn: mountHeightIn || null, color: p.color || null
             });
             renderWallFeatures();
         }
@@ -7038,6 +7736,27 @@
             });
         }
 
+        // Watches every stacked panel's actual box size and re-runs arrangeFloatingPanels()
+        // on ANY change — not just the expand/collapse toggle. Content inside an already-open
+        // panel can also change height on its own (Electrical Load's Recalculate, Clearance
+        // Checker's Check, Cost Rollup's Refresh List/expanding its Dust Collection dropdown
+        // all re-render without a collapse toggle happening), and chasing every individual
+        // call site that can grow/shrink a panel is fragile — a ResizeObserver catches all of
+        // them, including ones added later, so panels genuinely never overlap. Safe from
+        // feedback loops: arrangeFloatingPanels only ever writes top/left/right, never a size
+        // property, so it can't itself trigger another resize.
+        function initPanelAutoStack() {
+            const panels = ['cabinetPanel', 'wallFeaturePanel', 'layersPanel', 'electricalPanel', 'clearancePanel', 'costPanel']
+                .map(id => document.getElementById(id))
+                .filter(Boolean);
+            // No rAF debounce needed: ResizeObserver already batches every observed change
+            // into one callback per frame on its own, and arrangeFloatingPanels only ever
+            // writes top/left/right (never a size property), so calling it straight from the
+            // callback can't create a resize feedback loop.
+            const observer = new ResizeObserver(() => arrangeFloatingPanels());
+            panels.forEach(p => observer.observe(p));
+        }
+
         function initDraggablePanels() {
             const cabinetPanel = document.getElementById('cabinetPanel');
             const wallFeaturePanel = document.getElementById('wallFeaturePanel');
@@ -7114,6 +7833,7 @@
 
             document.getElementById('newLayoutBtn').addEventListener('click', () => openModal('new'));
             document.getElementById('editLayoutBtn').addEventListener('click', () => openModal('edit'));
+            document.getElementById('view3dBtn').addEventListener('click', () => { window.location.href = 'shop-3d-viewer.html'; });
             document.getElementById('modalCancelBtn').addEventListener('click', closeModal);
 
             overlay.addEventListener('click', (e) => {
@@ -7232,6 +7952,9 @@
         document.getElementById('inputScale').addEventListener('change', updateWorkshopGridSize);
         initDragAndDropEngine();
         initGridPanning();
+        document.getElementById('canvas-scroll-area').addEventListener('scroll', updateZoomControlBarPosition);
+        window.addEventListener('resize', updateZoomControlBarPosition);
+        updateZoomControlBarPosition();
         initResizeHandles();
         initToolStatusControls();
         initCustomTools();
@@ -7256,6 +7979,7 @@
         initExportPdf();
         document.getElementById('pageNavSelect').addEventListener('change', (e) => { window.location.href = e.target.value; });
         initDraggablePanels();
+        initPanelAutoStack();
         initNewLayoutModal();
         initUnitToggle();
         initToolSearch();
@@ -7270,9 +7994,40 @@
            there) show up here on next visit. */
         const CURRENT_LAYOUT_KEY = 'kerphCurrentLayout';
 
+        // serializeCurrentLayout() stamps a fresh random id + savedAt on every call, so a
+        // naive JSON-string comparison would never dedupe two calls with identical board
+        // content — comparing only the meaningful fields is what lets autosaveCurrentLayout
+        // below actually detect "nothing changed" and skip the write.
+        function serializeForChangeComparison(layout) {
+            const { id, savedAt, ...rest } = layout;
+            return JSON.stringify(rest);
+        }
+
+        let lastAutosavedContent = null;
+
+        // Set the moment another tab (e.g. Dust Collection, adding a duct drop) writes
+        // kerphCurrentLayout out from under this one, and cleared once the user resolves it
+        // via the banner below. While true, this tab's own DOM is known-stale, so autosave
+        // must not write — a stale write would silently erase whatever the other tab just
+        // added, which is exactly the "drops keep disappearing randomly" bug: this page never
+        // reloads on an external change (see showExternalChangeBanner's comment for why), but
+        // it was still autosaving its own outdated snapshot every 2s/on unload regardless,
+        // clobbering the other tab's write the moment this tab's board changed at all.
+        let externalChangeDetected = false;
+
         function autosaveCurrentLayout() {
+            if (externalChangeDetected) return;
             try {
-                localStorage.setItem(CURRENT_LAYOUT_KEY, JSON.stringify(serializeCurrentLayout('Current Layout')));
+                const layout = serializeCurrentLayout('Current Layout');
+                const comparable = serializeForChangeComparison(layout);
+                // Ticks every 2s regardless of whether anything actually happened — writing
+                // unconditionally meant every other open tab (3D viewer, Dust Collection) saw
+                // a "layout changed externally" storage event every 2 seconds forever, even
+                // when the board was untouched, which is what made that notice feel like a
+                // constant, meaningless nag. Skipping a no-op write is what actually fixes it.
+                if (comparable === lastAutosavedContent) return;
+                lastAutosavedContent = comparable;
+                localStorage.setItem(CURRENT_LAYOUT_KEY, JSON.stringify(layout));
             } catch (e) {
                 // localStorage can throw (quota, private browsing) — autosave is best-effort.
             }
@@ -7282,6 +8037,7 @@
         if (savedCurrentLayout) {
             try {
                 applyLayoutState(JSON.parse(savedCurrentLayout));
+                lastAutosavedContent = serializeForChangeComparison(JSON.parse(savedCurrentLayout));
             } catch (e) {
                 updateWorkshopGridSize();
             }
@@ -7291,6 +8047,76 @@
 
         setInterval(autosaveCurrentLayout, 2000);
         window.addEventListener('beforeunload', autosaveCurrentLayout);
+
+        // Mid-gesture tracking for the silent-reload decision below — capture phase, so this
+        // still sees mousedown/mouseup even though individual drag handlers elsewhere call
+        // e.stopPropagation() on their own listeners (which only blocks bubble-phase delivery).
+        let mouseIsDown = false;
+        document.addEventListener('mousedown', () => { mouseIsDown = true; }, true);
+        document.addEventListener('mouseup', () => { mouseIsDown = false; }, true);
+
+        function anyModalOpen() {
+            return Array.from(document.querySelectorAll('.modal-overlay'))
+                .some(el => getComputedStyle(el).display !== 'none');
+        }
+
+        // Whether pulling in an external change RIGHT NOW would stomp something delicate —
+        // same set of concerns as board.addEventListener('mousedown', ...) above (measure
+        // mode / wall-drawing mode / custom-shape drawing), plus a held-down mouse (covers
+        // node drag/resize/rotate, whose own state lives in per-node closures this code can't
+        // otherwise see) and any open modal.
+        function isMidRiskyGesture() {
+            return mouseIsDown || measureMode || wallFeatureMode === 'wall' || shapeMode === 'drawing' || anyModalOpen();
+        }
+
+        // Actually pulls in whatever's now in kerphCurrentLayout and resyncs the autosave
+        // baseline to it (see the Reload button's original comment) — shared by the silent
+        // path below and the explicit Reload button for when a silent pull isn't safe.
+        function pullInExternalChange() {
+            const raw = localStorage.getItem(CURRENT_LAYOUT_KEY);
+            if (!raw) return false;
+            try {
+                const parsed = JSON.parse(raw);
+                applyLayoutState(parsed);
+                lastAutosavedContent = serializeForChangeComparison(parsed);
+                return true;
+            } catch (e) {
+                return false;
+            }
+        }
+
+        // Cross-tab notice for external kerphCurrentLayout changes (e.g. an edit made in the
+        // Dust Collection page or 3D Shop Viewer). Most of the time — not mid-drag, no modal
+        // open — it's perfectly safe to just pull the change in immediately and say so with a
+        // toast, same as dust-collection.html already does unconditionally. The banner (which
+        // pauses autosave until the user acts — see externalChangeDetected above) is now only
+        // for the genuinely risky moment: something's actively in progress that a silent
+        // rebuild would stomp. This is what actually fixes the banner showing up on every
+        // single cross-tab edit regardless of what this tab happened to be doing.
+        window.addEventListener('storage', (e) => {
+            if (e.key !== CURRENT_LAYOUT_KEY) return;
+            if (isMidRiskyGesture()) {
+                externalChangeDetected = true;
+                document.getElementById('externalChangeBanner').classList.add('visible');
+                return;
+            }
+            if (pullInExternalChange()) showToast('Layout updated from another tab.');
+        });
+
+        document.getElementById('externalChangeReloadBtn').addEventListener('click', () => {
+            if (pullInExternalChange()) showToast('Layout reloaded.');
+            externalChangeDetected = false;
+            document.getElementById('externalChangeBanner').classList.remove('visible');
+        });
+
+        document.getElementById('externalChangeDismissBtn').addEventListener('click', () => {
+            // Explicitly acknowledging and keeping this tab's own version — resume autosave,
+            // which means this tab's next save will overwrite the other tab's change. That's
+            // an informed choice made via the banner, not the silent background clobber this
+            // whole flag exists to prevent.
+            externalChangeDetected = false;
+            document.getElementById('externalChangeBanner').classList.remove('visible');
+        });
     </script>
 </body>
 </html>

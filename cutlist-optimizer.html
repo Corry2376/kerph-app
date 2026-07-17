@@ -74,6 +74,20 @@
             filter: drop-shadow(0 18px 30px rgba(15, 23, 42, 0.5));
         }
 
+        .logo-tm {
+            /* Lower-right corner, inside the logo's own white background — clear of both the
+               navy border below it and the wordmark above it. */
+            position: absolute;
+            bottom: 6px;
+            right: 22px;
+            z-index: 2;
+            font-size: 12px;
+            font-weight: 800;
+            color: #1e3a8a;
+            line-height: 1;
+            pointer-events: none;
+        }
+
         .page-title-select {
             font-size: 15px;
             font-weight: 700;
@@ -369,6 +383,59 @@
 
         .settings-row { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; }
 
+        /* Small "?" badge with a hover tooltip. */
+        .help-tip {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: #e0e7ff;
+            color: #1e3a8a;
+            font-size: 10px;
+            font-weight: 800;
+            cursor: help;
+            position: relative;
+            flex-shrink: 0;
+        }
+        .help-tip-bubble {
+            position: absolute;
+            bottom: calc(100% + 8px);
+            left: 50%;
+            transform: translateX(-50%);
+            width: 220px;
+            background: #0f172a;
+            color: #f1f5f9;
+            font-size: 11.5px;
+            font-weight: 500;
+            line-height: 1.5;
+            padding: 9px 11px;
+            border-radius: 8px;
+            box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.4);
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transition: opacity 0.15s ease;
+            z-index: 2500;
+            text-transform: none;
+            letter-spacing: normal;
+        }
+        .help-tip-bubble::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 5px solid transparent;
+            border-top-color: #0f172a;
+        }
+        .help-tip:hover .help-tip-bubble, .help-tip:focus .help-tip-bubble {
+            opacity: 1;
+            visibility: visible;
+        }
+        .header-field-label-row { display: flex; align-items: center; gap: 5px; }
+
         #canvas-area {
             position: absolute;
             top: 150px;
@@ -463,6 +530,7 @@
         .cut-diagram-linear { max-height: 40px; }
 
         .print-only-header { display: none; }
+        .print-watermark { display: none; }
 
         @media print {
             @page { size: portrait; margin: 0.5in; }
@@ -476,6 +544,21 @@
             }
             .print-only-header .print-title { font-size: 20px; font-weight: 800; color: #0f172a; }
             .print-only-header .print-meta { font-size: 12px; color: #475569; margin-top: 2px; }
+            .print-watermark.active {
+                display: block !important;
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%) rotate(-30deg);
+                font-family: inherit;
+                font-size: 60px;
+                font-weight: 800;
+                color: rgba(30, 58, 138, 0.16);
+                letter-spacing: 0.04em;
+                white-space: nowrap;
+                z-index: 9999;
+                pointer-events: none;
+            }
             #canvas-area {
                 position: static !important;
                 width: auto !important;
@@ -493,6 +576,10 @@
                to force it onto one page. */
             #resultsWrap { zoom: var(--print-zoom, 1); }
         }
+            .header-quick-links { display: flex; align-items: center; gap: 6px; font-size: 11px; }
+        .header-quick-links a { color: #6b7280; font-weight: 600; text-decoration: none; }
+        .header-quick-links a:hover { color: #1e3a8a; text-decoration: underline; }
+        .header-quick-links-sep { color: #cbd5e1; }
     </style>
 </head>
 <body>
@@ -503,15 +590,18 @@
                 <a href="index.html" class="logo-link" title="Kerph Home">
                     <img src="logo.png" alt="Kerph Logo" class="logo-image">
                 </a>
+                <span class="logo-tm">&trade;</span>
             </div>
             <select class="page-title-select" id="pageNavSelect">
                 <option value="index.html">Home</option>
                 <option value="workshop-planner.html">Workshop Layout Planner</option>
+                <option value="dust-collection.html">Dust Collection</option>
                 <option value="project-designer.html">Project Designer</option>
                 <option value="cutlist-optimizer.html" selected>Cut List Optimizer</option>
-                <option value="dust-collection.html">Dust Collection</option>
                 <option value="find-a-builder.html">Find a Builder</option>
                 <option value="shop-3d-viewer.html">3D Shop Viewer</option>
+                <option value="tool-reviews.html">Cool Tool Reviews</option>
+                <option value="shop-showcase.html">Shop Showcase</option>
             </select>
         </div>
         <div class="plan-badge-group">
@@ -527,6 +617,11 @@
                     <span class="account-btn-plan" id="accountBtnPlan">Free</span>
                 </span>
             </button>
+            <div class="header-quick-links">
+                <a href="pricing.html">Plan Comparison</a>
+                <span class="header-quick-links-sep">&middot;</span>
+                <a href="help.html">Help &amp; Support</a>
+            </div>
             <select class="plan-select" id="planSelector" style="display:none;">
                 <option value="free">Free</option>
                 <option value="pro">Pro</option>
@@ -656,24 +751,44 @@
 
         <div class="sidebar-title" style="margin-top:20px;">Stock Settings</div>
         <div class="settings-row">
-            <label class="header-field-label" for="sheetSizeSelect">Sheet Size</label>
+            <div class="header-field-label-row">
+                <label class="header-field-label" for="sheetSizeSelect">Sheet Size</label>
+                <span class="help-tip" tabindex="0">?<span class="help-tip-bubble">Used for sheet-goods parts (plywood, MDF). Independent from Board Length below — set both if your list has both plywood and lumber. Picking a preset here syncs Board Length to match when there's an obvious pairing (e.g. a 4x8 sheet syncs it to 8ft).</span></span>
+            </div>
             <select class="select-box" id="sheetSizeSelect">
                 <option value="48x96" selected>4' x 8' (48in x 96in)</option>
                 <option value="48x48">4' x 4' (48in x 48in)</option>
                 <option value="24x48">2' x 4' (24in x 48in)</option>
+                <option value="custom">Custom&hellip;</option>
             </select>
+        </div>
+        <div class="settings-row" id="customSheetRow" style="display:none;">
+            <label class="header-field-label">Custom Sheet Size (in)</label>
+            <div style="display:flex; gap:6px; align-items:center;">
+                <input type="number" class="input-box" id="customSheetW" placeholder="Width" min="1" step="0.25" style="flex:1; min-width:0;">
+                <span style="color:#94a3b8;">&times;</span>
+                <input type="number" class="input-box" id="customSheetH" placeholder="Length" min="1" step="0.25" style="flex:1; min-width:0;">
+            </div>
         </div>
         <div class="settings-row">
             <label class="header-field-label" for="boardLengthSelect">Board Length</label>
             <select class="select-box" id="boardLengthSelect">
-                <option value="8">8 ft</option>
-                <option value="10" selected>10 ft</option>
+                <option value="8" selected>8 ft</option>
+                <option value="10">10 ft</option>
                 <option value="12">12 ft</option>
                 <option value="16">16 ft</option>
+                <option value="custom">Custom&hellip;</option>
             </select>
         </div>
+        <div class="settings-row" id="customBoardRow" style="display:none;">
+            <label class="header-field-label" for="customBoardLen">Custom Board Length (ft)</label>
+            <input type="number" class="input-box" id="customBoardLen" placeholder="Length in feet" min="0.5" step="0.5">
+        </div>
         <div class="settings-row">
-            <label class="header-field-label" for="kerfInput">Kerf Width (in)</label>
+            <div class="header-field-label-row">
+                <label class="header-field-label" for="kerfInput">Kerf Width (in)</label>
+                <span class="help-tip" tabindex="0">?<span class="help-tip-bubble">The width of material your blade actually removes with each cut (typically 1/8" for a table saw). The optimizer accounts for this between parts so the nesting is realistic, not just mathematically packed.</span></span>
+            </div>
             <input type="number" class="input-box" id="kerfInput" value="0.125" min="0" step="0.0625">
         </div>
 
@@ -681,6 +796,7 @@
     </div>
 
     <div class="print-only-header" id="printOnlyHeader"></div>
+    <div class="print-watermark" id="printWatermark">KERPH &mdash; FREE PLAN</div>
 
     <div id="canvas-area">
         <div class="placeholder-box" id="emptyOptimizerState">
@@ -1037,15 +1153,34 @@
         const PARTS_KEY = 'kerphCutListParts';
         const CUTLIST_HANDOFF_KEY = 'kerphCutListHandoff';
 
+        // Keep in sync with project-designer.html's copy — panels handed off from there carry
+        // these material keys, and an unrecognized key just falls back to MATERIALS.custom
+        // (see the `|| MATERIALS.custom` lookups below) rather than breaking, but that loses the
+        // species-specific label/thickness, so the two lists should match.
         const MATERIALS = {
-            'plywood-34': { label: '3/4" Plywood', type: 'sheet', thicknessIn: 0.75 },
-            'plywood-12': { label: '1/2" Plywood', type: 'sheet', thicknessIn: 0.5 },
-            'plywood-14': { label: '1/4" Plywood', type: 'sheet', thicknessIn: 0.25 },
-            'mdf-34': { label: '3/4" MDF', type: 'sheet', thicknessIn: 0.75 },
-            'pine-1x': { label: '1x Pine (Nominal)', type: 'linear', thicknessIn: 0.75 },
-            'lumber-2x4': { label: '2x4 (Nominal)', type: 'linear', thicknessIn: 1.5 },
-            'hardwood': { label: 'Hardwood Board', type: 'linear', thicknessIn: 0.75 },
-            'custom': { label: 'Custom / Other', type: 'sheet', thicknessIn: 0.75 }
+            'plywood-34': { label: '3/4" Plywood (Generic)', type: 'sheet', thicknessIn: 0.75, group: 'Sheet Goods' },
+            'plywood-12': { label: '1/2" Plywood (Generic)', type: 'sheet', thicknessIn: 0.5, group: 'Sheet Goods' },
+            'plywood-14': { label: '1/4" Plywood (Generic)', type: 'sheet', thicknessIn: 0.25, group: 'Sheet Goods' },
+            'plywood-maple-34': { label: 'Maple Plywood (3/4")', type: 'sheet', thicknessIn: 0.75, group: 'Sheet Goods' },
+            'plywood-birch-34': { label: 'Birch Plywood (3/4")', type: 'sheet', thicknessIn: 0.75, group: 'Sheet Goods' },
+            'plywood-baltic-birch-34': { label: 'Baltic Birch Plywood (3/4")', type: 'sheet', thicknessIn: 0.75, group: 'Sheet Goods' },
+            'plywood-oak-34': { label: 'Red Oak Plywood (3/4")', type: 'sheet', thicknessIn: 0.75, group: 'Sheet Goods' },
+            'plywood-walnut-34': { label: 'Walnut Plywood (3/4")', type: 'sheet', thicknessIn: 0.75, group: 'Sheet Goods' },
+            'mdf-34': { label: '3/4" MDF', type: 'sheet', thicknessIn: 0.75, group: 'Sheet Goods' },
+            'pine-1x': { label: '1x Pine (Nominal)', type: 'linear', thicknessIn: 0.75, group: 'Solid Wood' },
+            'lumber-2x4': { label: '2x4 (Nominal)', type: 'linear', thicknessIn: 1.5, group: 'Solid Wood' },
+            'hardwood': { label: 'Hardwood Board (Generic)', type: 'linear', thicknessIn: 0.75, group: 'Solid Wood' },
+            'hardwood-maple': { label: 'Maple', type: 'linear', thicknessIn: 0.75, group: 'Solid Wood' },
+            'hardwood-walnut': { label: 'Black Walnut', type: 'linear', thicknessIn: 0.75, group: 'Solid Wood' },
+            'hardwood-red-oak': { label: 'Red Oak', type: 'linear', thicknessIn: 0.75, group: 'Solid Wood' },
+            'hardwood-white-oak': { label: 'White Oak', type: 'linear', thicknessIn: 0.75, group: 'Solid Wood' },
+            'hardwood-cherry': { label: 'Cherry', type: 'linear', thicknessIn: 0.75, group: 'Solid Wood' },
+            'hardwood-ash': { label: 'Ash', type: 'linear', thicknessIn: 0.75, group: 'Solid Wood' },
+            'hardwood-hickory': { label: 'Hickory', type: 'linear', thicknessIn: 0.75, group: 'Solid Wood' },
+            'hardwood-poplar': { label: 'Poplar', type: 'linear', thicknessIn: 0.75, group: 'Solid Wood' },
+            'hardwood-cedar': { label: 'Cedar', type: 'linear', thicknessIn: 0.75, group: 'Solid Wood' },
+            'hardwood-mahogany': { label: 'Mahogany', type: 'linear', thicknessIn: 0.75, group: 'Solid Wood' },
+            'custom': { label: 'Custom / Other', type: 'sheet', thicknessIn: 0.75, group: 'Other' }
         };
 
         function escapeHtml(str) {
@@ -1079,11 +1214,21 @@
 
         function populateMaterialSelect(select) {
             select.innerHTML = '';
+            const groups = {};
             Object.keys(MATERIALS).forEach(key => {
-                const opt = document.createElement('option');
-                opt.value = key;
-                opt.textContent = MATERIALS[key].label;
-                select.appendChild(opt);
+                const groupName = MATERIALS[key].group || 'Other';
+                (groups[groupName] = groups[groupName] || []).push(key);
+            });
+            Object.keys(groups).forEach(groupName => {
+                const optgroup = document.createElement('optgroup');
+                optgroup.label = groupName;
+                groups[groupName].forEach(key => {
+                    const opt = document.createElement('option');
+                    opt.value = key;
+                    opt.textContent = MATERIALS[key].label;
+                    optgroup.appendChild(opt);
+                });
+                select.appendChild(optgroup);
             });
         }
 
@@ -1393,8 +1538,19 @@
                 return;
             }
 
-            const [sheetW, sheetH] = document.getElementById('sheetSizeSelect').value.split('x').map(Number);
-            const boardLenFt = parseFloat(document.getElementById('boardLengthSelect').value);
+            const sheetSizeVal = document.getElementById('sheetSizeSelect').value;
+            let sheetW, sheetH;
+            if (sheetSizeVal === 'custom') {
+                sheetW = parseFloat(document.getElementById('customSheetW').value) || 48;
+                sheetH = parseFloat(document.getElementById('customSheetH').value) || 96;
+            } else {
+                [sheetW, sheetH] = sheetSizeVal.split('x').map(Number);
+            }
+
+            const boardLengthVal = document.getElementById('boardLengthSelect').value;
+            const boardLenFt = boardLengthVal === 'custom'
+                ? (parseFloat(document.getElementById('customBoardLen').value) || 8)
+                : parseFloat(boardLengthVal);
             const boardLenIn = boardLenFt * 12;
             const kerf = parseFloat(document.getElementById('kerfInput').value) || 0.125;
 
@@ -1493,6 +1649,36 @@
 
         document.getElementById('optimizeBtn').addEventListener('click', runOptimization);
 
+        /* ---------- STOCK SETTINGS: custom dimensions + sheet/board-length sync ----------
+           Sheet Size and Board Length are independent stock settings (a shop might cut both
+           plywood and lumber in the same list — see mat.type === 'sheet' vs the linear-board
+           branch in runOptimization), so they don't NEED to match. But a 4x8 sheet is 8ft
+           long, and defaulting Board Length to some unrelated value (10ft) when that sheet is
+           picked reads as a bug, not an independent choice — so picking a preset sheet size
+           auto-syncs Board Length to that sheet's long edge whenever a matching preset option
+           exists (e.g. 48x96 -> 8ft), without overriding a board length the user set on
+           purpose for an actual board-length material. */
+        function toggleCustomStockRow(selectEl, rowEl) {
+            rowEl.style.display = selectEl.value === 'custom' ? '' : 'none';
+        }
+
+        document.getElementById('sheetSizeSelect').addEventListener('change', (e) => {
+            toggleCustomStockRow(e.target, document.getElementById('customSheetRow'));
+            if (e.target.value === 'custom') return;
+            const [, sheetHIn] = e.target.value.split('x').map(Number);
+            const longDimFt = String(sheetHIn / 12);
+            const boardLengthSelect = document.getElementById('boardLengthSelect');
+            const matchingOption = Array.from(boardLengthSelect.options).find(o => o.value === longDimFt);
+            if (matchingOption) {
+                boardLengthSelect.value = longDimFt;
+                toggleCustomStockRow(boardLengthSelect, document.getElementById('customBoardRow'));
+            }
+        });
+
+        document.getElementById('boardLengthSelect').addEventListener('change', (e) => {
+            toggleCustomStockRow(e.target, document.getElementById('customBoardRow'));
+        });
+
         /* ---------- EXPORT CUT LIST TO PDF ----------
            Same approach as the Workshop Layout Planner's PDF export: no bundled library,
            just fill in a print-only header and hand off to the browser's native
@@ -1517,12 +1703,18 @@
             const scale = Math.min(1, PRINT_AREA_W / wrap.scrollWidth, PRINT_AREA_H / wrap.scrollHeight);
             wrap.style.setProperty('--print-zoom', scale >= PRINT_ZOOM_FLOOR ? scale : 1);
 
+            // Free-plan exports carry a watermark — clean exports are a Pro+ perk, same
+            // client-side "Plan (Preview)" gate used everywhere else in the app.
+            document.getElementById('printWatermark').classList.toggle('active', getPlan() === 'free');
+
             window.print();
         }
 
         window.addEventListener('afterprint', () => {
             const wrap = document.getElementById('resultsWrap');
             if (wrap) wrap.style.removeProperty('--print-zoom');
+            const watermark = document.getElementById('printWatermark');
+            if (watermark) watermark.classList.remove('active');
         });
     </script>
 

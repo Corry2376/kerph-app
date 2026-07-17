@@ -68,6 +68,20 @@
             filter: drop-shadow(0 18px 30px rgba(15, 23, 42, 0.5));
         }
 
+        .logo-tm {
+            /* Lower-right corner, inside the logo's own white background — clear of both the
+               navy border below it and the wordmark above it. */
+            position: absolute;
+            bottom: 6px;
+            right: 22px;
+            z-index: 2;
+            font-size: 12px;
+            font-weight: 800;
+            color: #1e3a8a;
+            line-height: 1;
+            pointer-events: none;
+        }
+
         .page-title-select {
             font-size: 15px;
             font-weight: 700;
@@ -526,10 +540,28 @@
 
         .placed-tool-node.elbow-node,
         .placed-tool-node.y-joint-node,
-        .placed-tool-node.t-joint-node {
+        .placed-tool-node.t-joint-node,
+        .placed-tool-node.drop-node {
+            background-color: transparent;
+            border: none;
+            border-radius: 0;
             background-repeat: no-repeat;
             background-position: center;
             background-size: 100% 100%;
+        }
+
+        /* A drop's real job (dropping from the overhead trunk down to the tool) only reads in
+           3D — in this top-down 2D view it's just a connection point, so the icon is a plain
+           bullseye ("looking straight down the pipe") rather than trying to fake elevation. */
+        /* Orange (not the purple already used for .selected-node's outline, not the red
+           already used for blast gates) so a drop reads as its own distinct thing at a
+           glance — see the identical comment in Workshop Layout Planner. */
+        .placed-tool-node.drop-node.fitting-4in {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='18' fill='%23fdba74' stroke='%23c2410c' stroke-width='2'/%3E%3Ccircle cx='20' cy='20' r='8' fill='%23f97316' stroke='%23c2410c' stroke-width='1.5'/%3E%3C/svg%3E");
+        }
+
+        .placed-tool-node.drop-node.fitting-6in {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='19' fill='%23fdba74' stroke='%23c2410c' stroke-width='2'/%3E%3Ccircle cx='20' cy='20' r='9' fill='%23f97316' stroke='%23c2410c' stroke-width='1.5'/%3E%3C/svg%3E");
         }
 
         /* Band thickness is tuned per size class so the fitting's drawn "pipe" reads at the
@@ -564,8 +596,8 @@
         }
 
         .placed-tool-node.bracket-node {
-            background-color: #94a3b8;
-            border: 1px solid #475569;
+            background-color: #facc15;
+            border: 1px solid #a16207;
         }
 
         .placed-tool-node.selected-node { outline: 3px dashed #7c3aed; outline-offset: 2px; }
@@ -796,6 +828,59 @@
         .calc-connections-result.ok { background: rgba(22, 163, 74, 0.1); color: #15803d; }
         .calc-connections-result.warn { background: rgba(217, 119, 6, 0.1); color: #b45309; }
 
+        /* Small "?" badge with a hover tooltip — see help.html for the full write-up this
+           links back to conceptually; this is just the in-context nudge. */
+        .help-tip {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: #e0e7ff;
+            color: #1e3a8a;
+            font-size: 10px;
+            font-weight: 800;
+            cursor: help;
+            position: relative;
+            flex-shrink: 0;
+        }
+        .help-tip-bubble {
+            position: absolute;
+            bottom: calc(100% + 8px);
+            left: 50%;
+            transform: translateX(-50%);
+            width: 220px;
+            background: #0f172a;
+            color: #f1f5f9;
+            font-size: 11.5px;
+            font-weight: 500;
+            line-height: 1.5;
+            padding: 9px 11px;
+            border-radius: 8px;
+            box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.4);
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transition: opacity 0.15s ease;
+            z-index: 2500;
+            text-transform: none;
+            letter-spacing: normal;
+        }
+        .help-tip-bubble::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 5px solid transparent;
+            border-top-color: #0f172a;
+        }
+        .help-tip:hover .help-tip-bubble, .help-tip:focus .help-tip-bubble {
+            opacity: 1;
+            visibility: visible;
+        }
+
         /* Pulses at each unmatched port so an open duct end is easy to spot on the grid. */
         .open-port-marker {
             position: absolute;
@@ -826,6 +911,18 @@
             margin-bottom: 8px;
         }
 
+        /* The branch list AND the results below it can both grow (one branch row per tool,
+           one result card per material) with nothing capping the panel's own height — so
+           adding a few branches, or calculating, could push the Calculate button and results
+           off the bottom of the screen with no way to reach them. Scrolling the whole panel
+           body (not just one inner list, since growth happens in two separate places here)
+           keeps everything reachable regardless of how much content there is. */
+        #calcPanel .panel-body {
+            max-height: calc(100vh - 200px);
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
         .calc-branch-row .dims-row { display: flex; gap: 6px; }
         .calc-branch-row .dims-row > * { flex: 1; min-width: 0; }
         .calc-branch-remove { align-self: flex-end; }
@@ -849,6 +946,10 @@
         .calc-result-card.danger { background-color: #fef2f2; border-color: #fecaca; }
         .calc-result-card.danger .calc-result-title { color: #991b1b; }
         .calc-result-card.danger .calc-result-line { color: #991b1b; }
+            .header-quick-links { display: flex; align-items: center; gap: 6px; font-size: 11px; }
+        .header-quick-links a { color: #6b7280; font-weight: 600; text-decoration: none; }
+        .header-quick-links a:hover { color: #1e3a8a; text-decoration: underline; }
+        .header-quick-links-sep { color: #cbd5e1; }
     </style>
 </head>
 <body>
@@ -859,15 +960,18 @@
                 <a href="index.html" class="logo-link" title="Kerph Home">
                     <img src="logo.png" alt="Kerph Logo" class="logo-image">
                 </a>
+                <span class="logo-tm">&trade;</span>
             </div>
             <select class="page-title-select" id="pageNavSelect">
                 <option value="index.html">Home</option>
                 <option value="workshop-planner.html">Workshop Layout Planner</option>
+                <option value="dust-collection.html" selected>Dust Collection</option>
                 <option value="project-designer.html">Project Designer</option>
                 <option value="cutlist-optimizer.html">Cut List Optimizer</option>
-                <option value="dust-collection.html" selected>Dust Collection</option>
                 <option value="find-a-builder.html">Find a Builder</option>
                 <option value="shop-3d-viewer.html">3D Shop Viewer</option>
+                <option value="tool-reviews.html">Cool Tool Reviews</option>
+                <option value="shop-showcase.html">Shop Showcase</option>
             </select>
         </div>
         <div class="plan-badge-group">
@@ -883,6 +987,11 @@
                     <span class="account-btn-plan" id="accountBtnPlan">Free</span>
                 </span>
             </button>
+            <div class="header-quick-links">
+                <a href="pricing.html">Plan Comparison</a>
+                <span class="header-quick-links-sep">&middot;</span>
+                <a href="help.html">Help &amp; Support</a>
+            </div>
             <select class="plan-select" id="planSelector" style="display:none;">
                 <option value="free">Free</option>
                 <option value="pro">Pro</option>
@@ -977,6 +1086,7 @@
         <button type="button" id="zoomInBtn" class="zoom-btn" title="Zoom in">&#43;</button>
         <button type="button" id="zoomResetBtn" class="zoom-btn" title="Reset zoom to 100%">Reset</button>
         <button type="button" id="hideDcLabelsBtn" class="zoom-btn" title="Hide the text labels on ducts/fittings so you can see the pure shapes">&#127991;&#65039; Hide Labels</button>
+        <button type="button" id="dcView3dBtn" class="zoom-btn" title="View this shop in 3D">&#129517; View in 3D</button>
     </div>
 
     <div id="canvas-view-space">
@@ -994,55 +1104,21 @@
         </div>
     </div>
 
-    <div class="modal-overlay" id="outletHeightModalOverlay" style="display:none;">
-        <div class="modal-box">
-            <div class="modal-title">Outlet Height</div>
-            <div class="modal-warning">How high on the wall should this outlet be mounted?</div>
-
-            <div class="header-field" style="width:100%;">
-                <label class="header-field-label" for="outletHeightInput">Height (in, from floor)</label>
-                <input type="number" class="input-box" id="outletHeightInput" value="18" min="0">
-            </div>
-            <div class="header-compound-row" style="margin-top:8px; flex-wrap:wrap; gap:6px;">
-                <button type="button" class="mini-btn outlet-height-preset" data-height="12" style="flex:none;">12" Floor</button>
-                <button type="button" class="mini-btn outlet-height-preset" data-height="18" style="flex:none;">18" Standard</button>
-                <button type="button" class="mini-btn outlet-height-preset" data-height="42" style="flex:none;">42" Counter</button>
-                <button type="button" class="mini-btn outlet-height-preset" data-height="66" style="flex:none;">66" High</button>
-            </div>
-
-            <div class="modal-actions">
-                <button type="button" id="outletHeightCancelBtn" class="mini-btn">Cancel</button>
-                <button type="button" id="outletHeightConfirmBtn" class="mini-btn modal-primary-btn">Place Outlet</button>
-            </div>
-        </div>
-    </div>
-
-    <div class="floating-panel" id="outletPanel" style="top:166px; right:360px; width:260px;">
-        <div class="floating-panel-title" id="outletPanelHandle">Place Outlet <span class="panel-toggle-chevron">&#9656;</span></div>
-        <div class="panel-body">
-            <div class="calc-hint">Outlets are shared with your Workshop Layout Planner shop — placed here, they'll show up there too.</div>
-            <div class="header-field" style="width:100%;">
-                <label class="header-field-label" for="dcOutletLabel">Label (optional)</label>
-                <input type="text" class="input-box" id="dcOutletLabel" placeholder="e.g. Dust Collector Outlet">
-            </div>
-            <div class="header-field" style="width:100%; margin-top:8px;">
-                <label class="header-field-label" for="dcOutletVoltage">Voltage</label>
-                <select class="select-box" id="dcOutletVoltage">
-                    <option value="110">110V</option>
-                    <option value="220">220V</option>
-                </select>
-            </div>
-            <button type="button" id="dcOutletPlaceBtn" class="mini-btn" style="width:100%; margin-top:10px;">Click Grid to Place Outlet</button>
-        </div>
-    </div>
-
     <div class="floating-panel" id="calcPanel">
         <div class="floating-panel-title" id="calcPanelHandle">Dust Collection Sizing Calculator <span class="panel-toggle-chevron">&#9656;</span></div>
         <div class="panel-body">
             <div class="calc-hint">Planning estimate, not an engineering guarantee — real static pressure depends on your exact hose/pipe, fittings, and collector's fan curve. Use it to sanity-check duct size and see roughly how much resistance a run adds.</div>
 
+            <div style="display:flex; align-items:center; gap:5px; font-size:11px; color:#6b7280; margin-bottom:8px; line-height:1.5;">
+                Ducts, elbows, joints, and blast gates snap together automatically when dragged close to each other.
+                <span class="help-tip" tabindex="0">?<span class="help-tip-bubble">Drag a piece near an existing one's open end and it snaps into place and rotates to match — no need to be pixel-exact. Only matching sizes (4in to 4in, 6in to 6in) snap together. Full tutorial on the Help page.</span></span>
+            </div>
+
             <button type="button" id="calcAutoFillBtn" class="mini-btn" style="width:100%; margin-bottom:6px;">&#9889; Auto-Fill Branches from Layout</button>
-            <button type="button" id="calcCheckConnectionsBtn" class="mini-btn" style="width:100%; margin-bottom:10px;">&#128269; Check Duct Connections</button>
+            <div style="display:flex; align-items:center; gap:6px; margin-bottom:10px;">
+                <button type="button" id="calcCheckConnectionsBtn" class="mini-btn" style="margin-bottom:0;">&#128269; Check Duct Connections</button>
+                <span class="help-tip" tabindex="0">?<span class="help-tip-bubble">Flags any duct end that isn't connected to another piece. A blast gate is only flagged if NEITHER side is hooked into the network — one side terminating at the tool it serves is normal and won't be flagged.</span></span>
+            </div>
             <div id="calcConnectionsResult"></div>
 
             <div id="calcBranchList"></div>
@@ -1439,11 +1515,13 @@
                     { name: '4in Dust Duct 6ft', title: '4" Dust Duct (6ft run)', width: 0.35, length: 6.0, height: 7.0 },
                     { name: '4in Dust Duct 8ft', title: '4" Dust Duct (8ft run)', width: 0.35, length: 8.0, height: 7.0 },
                     { name: '4in Dust Duct 10ft', title: '4" Dust Duct (10ft run)', width: 0.35, length: 10.0, height: 7.0 },
+                    { name: '4in Dust Duct Custom', title: '4" Dust Duct (Custom Length)', width: 0.35, length: 5, height: 7.0, customLength: true },
                     { name: '4in Duct Elbow', title: '4" Duct Elbow (90°)', width: 0.6, length: 0.6, height: 7.0 },
                     { name: '4in Duct Y-Joint', title: '4" Duct Y-Joint', width: 0.7, length: 0.7, height: 7.0 },
                     { name: '4in Duct T-Joint', title: '4" Duct T-Joint', width: 0.7, length: 0.7, height: 7.0 },
                     { name: '4in Pipe Bracket', title: '4" Pipe Bracket', width: 0.5, length: 0.15, height: 7.0 },
-                    { name: 'Blast Gate', title: '4" Blast Gate', width: 0.35, length: 0.5, height: 7.0 }
+                    { name: 'Blast Gate', title: '4" Blast Gate', width: 0.35, length: 0.5, height: 7.0 },
+                    { name: '4in Duct Drop', title: '4" Duct Drop (to tool)', width: 0.35, length: 0.5, height: 5, customDropLength: true }
                 ]
             },
             {
@@ -1454,11 +1532,13 @@
                     { name: '6in Dust Duct 6ft', title: '6" Dust Duct (6ft run)', width: 0.5, length: 6.0, height: 7.0 },
                     { name: '6in Dust Duct 8ft', title: '6" Dust Duct (8ft run)', width: 0.5, length: 8.0, height: 7.0 },
                     { name: '6in Dust Duct 10ft', title: '6" Dust Duct (10ft run)', width: 0.5, length: 10.0, height: 7.0 },
+                    { name: '6in Dust Duct Custom', title: '6" Dust Duct (Custom Length)', width: 0.5, length: 5, height: 7.0, customLength: true },
                     { name: '6in Duct Elbow', title: '6" Duct Elbow (90°)', width: 0.8, length: 0.8, height: 7.0 },
                     { name: '6in Duct Y-Joint', title: '6" Duct Y-Joint', width: 0.9, length: 0.9, height: 7.0 },
                     { name: '6in Duct T-Joint', title: '6" Duct T-Joint', width: 0.9, length: 0.9, height: 7.0 },
                     { name: '6in Pipe Bracket', title: '6" Pipe Bracket', width: 0.7, length: 0.15, height: 7.0 },
-                    { name: '6in Blast Gate', title: '6" Blast Gate', width: 0.5, length: 0.6, height: 7.0 }
+                    { name: '6in Blast Gate', title: '6" Blast Gate', width: 0.5, length: 0.6, height: 7.0 },
+                    { name: '6in Duct Drop', title: '6" Duct Drop (to tool)', width: 0.5, length: 0.6, height: 5, customDropLength: true }
                 ]
             }
         ];
@@ -1472,8 +1552,17 @@
             item.setAttribute('data-length', spec.length);
             item.setAttribute('data-height', spec.height);
             item.setAttribute('data-name', spec.name);
+            // A custom-length duct reads its length from a live inline input instead of a
+            // fixed footprint string — wireToolDragStart already reads data-length at drag
+            // time either way, so keeping that attribute in sync with the input is all that's
+            // needed here.
+            const dimsHtml = spec.customLength
+                ? `<input type="number" class="input-box custom-duct-length-input" value="${spec.length}" min="0.5" step="0.5" style="width:56px; display:inline-block; padding:2px 4px; font-size:11px;" draggable="false"> ft`
+                : spec.customDropLength
+                ? `Drops <input type="number" class="input-box custom-drop-length-input" value="${spec.height}" min="1" max="20" step="0.5" style="width:56px; display:inline-block; padding:2px 4px; font-size:11px;" draggable="false"> ft from the run`
+                : `${spec.width}' x ${spec.length}' Footprint`;
             item.innerHTML = `
-                <div><div class="tool-title">${spec.title}</div><div class="tool-dims">${spec.width}' x ${spec.length}' Footprint</div></div>
+                <div><div class="tool-title">${spec.title}</div><div class="tool-dims">${dimsHtml}</div></div>
                 <div class="tool-status-controls">
                     <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
                     <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
@@ -1482,6 +1571,27 @@
             container.appendChild(item);
             wireToolStatusItem(item, statuses);
             wireToolDragStart(item);
+            if (spec.customLength) {
+                const input = item.querySelector('.custom-duct-length-input');
+                input.addEventListener('mousedown', (e) => e.stopPropagation());
+                input.addEventListener('click', (e) => e.stopPropagation());
+                input.addEventListener('input', () => {
+                    const ft = Math.max(0.5, parseFloat(input.value) || 0.5);
+                    item.setAttribute('data-length', ft);
+                });
+            }
+            if (spec.customDropLength) {
+                // Same idea as customLength above, but for a drop's vertical distance —
+                // data-height doubles as physicalHeight on placement, which the 3D viewer
+                // reads as the drop's actual length (see shop-3d-viewer.html's addToolMesh).
+                const input = item.querySelector('.custom-drop-length-input');
+                input.addEventListener('mousedown', (e) => e.stopPropagation());
+                input.addEventListener('click', (e) => e.stopPropagation());
+                input.addEventListener('input', () => {
+                    const ft = Math.max(1, parseFloat(input.value) || 5);
+                    item.setAttribute('data-height', ft);
+                });
+            }
         }
 
         function renderCatalog() {
@@ -1547,6 +1657,8 @@
             const sizeClass = name.startsWith('6in') ? 'fitting-6in' : 'fitting-4in';
             if (name === 'Blast Gate' || name === '6in Blast Gate') {
                 toolNode.classList.add('blast-gate-node');
+            } else if (name.includes('Duct Drop')) {
+                toolNode.classList.add('pipe-node', 'drop-node', sizeClass);
             } else if (name.includes('Duct Elbow')) {
                 toolNode.classList.add('pipe-node', 'elbow-node', sizeClass);
             } else if (name.includes('Y-Joint')) {
@@ -1597,6 +1709,7 @@
         const DUCT_PORTS = {
             duct: [{ fx: 0, fy: 0.5, angle: 180 }, { fx: 1, fy: 0.5, angle: 0 }],
             blastgate: [{ fx: 0, fy: 0.5, angle: 180 }, { fx: 1, fy: 0.5, angle: 0 }],
+            drop: [{ fx: 0, fy: 0.5, angle: 180 }, { fx: 1, fy: 0.5, angle: 0 }],
             elbow: [{ fx: 0, fy: 0.5, angle: 180 }, { fx: 0.5, fy: 1, angle: 90 }],
             tjoint: [{ fx: 0, fy: 0.5, angle: 180 }, { fx: 1, fy: 0.5, angle: 0 }, { fx: 0.5, fy: 1, angle: 90 }],
             yjoint: [{ fx: 0.5, fy: 1, angle: 90 }, { fx: 0.8536, fy: 0.1464, angle: 315 }, { fx: 0.1464, fy: 0.1464, angle: 225 }]
@@ -1605,6 +1718,7 @@
         function getPortItemType(name) {
             if (!name) return null;
             if (name === 'Blast Gate' || name === '6in Blast Gate') return 'blastgate';
+            if (name.includes('Duct Drop')) return 'drop';
             if (name.includes('Duct Elbow')) return 'elbow';
             if (name.includes('Y-Joint')) return 'yjoint';
             if (name.includes('T-Joint')) return 'tjoint';
@@ -2033,10 +2147,9 @@
             apply();
         }
 
-        // Outlets are the one wall-feature type this page can also place/remove (they matter
-        // for both dust collector power and, eventually, lighting circuits) — every other
-        // type (door/window/switch/panel/minisplit) is shown for reference only, unchanged
-        // from the shop set up in Workshop Layout Planner.
+        // Wall features (doors/windows/switches/outlets/panels/mini-splits) are shown for
+        // reference only here — unchanged from the shop set up in Workshop Layout Planner,
+        // which is the right place to add/edit/remove them (including outlets).
         let wallFeatures = [];
 
         // Interior walls are drawn/edited only in Workshop Layout Planner; this page just
@@ -2075,13 +2188,6 @@
             });
         }
 
-        function saveWallFeatureChanges() {
-            if (!sharedLayout) return;
-            const normFactor = BASE_PPI / ppi;
-            sharedLayout.wallFeatures = wallFeatures.map(f => ({ ...f, x: f.x * normFactor, y: f.y * normFactor }));
-            localStorage.setItem(CURRENT_LAYOUT_KEY, JSON.stringify(sharedLayout));
-        }
-
         function wallFeatureLabelText(f) {
             let text = f.widthIn ? `${f.label} (${Math.round(f.widthIn)}")` : f.label;
             if (f.type === 'outlet' && f.mountHeightIn) text += ` @ ${f.mountHeightIn}"`;
@@ -2095,6 +2201,7 @@
                 const thickPx = f.thicknessFt * ppi;
                 const el = document.createElement('div');
                 el.className = `wall-feature-node wall-feature-${f.type}`;
+                if (f.color) el.style.backgroundColor = f.color;
                 el.style.width = lenPx + 'px';
                 el.style.height = thickPx + 'px';
                 el.style.left = (f.x - lenPx / 2) + 'px';
@@ -2110,17 +2217,6 @@
                 labelEl.style.left = f.x + 'px';
                 labelEl.style.top = (f.y - thickPx / 2 - 4) + 'px';
                 board.appendChild(labelEl);
-
-                if (f.type === 'outlet') {
-                    el.style.pointerEvents = 'auto';
-                    el.title = wallFeatureLabelText(f) + ' — click to remove';
-                    el.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        wallFeatures = wallFeatures.filter(x => x.id !== f.id);
-                        saveWallFeatureChanges();
-                        renderWallFeaturesFromShared();
-                    });
-                }
             });
         }
 
@@ -2172,114 +2268,6 @@
 
             updateBoardSize();
             renderFromSharedLayout();
-        }
-
-        /* ---------- OUTLET PLACEMENT (snaps to the shared shop's walls, same as
-           Workshop Layout Planner) ---------- */
-        const POINT_FEATURE_SIZE_FT = 0.35;
-
-        function getWallSegments() {
-            let points;
-            if (shapeModeIsCustom) {
-                points = shapePoints;
-            } else {
-                const w = board.clientWidth, h = board.clientHeight;
-                points = [{ x: 0, y: 0 }, { x: w, y: 0 }, { x: w, y: h }, { x: 0, y: h }];
-            }
-            return points.map((p, i) => [p, points[(i + 1) % points.length]]);
-        }
-
-        function projectPointToSegment(px, py, a, b) {
-            const dx = b.x - a.x, dy = b.y - a.y;
-            const lengthSq = dx * dx + dy * dy;
-            let t = lengthSq === 0 ? 0 : ((px - a.x) * dx + (py - a.y) * dy) / lengthSq;
-            t = Math.max(0, Math.min(1, t));
-            return { x: a.x + t * dx, y: a.y + t * dy };
-        }
-
-        function snapToNearestWall(px, py) {
-            let best = null;
-            getWallSegments().forEach(([a, b]) => {
-                const proj = projectPointToSegment(px, py, a, b);
-                const dist = Math.hypot(proj.x - px, proj.y - py);
-                const angle = Math.atan2(b.y - a.y, b.x - a.x) * (180 / Math.PI);
-                if (!best || dist < best.dist) best = { x: proj.x, y: proj.y, dist, angle, segA: a, segB: b };
-            });
-            return best;
-        }
-
-        function clampToWallBounds(snapped, lengthPx) {
-            const { segA, segB } = snapped;
-            const segLen = Math.hypot(segB.x - segA.x, segB.y - segA.y);
-            const dirX = (segB.x - segA.x) / segLen;
-            const dirY = (segB.y - segA.y) / segLen;
-            const half = lengthPx / 2;
-            let t = (snapped.x - segA.x) * dirX + (snapped.y - segA.y) * dirY;
-            t = segLen <= lengthPx ? segLen / 2 : Math.max(half, Math.min(t, segLen - half));
-            return { x: segA.x + dirX * t, y: segA.y + dirY * t, angle: snapped.angle };
-        }
-
-        let outletPlacementMode = false;
-        let pendingOutletPlacement = null;
-
-        function openOutletHeightModal(placement) {
-            pendingOutletPlacement = placement;
-            document.getElementById('outletHeightInput').value = 18;
-            document.getElementById('outletHeightModalOverlay').style.display = 'flex';
-        }
-
-        function initOutletHeightModal() {
-            const overlay = document.getElementById('outletHeightModalOverlay');
-            const input = document.getElementById('outletHeightInput');
-
-            document.getElementById('outletHeightCancelBtn').addEventListener('click', () => {
-                overlay.style.display = 'none';
-                pendingOutletPlacement = null;
-            });
-
-            document.querySelectorAll('.outlet-height-preset').forEach(btn => {
-                btn.addEventListener('click', () => { input.value = btn.dataset.height; });
-            });
-
-            document.getElementById('outletHeightConfirmBtn').addEventListener('click', () => {
-                if (!pendingOutletPlacement) { overlay.style.display = 'none'; return; }
-                const heightIn = parseFloat(input.value) || 18;
-                wallFeatures.push({
-                    id: Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
-                    type: 'outlet', x: pendingOutletPlacement.x, y: pendingOutletPlacement.y, angle: pendingOutletPlacement.angle,
-                    lengthFt: POINT_FEATURE_SIZE_FT, thicknessFt: POINT_FEATURE_SIZE_FT,
-                    label: pendingOutletPlacement.label, voltage: pendingOutletPlacement.voltage, widthIn: null,
-                    mountHeightIn: heightIn
-                });
-                saveWallFeatureChanges();
-                renderWallFeaturesFromShared();
-                pendingOutletPlacement = null;
-                overlay.style.display = 'none';
-            });
-        }
-
-        function initOutletPanel() {
-            const placeBtn = document.getElementById('dcOutletPlaceBtn');
-
-            placeBtn.addEventListener('click', () => {
-                outletPlacementMode = !outletPlacementMode;
-                placeBtn.classList.toggle('active', outletPlacementMode);
-                board.style.cursor = outletPlacementMode ? 'crosshair' : '';
-            });
-
-            board.addEventListener('click', (e) => {
-                if (!outletPlacementMode || !sharedLayout) return;
-                if (e.target.closest('.placed-tool-node') || e.target.closest('.wall-feature-node')) return;
-                const rect = board.getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
-                const snapped = snapToNearestWall(x, y);
-                if (!snapped) return;
-                const clamped = clampToWallBounds(snapped, POINT_FEATURE_SIZE_FT * ppi);
-                const voltage = document.getElementById('dcOutletVoltage').value;
-                const label = document.getElementById('dcOutletLabel').value.trim() || `${voltage}V Outlet`;
-                openOutletHeightModal({ x: clamped.x, y: clamped.y, angle: clamped.angle, label, voltage });
-            });
         }
 
         /* ---------- DRAG-AND-DROP (dust-collection catalog only) ---------- */
@@ -2740,7 +2728,10 @@
                 found.forEach(n => {
                     if (n === collectorNode) return;
                     const name = n.dataset.toolName || '';
-                    if (name.includes('Elbow') || name.includes('Y-Joint') || name.includes('T-Joint')) elbows += 1;
+                    // A drop counts toward friction loss the same as an elbow — it's the
+                    // same "flow changes direction" penalty, just changing elevation instead
+                    // of XY heading (see the Help page tutorial section on drops for why).
+                    if (name.includes('Elbow') || name.includes('Y-Joint') || name.includes('T-Joint') || name.includes('Duct Drop')) elbows += 1;
                     else if (name.includes('Dust Duct')) lengthFt += getNodeBoxFt(n).lengthFt;
                 });
 
@@ -2761,7 +2752,7 @@
                 resultEl.innerHTML = '';
                 return;
             }
-            const { openPorts } = buildDuctPortGraph(nodes);
+            const { adjacency, openPorts } = buildDuctPortGraph(nodes);
             // The collector isn't a port-based shape, so a port that lands right at a
             // collector's intake would otherwise be flagged "open" even though it's actually
             // connected — exclude anything within a few inches of a collector's box.
@@ -2770,7 +2761,16 @@
                 .map(n => getNodeBoxFt(n));
             const genuinelyOpen = openPorts.filter(p => {
                 const pxFt = p.x / ppi, pyFt = p.y / ppi;
-                return !collectorBoxesFt.some(b => pxFt > b.x1 - 0.5 && pxFt < b.x2 + 0.5 && pyFt > b.y1 - 0.5 && pyFt < b.y2 + 0.5);
+                const nearCollector = collectorBoxesFt.some(b => pxFt > b.x1 - 0.5 && pxFt < b.x2 + 0.5 && pyFt > b.y1 - 0.5 && pyFt < b.y2 + 0.5);
+                if (nearCollector) return false;
+                // A blast gate's downstream side normally terminates right at the tool it
+                // serves — tools aren't port-based shapes (see getPortItemType), so that side
+                // never finds a match and would always look "open" even when the gate is
+                // correctly installed. Don't assume that's a real problem; only flag a blast
+                // gate at all if it isn't hooked into the duct network on EITHER side (a
+                // genuinely stranded gate, not just one terminating at its tool).
+                if (getPortItemType(p.node.dataset.toolName) === 'blastgate' && (adjacency.get(p.node) || []).length > 0) return false;
+                return true;
             });
             genuinelyOpen.forEach(p => {
                 const marker = document.createElement('div');
@@ -2851,19 +2851,14 @@
         initDragAndDropEngine();
         initGridPanning();
         loadSharedLayout();
-        initOutletHeightModal();
-        initOutletPanel();
         initZoomControls();
         initHideDcLabels();
+        document.getElementById('dcView3dBtn').addEventListener('click', () => { window.location.href = 'shop-3d-viewer.html'; });
         initCalculator();
         makeDraggable(document.getElementById('calcPanel'), document.getElementById('calcPanelHandle'), () => {
             document.getElementById('calcPanel').classList.toggle('collapsed');
         });
-        makeDraggable(document.getElementById('outletPanel'), document.getElementById('outletPanelHandle'), () => {
-            document.getElementById('outletPanel').classList.toggle('collapsed');
-        });
         document.getElementById('calcPanel').classList.add('collapsed');
-        document.getElementById('outletPanel').classList.add('collapsed');
     </script>
 
 </body>

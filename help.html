@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kerph - Find a Builder</title>
+    <title>Kerph - Help &amp; Tutorials</title>
     <style>
         * {
             box-sizing: border-box;
@@ -73,8 +73,6 @@
         }
 
         .plan-badge-group { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; flex-shrink: 0; }
-        .plan-label { font-size: 11px; font-weight: 700; color: #4b5563; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
-        .plan-label abbr { cursor: help; text-decoration: none; }
         .plan-select {
             padding: 8px 12px;
             border: 1px solid #cbd5e1;
@@ -98,15 +96,12 @@
             transition: background-color 0.15s ease;
         }
         .account-btn:hover { background-color: #eef2ff; }
-
         .account-btn.plan-free { border-color: #16a34a; }
         .account-btn.plan-pro { border-color: #2563eb; }
         .account-btn.plan-premier { border-color: #ca8a04; }
-
         .account-btn-text { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.2; }
         .account-btn-name { font-size: 13px; font-weight: 700; color: #1e3a8a; }
         .account-btn-plan { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: #6b7280; }
-
         .account-avatar {
             width: 28px; height: 28px; border-radius: 50%;
             background-color: #e0e7ff; background-size: cover; background-position: center;
@@ -140,7 +135,7 @@
         .input-box { width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; font-weight: 600; }
         .select-box { width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; font-weight: 600; background: #f8fafc; }
 
-        .modal-overlay { position: fixed; inset: 0; background-color: rgba(15, 23, 42, 0.5); z-index: 3000; display: flex; align-items: center; justify-content: center; }
+        .modal-overlay { position: fixed; inset: 0; background-color: rgba(15, 23, 42, 0.5); z-index: 3000; display: flex; align-items: center; justify-content: center; padding: 24px; }
         .modal-box { background-color: #ffffff; border-radius: 12px; padding: 24px; width: 320px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4); }
         .account-modal-box { width: 380px; max-height: 88vh; overflow-y: auto; }
         .account-member-since { font-size: 10.5px; color: #94a3b8; font-weight: 600; margin-top: 6px; }
@@ -191,14 +186,47 @@
         }
         .upgrade-nudge.visible { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
 
-        /* ---------- PAGE CONTENT ---------- */
-        main {
-            max-width: 720px;
+        /* ---------- PAGE LAYOUT: sidebar TOC + article content ---------- */
+        .help-layout {
+            max-width: 1180px;
             margin: 0 auto;
-            padding: 48px 24px 80px;
+            padding: 40px 24px 100px;
+            display: flex;
+            gap: 32px;
+            align-items: flex-start;
         }
 
-        .finder-eyebrow {
+        .help-toc {
+            width: 240px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 24px;
+            background-color: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 12px;
+            padding: 18px;
+        }
+        .help-toc-group { margin-bottom: 16px; }
+        .help-toc-group:last-child { margin-bottom: 0; }
+        .help-toc-group-title { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; margin-bottom: 6px; }
+        .help-toc a {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #1e293b;
+            text-decoration: none;
+            padding: 6px 8px;
+            border-radius: 6px;
+            margin-bottom: 1px;
+        }
+        .help-toc a:hover { background-color: #eef2ff; color: #1e3a8a; }
+        .help-toc a.soon { color: #9ca3af; cursor: default; }
+        .help-toc a.soon:hover { background-color: transparent; color: #9ca3af; }
+        .help-toc-soon-badge { font-size: 9px; font-weight: 700; text-transform: uppercase; color: #b45309; background: #fffbeb; border: 1px solid #fde68a; border-radius: 999px; padding: 1px 6px; margin-left: 6px; }
+
+        .help-main { flex: 1; min-width: 0; }
+
+        .help-eyebrow {
             font-size: 11px;
             font-weight: 700;
             text-transform: uppercase;
@@ -206,109 +234,69 @@
             color: #b23b3b;
             margin-bottom: 8px;
         }
+        .help-title { font-size: 28px; font-weight: 800; color: #0f172a; margin-bottom: 10px; }
+        .help-subtitle { font-size: 14.5px; color: #4b5563; line-height: 1.6; margin-bottom: 32px; max-width: 70ch; }
 
-        .finder-title { font-size: 28px; font-weight: 800; color: #0f172a; margin-bottom: 10px; }
-        .finder-subtitle { font-size: 14.5px; color: #4b5563; line-height: 1.6; margin-bottom: 32px; max-width: 60ch; }
-
-        .finder-card {
+        .help-article {
             background-color: #ffffff;
             border: 1px solid #cbd5e1;
             border-radius: 14px;
-            padding: 28px;
+            padding: 32px;
             box-shadow: 0 12px 30px -12px rgba(15, 23, 42, 0.15);
+            margin-bottom: 24px;
+            scroll-margin-top: 20px;
         }
+        .help-article-eyebrow { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #6b7280; margin-bottom: 6px; }
+        .help-article h2 { font-size: 21px; font-weight: 800; color: #0f172a; margin-bottom: 12px; }
+        .help-article h3 { font-size: 15px; font-weight: 800; color: #1e3a8a; margin: 26px 0 10px; }
+        .help-article p { font-size: 13.5px; color: #374151; line-height: 1.7; margin-bottom: 12px; }
+        .help-article p:last-child { margin-bottom: 0; }
+        .help-article ol, .help-article ul { margin: 0 0 14px 20px; }
+        .help-article li { font-size: 13.5px; color: #374151; line-height: 1.7; margin-bottom: 6px; }
+        .help-article b { color: #0f172a; }
+        .help-article code { background: #f1f5f9; border-radius: 4px; padding: 1px 5px; font-size: 12.5px; color: #1e3a8a; font-weight: 700; }
 
-        .finder-row { display: flex; gap: 10px; align-items: flex-end; }
-        .finder-row .header-field { flex: 1; display: flex; flex-direction: column; gap: 4px; }
-        #zipInput { font-size: 16px; letter-spacing: 0.02em; }
-        #zipSearchBtn {
-            flex: none;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 8px;
-            background-color: #1e3a8a;
-            color: #ffffff;
+        .help-callout {
+            border-radius: 10px;
+            padding: 14px 16px;
+            margin: 16px 0;
             font-size: 13px;
-            font-weight: 700;
-            cursor: pointer;
-        }
-        #zipSearchBtn:hover { background-color: #1e40af; }
-
-        .zip-error { font-size: 12px; color: #b91c1c; margin-top: 6px; min-height: 16px; }
-
-        .category-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #6b7280; margin: 22px 0 10px; }
-        .category-chips { display: flex; flex-wrap: wrap; gap: 8px; }
-        .category-chip {
-            padding: 8px 14px;
-            border: 1px solid #cbd5e1;
-            border-radius: 999px;
-            background-color: #f8fafc;
-            font-size: 12.5px;
-            font-weight: 600;
-            color: #1e3a8a;
-            cursor: pointer;
-        }
-        .category-chip:hover { background-color: #eef2ff; border-color: #2563eb; }
-
-        .finder-secondary {
-            margin-top: 20px;
-            padding-top: 20px;
-            border-top: 1px solid #e2e8f0;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-        .finder-secondary-text { font-size: 12px; color: #6b7280; }
-        .finder-secondary a {
-            font-size: 12.5px;
-            font-weight: 700;
-            color: #1e3a8a;
-            text-decoration: none;
-            white-space: nowrap;
-        }
-        .finder-secondary a:hover { text-decoration: underline; }
-
-        .why-note {
-            margin-top: 24px;
-            font-size: 12px;
-            color: #6b7280;
             line-height: 1.6;
-            background-color: rgba(30, 58, 138, 0.05);
-            border: 1px solid #dbe4ef;
-            border-left: 3px solid #1e3a8a;
-            border-radius: 8px;
-            padding: 12px 14px;
         }
-        .why-note b { color: #1e293b; }
+        .help-callout-tip { background: rgba(37, 99, 235, 0.06); border: 1px solid #bfdbfe; border-left: 3px solid #2563eb; color: #1e3a8a; }
+        .help-callout-tip b { color: #1e40af; }
+        .help-callout-note { background: rgba(217, 119, 6, 0.07); border: 1px solid #fde68a; border-left: 3px solid #d97706; color: #92400e; }
+        .help-callout-note b { color: #92400e; }
 
-        /* ---------- CONCIERGE QUOTE REQUEST (Premier) ---------- */
-        .concierge-card {
-            margin-top: 20px;
-            border-color: #eab308;
-            background-image: linear-gradient(160deg, #fffbeb 0%, #ffffff 45%);
+        .help-placeholder {
+            background-color: #ffffff;
+            border: 1px dashed #cbd5e1;
+            border-radius: 14px;
+            padding: 26px 32px;
+            margin-bottom: 24px;
+            color: #6b7280;
+            scroll-margin-top: 20px;
         }
-        .concierge-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
-        .concierge-eyebrow { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: #b45309; margin-bottom: 4px; }
-        .concierge-title { font-size: 17px; font-weight: 800; color: #0f172a; }
-        .premier-badge {
-            flex-shrink: 0;
-            background-color: #ca8a04;
-            color: #ffffff;
-            font-size: 10px;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 0.04em;
-            padding: 4px 10px;
-            border-radius: 999px;
-            margin-top: 2px;
-        }
-        .concierge-locked-note { font-size: 13px; color: #6b7280; line-height: 1.6; }
-        .concierge-desc { font-size: 12.5px; color: #6b7280; line-height: 1.5; margin-bottom: 14px; }
-        .concierge-next-note { font-size: 11.5px; color: #92400e; margin-top: 10px; line-height: 1.5; }
-        textarea.input-box { resize: vertical; font-family: inherit; }
-        #conciergeOutputText { font-family: ui-monospace, "Cascadia Code", Consolas, monospace; font-size: 12px; }
+        .help-placeholder h2 { font-size: 16px; font-weight: 800; color: #6b7280; margin-bottom: 6px; }
+        .help-placeholder p { font-size: 12.5px; line-height: 1.6; }
+
+        /* Small illustrative diagram — plain divs, no screenshots needed. Two duct pieces
+           shown apart ("before"), then aligned end-to-end ("after") with a glowing snap
+           indicator, so the port-snapping behavior is visible without a real screen capture. */
+        .snap-diagram { display: flex; gap: 28px; align-items: center; justify-content: center; flex-wrap: wrap; margin: 18px 0 22px; padding: 20px; background: #f8fafc; border-radius: 10px; border: 1px solid #e2e8f0; }
+        .snap-diagram-col { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+        .snap-diagram-label { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: #94a3b8; }
+        .snap-row { display: flex; align-items: center; height: 40px; }
+        .snap-duct { width: 70px; height: 16px; background: #cbd5e1; border: 1px solid #64748b; border-radius: 2px; }
+        .snap-gap { width: 26px; }
+        .snap-arrow { font-size: 20px; color: #94a3b8; }
+        .snap-glow { box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.35); border-color: #2563eb !important; }
+        .snap-port-dot { width: 6px; height: 6px; border-radius: 50%; background: #2563eb; margin: 0 -1px; align-self: center; }
+
+        .port-count-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; margin: 14px 0 20px; }
+        .port-count-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px; }
+        .port-count-name { font-size: 12px; font-weight: 800; color: #0f172a; }
+        .port-count-num { font-size: 11px; color: #6b7280; margin-top: 2px; }
             .header-quick-links { display: flex; align-items: center; gap: 6px; font-size: 11px; }
         .header-quick-links a { color: #6b7280; font-weight: 600; text-decoration: none; }
         .header-quick-links a:hover { color: #1e3a8a; text-decoration: underline; }
@@ -331,7 +319,7 @@
                 <option value="dust-collection.html">Dust Collection</option>
                 <option value="project-designer.html">Project Designer</option>
                 <option value="cutlist-optimizer.html">Cut List Optimizer</option>
-                <option value="find-a-builder.html" selected>Find a Builder</option>
+                <option value="find-a-builder.html">Find a Builder</option>
                 <option value="shop-3d-viewer.html">3D Shop Viewer</option>
                 <option value="tool-reviews.html">Cool Tool Reviews</option>
                 <option value="shop-showcase.html">Shop Showcase</option>
@@ -368,14 +356,14 @@
             <div class="modal-title">Account Settings</div>
             <div class="modal-warning">Saved locally in this browser only — real accounts, Google sign-in, and community features aren't connected yet.</div>
 
-            <div class="header-field" style="width:100%; margin-bottom:14px; display:flex; flex-direction:column; align-items:center;">
+            <div class="header-field" style="align-items:center; display:flex; flex-direction:column; gap:4px;">
                 <div class="account-avatar-large" id="accountAvatarLarge">&#128100;</div>
                 <input type="file" id="accountAvatarInput" accept="image/*" style="display:none;">
                 <button type="button" id="accountAvatarBtn" class="mini-btn" style="margin-top:10px; flex:none;">Upload Photo</button>
                 <div class="account-member-since" id="accountMemberSince"></div>
             </div>
 
-            <div class="header-field" style="width:100%;">
+            <div class="header-field" style="display:flex; flex-direction:column; gap:4px; margin-top:12px;">
                 <label class="header-field-label" for="accountUsernameInput">Username</label>
                 <input type="text" class="input-box" id="accountUsernameInput" placeholder="Choose a username">
             </div>
@@ -397,7 +385,7 @@
                 <div class="account-plan-upsell" id="accountPlanUpsell" style="display:none;">Saved layouts, custom shapes, cabinetry, and more unlock on Pro.</div>
             </div>
 
-            <div class="header-field" style="width:100%; margin-top:10px;">
+            <div class="header-field" style="display:flex; flex-direction:column; gap:4px; margin-top:10px;">
                 <label class="header-field-label" for="accountUnitsSelect">Preferred Units</label>
                 <select class="select-box" id="accountUnitsSelect">
                     <option value="imperial">Imperial (ft / in)</option>
@@ -405,7 +393,7 @@
                 </select>
             </div>
 
-            <div class="header-field" style="width:100%; margin-top:14px;">
+            <div class="header-field" style="display:flex; flex-direction:column; gap:4px; margin-top:14px;">
                 <label class="header-field-label">Saved Layouts</label>
                 <div id="accountLayoutsList" class="account-layouts-list"></div>
             </div>
@@ -436,122 +424,136 @@
 
     <div class="upgrade-nudge" id="upgradeNudge"></div>
 
-    <main>
-        <div class="finder-eyebrow">Resource &middot; not a Kerph directory</div>
-        <div class="finder-title">Find a pole barn / post-frame builder</div>
-        <div class="finder-subtitle">Designed your shop — now find someone to build it. Enter a zip code and we'll hand you straight to Google Maps, filtered to builders near you, with real ratings and reviews.</div>
-
-        <div class="finder-card">
-            <div class="finder-row">
-                <div class="header-field">
-                    <label class="header-field-label" for="zipInput">ZIP Code</label>
-                    <input type="text" class="input-box" id="zipInput" placeholder="e.g. 46601" inputmode="numeric" maxlength="5">
-                </div>
-                <button type="button" id="zipSearchBtn">Search Builders</button>
+    <div class="help-layout">
+        <nav class="help-toc">
+            <div class="help-toc-group">
+                <div class="help-toc-group-title">Dust Collection</div>
+                <a href="#dc-port-snapping">Magnetic Port Snapping</a>
+                <a href="#dc-calculator" class="soon">Sizing Calculator<span class="help-toc-soon-badge">Soon</span></a>
             </div>
-            <div class="zip-error" id="zipError"></div>
-
-            <div class="category-label">Or search a more specific term near that zip</div>
-            <div class="category-chips" id="categoryChips">
-                <button type="button" class="category-chip" data-term="pole barn builders">Pole Barn Builders</button>
-                <button type="button" class="category-chip" data-term="post frame construction contractors">Post-Frame Contractors</button>
-                <button type="button" class="category-chip" data-term="metal building contractors">Metal Building Contractors</button>
-                <button type="button" class="category-chip" data-term="barndominium builders">Barndominium Builders</button>
-                <button type="button" class="category-chip" data-term="ag building contractors">Ag Building Contractors</button>
+            <div class="help-toc-group">
+                <div class="help-toc-group-title">Workshop Layout Planner</div>
+                <a href="#wp-basics" class="soon">Getting Started<span class="help-toc-soon-badge">Soon</span></a>
+                <a href="#wp-walls" class="soon">Walls &amp; Wall Features<span class="help-toc-soon-badge">Soon</span></a>
             </div>
-
-            <div class="finder-secondary">
-                <span class="finder-secondary-text">Want reviews, forums, and price discussion beyond Maps listings?</span>
-                <a id="webSearchLink" href="#" target="_blank" rel="noopener">Search the web &#8594;</a>
+            <div class="help-toc-group">
+                <div class="help-toc-group-title">3D Shop Viewer</div>
+                <a href="#viewer-3d-basics" class="soon">Orbiting &amp; Editing in 3D<span class="help-toc-soon-badge">Soon</span></a>
             </div>
-        </div>
-
-        <div class="finder-card concierge-card" id="conciergeCard">
-            <div class="concierge-header">
-                <div>
-                    <div class="concierge-eyebrow">Premier</div>
-                    <div class="concierge-title">Draft your builder quote request</div>
-                </div>
-                <span class="premier-badge">Premier</span>
+            <div class="help-toc-group">
+                <div class="help-toc-group-title">Cut List Optimizer</div>
+                <a href="#clo-basics" class="soon">Sheets vs. Boards<span class="help-toc-soon-badge">Soon</span></a>
             </div>
+        </nav>
 
-            <div class="concierge-locked-note" id="conciergeLockedNote">
-                Premier members can generate a polished, ready-to-send quote request pulled straight from their actual shop layout — no retyping the same project description for every builder you contact.
-                <div style="margin-top:10px;">
-                    <button type="button" class="mini-btn modal-primary-btn" id="conciergeUpgradeBtn">Switch to Premier (preview)</button>
-                </div>
-            </div>
+        <main class="help-main">
+            <div class="help-eyebrow">Help &amp; Tutorials</div>
+            <div class="help-title">How to use Kerph</div>
+            <div class="help-subtitle">Step-by-step walkthroughs for the trickier parts of the app. This page will grow over time — got a feature that needs an explainer? Let us know.</div>
 
-            <div id="conciergeForm" style="display:none;">
-                <p class="concierge-desc">Fill this out once — we'll draft a professional inquiry, pre-filled with your actual shop dimensions where available, that you can send to any builder you find above.</p>
+            <article class="help-article" id="dc-port-snapping">
+                <div class="help-article-eyebrow">Dust Collection</div>
+                <h2>Magnetic Port Snapping</h2>
+                <p>Every duct piece, elbow, Y-joint, T-joint, and blast gate has invisible "ports" at the points where it's meant to connect to another piece. When you drag one of these near a compatible open port, it automatically snaps into place — sliding and rotating itself so the two pieces line up flush and facing each other. You don't have to nudge things pixel-by-pixel to get a clean-looking run.</p>
 
-                <div class="header-field" style="margin-bottom:10px;">
-                    <label class="header-field-label" for="conciergeProjectType">Project</label>
-                    <select class="select-box" id="conciergeProjectType">
-                        <option value="pole barn / detached shop">Pole barn / detached shop</option>
-                        <option value="garage conversion">Garage conversion</option>
-                        <option value="post-frame addition">Post-frame addition</option>
-                        <option value="barndominium">Barndominium</option>
-                        <option value="other outbuilding">Other outbuilding</option>
-                    </select>
-                </div>
-
-                <div class="finder-row" style="margin-bottom:10px; align-items: stretch;">
-                    <div class="header-field">
-                        <label class="header-field-label" for="conciergeBudget">Budget range</label>
-                        <select class="select-box" id="conciergeBudget">
-                            <option value="not sure yet">Not sure yet</option>
-                            <option value="under $20,000">Under $20,000</option>
-                            <option value="$20,000-$50,000">$20,000&ndash;$50,000</option>
-                            <option value="$50,000-$100,000">$50,000&ndash;$100,000</option>
-                            <option value="$100,000+">$100,000+</option>
-                        </select>
+                <div class="snap-diagram">
+                    <div class="snap-diagram-col">
+                        <div class="snap-diagram-label">While dragging &mdash; not close enough yet</div>
+                        <div class="snap-row">
+                            <div class="snap-duct"></div>
+                            <div class="snap-gap"></div>
+                            <div class="snap-duct"></div>
+                        </div>
                     </div>
-                    <div class="header-field">
-                        <label class="header-field-label" for="conciergeTimeline">Timeline</label>
-                        <select class="select-box" id="conciergeTimeline">
-                            <option value="just exploring">Just exploring</option>
-                            <option value="within 3 months">Within 3 months</option>
-                            <option value="3-6 months">3&ndash;6 months</option>
-                            <option value="6-12 months">6&ndash;12 months</option>
-                        </select>
+                    <div class="snap-arrow">&#8594;</div>
+                    <div class="snap-diagram-col">
+                        <div class="snap-diagram-label">Dragged within range &mdash; snapped</div>
+                        <div class="snap-row">
+                            <div class="snap-duct snap-glow"></div><div class="snap-port-dot"></div><div class="snap-duct snap-glow"></div>
+                        </div>
                     </div>
                 </div>
 
-                <div class="header-field" style="margin-bottom:10px;">
-                    <label class="header-field-label" for="conciergeNotes">Anything else the builder should know?</label>
-                    <textarea class="input-box" id="conciergeNotes" rows="3" placeholder="e.g. needs 200-amp service, gravel driveway access, HOA restrictions..."></textarea>
+                <h3>How to connect two pieces</h3>
+                <ol>
+                    <li>Place your first piece (usually starting from the dust collector) anywhere on the grid.</li>
+                    <li>Drag a second piece &mdash; a duct segment, elbow, Y-joint, T-joint, or blast gate &mdash; near one end of the first piece.</li>
+                    <li>You don't need to be exact. Once you're reasonably close to the open end, the piece snaps: it repositions and rotates itself so its port lines up exactly with the other piece's port.</li>
+                    <li>Keep going, piece by piece, working outward from the collector toward each tool.</li>
+                </ol>
+
+                <div class="help-callout help-callout-note">
+                    <b>Only matching duct sizes snap to each other.</b> A 4" piece will only snap to another 4" piece, and a 6" piece only to another 6". If a piece won't snap the way you expect, double-check both pieces are the same diameter &mdash; that's the most common reason.
                 </div>
 
-                <div class="header-field" style="margin-bottom:14px;">
-                    <label class="header-field-label" for="conciergeContact">Your contact info (goes in the message)</label>
-                    <input type="text" class="input-box" id="conciergeContact" placeholder="Name, phone or email">
+                <h3>How many ports does each piece have?</h3>
+                <p>Ports are the connection points a piece is trying to snap. Some pieces only have two (a straight through-connection); fittings that split the airflow have three.</p>
+                <div class="port-count-grid">
+                    <div class="port-count-card"><div class="port-count-name">Straight Duct</div><div class="port-count-num">2 ports (both ends)</div></div>
+                    <div class="port-count-card"><div class="port-count-name">Blast Gate</div><div class="port-count-num">2 ports (both ends)</div></div>
+                    <div class="port-count-card"><div class="port-count-name">90&deg; Elbow</div><div class="port-count-num">2 ports (each leg)</div></div>
+                    <div class="port-count-card"><div class="port-count-name">Y-Joint</div><div class="port-count-num">3 ports</div></div>
+                    <div class="port-count-card"><div class="port-count-name">T-Joint</div><div class="port-count-num">3 ports</div></div>
+                    <div class="port-count-card"><div class="port-count-name">Duct Drop</div><div class="port-count-num">2 ports (both ends)</div></div>
                 </div>
 
-                <button type="button" class="mini-btn modal-primary-btn" id="conciergeGenerateBtn" style="width:100%;">Draft My Quote Request</button>
+                <h3>Blast gates and "open" ends</h3>
+                <p>A blast gate is a valve, not a plain pass-through &mdash; in a real shop, one side connects back to the main trunk and the other side sits right at the tool it serves. That tool-facing side is <b>supposed</b> to end there; it isn't meant to connect to anything else, since tools themselves aren't part of the duct network in this planner.</p>
+                <p>That's why <b>Check Duct Connections</b> (in the Sizing Calculator panel) only flags a blast gate if it isn't hooked into the duct network on <i>either</i> side. A gate with one side properly connected and the other terminating at a tool is exactly right and won't be flagged.</p>
 
-                <div id="conciergeOutput" style="display:none; margin-top:16px;">
-                    <label class="header-field-label" for="conciergeOutputText" style="display:block; margin-bottom:6px;">Your draft &mdash; copy it or open it in email</label>
-                    <textarea class="input-box" id="conciergeOutputText" rows="9" readonly></textarea>
-                    <div style="display:flex; gap:8px; margin-top:8px;">
-                        <button type="button" class="mini-btn" id="conciergeCopyBtn" style="flex:1;">&#128203; Copy Request</button>
-                        <button type="button" class="mini-btn" id="conciergeEmailBtn" style="flex:1;">&#9993;&#65039; Open in Email</button>
-                    </div>
-                    <div class="concierge-next-note">Next: search above, then send this to your top picks &mdash; most Maps listings show a phone number or a website with a contact form right on the card.</div>
+                <h3>Duct Drops (going from overhead down to a tool)</h3>
+                <p>This grid is a top-down 2D view, so it can't show a pipe actually descending from an overhead trunk to a tool at floor height &mdash; every duct piece just floats at the same fixed mount elevation. A <b>Duct Drop</b> is how a vertical run is represented instead: place one where the overhead branch reaches a tool (typically right behind the blast gate), and it snaps into the run exactly like a duct segment does.</p>
+                <p>In 2D it shows as a plain bullseye icon rather than a pipe shape, since "direction" doesn't mean anything for a vertical connector in a top-down view. It counts as an elbow-equivalent in the sizing calculator (same friction-loss penalty, just for a change in elevation instead of heading), and it's the one dust-collection piece that renders as a real vertical pipe in the 3D Shop Viewer.</p>
+                <div class="help-callout help-callout-tip">
+                    <b>Tip:</b> Placing a tool with <b>Attach to dust collection?</b> checked (in the Workshop Layout Planner catalog) automatically builds the blast gate, drop, and duct run for you &mdash; drops are inserted automatically, you don't have to add them by hand unless you're routing manually.
                 </div>
+
+                <h3>Verifying and using your run</h3>
+                <ul>
+                    <li><b>&#128269; Check Duct Connections</b> &mdash; scans every placed piece and marks any genuinely open (unconnected) duct end in red on the grid, so you can spot a gap in the run at a glance.</li>
+                    <li><b>&#9889; Auto-Fill Branches from Layout</b> &mdash; traces the connected run from your dust collector out to each blast gate and fills in the branch length and elbow count for you in the sizing calculator below, instead of measuring by hand.</li>
+                </ul>
+
+                <div class="help-callout help-callout-tip">
+                    <b>Tip:</b> Build outward from the collector one connected piece at a time rather than placing everything first and connecting it after &mdash; it's much easier to see exactly what's snapping to what as you go.
+                </div>
+            </article>
+
+            <div class="help-placeholder" id="dc-calculator">
+                <h2>Sizing Calculator <span class="help-toc-soon-badge">Coming soon</span></h2>
+                <p>A walkthrough of the branch/main-trunk CFM sizing calculator, collector fan curves, and cost estimate is on the way.</p>
             </div>
-        </div>
 
-        <div class="why-note">
-            <b>Why we link out instead of hosting our own list:</b> Google Maps' listings, ratings, and reviews stay current on their own — a directory we maintained ourselves would go stale and risks pointing you to bad contact info. This always shows real, live listings for your area.
-        </div>
-    </main>
+            <div class="help-placeholder" id="wp-basics">
+                <h2>Getting Started with the Workshop Layout Planner <span class="help-toc-soon-badge">Coming soon</span></h2>
+                <p>A walkthrough of setting up your shop, placing tools and cabinets, and the floating panels is on the way.</p>
+            </div>
+
+            <div class="help-placeholder" id="wp-walls">
+                <h2>Walls &amp; Wall Features <span class="help-toc-soon-badge">Coming soon</span></h2>
+                <p>A walkthrough of placing doors, windows, outlets, and interior walls is on the way.</p>
+            </div>
+
+            <div class="help-placeholder" id="viewer-3d-basics">
+                <h2>Orbiting &amp; Editing in 3D <span class="help-toc-soon-badge">Coming soon</span></h2>
+                <p>A walkthrough of navigating, dragging, and rotating items in the 3D Shop Viewer is on the way.</p>
+            </div>
+
+            <div class="help-placeholder" id="clo-basics">
+                <h2>Sheets vs. Boards <span class="help-toc-soon-badge">Coming soon</span></h2>
+                <p>A walkthrough of the Cut List Optimizer's stock settings is on the way.</p>
+            </div>
+        </main>
+    </div>
 
     <script>
         /* ---------- SHARED STATE KEYS (must match workshop-planner.html / index.html exactly) ---------- */
         const PLAN_KEY = 'kerphPlan';
         const ACCOUNT_KEY = 'kerphAccount';
         const AUTH_KEY = 'kerphSignedIn';
+        const TOOL_STATUS_KEY = 'kerphToolStatus';
+        const LAYOUTS_KEY = 'kerphSavedLayouts';
+        const LAYOUT_TYPE_LABELS = { workshop: 'Workshop', 'dust-collection': 'Dust Collection', lighting: 'Lighting' };
 
         function showToast(message) {
             const nudge = document.getElementById('upgradeNudge');
@@ -561,27 +563,26 @@
             showToast._timer = setTimeout(() => nudge.classList.remove('visible'), 3500);
         }
 
-        function getPlan() { return localStorage.getItem(PLAN_KEY) || 'free'; }
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str == null ? '' : String(str);
+            return div.innerHTML;
+        }
 
+        function getPlan() { return localStorage.getItem(PLAN_KEY) || 'free'; }
         function initPlanSelector() {
             const select = document.getElementById('planSelector');
             select.value = getPlan();
-            select.addEventListener('change', () => {
-                localStorage.setItem(PLAN_KEY, select.value);
-                renderAccountBadge();
-                if (typeof applyPlanGating === 'function') applyPlanGating();
-            });
+            select.addEventListener('change', () => { localStorage.setItem(PLAN_KEY, select.value); });
         }
 
         function loadAccount() {
             try { return JSON.parse(localStorage.getItem(ACCOUNT_KEY)) || {}; } catch (e) { return {}; }
         }
-
         function applyAvatarTo(el, dataUrl) {
             if (dataUrl) { el.style.backgroundImage = `url(${dataUrl})`; el.textContent = ''; }
             else { el.style.backgroundImage = ''; el.textContent = '\u{1F464}'; }
         }
-
         function renderAccountBadge() {
             const acc = loadAccount();
             document.getElementById('accountBtnLabel').textContent = acc.username || 'Account';
@@ -594,30 +595,13 @@
             if (btn) btn.className = 'account-btn plan-' + (plan === 'pro' || plan === 'premier' ? plan : 'free');
         }
 
-        /* ---------- Account extras shared with the other pages: tool-status stats, saved
-           layouts (read-only view — editing lives in Workshop Layout Planner), plan card,
-           member-since, danger zone. ---------- */
-        const TOOL_STATUS_KEY = 'kerphToolStatus';
-        const LAYOUTS_KEY = 'kerphSavedLayouts';
-        const LAYOUT_TYPE_LABELS = { workshop: 'Workshop', 'dust-collection': 'Dust Collection', lighting: 'Lighting' };
-
         function loadToolStatuses() {
             try { return JSON.parse(localStorage.getItem(TOOL_STATUS_KEY)) || {}; } catch (e) { return {}; }
         }
-
         function loadLayouts() {
             try { return JSON.parse(localStorage.getItem(LAYOUTS_KEY)) || []; } catch (e) { return []; }
         }
-
-        function persistLayouts(list) {
-            localStorage.setItem(LAYOUTS_KEY, JSON.stringify(list));
-        }
-
-        function escapeHtml(str) {
-            const div = document.createElement('div');
-            div.textContent = str == null ? '' : String(str);
-            return div.innerHTML;
-        }
+        function persistLayouts(list) { localStorage.setItem(LAYOUTS_KEY, JSON.stringify(list)); }
 
         function renderAccountStats() {
             const row = document.getElementById('accountStatsRow');
@@ -635,7 +619,6 @@
                 <div class="account-stat"><div class="account-stat-value">${layoutCount}</div><div class="account-stat-label">Layouts</div></div>
             `;
         }
-
         function renderAccountPlanCard() {
             const nameEl = document.getElementById('accountPlanName');
             const select = document.getElementById('accountPlanSelect');
@@ -647,7 +630,6 @@
             select.value = plan;
             upsell.style.display = plan === 'free' ? 'block' : 'none';
         }
-
         function renderAccountLayoutsList() {
             const list = document.getElementById('accountLayoutsList');
             if (!list) return;
@@ -672,7 +654,6 @@
                 });
             });
         }
-
         function renderAccountMemberSince() {
             const el = document.getElementById('accountMemberSince');
             if (!el) return;
@@ -735,7 +716,6 @@
                     localStorage.setItem(PLAN_KEY, planSelect.value);
                     const headerSelect = document.getElementById('planSelector');
                     if (headerSelect) headerSelect.value = planSelect.value;
-                    if (typeof applyPlanGating === 'function') applyPlanGating();
                     renderAccountPlanCard();
                     renderAccountBadge();
                     showToast(`Switched to the ${planSelect.value[0].toUpperCase()}${planSelect.value.slice(1)} plan (preview).`);
@@ -799,13 +779,11 @@
         }
 
         function isSignedIn() { return localStorage.getItem(AUTH_KEY) === 'true'; }
-
         function updateHeaderSignInState() {
             const signedIn = isSignedIn();
             document.getElementById('headerSignIn').style.display = signedIn ? 'none' : 'flex';
             document.getElementById('accountBtn').style.display = signedIn ? 'flex' : 'none';
         }
-
         function completeSignIn(username) {
             localStorage.setItem(AUTH_KEY, 'true');
             const acc = loadAccount();
@@ -815,14 +793,11 @@
             renderAccountBadge();
             updateHeaderSignInState();
         }
-
         function signOut() { localStorage.removeItem(AUTH_KEY); updateHeaderSignInState(); }
-
         function initHeaderSignIn() {
             const usernameInput = document.getElementById('headerSignInUsername');
             const passwordInput = document.getElementById('headerSignInPassword');
             const signInBtn = document.getElementById('headerSignInBtn');
-
             function attemptSignIn() {
                 const username = usernameInput.value.trim();
                 const password = passwordInput.value;
@@ -831,170 +806,17 @@
                 usernameInput.value = '';
                 passwordInput.value = '';
             }
-
             signInBtn.addEventListener('click', attemptSignIn);
             [usernameInput, passwordInput].forEach(input => {
                 input.addEventListener('keydown', (e) => { if (e.key === 'Enter') attemptSignIn(); });
             });
-
             updateHeaderSignInState();
-        }
-
-        /* ---------- BUILDER FINDER ---------- */
-        function isValidZip(zip) {
-            return /^\d{5}$/.test(zip);
-        }
-
-        function mapsSearchUrl(term, zip) {
-            return 'https://www.google.com/maps/search/' + encodeURIComponent(term + ' near ' + zip);
-        }
-
-        function webSearchUrl(term, zip) {
-            return 'https://www.google.com/search?q=' + encodeURIComponent(term + ' near ' + zip + ' reviews');
-        }
-
-        function currentZip() {
-            return document.getElementById('zipInput').value.trim();
-        }
-
-        function initBuilderFinder() {
-            const zipInput = document.getElementById('zipInput');
-            const zipError = document.getElementById('zipError');
-            const searchBtn = document.getElementById('zipSearchBtn');
-            const webLink = document.getElementById('webSearchLink');
-
-            function runSearch(term) {
-                const zip = currentZip();
-                if (!isValidZip(zip)) {
-                    zipError.textContent = 'Enter a valid 5-digit ZIP code first.';
-                    zipInput.focus();
-                    return;
-                }
-                zipError.textContent = '';
-                window.open(mapsSearchUrl(term, zip), '_blank', 'noopener');
-            }
-
-            searchBtn.addEventListener('click', () => runSearch('pole barn builders'));
-            zipInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') runSearch('pole barn builders'); });
-            zipInput.addEventListener('input', () => {
-                zipInput.value = zipInput.value.replace(/\D/g, '').slice(0, 5);
-                zipError.textContent = '';
-            });
-
-            document.querySelectorAll('.category-chip').forEach(chip => {
-                chip.addEventListener('click', () => runSearch(chip.getAttribute('data-term')));
-            });
-
-            webLink.addEventListener('click', (e) => {
-                const zip = currentZip();
-                if (!isValidZip(zip)) {
-                    e.preventDefault();
-                    zipError.textContent = 'Enter a valid 5-digit ZIP code first.';
-                    zipInput.focus();
-                    return;
-                }
-                webLink.href = webSearchUrl('pole barn builders', zip);
-            });
-        }
-
-        /* ---------- CONCIERGE QUOTE REQUEST (Premier) ----------
-           No real vetted-builder database or outbound email service exists yet (see the
-           why-note above — this page deliberately doesn't host its own directory), so this
-           can't literally "auto-send to 3 vetted builders" without either fabricating builder
-           contacts or building real backend infrastructure. What it can honestly do today:
-           draft the inquiry once — pulling real data from the user's own shop layout — so they
-           aren't retyping the same project description into every builder's contact form. */
-        function isPremium() { return getPlan() === 'premier'; }
-
-        function applyPlanGating() {
-            const locked = !isPremium();
-            const lockedNote = document.getElementById('conciergeLockedNote');
-            const form = document.getElementById('conciergeForm');
-            if (lockedNote) lockedNote.style.display = locked ? 'block' : 'none';
-            if (form) form.style.display = locked ? 'none' : 'block';
-        }
-
-        // Reads the same shared kerphCurrentLayout key the Workshop Layout Planner autosaves
-        // to, so the drafted request can reference the user's real planned shop size instead
-        // of asking them to type it in a third time.
-        function loadCurrentShopSummary() {
-            try {
-                const layout = JSON.parse(localStorage.getItem('kerphCurrentLayout'));
-                if (!layout || !layout.widthFeet || !layout.lengthFeet) return null;
-                return { widthFeet: layout.widthFeet, lengthFeet: layout.lengthFeet, itemCount: (layout.tools || []).length };
-            } catch (e) { return null; }
-        }
-
-        function buildQuoteRequestText() {
-            const projectType = document.getElementById('conciergeProjectType').value;
-            const budget = document.getElementById('conciergeBudget').value;
-            const timeline = document.getElementById('conciergeTimeline').value;
-            const notes = document.getElementById('conciergeNotes').value.trim();
-            const contact = document.getElementById('conciergeContact').value.trim();
-            const zip = currentZip();
-            const shop = loadCurrentShopSummary();
-
-            const lines = [];
-            lines.push(`Hi — I'm looking for a quote on a ${projectType}${zip ? ` near ${zip}` : ''}.`);
-            lines.push('');
-            if (shop) {
-                lines.push(`Planned size: ${shop.widthFeet}' x ${shop.lengthFeet}'${shop.itemCount ? ` (already laid out with ${shop.itemCount} tool/equipment placements in Kerph)` : ''}.`);
-            }
-            lines.push(`Budget: ${budget}.`);
-            lines.push(`Timeline: ${timeline}.`);
-            if (notes) { lines.push(''); lines.push(notes); }
-            lines.push('');
-            lines.push(`Could you let me know if this is something you'd be able to quote, and what you'd need from me to get started?`);
-            if (contact) { lines.push(''); lines.push('Thanks,'); lines.push(contact); }
-            return lines.join('\n');
-        }
-
-        function initConcierge() {
-            const upgradeBtn = document.getElementById('conciergeUpgradeBtn');
-            if (upgradeBtn) {
-                upgradeBtn.addEventListener('click', () => {
-                    localStorage.setItem(PLAN_KEY, 'premier');
-                    const headerSelect = document.getElementById('planSelector');
-                    if (headerSelect) headerSelect.value = 'premier';
-                    applyPlanGating();
-                    renderAccountBadge();
-                    showToast('Switched to the Premier plan (preview).');
-                });
-            }
-
-            const output = document.getElementById('conciergeOutput');
-            const outputText = document.getElementById('conciergeOutputText');
-
-            document.getElementById('conciergeGenerateBtn').addEventListener('click', () => {
-                outputText.value = buildQuoteRequestText();
-                output.style.display = 'block';
-                output.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-            });
-
-            document.getElementById('conciergeCopyBtn').addEventListener('click', () => {
-                navigator.clipboard.writeText(outputText.value).then(() => {
-                    showToast('Request copied — paste it into an email or contact form.');
-                }).catch(() => {
-                    outputText.select();
-                    showToast('Select-all applied — copy with Ctrl/Cmd+C.');
-                });
-            });
-
-            document.getElementById('conciergeEmailBtn').addEventListener('click', () => {
-                const subject = encodeURIComponent(`Quote request: ${document.getElementById('conciergeProjectType').value}`);
-                const body = encodeURIComponent(outputText.value);
-                window.location.href = `mailto:?subject=${subject}&body=${body}`;
-            });
-
-            applyPlanGating();
         }
 
         document.getElementById('pageNavSelect').addEventListener('change', (e) => { window.location.href = e.target.value; });
         initPlanSelector();
         initHeaderSignIn();
         initAccountPanel();
-        initBuilderFinder();
-        initConcierge();
     </script>
 </body>
 </html>
