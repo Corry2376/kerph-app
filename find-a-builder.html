@@ -314,6 +314,41 @@
         .header-quick-links a { color: #6b7280; font-weight: 600; text-decoration: none; }
         .header-quick-links a:hover { color: #1e3a8a; text-decoration: underline; }
         .header-quick-links-sep { color: #cbd5e1; }
+
+        .concierge-checkbox-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            font-size: 12.5px;
+            color: #374151;
+            line-height: 1.4;
+            cursor: pointer;
+        }
+        .concierge-checkbox-row input[type="checkbox"] { margin-top: 2px; flex-shrink: 0; }
+
+        /* Same window.print()-based export pattern as the Insurance Report on the home page —
+           no PDF library. A summary (dimensions + equipment list), not a rendered visual floor
+           plan — the actual grid graphics live in the Workshop Layout Planner's own renderer,
+           which isn't something this page has a copy of. */
+        @media print {
+            body.printing-shop-summary > *:not(#shopSummaryPrintArea) { display: none !important; }
+            body.printing-shop-summary { padding-top: 0 !important; background: #fff !important; }
+            body.printing-shop-summary #shopSummaryPrintArea {
+                display: block !important;
+                font-family: inherit;
+                color: #0f172a;
+            }
+            @page { size: portrait; margin: 0.6in; }
+            .shop-summary-title { font-size: 22px; font-weight: 800; }
+            .shop-summary-meta { font-size: 11px; color: #475569; margin-top: 4px; margin-bottom: 18px; }
+            .shop-summary-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+            .shop-summary-table th {
+                text-align: left; padding: 6px 8px; font-size: 9px; text-transform: uppercase;
+                letter-spacing: 0.04em; color: #64748b; border-bottom: 2px solid #1e3a8a;
+            }
+            .shop-summary-table td { padding: 6px 8px; border-bottom: 1px solid #e2e8f0; }
+            .shop-summary-disclaimer { margin-top: 22px; font-size: 10px; color: #6b7280; line-height: 1.6; border-top: 1px solid #e2e8f0; padding-top: 10px; }
+        }
     </style>
 </head>
 <body>
@@ -354,7 +389,7 @@
             <div class="header-quick-links">
                 <a href="pricing.html">Plan Comparison</a>
                 <span class="header-quick-links-sep">&middot;</span>
-                <a href="help.html">Help &amp; Support</a>
+                <a href="help.html">Trouble with the Kerph</a>
             </div>
             <select class="plan-select" id="planSelector" style="display:none;">
                 <option value="free">Free</option>
@@ -529,7 +564,17 @@
                     <input type="text" class="input-box" id="conciergeContact" placeholder="Name, phone or email">
                 </div>
 
-                <button type="button" class="mini-btn modal-primary-btn" id="conciergeGenerateBtn" style="width:100%;">Draft My Quote Request</button>
+                <div class="header-field" style="margin-bottom:14px;">
+                    <label class="header-field-label" for="conciergeRecipients">Builder email addresses (optional)</label>
+                    <textarea class="input-box" id="conciergeRecipients" rows="2" placeholder="One per line or comma-separated &mdash; as many builders as you want to reach out to."></textarea>
+                </div>
+
+                <label class="concierge-checkbox-row" for="conciergeIncludePdf">
+                    <input type="checkbox" id="conciergeIncludePdf">
+                    <span>Include a shop layout summary PDF (dimensions + equipment list from your current layout)</span>
+                </label>
+
+                <button type="button" class="mini-btn modal-primary-btn" id="conciergeGenerateBtn" style="width:100%; margin-top:10px;">Draft My Quote Request</button>
 
                 <div id="conciergeOutput" style="display:none; margin-top:16px;">
                     <label class="header-field-label" for="conciergeOutputText" style="display:block; margin-bottom:6px;">Your draft &mdash; copy it or open it in email</label>
@@ -538,10 +583,13 @@
                         <button type="button" class="mini-btn" id="conciergeCopyBtn" style="flex:1;">&#128203; Copy Request</button>
                         <button type="button" class="mini-btn" id="conciergeEmailBtn" style="flex:1;">&#9993;&#65039; Open in Email</button>
                     </div>
-                    <div class="concierge-next-note">Next: search above, then send this to your top picks &mdash; most Maps listings show a phone number or a website with a contact form right on the card.</div>
+                    <button type="button" class="mini-btn" id="conciergePdfBtn" style="width:100%; margin-top:8px; display:none;">&#128196; Download Shop Layout PDF</button>
+                    <div class="concierge-next-note" id="conciergeNextNote">Next: search above, then send this to your top picks &mdash; most Maps listings show a phone number or a website with a contact form right on the card.</div>
                 </div>
             </div>
         </div>
+
+        <div id="shopSummaryPrintArea"></div>
 
         <div class="why-note">
             <b>Why we link out instead of hosting our own list:</b> Google Maps' listings, ratings, and reviews stay current on their own — a directory we maintained ourselves would go stale and risks pointing you to bad contact info. This always shows real, live listings for your area.
@@ -917,13 +965,27 @@
 
         // Reads the same shared kerphCurrentLayout key the Workshop Layout Planner autosaves
         // to, so the drafted request can reference the user's real planned shop size instead
-        // of asking them to type it in a third time.
+        // of asking them to type it in a third time. Returns the full tools array too (not just
+        // a count) so the optional PDF summary below can list them out.
         function loadCurrentShopSummary() {
             try {
                 const layout = JSON.parse(localStorage.getItem('kerphCurrentLayout'));
                 if (!layout || !layout.widthFeet || !layout.lengthFeet) return null;
-                return { widthFeet: layout.widthFeet, lengthFeet: layout.lengthFeet, itemCount: (layout.tools || []).length };
+                return {
+                    widthFeet: layout.widthFeet,
+                    lengthFeet: layout.lengthFeet,
+                    ceilingHeightFt: layout.ceilingHeightFt || null,
+                    tools: layout.tools || []
+                };
             } catch (e) { return null; }
+        }
+
+        // Splits on commas AND newlines so pasting either a comma-separated list or one address
+        // per line both work — no cap on how many, unlike a real vetted-directory "send to your
+        // top N" flow this deliberately isn't (see the comment above).
+        function parseBuilderRecipients() {
+            const raw = document.getElementById('conciergeRecipients').value;
+            return raw.split(/[\n,]/).map(s => s.trim()).filter(Boolean);
         }
 
         function buildQuoteRequestText() {
@@ -932,6 +994,7 @@
             const timeline = document.getElementById('conciergeTimeline').value;
             const notes = document.getElementById('conciergeNotes').value.trim();
             const contact = document.getElementById('conciergeContact').value.trim();
+            const includePdf = document.getElementById('conciergeIncludePdf').checked;
             const zip = currentZip();
             const shop = loadCurrentShopSummary();
 
@@ -939,15 +1002,54 @@
             lines.push(`Hi — I'm looking for a quote on a ${projectType}${zip ? ` near ${zip}` : ''}.`);
             lines.push('');
             if (shop) {
-                lines.push(`Planned size: ${shop.widthFeet}' x ${shop.lengthFeet}'${shop.itemCount ? ` (already laid out with ${shop.itemCount} tool/equipment placements in Kerph)` : ''}.`);
+                lines.push(`Planned size: ${shop.widthFeet}' x ${shop.lengthFeet}'${shop.tools.length ? ` (already laid out with ${shop.tools.length} tool/equipment placements in Kerph)` : ''}.`);
             }
             lines.push(`Budget: ${budget}.`);
             lines.push(`Timeline: ${timeline}.`);
             if (notes) { lines.push(''); lines.push(notes); }
+            if (includePdf && shop) { lines.push(''); lines.push(`I've attached a PDF summary of my planned shop layout (dimensions + equipment list).`); }
             lines.push('');
             lines.push(`Could you let me know if this is something you'd be able to quote, and what you'd need from me to get started?`);
             if (contact) { lines.push(''); lines.push('Thanks,'); lines.push(contact); }
             return lines.join('\n');
+        }
+
+        // Same window.print() pattern as the home page's Insurance Report — no PDF library, no
+        // real attachment mechanism (mailto: links can't attach files; that's a hard limitation
+        // of the URI scheme, not something any amount of JS here can work around). This lets the
+        // user save a PDF via their browser's print dialog, then attach it themselves once their
+        // email client opens — the toast on the "Open in Email" button spells that out so it's
+        // not a silent assumption.
+        function generateShopLayoutSummaryPDF() {
+            const shop = loadCurrentShopSummary();
+            if (!shop) {
+                showToast('No current shop layout found — lay one out in the Workshop Layout Planner first.');
+                return;
+            }
+            const today = new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+            const rows = shop.tools.map(t => `<tr>
+                <td>${escapeHtml(t.displayName || t.label || 'Item')}</td>
+                <td>${escapeHtml(t.layer || '—')}</td>
+                <td>${escapeHtml(t.displayDims || '—')}</td>
+            </tr>`).join('');
+
+            const printArea = document.getElementById('shopSummaryPrintArea');
+            printArea.innerHTML = `
+                <div class="shop-summary-title">Planned Shop Layout</div>
+                <div class="shop-summary-meta">
+                    Prepared via Kerph on ${today} &mdash; ${shop.widthFeet}' x ${shop.lengthFeet}'${shop.ceilingHeightFt ? ` x ${shop.ceilingHeightFt}' ceiling` : ''}, ${shop.tools.length} item${shop.tools.length === 1 ? '' : 's'}
+                </div>
+                <table class="shop-summary-table">
+                    <thead><tr><th>Item</th><th>Category</th><th>Dimensions</th></tr></thead>
+                    <tbody>${rows || '<tr><td colspan="3">No items placed yet.</td></tr>'}</tbody>
+                </table>
+                <div class="shop-summary-disclaimer">
+                    This is a dimensions + equipment summary generated from the shop layout as currently planned in Kerph, not a scaled architectural drawing. Provide alongside any other project details the builder requests.
+                </div>
+            `;
+            document.body.classList.add('printing-shop-summary');
+            window.print();
+            setTimeout(() => document.body.classList.remove('printing-shop-summary'), 500);
         }
 
         function initConcierge() {
@@ -966,9 +1068,18 @@
             const output = document.getElementById('conciergeOutput');
             const outputText = document.getElementById('conciergeOutputText');
 
+            const pdfBtn = document.getElementById('conciergePdfBtn');
+            const includePdfCheckbox = document.getElementById('conciergeIncludePdf');
+            const nextNote = document.getElementById('conciergeNextNote');
+            const defaultNextNote = nextNote.textContent;
+
             document.getElementById('conciergeGenerateBtn').addEventListener('click', () => {
                 outputText.value = buildQuoteRequestText();
                 output.style.display = 'block';
+                pdfBtn.style.display = includePdfCheckbox.checked ? 'block' : 'none';
+                nextNote.textContent = includePdfCheckbox.checked
+                    ? `${defaultNextNote} Download the PDF below and attach it before you hit send — mailto: links can't attach files automatically.`
+                    : defaultNextNote;
                 output.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             });
 
@@ -981,11 +1092,25 @@
                 });
             });
 
+            // No cap on recipients — comma/newline-separated, all handed straight through to
+            // mailto:'s own to= field, which supports as many comma-separated addresses as you
+            // give it. Left blank, this is the same blank-recipient behavior as before.
             document.getElementById('conciergeEmailBtn').addEventListener('click', () => {
+                // Commas here must stay literal, not percent-encoded — mailto:'s recipient list
+                // (the part before "?") is comma-separated addresses, and encoding the commas
+                // would make mail clients read the whole thing as one (invalid) address instead
+                // of a list. Individual addresses don't need escaping; they don't contain
+                // characters that are unsafe in a URI.
+                const recipients = parseBuilderRecipients().join(',');
                 const subject = encodeURIComponent(`Quote request: ${document.getElementById('conciergeProjectType').value}`);
                 const body = encodeURIComponent(outputText.value);
-                window.location.href = `mailto:?subject=${subject}&body=${body}`;
+                if (includePdfCheckbox.checked) {
+                    showToast('Remember to attach the shop layout PDF before sending.');
+                }
+                window.location.href = `mailto:${recipients}?subject=${subject}&body=${body}`;
             });
+
+            pdfBtn.addEventListener('click', generateShopLayoutSummaryPDF);
 
             applyPlanGating();
         }
