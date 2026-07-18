@@ -67,7 +67,67 @@
         'US General 56in Roller Cabinet': { power: 'N/A', voltage: 'N/A', weight: '~340 lbs empty' },
         'Husky 52in Mobile Workbench': { power: 'N/A', voltage: 'N/A', weight: '~300 lbs empty' },
         'Snap-on KRL1023 Classic 78': { power: 'N/A', voltage: 'N/A', weight: '~700 lbs empty' },
-        'Husky 72in Tool Chest Combo': { power: 'N/A', voltage: 'N/A', weight: '~650 lbs empty' }
+        'Husky 72in Tool Chest Combo': { power: 'N/A', voltage: 'N/A', weight: '~650 lbs empty' },
+
+        // Researched 2026-07-18 for the catalog expansion — real current models with verified
+        // specs from manufacturer/retailer pages, spanning budget/mid/premium tiers per
+        // category. buyUrl links out to a real product page (no pricing shown per product
+        // decision — prices go stale fast and a wrong number is worse than none).
+        'DeWalt DWE7491RS': { power: '15A', voltage: '120V', weight: '~90 lbs (w/ stand)', buyUrl: 'https://www.dewalt.com/en-us/product/dwe7491rs/10-jobsite-table-saw-and-rolling-stand' },
+        'SKIL TS6307-00': { power: '15A', voltage: '120V', weight: '~65 lbs', buyUrl: 'https://www.skil.com/products/15-amp-10inch-table-saw-ts6307-00' },
+        'RIDGID R4518': { power: '15A', voltage: '120V', weight: '~75 lbs', buyUrl: 'https://www.homedepot.com/p/RIDGID-15-Amp-10-in-Portable-Corded-Jobsite-Table-Saw-with-Folding-Stand-R4518/309413142' },
+        'Grizzly G0715P': { power: '2 HP', voltage: '110V / 220V', weight: '~393 lbs', buyUrl: 'https://cdn0.grizzly.com/specsheets/g0715p_ds.pdf' },
+        'Powermatic PM1000': { power: '1.75 HP', voltage: '115V / 230V', weight: '~289 lbs', buyUrl: 'https://www.rockler.com/powermatic-pm1000-1-3-4-hp-table-saw-1-phase-with-30-accu-fence-system' },
+        'Grizzly G0690': { power: '3 HP', voltage: '220V', weight: '~507 lbs', buyUrl: 'https://cdn0.grizzly.com/specsheets/g0690_ds.pdf' },
+        'DeWalt DWS779': { power: '15A', voltage: '120V', weight: '~56 lbs', buyUrl: 'https://www.dewalt.com/en-us/product/dws779/12-double-bevel-sliding-compound-miter-saw' },
+        'Bosch GCM12SD': { power: '15A', voltage: '120V', weight: '~65 lbs', buyUrl: 'https://www.boschtools.com/us/en/products/gcm12sd-060166501C' },
+        'Makita LS1019L': { power: '15A', voltage: '120V', weight: '~58 lbs', buyUrl: 'https://makitatools.com/products/details/LS1019L' },
+        'Metabo HPT C10FCGS': { power: '15A', voltage: '120V', weight: '~24 lbs', buyUrl: 'https://www.metabo-hpt.com/products/product/10-compound-miter-saw-c10fcgs-metabo-hpt' },
+        'Rikon 10-305': { power: '1/3 HP', voltage: '120V', weight: '~76 lbs', buyUrl: 'https://rikontools.com/product/model-10-305-10%E2%80%B3-bandsaw/' },
+        'Grizzly G0555LX': { power: '1 HP', voltage: '110V', weight: '~218 lbs', buyUrl: 'https://cdn0.grizzly.com/specsheets/g0555lx_ds.pdf' },
+        'DeWalt DW735X': { power: '15A', voltage: '120V', weight: '~102 lbs', buyUrl: 'https://www.dewalt.com/en-us/product/dw735x/13-3-knife-two-speed-thickness-planer' },
+        'JET JWJ-8CS': { power: '2 HP', voltage: '230V', weight: '~398 lbs', buyUrl: 'https://www.homedepot.com/p/Jet-JWJ-8CS-8-in-Closed-Stand-Jointer-Kit-718200K/306002034' },
+        'Cutech 40160HB': { power: 'N/A (manual feed)', voltage: 'N/A', weight: '~65 lbs', buyUrl: 'https://cutechtools.us/products/6-spiral-cutterhead-benchtop-jointer-black-table-cutech-40160hb' },
+        'WEN 6502T': { power: '4.3A', voltage: '120V', weight: '~41 lbs', buyUrl: 'https://www.homedepot.com/p/WEN-4-3-Amp-Corded-4-in-x-36-in-Belt-and-6-in-Disc-Sander-with-Cast-Iron-Base-6502T/307346676' },
+        'RIDGID EB4424': { power: '5A', voltage: '120V', weight: '~40 lbs', buyUrl: 'https://powertools.ridgid.com/products/648846050546' },
+        'WEN 4210': { power: '3.2A', voltage: '120V', weight: '~45 lbs', buyUrl: 'https://www.amazon.com/WEN-4210-Drill-Press-10-Inch/dp/B005UKGLAS' },
+        'Powermatic PM701': { power: '3/4 HP', voltage: '115V / 230V', weight: '~93 lbs', buyUrl: 'https://www.powermatic.com/pm701-mortiser-3-4hp-1ph-115-230v' },
+        'JET JWL-1221VS': { power: '1 HP', voltage: '115V', weight: '~115 lbs', buyUrl: 'https://jettools.com/jwl-1221vs-12-x-21-variable-speed-wood-lathe' },
+        'Grizzly G0733': { power: '2 HP', voltage: '240V', weight: '~547 lbs', buyUrl: 'https://www.grizzly.com/products/grizzly-18-x-47-heavy-duty-wood-lathe/g0733' },
+        'Bosch RA1181': { power: 'N/A (table only)', voltage: 'N/A', weight: '~30 lbs', buyUrl: 'https://www.homedepot.com/p/Bosch-27-in-x-18-in-Aluminum-Top-Benchtop-Router-Table-with-2-1-2-in-Vacuum-Hose-Port-RA1181/100466926' },
+        'Onefinity Journeyman': { power: 'NEMA23 steppers', voltage: '120V', weight: '~90 lbs', buyUrl: 'https://www.onefinitycnc.com/product-page/onefinity-journeyman' },
+        'WEN DC3401': { power: '5.7A', voltage: '120V', weight: '~18.5 lbs', buyUrl: 'https://www.homedepot.com/p/WEN-5-7-Amp-660-CFM-Rolling-Dust-Collector-with-12-Gal-Bag-and-Optional-Wall-Mount-DC3401/320052090' },
+        'Laguna C-Flux 2': { power: '2 HP', voltage: '220V', weight: '~301 lbs', buyUrl: 'https://lagunatools.com/classic/dust-collectors/c-flux-2/' },
+
+        // Mechanical/automotive shop equipment — researched 2026-07-18 for the new Shop Type
+        // (Woodworking/Mechanical/Both) feature. Some footprints are estimated where the
+        // manufacturer doesn't publish one (flagged in tool-catalog-research.md); everything
+        // else is verified against the manufacturer/retailer page linked in buyUrl.
+        'BendPak XPR-10A': { power: 'N/A (electro-hydraulic)', voltage: '220V', weight: '~1,300 lbs', buyUrl: 'https://www.speedwaymotors.com/BendPak-XPR-10A-LP-2-Post-Lift-10-000-Pound-Lifting-Capacity,126981.html' },
+        'BendPak HD-9': { power: 'N/A (electro-hydraulic)', voltage: '220V', weight: 'N/A', buyUrl: 'https://www.bendpak.com/car-lifts/four-post-lifts/hd-9/' },
+        'BendPak MD-6XP': { power: 'N/A (air/hydraulic)', voltage: '110V power unit', weight: 'N/A', buyUrl: 'https://www.bendpak.com/car-lifts/mid-rise-scissor-lifts/md-6xp/' },
+        'Ranger RML-1500XL': { power: 'N/A (air/hydraulic)', voltage: 'N/A', weight: '~808 lbs', buyUrl: 'https://www.bendpak.com/shop-equipment/motorcycle-lifts/rml-1500xl/' },
+        'Hobart Handler 140': { power: '115V', voltage: '115V', weight: '~57 lbs', buyUrl: 'https://www.hobartwelders.com/equipment/welders/mig-gmaw/handler-140-mig-welder-m00169' },
+        'Miller Multimatic 215': { power: '110/240V', voltage: '110/120/240V', weight: '~38 lbs', buyUrl: 'https://www.millerwelds.com/equipment/welders/multiprocess/multimatic-215-multiprocess-welder-m30090' },
+        'California Air Tools 10020C': { power: '2 HP', voltage: '120V', weight: '~82.5 lbs', buyUrl: 'https://www.homedepot.com/p/California-Air-Tools-10-Gal-2-0-HP-Ultra-Quiet-and-Oil-Free-Electric-Air-Compressor-10020C/206644539' },
+        'Ingersoll Rand 2475N7.5-V': { power: '7.5 HP', voltage: '230V', weight: '~611 lbs', buyUrl: 'https://www.homedepot.com/p/Ingersoll-Rand-Type-30-Reciprocating-80-Gal-7-5-HP-Electric-230-Volt-Single-Phase-Air-Compressor-2475N7-5-V/203751639' },
+        'Torin T32002': { power: 'N/A (hydraulic)', voltage: 'N/A', weight: '~160 lbs', buyUrl: 'https://www.northerntool.com/products/torin-big-red-2-ton-folding-shop-crane-with-free-load-leveler-model-t32002-144847' },
+        'Arcan XL20': { power: 'N/A (hydraulic)', voltage: 'N/A', weight: '~67 lbs', buyUrl: 'https://www.homedepot.com/p/Arcan-2-Ton-Floor-Jack-XL20/308313510' },
+        'Torin TRA4055': { power: 'N/A (hydraulic)', voltage: 'N/A', weight: '~120 lbs', buyUrl: 'https://www.northerntool.com/products/torin-big-red-double-ram-transmission-jack-1-2-ton-35in-70-1-2in-lift-range-model-tra4055-104514' },
+        'Coats 70X-AH': { power: '1.5 HP air motor', voltage: 'N/A', weight: '~700 lbs', buyUrl: 'https://www.myerstiresupply.com/coats-equipment/coats-tire-changers/coats-70x-tire-changer.html' },
+        'Snap-on EPIQ 84in': { power: 'N/A', voltage: 'N/A', weight: 'N/A', buyUrl: 'https://shop.snapon.com/categories/84%22-Wide-EPIQ%E2%84%A2-Roll-Cabs/629487' },
+        'Mac Tools Macsimizer': { power: 'N/A', voltage: 'N/A', weight: '~740 lbs shipping', buyUrl: 'https://www.mactools.com/collections/tool-storage' },
+
+        // Plumbing layer — new 4th layer, works for every shop type (domain-agnostic)
+        'Zurn Z415': { power: 'N/A', voltage: 'N/A', weight: 'N/A', buyUrl: 'https://www.zurn.com/products/drainage-interceptors/floor-drains/finish-floor-drains/z415b' },
+        'Mustee 63M': { power: 'N/A', voltage: 'N/A', weight: 'N/A', buyUrl: 'https://www.homeperfect.com/mustee-63m-mop-sink-white-24-in-l.html' },
+        'Rheem RTEX-13': { power: '13 kW', voltage: '240V', weight: '~8.5 lbs', buyUrl: 'https://www.homedepot.com/p/Rheem-Performance-13-kW-2-54-GPM-240-Volt-Self-Modulating-Electric-Tankless-Water-Heater-RETEX-13/300800566' },
+        'NDS Dura Slope': { power: 'N/A', voltage: 'N/A', weight: 'N/A', buyUrl: 'https://www.ndspro.com/us/en/product/drainage/channel-and-trench-drains-and-grates/ds-097-dura-slope-channel-drain-60-in-to-64-in-invert-depth-6-in-wide-x-4-ft-long-x-78-in-deep' },
+        'Woodford Model 65': { power: 'N/A', voltage: 'N/A', weight: 'N/A', buyUrl: 'https://www.supplyhouse.com/Woodford-65P-12-Model-65-12-3-4-FPT-Inlet-Freezeless-Automatic-Draining-Wall-Hydrant' },
+
+        // Dust collection reducer — bridges a 4in run to a 6in run (see DUCT_PORTS/
+        // getPortSizeClasses in workshop-planner.html for the port-matching logic)
+        '4in-6in Duct Reducer': { power: 'N/A', voltage: 'N/A', weight: '~1 lb' }
     };
 
     // { name, category, layer, widthFt, lengthFt, heightFt } for every non-cabinet catalog
@@ -138,6 +198,58 @@
         { name: 'US General 56in Roller Cabinet', category: 'Tool Storage', layer: 'tools', widthFt: 4.7, lengthFt: 1.8, heightFt: 3.1 },
         { name: 'Husky 52in Mobile Workbench', category: 'Tool Storage', layer: 'tools', widthFt: 4.3, lengthFt: 2.1, heightFt: 3.3 },
         { name: 'Snap-on KRL1023 Classic 78', category: 'Tool Storage', layer: 'tools', widthFt: 6.5, lengthFt: 2.1, heightFt: 3.5 },
-        { name: 'Husky 72in Tool Chest Combo', category: 'Tool Storage', layer: 'tools', widthFt: 2.0, lengthFt: 6.0, heightFt: 6.2 }
+        { name: 'Husky 72in Tool Chest Combo', category: 'Tool Storage', layer: 'tools', widthFt: 2.0, lengthFt: 6.0, heightFt: 6.2 },
+
+        // Researched 2026-07-18 catalog expansion — see TOOL_SPECS entries above for buyUrl/specs
+        { name: 'DeWalt DWE7491RS', category: 'Table Saws', layer: 'tools', widthFt: 2.2, lengthFt: 2.2, heightFt: 2.9 },
+        { name: 'SKIL TS6307-00', category: 'Table Saws', layer: 'tools', widthFt: 2.0, lengthFt: 2.2, heightFt: 2.7 },
+        { name: 'RIDGID R4518', category: 'Table Saws', layer: 'tools', widthFt: 2.4, lengthFt: 2.4, heightFt: 2.8 },
+        { name: 'Grizzly G0715P', category: 'Table Saws', layer: 'tools', widthFt: 1.7, lengthFt: 1.8, heightFt: 3.3 },
+        { name: 'Powermatic PM1000', category: 'Table Saws', layer: 'tools', widthFt: 3.6, lengthFt: 5.1, heightFt: 3.7 },
+        { name: 'Grizzly G0690', category: 'Table Saws', layer: 'tools', widthFt: 3.4, lengthFt: 5.2, heightFt: 3.3 },
+        { name: 'DeWalt DWS779', category: 'Crosscut & Miter', layer: 'tools', widthFt: 1.6, lengthFt: 2.7, heightFt: 1.9 },
+        { name: 'Bosch GCM12SD', category: 'Crosscut & Miter', layer: 'tools', widthFt: 1.0, lengthFt: 1.9, heightFt: 1.6 },
+        { name: 'Makita LS1019L', category: 'Crosscut & Miter', layer: 'tools', widthFt: 2.1, lengthFt: 2.6, heightFt: 2.2 },
+        { name: 'Metabo HPT C10FCGS', category: 'Crosscut & Miter', layer: 'tools', widthFt: 2.0, lengthFt: 2.0, heightFt: 1.5 },
+        { name: 'Rikon 10-305', category: 'Bandsaws', layer: 'tools', widthFt: 1.1, lengthFt: 1.0, heightFt: 1.5 },
+        { name: 'Grizzly G0555LX', category: 'Bandsaws', layer: 'tools', widthFt: 2.0, lengthFt: 1.4, heightFt: 5.6 },
+        { name: 'DeWalt DW735X', category: 'Jointers & Planers', layer: 'tools', widthFt: 1.8, lengthFt: 2.0, heightFt: 1.8 },
+        { name: 'JET JWJ-8CS', category: 'Jointers & Planers', layer: 'tools', widthFt: 0.75, lengthFt: 5.5, heightFt: 3.0 },
+        { name: 'Cutech 40160HB', category: 'Jointers & Planers', layer: 'tools', widthFt: 0.6, lengthFt: 2.5, heightFt: 1.2 },
+        { name: 'WEN 6502T', category: 'Sanding', layer: 'tools', widthFt: 1.5, lengthFt: 1.3, heightFt: 0.9 },
+        { name: 'RIDGID EB4424', category: 'Sanding', layer: 'tools', widthFt: 1.5, lengthFt: 1.5, heightFt: 1.2 },
+        { name: 'WEN 4210', category: 'Drilling & Boring', layer: 'tools', widthFt: 0.6, lengthFt: 0.6, heightFt: 2.6 },
+        { name: 'Powermatic PM701', category: 'Drilling & Boring', layer: 'tools', widthFt: 1.3, lengthFt: 1.5, heightFt: 1.5 },
+        { name: 'JET JWL-1221VS', category: 'Turning', layer: 'tools', widthFt: 1.5, lengthFt: 3.3, heightFt: 1.5 },
+        { name: 'Grizzly G0733', category: 'Turning', layer: 'tools', widthFt: 1.7, lengthFt: 5.5, heightFt: 4.0 },
+        { name: 'Bosch RA1181', category: 'Routing', layer: 'tools', widthFt: 2.25, lengthFt: 1.5, heightFt: 1.2 },
+        { name: 'Onefinity Journeyman', category: 'CNC & Digital Fab', layer: 'tools', widthFt: 2.7, lengthFt: 4.0, heightFt: 1.5 },
+        { name: 'WEN DC3401', category: 'Dust Collection', layer: 'dust-collection', widthFt: 2.9, lengthFt: 1.1, heightFt: 1.2 },
+        { name: 'Laguna C-Flux 2', category: 'Dust Collection', layer: 'dust-collection', widthFt: 3.8, lengthFt: 2.3, heightFt: 6.6 },
+
+        // Mechanical/automotive shop equipment — new Shop Type feature, 2026-07-18
+        { name: 'BendPak XPR-10A', category: 'Vehicle Lifts', layer: 'tools', domain: 'mechanical', widthFt: 12.0, lengthFt: 5.0, heightFt: 12.0 },
+        { name: 'BendPak HD-9', category: 'Vehicle Lifts', layer: 'tools', domain: 'mechanical', widthFt: 9.2, lengthFt: 16.7, heightFt: 7.3 },
+        { name: 'BendPak MD-6XP', category: 'Vehicle Lifts', layer: 'tools', domain: 'mechanical', widthFt: 6.0, lengthFt: 3.0, heightFt: 0.5 },
+        { name: 'Ranger RML-1500XL', category: 'Vehicle Lifts', layer: 'tools', domain: 'mechanical', widthFt: 2.5, lengthFt: 6.6, heightFt: 0.7 },
+        { name: 'Hobart Handler 140', category: 'Welding', layer: 'tools', domain: 'mechanical', widthFt: 0.9, lengthFt: 1.6, heightFt: 1.0 },
+        { name: 'Miller Multimatic 215', category: 'Welding', layer: 'tools', domain: 'mechanical', widthFt: 0.9, lengthFt: 1.7, heightFt: 1.0 },
+        { name: 'California Air Tools 10020C', category: 'Air Compressors & Shop Air', layer: 'tools', domain: 'mechanical', widthFt: 1.3, lengthFt: 1.3, heightFt: 3.0 },
+        { name: 'Ingersoll Rand 2475N7.5-V', category: 'Air Compressors & Shop Air', layer: 'tools', domain: 'mechanical', widthFt: 3.2, lengthFt: 2.0, heightFt: 5.75 },
+        { name: 'Torin T32002', category: 'Jacks & Lifting Equipment', layer: 'tools', domain: 'mechanical', widthFt: 5.3, lengthFt: 3.3, heightFt: 5.0 },
+        { name: 'Arcan XL20', category: 'Jacks & Lifting Equipment', layer: 'tools', domain: 'mechanical', widthFt: 2.2, lengthFt: 0.5, heightFt: 1.1 },
+        { name: 'Torin TRA4055', category: 'Jacks & Lifting Equipment', layer: 'tools', domain: 'mechanical', widthFt: 1.6, lengthFt: 4.1, heightFt: 2.9 },
+        { name: 'Coats 70X-AH', category: 'Diagnostic & Specialty Equipment', layer: 'tools', domain: 'mechanical', widthFt: 4.0, lengthFt: 4.0, heightFt: 6.5 },
+        { name: 'Snap-on EPIQ 84in', category: 'Mechanic Tool Storage', layer: 'tools', domain: 'mechanical', widthFt: 7.0, lengthFt: 2.5, heightFt: 6.0 },
+        { name: 'Mac Tools Macsimizer', category: 'Mechanic Tool Storage', layer: 'tools', domain: 'mechanical', widthFt: 5.55, lengthFt: 2.25, heightFt: 3.9 },
+
+        // Plumbing layer — domain-agnostic (no `domain` key), works for every shop type
+        { name: 'Zurn Z415', category: 'Plumbing', layer: 'plumbing', widthFt: 0.7, lengthFt: 0.7, heightFt: 0.3 },
+        { name: 'Mustee 63M', category: 'Plumbing', layer: 'plumbing', widthFt: 2.0, lengthFt: 0.83, heightFt: 2.0 },
+        { name: 'Rheem RTEX-13', category: 'Plumbing', layer: 'plumbing', widthFt: 0.7, lengthFt: 0.3, heightFt: 1.05 },
+        { name: 'NDS Dura Slope', category: 'Plumbing', layer: 'plumbing', widthFt: 0.5, lengthFt: 4.0, heightFt: 0.65 },
+        { name: 'Woodford Model 65', category: 'Plumbing', layer: 'plumbing', widthFt: 0.3, lengthFt: 0.3, heightFt: 0.3 },
+
+        { name: '4in-6in Duct Reducer', category: 'Dust Collection', layer: 'dust-collection', domain: 'woodworking', widthFt: 0.45, lengthFt: 0.6, heightFt: 7.0 }
     ];
 })();

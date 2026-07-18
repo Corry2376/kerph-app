@@ -119,7 +119,10 @@
             display: flex; align-items: center; justify-content: center; font-size: 32px;
         }
 
-        .header-sign-in { display: flex; align-items: center; gap: 4px; }
+        .header-sign-in { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+        .header-sign-in-row { display: flex; align-items: center; gap: 4px; }
+        .header-sign-in-mode-toggle { font-size: 10px; font-weight: 600; color: #1e3a8a; text-decoration: none; }
+        .header-sign-in-mode-toggle:hover { text-decoration: underline; }
         .header-sign-in-input { width: 84px; padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 11px; font-weight: 600; }
         .header-sign-in .mini-btn { flex: none; padding: 6px 10px; font-size: 11px; }
 
@@ -374,10 +377,13 @@
             </select>
         </div>
         <div class="plan-badge-group">
-            <div class="header-sign-in" id="headerSignIn" title="Preview only — any username &amp; password signs you in locally in this browser.">
-                <input type="text" class="header-sign-in-input" id="headerSignInUsername" placeholder="Username" autocomplete="username">
-                <input type="password" class="header-sign-in-input" id="headerSignInPassword" placeholder="Password" autocomplete="current-password">
-                <button type="button" id="headerSignInBtn" class="mini-btn" title="Sign In">Sign In</button>
+            <div class="header-sign-in" id="headerSignIn">
+                <div class="header-sign-in-row">
+                    <input type="email" class="header-sign-in-input" id="headerSignInEmail" placeholder="Email" autocomplete="email">
+                    <input type="password" class="header-sign-in-input" id="headerSignInPassword" placeholder="Password" autocomplete="current-password">
+                    <button type="button" id="headerSignInBtn" class="mini-btn" title="Sign In">Sign In</button>
+                </div>
+                <a href="#" class="header-sign-in-mode-toggle" id="headerSignInModeToggle">New here? Create an account</a>
             </div>
             <button type="button" id="accountBtn" class="account-btn plan-free" title="Account &amp; Plan Settings — border color shows your plan level" style="display:none;">
                 <span class="account-avatar" id="accountAvatarPreview">&#128100;</span>
@@ -402,7 +408,7 @@
     <div class="modal-overlay" id="accountModalOverlay" style="display:none;">
         <div class="modal-box account-modal-box">
             <div class="modal-title">Account Settings</div>
-            <div class="modal-warning">Saved locally in this browser only — real accounts, Google sign-in, and community features aren't connected yet.</div>
+            <div class="modal-warning">Your account (username, avatar, sign-in) is real and synced via Kerph. Saved layouts, projects, tools, Showcase posts, and reviews are synced too — available on any device you sign into.</div>
 
             <div class="header-field" style="width:100%; margin-bottom:14px; display:flex; flex-direction:column; align-items:center;">
                 <div class="account-avatar-large" id="accountAvatarLarge">&#128100;</div>
@@ -453,8 +459,8 @@
             <button type="button" id="accountSignOutBtn" class="mini-btn danger" style="width:100%; margin-top:8px;">Sign Out</button>
 
             <div class="account-backup-zone">
-                <div class="account-backup-title">Backup &amp; Restore</div>
-                <div class="account-backup-desc">Everything lives only in this browser — export a copy so a cleared cache or a new device doesn't lose it.</div>
+                <div class="account-backup-title">Local Device Settings</div>
+                <div class="account-backup-desc">Your layouts, projects, tools, Showcase posts, and reviews live on your account now — no backup needed. This just covers a couple of local display preferences still cached in this browser.</div>
                 <div style="display:flex; gap:8px;">
                     <button type="button" id="accountExportBtn" class="mini-btn" style="flex:1;">&#11015;&#65039; Export</button>
                     <button type="button" id="accountImportBtn" class="mini-btn" style="flex:1;">&#11014;&#65039; Import&hellip;</button>
@@ -464,7 +470,7 @@
 
             <div class="account-danger-zone">
                 <div class="account-danger-title">Danger Zone</div>
-                <div class="account-danger-desc">Permanently erases every layout, tool status, and preference saved in this browser. This cannot be undone.</div>
+                <div class="account-danger-desc">Resets your local plan-preview selection and cached display preferences on this browser. Your account, layouts, projects, tools, and posts are not affected.</div>
                 <button type="button" id="accountResetAllBtn" class="mini-btn danger" style="width:100%;">Reset All Local Data&hellip;</button>
             </div>
         </div>
@@ -596,11 +602,13 @@
         </div>
     </main>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.7/dist/umd/supabase.js"></script>
+    <script src="supabase-client.js"></script>
     <script>
         /* ---------- SHARED STATE KEYS (must match workshop-planner.html / index.html exactly) ---------- */
         const PLAN_KEY = 'kerphPlan';
-        const ACCOUNT_KEY = 'kerphAccount';
-        const AUTH_KEY = 'kerphSignedIn';
+        /* ACCOUNT_KEY/AUTH_KEY removed — account + sign-in are now real, Supabase-backed
+           (see supabase-client.js) instead of localStorage flags. */
 
         function showToast(message) {
             const nudge = document.getElementById('upgradeNudge');
@@ -623,7 +631,7 @@
         }
 
         function loadAccount() {
-            try { return JSON.parse(localStorage.getItem(ACCOUNT_KEY)) || {}; } catch (e) { return {}; }
+            return (typeof kerphGetCachedProfile === 'function') ? kerphGetCachedProfile() : {};
         }
 
         function applyAvatarTo(el, dataUrl) {
@@ -650,16 +658,14 @@
         const LAYOUTS_KEY = 'kerphSavedLayouts';
         const LAYOUT_TYPE_LABELS = { workshop: 'Workshop', 'dust-collection': 'Dust Collection', lighting: 'Lighting' };
 
+        let cachedToolStatuses = {};
         function loadToolStatuses() {
-            try { return JSON.parse(localStorage.getItem(TOOL_STATUS_KEY)) || {}; } catch (e) { return {}; }
+            return cachedToolStatuses;
         }
 
+        let cachedSavedLayouts = [];
         function loadLayouts() {
-            try { return JSON.parse(localStorage.getItem(LAYOUTS_KEY)) || []; } catch (e) { return []; }
-        }
-
-        function persistLayouts(list) {
-            localStorage.setItem(LAYOUTS_KEY, JSON.stringify(list));
+            return cachedSavedLayouts;
         }
 
         function escapeHtml(str) {
@@ -713,8 +719,10 @@
                 `;
             }).join('');
             list.querySelectorAll('.account-layout-del').forEach(delBtn => {
-                delBtn.addEventListener('click', () => {
-                    persistLayouts(loadLayouts().filter(l => l.id !== delBtn.getAttribute('data-id')));
+                delBtn.addEventListener('click', async () => {
+                    const id = delBtn.getAttribute('data-id');
+                    await kerphDeleteSavedLayout(id);
+                    cachedSavedLayouts = cachedSavedLayouts.filter(l => l.id !== id);
                     renderAccountLayoutsList();
                     renderAccountStats();
                     showToast('Layout deleted.');
@@ -750,7 +758,7 @@
                 usernameInput.value = acc.username || '';
                 pendingAvatar = acc.avatar || null;
                 applyAvatarTo(avatarLarge, pendingAvatar);
-                unitsSelect.value = localStorage.getItem('kerphUnitSystem') || 'imperial';
+                unitsSelect.value = kerphGetCachedProfile().unitSystem || 'imperial';
                 renderAccountMemberSince();
                 renderAccountStats();
                 renderAccountPlanCard();
@@ -762,21 +770,22 @@
             avatarInput.addEventListener('change', () => {
                 const file = avatarInput.files[0];
                 if (!file) return;
-                const reader = new FileReader();
-                reader.onload = () => { pendingAvatar = reader.result; applyAvatarTo(avatarLarge, pendingAvatar); };
-                reader.readAsDataURL(file);
+                kerphDownscaleImage(file, 200).then((dataUrl) => {
+                    pendingAvatar = dataUrl;
+                    applyAvatarTo(avatarLarge, pendingAvatar);
+                });
             });
 
             cancelBtn.addEventListener('click', () => { overlay.style.display = 'none'; });
 
-            saveBtn.addEventListener('click', () => {
+            saveBtn.addEventListener('click', async () => {
                 const username = usernameInput.value.trim();
                 if (!username) { showToast('Enter a username to save your profile.'); return; }
-                localStorage.setItem(ACCOUNT_KEY, JSON.stringify({ ...loadAccount(), username, avatar: pendingAvatar }));
                 localStorage.setItem('kerphUnitSystem', unitsSelect.value);
-                renderAccountBadge();
+                const { error } = await kerphSaveProfile({ username, avatarDataUrl: pendingAvatar, unitSystem: unitsSelect.value });
+                if (error) { showToast(error.message || 'Could not save profile.'); return; }
                 overlay.style.display = 'none';
-                showToast('Profile saved locally.');
+                showToast('Profile saved.');
             });
 
             if (planSelect) {
@@ -847,7 +856,9 @@
             reader.readAsText(file);
         }
 
-        function isSignedIn() { return localStorage.getItem(AUTH_KEY) === 'true'; }
+        function isSignedIn() {
+            return typeof kerphGetCachedUser === 'function' && !!kerphGetCachedUser();
+        }
 
         function updateHeaderSignInState() {
             const signedIn = isSignedIn();
@@ -855,37 +866,54 @@
             document.getElementById('accountBtn').style.display = signedIn ? 'flex' : 'none';
         }
 
-        function completeSignIn(username) {
-            localStorage.setItem(AUTH_KEY, 'true');
-            const acc = loadAccount();
-            acc.username = username;
-            if (!acc.memberSince) acc.memberSince = new Date().toISOString();
-            localStorage.setItem(ACCOUNT_KEY, JSON.stringify(acc));
-            renderAccountBadge();
-            updateHeaderSignInState();
-        }
-
-        function signOut() { localStorage.removeItem(AUTH_KEY); updateHeaderSignInState(); }
+        async function signOut() { await kerphSignOut(); }
 
         function initHeaderSignIn() {
-            const usernameInput = document.getElementById('headerSignInUsername');
+            const emailInput = document.getElementById('headerSignInEmail');
             const passwordInput = document.getElementById('headerSignInPassword');
             const signInBtn = document.getElementById('headerSignInBtn');
+            const modeToggle = document.getElementById('headerSignInModeToggle');
 
-            function attemptSignIn() {
-                const username = usernameInput.value.trim();
+            let mode = 'signin';
+            function applyMode() {
+                signInBtn.textContent = mode === 'signin' ? 'Sign In' : 'Sign Up';
+                modeToggle.textContent = mode === 'signin' ? 'New here? Create an account' : 'Already have an account? Sign in';
+            }
+            applyMode();
+            modeToggle.addEventListener('click', (e) => { e.preventDefault(); mode = mode === 'signin' ? 'signup' : 'signin'; applyMode(); });
+
+            async function attemptSubmit() {
+                const email = emailInput.value.trim();
                 const password = passwordInput.value;
-                if (!username || !password) { showToast('Enter a username and password to sign in.'); return; }
-                completeSignIn(username);
-                usernameInput.value = '';
-                passwordInput.value = '';
+                if (!email || !password) { showToast('Enter an email and password.'); return; }
+                signInBtn.disabled = true;
+                try {
+                    if (mode === 'signin') {
+                        const { error } = await kerphSignIn(email, password);
+                        if (error) { showToast(error.message || 'Sign in failed.'); return; }
+                        passwordInput.value = '';
+                        showToast('Signed in.');
+                    } else {
+                        const { error, needsConfirmation } = await kerphSignUp(email, password);
+                        if (error) { showToast(error.message || 'Sign up failed.'); return; }
+                        passwordInput.value = '';
+                        if (needsConfirmation) {
+                            showToast('Check your email to confirm your account, then sign in.');
+                            mode = 'signin';
+                            applyMode();
+                        } else {
+                            showToast('Account created.');
+                        }
+                    }
+                } finally {
+                    signInBtn.disabled = false;
+                }
             }
 
-            signInBtn.addEventListener('click', attemptSignIn);
-            [usernameInput, passwordInput].forEach(input => {
-                input.addEventListener('keydown', (e) => { if (e.key === 'Enter') attemptSignIn(); });
+            signInBtn.addEventListener('click', attemptSubmit);
+            [emailInput, passwordInput].forEach(input => {
+                input.addEventListener('keydown', (e) => { if (e.key === 'Enter') attemptSubmit(); });
             });
-
             updateHeaderSignInState();
         }
 
@@ -967,17 +995,15 @@
         // to, so the drafted request can reference the user's real planned shop size instead
         // of asking them to type it in a third time. Returns the full tools array too (not just
         // a count) so the optional PDF summary below can list them out.
-        function loadCurrentShopSummary() {
-            try {
-                const layout = JSON.parse(localStorage.getItem('kerphCurrentLayout'));
-                if (!layout || !layout.widthFeet || !layout.lengthFeet) return null;
-                return {
-                    widthFeet: layout.widthFeet,
-                    lengthFeet: layout.lengthFeet,
-                    ceilingHeightFt: layout.ceilingHeightFt || null,
-                    tools: layout.tools || []
-                };
-            } catch (e) { return null; }
+        async function loadCurrentShopSummary() {
+            const { data: layout } = await kerphLoadCurrentLayout();
+            if (!layout || !layout.widthFeet || !layout.lengthFeet) return null;
+            return {
+                widthFeet: layout.widthFeet,
+                lengthFeet: layout.lengthFeet,
+                ceilingHeightFt: layout.ceilingHeightFt || null,
+                tools: layout.tools || []
+            };
         }
 
         // Splits on commas AND newlines so pasting either a comma-separated list or one address
@@ -988,7 +1014,7 @@
             return raw.split(/[\n,]/).map(s => s.trim()).filter(Boolean);
         }
 
-        function buildQuoteRequestText() {
+        async function buildQuoteRequestText() {
             const projectType = document.getElementById('conciergeProjectType').value;
             const budget = document.getElementById('conciergeBudget').value;
             const timeline = document.getElementById('conciergeTimeline').value;
@@ -996,7 +1022,7 @@
             const contact = document.getElementById('conciergeContact').value.trim();
             const includePdf = document.getElementById('conciergeIncludePdf').checked;
             const zip = currentZip();
-            const shop = loadCurrentShopSummary();
+            const shop = await loadCurrentShopSummary();
 
             const lines = [];
             lines.push(`Hi — I'm looking for a quote on a ${projectType}${zip ? ` near ${zip}` : ''}.`);
@@ -1020,8 +1046,8 @@
         // user save a PDF via their browser's print dialog, then attach it themselves once their
         // email client opens — the toast on the "Open in Email" button spells that out so it's
         // not a silent assumption.
-        function generateShopLayoutSummaryPDF() {
-            const shop = loadCurrentShopSummary();
+        async function generateShopLayoutSummaryPDF() {
+            const shop = await loadCurrentShopSummary();
             if (!shop) {
                 showToast('No current shop layout found — lay one out in the Workshop Layout Planner first.');
                 return;
@@ -1073,8 +1099,8 @@
             const nextNote = document.getElementById('conciergeNextNote');
             const defaultNextNote = nextNote.textContent;
 
-            document.getElementById('conciergeGenerateBtn').addEventListener('click', () => {
-                outputText.value = buildQuoteRequestText();
+            document.getElementById('conciergeGenerateBtn').addEventListener('click', async () => {
+                outputText.value = await buildQuoteRequestText();
                 output.style.display = 'block';
                 pdfBtn.style.display = includePdfCheckbox.checked ? 'block' : 'none';
                 nextNote.textContent = includePdfCheckbox.checked
@@ -1117,8 +1143,19 @@
 
         document.getElementById('pageNavSelect').addEventListener('change', (e) => { window.location.href = e.target.value; });
         initPlanSelector();
-        initHeaderSignIn();
-        initAccountPanel();
+
+        kerphOnAuthChange(() => {
+            updateHeaderSignInState();
+            renderAccountBadge();
+            kerphLoadToolStatus().then(({ data }) => { cachedToolStatuses = data || {}; });
+            kerphLoadSavedLayouts().then(({ data }) => { cachedSavedLayouts = data || []; });
+        });
+
+        kerphAuthReady.then(() => {
+            initHeaderSignIn();
+            initAccountPanel();
+        });
+
         initBuilderFinder();
         initConcierge();
     </script>

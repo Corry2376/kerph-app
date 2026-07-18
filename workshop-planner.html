@@ -225,9 +225,24 @@
 
         .header-sign-in {
             display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 4px;
+        }
+
+        .header-sign-in-row {
+            display: flex;
             align-items: center;
             gap: 4px;
         }
+
+        .header-sign-in-mode-toggle {
+            font-size: 10px;
+            font-weight: 600;
+            color: #1e3a8a;
+            text-decoration: none;
+        }
+        .header-sign-in-mode-toggle:hover { text-decoration: underline; }
 
         .header-sign-in-input {
             width: 84px;
@@ -625,10 +640,17 @@
             color: #1e3a8a;
             font-weight: 700;
             border-radius: 6px;
+            border-bottom: 2px solid #1e3a8a;
         }
 
         .category-header::-webkit-details-marker { display: none; }
         .category-header:hover { background-color: #eef2ff; }
+
+        /* Nested duct-size subcategories (4in/6in) stay visually subordinate to their
+           top-level parent — a thinner, lighter divider instead of the full treatment. */
+        .tool-subcategory .category-header {
+            border-bottom: 1px solid #c7d2fe;
+        }
 
         .category-header-left { display: flex; align-items: center; gap: 8px; }
 
@@ -809,49 +831,6 @@
             opacity: 1;
             transform: translateX(-50%) translateY(0);
             pointer-events: auto;
-        }
-
-        /* Multi-tab sync notice — shown (not auto-applied) when kerphCurrentLayout changes in
-           another tab, since a silent reload here could stomp an open modal, undo history, or
-           a mid-drag. Unlike .upgrade-nudge this doesn't auto-hide; the user has to act on it. */
-        .external-change-banner {
-            position: fixed;
-            top: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: #fef9c3;
-            border: 1px solid #eab308;
-            border-top: none;
-            border-radius: 0 0 8px 8px;
-            padding: 8px 10px 8px 14px;
-            font-size: 12.5px;
-            font-weight: 600;
-            color: #713f12;
-            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
-            z-index: 3000;
-            display: none;
-            align-items: center;
-            gap: 10px;
-        }
-        .external-change-banner.visible { display: flex; }
-        .external-change-banner-btn {
-            padding: 4px 10px;
-            border: 1px solid #eab308;
-            border-radius: 6px;
-            background-color: #ffffff;
-            color: #713f12;
-            font-size: 12px;
-            font-weight: 700;
-            cursor: pointer;
-        }
-        .external-change-banner-dismiss {
-            border: none;
-            background: none;
-            color: #92720c;
-            font-size: 15px;
-            line-height: 1;
-            cursor: pointer;
-            padding: 2px 4px;
         }
 
         .upgrade-nudge-btn {
@@ -1729,13 +1708,22 @@
         .placed-tool-node.elbow-node,
         .placed-tool-node.y-joint-node,
         .placed-tool-node.t-joint-node,
-        .placed-tool-node.drop-node {
+        .placed-tool-node.drop-node,
+        .placed-tool-node.reducer-node {
             background-color: transparent;
             border: none;
             border-radius: 0;
             background-repeat: no-repeat;
             background-position: center;
             background-size: 100% 100%;
+        }
+
+        /* A reducer bridges a 4in port (narrow end) to a 6in port (wide end) — one
+           direction-agnostic tapered shape rather than fitting-4in/fitting-6in variants,
+           since both diameters are always present on the same piece. Ports (see DUCT_PORTS'
+           reducer entry) sit at the vertical midpoint of each end, same as a straight duct. */
+        .placed-tool-node.reducer-node {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M0,14 L40,6 L40,34 L0,26 Z' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5' stroke-linejoin='round'/%3E%3C/svg%3E");
         }
 
         /* A drop's real job (dropping from the overhead trunk down to the tool) only reads in
@@ -1996,6 +1984,15 @@
             text-align: center;
             font-style: italic;
         }
+        .preview-buy-link {
+            display: block;
+            font-size: 11px;
+            font-weight: 700;
+            font-style: normal;
+            color: #1e3a8a;
+            text-decoration: none;
+        }
+        .preview-buy-link:hover { text-decoration: underline; }
 
         .print-only-header { display: none; }
         .print-watermark { display: none; }
@@ -2124,10 +2121,13 @@
             </div>
         </div>
         <div class="plan-badge-group">
-            <div class="header-sign-in" id="headerSignIn" title="Preview only — any username &amp; password signs you in locally in this browser.">
-                <input type="text" class="header-sign-in-input" id="headerSignInUsername" placeholder="Username" autocomplete="username">
-                <input type="password" class="header-sign-in-input" id="headerSignInPassword" placeholder="Password" autocomplete="current-password">
-                <button type="button" id="headerSignInBtn" class="mini-btn" title="Sign In">Sign In</button>
+            <div class="header-sign-in" id="headerSignIn" title="Sign in or create a free Kerph account.">
+                <div class="header-sign-in-row">
+                    <input type="email" class="header-sign-in-input" id="headerSignInEmail" placeholder="Email" autocomplete="email">
+                    <input type="password" class="header-sign-in-input" id="headerSignInPassword" placeholder="Password" autocomplete="current-password">
+                    <button type="button" id="headerSignInBtn" class="mini-btn" title="Sign In">Sign In</button>
+                </div>
+                <a href="#" id="headerSignInModeToggle" class="header-sign-in-mode-toggle">New here? Create an account</a>
             </div>
             <button type="button" id="accountBtn" class="account-btn plan-free" title="Account &amp; Plan Settings — border color shows your plan level" style="display:none;">
                 <span class="account-avatar" id="accountAvatarPreview">&#128100;</span>
@@ -2148,12 +2148,6 @@
             </select>
         </div>
     </header>
-
-    <div class="external-change-banner" id="externalChangeBanner">
-        <span>This shop's layout changed in another tab.</span>
-        <button type="button" class="external-change-banner-btn" id="externalChangeReloadBtn">Reload</button>
-        <button type="button" class="external-change-banner-dismiss" id="externalChangeDismissBtn" title="Dismiss">&#10005;</button>
-    </div>
 
     <div class="modal-overlay" id="customToolModalOverlay" style="display:none;">
         <div class="modal-box">
@@ -2189,7 +2183,7 @@
     <div class="modal-overlay" id="accountModalOverlay" style="display:none;">
         <div class="modal-box account-modal-box">
             <div class="modal-title">Account Settings</div>
-            <div class="modal-warning">Saved locally in this browser only — real accounts, Google sign-in, and community features aren't connected yet.</div>
+            <div class="modal-warning">Your account (username, avatar, sign-in) is real and synced via Kerph. Saved layouts, projects, tools, Showcase posts, and reviews are synced too — available on any device you sign into.</div>
 
             <div class="header-field" style="width:100%; margin-bottom:14px; display:flex; flex-direction:column; align-items:center;">
                 <div class="account-avatar-large" id="accountAvatarLarge">&#128100;</div>
@@ -2240,8 +2234,8 @@
             <button type="button" id="accountSignOutBtn" class="mini-btn danger" style="width:100%; margin-top:8px;">Sign Out</button>
 
             <div class="account-backup-zone">
-                <div class="account-backup-title">Backup &amp; Restore</div>
-                <div class="account-backup-desc">Everything lives only in this browser — export a copy so a cleared cache or a new device doesn't lose it.</div>
+                <div class="account-backup-title">Local Device Settings</div>
+                <div class="account-backup-desc">Your layouts, projects, tools, Showcase posts, and reviews live on your account now — no backup needed. This just covers a couple of local display preferences still cached in this browser.</div>
                 <div style="display:flex; gap:8px;">
                     <button type="button" id="accountExportBtn" class="mini-btn" style="flex:1;">&#11015;&#65039; Export</button>
                     <button type="button" id="accountImportBtn" class="mini-btn" style="flex:1;">&#11014;&#65039; Import&hellip;</button>
@@ -2251,7 +2245,7 @@
 
             <div class="account-danger-zone">
                 <div class="account-danger-title">Danger Zone</div>
-                <div class="account-danger-desc">Permanently erases every layout, tool status, and preference saved in this browser. This cannot be undone.</div>
+                <div class="account-danger-desc">Resets your local plan-preview selection and cached display preferences on this browser. Your account, layouts, projects, tools, and posts are not affected.</div>
                 <button type="button" id="accountResetAllBtn" class="mini-btn danger" style="width:100%;">Reset All Local Data&hellip;</button>
             </div>
         </div>
@@ -2279,6 +2273,16 @@
                     <option value="two-car">Two-Car Garage Woodshop (20' x 24')</option>
                     <option value="dedicated">Dedicated Shop Building (30' x 40')</option>
                 </select>
+            </div>
+
+            <div class="header-field" style="width:100%; margin-bottom:10px;">
+                <label class="header-field-label">Shop Type</label>
+                <div class="header-compound-row">
+                    <button type="button" id="shopTypeWoodworkingBtn" class="shape-mode-btn active" title="Woodworking tools only">Woodworking</button>
+                    <button type="button" id="shopTypeMechanicalBtn" class="shape-mode-btn" title="Mechanic/automotive tools only">Mechanical</button>
+                    <button type="button" id="shopTypeBothBtn" class="shape-mode-btn" title="Show both tool sets">Both</button>
+                </div>
+                <div class="shape-hint">Controls which tools show in the sidebar catalog.</div>
             </div>
 
             <div class="header-field" style="width:100%; margin-bottom:10px;">
@@ -2369,9 +2373,9 @@
         </details>
         <button type="button" id="addCustomToolBtn" class="mini-btn" style="width:100%; margin-bottom:14px;">+ Add Custom Tool</button>
 
-        <details class="tool-category">
+        <details class="tool-category" data-domain="woodworking">
             <summary class="category-header">
-                <span class="category-header-left">Table Saws <span class="category-count">3</span></span>
+                <span class="category-header-left">Table Saws <span class="category-count">9</span></span>
                 <span class="category-chevron">&#9656;</span>
             </summary>
             <div class="category-items">
@@ -2396,12 +2400,54 @@
                         <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
                     </div>
                 </div>
+                <div class="tool-box-item" draggable="true" data-width="2.2" data-length="2.2" data-height="2.9" data-name="DeWalt DWE7491RS">
+                    <div><div class="tool-title">DeWalt DWE7491RS Jobsite Table Saw</div><div class="tool-dims">2.2' x 2.2' Footprint</div></div>
+                    <div class="tool-status-controls">
+                        <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
+                        <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
+                    </div>
+                </div>
+                <div class="tool-box-item" draggable="true" data-width="2.0" data-length="2.2" data-height="2.7" data-name="SKIL TS6307-00">
+                    <div><div class="tool-title">SKIL TS6307-00 Table Saw w/ Stand</div><div class="tool-dims">2.0' x 2.2' Footprint</div></div>
+                    <div class="tool-status-controls">
+                        <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
+                        <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
+                    </div>
+                </div>
+                <div class="tool-box-item" draggable="true" data-width="2.4" data-length="2.4" data-height="2.8" data-name="RIDGID R4518">
+                    <div><div class="tool-title">RIDGID R4518 Jobsite Table Saw</div><div class="tool-dims">2.4' x 2.4' Footprint</div></div>
+                    <div class="tool-status-controls">
+                        <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
+                        <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
+                    </div>
+                </div>
+                <div class="tool-box-item" draggable="true" data-width="1.7" data-length="1.8" data-height="3.3" data-name="Grizzly G0715P">
+                    <div><div class="tool-title">Grizzly G0715P Hybrid Table Saw</div><div class="tool-dims">1.7' x 1.8' Footprint</div></div>
+                    <div class="tool-status-controls">
+                        <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
+                        <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
+                    </div>
+                </div>
+                <div class="tool-box-item" draggable="true" data-width="3.6" data-length="5.1" data-height="3.7" data-name="Powermatic PM1000">
+                    <div><div class="tool-title">Powermatic PM1000 Cabinet Saw</div><div class="tool-dims">3.6' x 5.1' Footprint</div></div>
+                    <div class="tool-status-controls">
+                        <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
+                        <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
+                    </div>
+                </div>
+                <div class="tool-box-item" draggable="true" data-width="3.4" data-length="5.2" data-height="3.3" data-name="Grizzly G0690">
+                    <div><div class="tool-title">Grizzly G0690 Cabinet Table Saw</div><div class="tool-dims">3.4' x 5.2' Footprint</div></div>
+                    <div class="tool-status-controls">
+                        <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
+                        <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
+                    </div>
+                </div>
             </div>
         </details>
 
-        <details class="tool-category">
+        <details class="tool-category" data-domain="woodworking">
             <summary class="category-header">
-                <span class="category-header-left">Bandsaws <span class="category-count">3</span></span>
+                <span class="category-header-left">Bandsaws <span class="category-count">5</span></span>
                 <span class="category-chevron">&#9656;</span>
             </summary>
             <div class="category-items">
@@ -2426,12 +2472,26 @@
                         <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
                     </div>
                 </div>
+                <div class="tool-box-item" draggable="true" data-width="1.1" data-length="1.0" data-height="1.5" data-name="Rikon 10-305">
+                    <div><div class="tool-title">Rikon 10-305 10" Benchtop Bandsaw</div><div class="tool-dims">1.1' x 1.0' Footprint</div></div>
+                    <div class="tool-status-controls">
+                        <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
+                        <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
+                    </div>
+                </div>
+                <div class="tool-box-item" draggable="true" data-width="2.0" data-length="1.4" data-height="5.6" data-name="Grizzly G0555LX">
+                    <div><div class="tool-title">Grizzly G0555LX 14" Deluxe Bandsaw</div><div class="tool-dims">2.0' x 1.4' Footprint</div></div>
+                    <div class="tool-status-controls">
+                        <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
+                        <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
+                    </div>
+                </div>
             </div>
         </details>
 
-        <details class="tool-category">
+        <details class="tool-category" data-domain="woodworking">
             <summary class="category-header">
-                <span class="category-header-left">Jointers &amp; Planers <span class="category-count">3</span></span>
+                <span class="category-header-left">Jointers &amp; Planers <span class="category-count">6</span></span>
                 <span class="category-chevron">&#9656;</span>
             </summary>
             <div class="category-items">
@@ -2456,12 +2516,33 @@
                         <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
                     </div>
                 </div>
+                <div class="tool-box-item" draggable="true" data-width="1.8" data-length="2.0" data-height="1.8" data-name="DeWalt DW735X">
+                    <div><div class="tool-title">DeWalt DW735X 13" Thickness Planer</div><div class="tool-dims">1.8' x 2.0' Footprint</div></div>
+                    <div class="tool-status-controls">
+                        <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
+                        <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
+                    </div>
+                </div>
+                <div class="tool-box-item" draggable="true" data-width="0.75" data-length="5.5" data-height="3.0" data-name="JET JWJ-8CS">
+                    <div><div class="tool-title">JET JWJ-8CS 8" Closed Stand Jointer</div><div class="tool-dims">0.75' x 5.5' Footprint</div></div>
+                    <div class="tool-status-controls">
+                        <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
+                        <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
+                    </div>
+                </div>
+                <div class="tool-box-item" draggable="true" data-width="0.6" data-length="2.5" data-height="1.2" data-name="Cutech 40160HB">
+                    <div><div class="tool-title">Cutech 40160HB 6" Benchtop Jointer</div><div class="tool-dims">0.6' x 2.5' Footprint</div></div>
+                    <div class="tool-status-controls">
+                        <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
+                        <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
+                    </div>
+                </div>
             </div>
         </details>
 
-        <details class="tool-category">
+        <details class="tool-category" data-domain="woodworking">
             <summary class="category-header">
-                <span class="category-header-left">Sanding <span class="category-count">3</span></span>
+                <span class="category-header-left">Sanding <span class="category-count">5</span></span>
                 <span class="category-chevron">&#9656;</span>
             </summary>
             <div class="category-items">
@@ -2486,12 +2567,26 @@
                         <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
                     </div>
                 </div>
+                <div class="tool-box-item" draggable="true" data-width="1.5" data-length="1.3" data-height="0.9" data-name="WEN 6502T">
+                    <div><div class="tool-title">WEN 6502T Belt &amp; Disc Sander</div><div class="tool-dims">1.5' x 1.3' Footprint</div></div>
+                    <div class="tool-status-controls">
+                        <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
+                        <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
+                    </div>
+                </div>
+                <div class="tool-box-item" draggable="true" data-width="1.5" data-length="1.5" data-height="1.2" data-name="RIDGID EB4424">
+                    <div><div class="tool-title">RIDGID EB4424 Oscillating Belt/Spindle Sander</div><div class="tool-dims">1.5' x 1.5' Footprint</div></div>
+                    <div class="tool-status-controls">
+                        <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
+                        <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
+                    </div>
+                </div>
             </div>
         </details>
 
-        <details class="tool-category">
+        <details class="tool-category" data-domain="woodworking">
             <summary class="category-header">
-                <span class="category-header-left">Drilling &amp; Boring <span class="category-count">2</span></span>
+                <span class="category-header-left">Drilling &amp; Boring <span class="category-count">4</span></span>
                 <span class="category-chevron">&#9656;</span>
             </summary>
             <div class="category-items">
@@ -2509,12 +2604,26 @@
                         <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
                     </div>
                 </div>
+                <div class="tool-box-item" draggable="true" data-width="0.6" data-length="0.6" data-height="2.6" data-name="WEN 4210">
+                    <div><div class="tool-title">WEN 4210 10" Benchtop Drill Press</div><div class="tool-dims">0.6' x 0.6' Footprint</div></div>
+                    <div class="tool-status-controls">
+                        <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
+                        <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
+                    </div>
+                </div>
+                <div class="tool-box-item" draggable="true" data-width="1.3" data-length="1.5" data-height="1.5" data-name="Powermatic PM701">
+                    <div><div class="tool-title">Powermatic PM701 Benchtop Mortiser</div><div class="tool-dims">1.3' x 1.5' Footprint</div></div>
+                    <div class="tool-status-controls">
+                        <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
+                        <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
+                    </div>
+                </div>
             </div>
         </details>
 
-        <details class="tool-category">
+        <details class="tool-category" data-domain="woodworking">
             <summary class="category-header">
-                <span class="category-header-left">Turning <span class="category-count">2</span></span>
+                <span class="category-header-left">Turning <span class="category-count">4</span></span>
                 <span class="category-chevron">&#9656;</span>
             </summary>
             <div class="category-items">
@@ -2532,12 +2641,26 @@
                         <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
                     </div>
                 </div>
+                <div class="tool-box-item" draggable="true" data-width="1.5" data-length="3.3" data-height="1.5" data-name="JET JWL-1221VS">
+                    <div><div class="tool-title">JET JWL-1221VS Mini Lathe</div><div class="tool-dims">1.5' x 3.3' Footprint</div></div>
+                    <div class="tool-status-controls">
+                        <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
+                        <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
+                    </div>
+                </div>
+                <div class="tool-box-item" draggable="true" data-width="1.7" data-length="5.5" data-height="4.0" data-name="Grizzly G0733">
+                    <div><div class="tool-title">Grizzly G0733 18"x47" Heavy-Duty Lathe</div><div class="tool-dims">1.7' x 5.5' Footprint</div></div>
+                    <div class="tool-status-controls">
+                        <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
+                        <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
+                    </div>
+                </div>
             </div>
         </details>
 
-        <details class="tool-category">
+        <details class="tool-category" data-domain="woodworking">
             <summary class="category-header">
-                <span class="category-header-left">Routing <span class="category-count">2</span></span>
+                <span class="category-header-left">Routing <span class="category-count">3</span></span>
                 <span class="category-chevron">&#9656;</span>
             </summary>
             <div class="category-items">
@@ -2555,12 +2678,19 @@
                         <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
                     </div>
                 </div>
+                <div class="tool-box-item" draggable="true" data-width="2.25" data-length="1.5" data-height="1.2" data-name="Bosch RA1181">
+                    <div><div class="tool-title">Bosch RA1181 Benchtop Router Table</div><div class="tool-dims">2.25' x 1.5' Footprint</div></div>
+                    <div class="tool-status-controls">
+                        <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
+                        <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
+                    </div>
+                </div>
             </div>
         </details>
 
-        <details class="tool-category">
+        <details class="tool-category" data-domain="woodworking">
             <summary class="category-header">
-                <span class="category-header-left">Crosscut &amp; Miter <span class="category-count">2</span></span>
+                <span class="category-header-left">Crosscut &amp; Miter <span class="category-count">6</span></span>
                 <span class="category-chevron">&#9656;</span>
             </summary>
             <div class="category-items">
@@ -2578,12 +2708,40 @@
                         <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
                     </div>
                 </div>
+                <div class="tool-box-item" draggable="true" data-width="1.6" data-length="2.7" data-height="1.9" data-name="DeWalt DWS779">
+                    <div><div class="tool-title">DeWalt DWS779 12" Sliding Miter Saw</div><div class="tool-dims">1.6' x 2.7' Footprint</div></div>
+                    <div class="tool-status-controls">
+                        <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
+                        <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
+                    </div>
+                </div>
+                <div class="tool-box-item" draggable="true" data-width="1.0" data-length="1.9" data-height="1.6" data-name="Bosch GCM12SD">
+                    <div><div class="tool-title">Bosch GCM12SD 12" Glide Miter Saw</div><div class="tool-dims">1.0' x 1.9' Footprint</div></div>
+                    <div class="tool-status-controls">
+                        <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
+                        <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
+                    </div>
+                </div>
+                <div class="tool-box-item" draggable="true" data-width="2.1" data-length="2.6" data-height="2.2" data-name="Makita LS1019L">
+                    <div><div class="tool-title">Makita LS1019L 10" Sliding Miter Saw</div><div class="tool-dims">2.1' x 2.6' Footprint</div></div>
+                    <div class="tool-status-controls">
+                        <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
+                        <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
+                    </div>
+                </div>
+                <div class="tool-box-item" draggable="true" data-width="2.0" data-length="2.0" data-height="1.5" data-name="Metabo HPT C10FCGS">
+                    <div><div class="tool-title">Metabo HPT C10FCGS 10" Compound Miter Saw</div><div class="tool-dims">2.0' x 2.0' Footprint</div></div>
+                    <div class="tool-status-controls">
+                        <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
+                        <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
+                    </div>
+                </div>
             </div>
         </details>
 
-        <details class="tool-category">
+        <details class="tool-category" data-domain="woodworking">
             <summary class="category-header">
-                <span class="category-header-left">Dust Collection <span class="category-count">22</span></span>
+                <span class="category-header-left">Dust Collection <span class="category-count">25</span></span>
                 <span class="category-chevron">&#9656;</span>
             </summary>
             <div class="category-items">
@@ -2596,6 +2754,27 @@
                 </div>
                 <div class="tool-box-item" draggable="true" data-layer="dust-collection" data-width="1.5" data-length="1.5" data-height="2.8" data-name="Oneida Super Dust Deputy XL">
                     <div><div class="tool-title">Oneida Super Dust Deputy XL Cyclone</div><div class="tool-dims">1.5' x 1.5' Footprint</div></div>
+                    <div class="tool-status-controls">
+                        <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
+                        <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
+                    </div>
+                </div>
+                <div class="tool-box-item" draggable="true" data-layer="dust-collection" data-width="2.9" data-length="1.1" data-height="1.2" data-name="WEN DC3401">
+                    <div><div class="tool-title">WEN DC3401 660 CFM Dust Collector</div><div class="tool-dims">2.9' x 1.1' Footprint</div></div>
+                    <div class="tool-status-controls">
+                        <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
+                        <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
+                    </div>
+                </div>
+                <div class="tool-box-item" draggable="true" data-layer="dust-collection" data-width="3.8" data-length="2.3" data-height="6.6" data-name="Laguna C-Flux 2">
+                    <div><div class="tool-title">Laguna C-Flux 2 Cyclone Dust Collector</div><div class="tool-dims">3.8' x 2.3' Footprint</div></div>
+                    <div class="tool-status-controls">
+                        <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
+                        <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
+                    </div>
+                </div>
+                <div class="tool-box-item" draggable="true" data-layer="dust-collection" data-width="0.45" data-length="0.6" data-height="7.0" data-name="4in-6in Duct Reducer">
+                    <div><div class="tool-title">4"&ndash;6" Duct Reducer</div><div class="tool-dims">0.45' x 0.6' Footprint</div></div>
                     <div class="tool-status-controls">
                         <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
                         <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
@@ -2822,7 +3001,51 @@
 
         <details class="tool-category">
             <summary class="category-header">
-                <span class="category-header-left">CNC &amp; Digital Fab <span class="category-count">6</span></span>
+                <span class="category-header-left">Plumbing <span class="category-count">5</span></span>
+                <span class="category-chevron">&#9656;</span>
+            </summary>
+            <div class="category-items">
+                <div class="tool-box-item" draggable="true" data-layer="plumbing" data-width="0.7" data-length="0.7" data-height="0.3" data-name="Zurn Z415">
+                    <div><div class="tool-title">Zurn Z415 Floor Drain</div><div class="tool-dims">0.7' x 0.7' Footprint</div></div>
+                    <div class="tool-status-controls">
+                        <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
+                        <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
+                    </div>
+                </div>
+                <div class="tool-box-item" draggable="true" data-layer="plumbing" data-width="2.0" data-length="0.83" data-height="2.0" data-name="Mustee 63M">
+                    <div><div class="tool-title">Mustee 63M Utility/Mop Sink</div><div class="tool-dims">2.0' x 0.83' Footprint</div></div>
+                    <div class="tool-status-controls">
+                        <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
+                        <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
+                    </div>
+                </div>
+                <div class="tool-box-item" draggable="true" data-layer="plumbing" data-width="0.7" data-length="0.3" data-height="1.05" data-name="Rheem RTEX-13">
+                    <div><div class="tool-title">Rheem RTEX-13 Tankless Water Heater</div><div class="tool-dims">0.7' x 0.3' Footprint</div></div>
+                    <div class="tool-status-controls">
+                        <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
+                        <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
+                    </div>
+                </div>
+                <div class="tool-box-item" draggable="true" data-layer="plumbing" data-width="0.5" data-length="4.0" data-height="0.65" data-name="NDS Dura Slope">
+                    <div><div class="tool-title">NDS Dura Slope Trench Drain (4ft)</div><div class="tool-dims">0.5' x 4.0' Footprint</div></div>
+                    <div class="tool-status-controls">
+                        <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
+                        <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
+                    </div>
+                </div>
+                <div class="tool-box-item" draggable="true" data-layer="plumbing" data-width="0.3" data-length="0.3" data-height="0.3" data-name="Woodford Model 65">
+                    <div><div class="tool-title">Woodford Model 65 Wall Hydrant</div><div class="tool-dims">0.3' x 0.3' Footprint</div></div>
+                    <div class="tool-status-controls">
+                        <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
+                        <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
+                    </div>
+                </div>
+            </div>
+        </details>
+
+        <details class="tool-category" data-domain="woodworking">
+            <summary class="category-header">
+                <span class="category-header-left">CNC &amp; Digital Fab <span class="category-count">7</span></span>
                 <span class="category-chevron">&#9656;</span>
             </summary>
             <div class="category-items">
@@ -2863,6 +3086,165 @@
                 </div>
                 <div class="tool-box-item" draggable="true" data-width="0.8" data-length="0.9" data-height="1.6" data-name="Elegoo Saturn 4 Ultra">
                     <div><div class="tool-title">Elegoo Saturn 4 Ultra Resin Printer</div><div class="tool-dims">0.8' x 0.9' Footprint</div></div>
+                    <div class="tool-status-controls">
+                        <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
+                        <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
+                    </div>
+                </div>
+                <div class="tool-box-item" draggable="true" data-width="2.7" data-length="4.0" data-height="1.5" data-name="Onefinity Journeyman">
+                    <div><div class="tool-title">Onefinity Journeyman CNC Router</div><div class="tool-dims">2.7' x 4.0' Footprint</div></div>
+                    <div class="tool-status-controls">
+                        <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
+                        <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
+                    </div>
+                </div>
+            </div>
+        </details>
+
+        <details class="tool-category" data-domain="mechanical">
+            <summary class="category-header">
+                <span class="category-header-left">Vehicle Lifts <span class="category-count">4</span></span>
+                <span class="category-chevron">&#9656;</span>
+            </summary>
+            <div class="category-items">
+                <div class="tool-box-item" draggable="true" data-width="12.0" data-length="5.0" data-height="12.0" data-name="BendPak XPR-10A">
+                    <div><div class="tool-title">BendPak XPR-10A 2-Post Lift</div><div class="tool-dims">12.0' x 5.0' Footprint</div></div>
+                    <div class="tool-status-controls">
+                        <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
+                        <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
+                    </div>
+                </div>
+                <div class="tool-box-item" draggable="true" data-width="9.2" data-length="16.7" data-height="7.3" data-name="BendPak HD-9">
+                    <div><div class="tool-title">BendPak HD-9 4-Post Lift</div><div class="tool-dims">9.2' x 16.7' Footprint</div></div>
+                    <div class="tool-status-controls">
+                        <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
+                        <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
+                    </div>
+                </div>
+                <div class="tool-box-item" draggable="true" data-width="6.0" data-length="3.0" data-height="0.5" data-name="BendPak MD-6XP">
+                    <div><div class="tool-title">BendPak MD-6XP Mid-Rise Scissor Lift</div><div class="tool-dims">6.0' x 3.0' Footprint</div></div>
+                    <div class="tool-status-controls">
+                        <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
+                        <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
+                    </div>
+                </div>
+                <div class="tool-box-item" draggable="true" data-width="2.5" data-length="6.6" data-height="0.7" data-name="Ranger RML-1500XL">
+                    <div><div class="tool-title">Ranger RML-1500XL Motorcycle Lift</div><div class="tool-dims">2.5' x 6.6' Footprint</div></div>
+                    <div class="tool-status-controls">
+                        <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
+                        <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
+                    </div>
+                </div>
+            </div>
+        </details>
+
+        <details class="tool-category" data-domain="mechanical">
+            <summary class="category-header">
+                <span class="category-header-left">Welding <span class="category-count">2</span></span>
+                <span class="category-chevron">&#9656;</span>
+            </summary>
+            <div class="category-items">
+                <div class="tool-box-item" draggable="true" data-width="0.9" data-length="1.6" data-height="1.0" data-name="Hobart Handler 140">
+                    <div><div class="tool-title">Hobart Handler 140 MIG Welder</div><div class="tool-dims">0.9' x 1.6' Footprint</div></div>
+                    <div class="tool-status-controls">
+                        <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
+                        <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
+                    </div>
+                </div>
+                <div class="tool-box-item" draggable="true" data-width="0.9" data-length="1.7" data-height="1.0" data-name="Miller Multimatic 215">
+                    <div><div class="tool-title">Miller Multimatic 215 Multiprocess Welder</div><div class="tool-dims">0.9' x 1.7' Footprint</div></div>
+                    <div class="tool-status-controls">
+                        <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
+                        <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
+                    </div>
+                </div>
+            </div>
+        </details>
+
+        <details class="tool-category" data-domain="mechanical">
+            <summary class="category-header">
+                <span class="category-header-left">Air Compressors &amp; Shop Air <span class="category-count">2</span></span>
+                <span class="category-chevron">&#9656;</span>
+            </summary>
+            <div class="category-items">
+                <div class="tool-box-item" draggable="true" data-width="1.3" data-length="1.3" data-height="3.0" data-name="California Air Tools 10020C">
+                    <div><div class="tool-title">California Air Tools 10020C Compressor</div><div class="tool-dims">1.3' x 1.3' Footprint</div></div>
+                    <div class="tool-status-controls">
+                        <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
+                        <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
+                    </div>
+                </div>
+                <div class="tool-box-item" draggable="true" data-width="3.2" data-length="2.0" data-height="5.75" data-name="Ingersoll Rand 2475N7.5-V">
+                    <div><div class="tool-title">Ingersoll Rand 2475N7.5-V 80-Gal Compressor</div><div class="tool-dims">3.2' x 2.0' Footprint</div></div>
+                    <div class="tool-status-controls">
+                        <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
+                        <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
+                    </div>
+                </div>
+            </div>
+        </details>
+
+        <details class="tool-category" data-domain="mechanical">
+            <summary class="category-header">
+                <span class="category-header-left">Jacks &amp; Lifting Equipment <span class="category-count">3</span></span>
+                <span class="category-chevron">&#9656;</span>
+            </summary>
+            <div class="category-items">
+                <div class="tool-box-item" draggable="true" data-width="5.3" data-length="3.3" data-height="5.0" data-name="Torin T32002">
+                    <div><div class="tool-title">Torin Big Red T32002 Engine Hoist</div><div class="tool-dims">5.3' x 3.3' Footprint</div></div>
+                    <div class="tool-status-controls">
+                        <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
+                        <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
+                    </div>
+                </div>
+                <div class="tool-box-item" draggable="true" data-width="2.2" data-length="0.5" data-height="1.1" data-name="Arcan XL20">
+                    <div><div class="tool-title">Arcan XL20 Low-Profile Floor Jack</div><div class="tool-dims">2.2' x 0.5' Footprint</div></div>
+                    <div class="tool-status-controls">
+                        <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
+                        <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
+                    </div>
+                </div>
+                <div class="tool-box-item" draggable="true" data-width="1.6" data-length="4.1" data-height="2.9" data-name="Torin TRA4055">
+                    <div><div class="tool-title">Torin TRA4055 Transmission Jack</div><div class="tool-dims">1.6' x 4.1' Footprint</div></div>
+                    <div class="tool-status-controls">
+                        <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
+                        <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
+                    </div>
+                </div>
+            </div>
+        </details>
+
+        <details class="tool-category" data-domain="mechanical">
+            <summary class="category-header">
+                <span class="category-header-left">Diagnostic &amp; Specialty Equipment <span class="category-count">1</span></span>
+                <span class="category-chevron">&#9656;</span>
+            </summary>
+            <div class="category-items">
+                <div class="tool-box-item" draggable="true" data-width="4.0" data-length="4.0" data-height="6.5" data-name="Coats 70X-AH">
+                    <div><div class="tool-title">Coats 70X-AH Tire Changer</div><div class="tool-dims">4.0' x 4.0' Footprint</div></div>
+                    <div class="tool-status-controls">
+                        <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
+                        <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
+                    </div>
+                </div>
+            </div>
+        </details>
+
+        <details class="tool-category" data-domain="mechanical">
+            <summary class="category-header">
+                <span class="category-header-left">Mechanic Tool Storage <span class="category-count">2</span></span>
+                <span class="category-chevron">&#9656;</span>
+            </summary>
+            <div class="category-items">
+                <div class="tool-box-item" draggable="true" data-width="7.0" data-length="2.5" data-height="6.0" data-name="Snap-on EPIQ 84in">
+                    <div><div class="tool-title">Snap-on EPIQ 84" Roll Cab</div><div class="tool-dims">7.0' x 2.5' Footprint</div></div>
+                    <div class="tool-status-controls">
+                        <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
+                        <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
+                    </div>
+                </div>
+                <div class="tool-box-item" draggable="true" data-width="5.55" data-length="2.25" data-height="3.9" data-name="Mac Tools Macsimizer">
+                    <div><div class="tool-title">Mac Tools Macsimizer MB1350 Roll Cab</div><div class="tool-dims">5.55' x 2.25' Footprint</div></div>
                     <div class="tool-status-controls">
                         <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
                         <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
@@ -3060,8 +3442,9 @@
             <button type="button" class="wf-tab" data-layer-view="tools">Tools</button>
             <button type="button" class="wf-tab" data-layer-view="dust-collection">Dust Collection</button>
             <button type="button" class="wf-tab" data-layer-view="lighting">Lighting</button>
+            <button type="button" class="wf-tab" data-layer-view="plumbing">Plumbing</button>
         </div>
-        <div class="shape-hint" style="margin-top:8px; margin-bottom:0;">Cabinets, walls, and wall features always stay visible — this only hides/shows tools, dust collection, and lighting items.</div>
+        <div class="shape-hint" style="margin-top:8px; margin-bottom:0;">Cabinets, walls, and wall features always stay visible — this only hides/shows tools, dust collection, lighting, and plumbing items.</div>
         </div>
     </div>
 
@@ -3258,6 +3641,8 @@
     <div class="tool-preview-popover" id="toolPreviewPopover"></div>
 
     <script src="catalog-data.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.7/dist/umd/supabase.js"></script>
+    <script src="supabase-client.js"></script>
     <script>
         const board = document.getElementById('workshopBoard');
         let ppi = 30; // pixels per foot at 100% zoom — a live variable so zoom can scale it
@@ -3271,6 +3656,12 @@
            still imperial-only. */
         const FT_PER_METER = 3.28084;
         let unitSystem = localStorage.getItem('kerphUnitSystem') || 'imperial';
+
+        // Shop Type follows the individual layout (like width/length), not a global browser
+        // preference like unitSystem — a user can have one woodworking layout and one
+        // mechanical layout, so this is never read from localStorage, only from the loaded
+        // layout's own shopType field (see serializeCurrentLayout/applyLayoutState).
+        let shopType = 'woodworking';
 
         function feetToDisplay(feet) {
             return unitSystem === 'metric'
@@ -3599,7 +3990,12 @@
             drop: [{ fx: 0, fy: 0.5, angle: 180 }, { fx: 1, fy: 0.5, angle: 0 }],
             elbow: [{ fx: 0, fy: 0.5, angle: 180 }, { fx: 0.5, fy: 1, angle: 90 }],
             tjoint: [{ fx: 0, fy: 0.5, angle: 180 }, { fx: 1, fy: 0.5, angle: 0 }, { fx: 0.5, fy: 1, angle: 90 }],
-            yjoint: [{ fx: 0.5, fy: 1, angle: 90 }, { fx: 0.8536, fy: 0.1464, angle: 315 }, { fx: 0.1464, fy: 0.1464, angle: 225 }]
+            yjoint: [{ fx: 0.5, fy: 1, angle: 90 }, { fx: 0.8536, fy: 0.1464, angle: 315 }, { fx: 0.1464, fy: 0.1464, angle: 225 }],
+            // Straight two-port piece geometrically identical to a duct segment — the only
+            // thing that makes it a reducer is that its two ports are different sizes (see
+            // getPortSizeClasses), letting a 4in run snap onto one end and a 6in run onto
+            // the other.
+            reducer: [{ fx: 0, fy: 0.5, angle: 180 }, { fx: 1, fy: 0.5, angle: 0 }]
         };
 
         function getPortItemType(name) {
@@ -3609,12 +4005,24 @@
             if (name.includes('Duct Elbow')) return 'elbow';
             if (name.includes('Y-Joint')) return 'yjoint';
             if (name.includes('T-Joint')) return 'tjoint';
+            if (name.includes('Duct Reducer')) return 'reducer';
             if (name.includes('Dust Duct')) return 'duct';
             return null;
         }
 
         function getDuctSizeClass(name) {
             return name && name.startsWith('6in') ? '6in' : '4in';
+        }
+
+        // Per-port size classes, parallel to DUCT_PORTS[type] — every fitting has one
+        // uniform size across all its ports EXCEPT the reducer, which is the one piece
+        // deliberately built to bridge a 4in port to a 6in port. findPortSnap() matches
+        // port-by-port against this instead of a single item-level size, so a reducer (and
+        // only a reducer) can connect two different-sized runs.
+        function getPortSizeClasses(type, name) {
+            if (type === 'reducer') return ['4in', '6in'];
+            const uniform = getDuctSizeClass(name);
+            return (DUCT_PORTS[type] || []).map(() => uniform);
         }
 
         // Ports of a fitting placed at (left, top, w, h) and rotated rotationDeg, in board
@@ -3643,14 +4051,17 @@
         // rotation} it should snap to so the two ports coincide and face each other — or
         // null if nothing is close enough. excludeEl lets an already-placed node dragged
         // during repositioning skip matching against itself.
-        function findPortSnap(type, sizeClass, left, top, w, h, rotationDeg, excludeEl) {
+        function findPortSnap(type, sizeClasses, left, top, w, h, rotationDeg, excludeEl) {
             const candidatePorts = getWorldPorts(type, left, top, w, h, rotationDeg);
             if (!candidatePorts.length) return null;
 
             const others = Array.from(document.querySelectorAll('.placed-tool-node'))
                 .filter(el => el !== excludeEl)
-                .map(el => ({ el, type: getPortItemType(el.dataset.toolName), sizeClass: getDuctSizeClass(el.dataset.toolName) }))
-                .filter(o => o.type && o.sizeClass === sizeClass);
+                .map(el => {
+                    const oType = getPortItemType(el.dataset.toolName);
+                    return { el, type: oType, sizeClasses: oType ? getPortSizeClasses(oType, el.dataset.toolName) : null };
+                })
+                .filter(o => o.type);
 
             let best = null, bestDist = PORT_SNAP_PX;
             others.forEach(o => {
@@ -3659,7 +4070,11 @@
                 const oRotation = parseFloat(o.el.dataset.rotation) || 0;
                 const targetPorts = getWorldPorts(o.type, oLeft, oTop, oW, oH, oRotation);
                 candidatePorts.forEach((cp, ci) => {
-                    targetPorts.forEach(tp => {
+                    targetPorts.forEach((tp, ti) => {
+                        // Only ports of matching diameter connect — this is what lets a
+                        // reducer (whose two ports are different sizes) bridge a 4in run to
+                        // a 6in run while every other fitting still only mates same-to-same.
+                        if (sizeClasses[ci] !== o.sizeClasses[ti]) return;
                         const d = Math.hypot(cp.x - tp.x, cp.y - tp.y);
                         if (d < bestDist) { bestDist = d; best = { candidateIndex: ci, target: tp }; }
                     });
@@ -3709,7 +4124,7 @@
             const type = getPortItemType(name);
             if (!type) return;
             const rotation = parseFloat(el.dataset.rotation) || 0;
-            const snap = findPortSnap(type, getDuctSizeClass(name), left, top, w, h, rotation, el);
+            const snap = findPortSnap(type, getPortSizeClasses(type, name), left, top, w, h, rotation, el);
             if (!snap) return;
             el.style.left = snap.left + 'px';
             el.style.top = snap.top + 'px';
@@ -3748,6 +4163,8 @@
                 toolNode.classList.add('pipe-node', 'y-joint-node', sizeClass);
             } else if (name.includes('T-Joint')) {
                 toolNode.classList.add('pipe-node', 't-joint-node', sizeClass);
+            } else if (name.includes('Duct Reducer')) {
+                toolNode.classList.add('reducer-node');
             } else if (name.includes('Pipe Bracket')) {
                 toolNode.classList.add('bracket-node');
             } else if (name.includes('Dust Duct')) {
@@ -4733,16 +5150,28 @@
 
         const TOOL_STATUS_KEY = 'kerphToolStatus';
 
+        let cachedToolStatuses = {};
         function loadToolStatuses() {
-            try {
-                return JSON.parse(localStorage.getItem(TOOL_STATUS_KEY)) || {};
-            } catch (e) {
-                return {};
-            }
+            return cachedToolStatuses;
         }
 
         function saveToolStatuses(statuses) {
-            localStorage.setItem(TOOL_STATUS_KEY, JSON.stringify(statuses));
+            cachedToolStatuses = statuses;
+            kerphSaveToolStatus(statuses).catch(() => {});
+        }
+
+        // Refreshes visual state (active buttons, nickname value, My Tools relocation) on
+        // already-wired catalog items after the cache is (re)populated from the DB — does NOT
+        // re-attach event listeners or re-create the nickname input, unlike wireToolStatusItem,
+        // since calling that twice on the same DOM element would double up both.
+        function refreshToolStatusVisuals() {
+            const statuses = loadToolStatuses();
+            document.querySelectorAll('.tool-box-item').forEach(item => {
+                const nicknameInput = item.querySelector('.nickname-input');
+                if (!nicknameInput) return;
+                const name = item.getAttribute('data-name');
+                applyStatusToItem(item, nicknameInput, statuses[name]);
+            });
         }
 
         // Owned tools physically relocate into the "My Tools" category (rather than just
@@ -5101,18 +5530,14 @@
         /* ---------- CUSTOM TOOLS (user-added catalog entries) ----------
            Manual entry only — auto-looking up specs from the web needs a backend that can
            call a search/product-data API, which a static page can't do on its own. */
-        const CUSTOM_TOOLS_KEY = 'kerphCustomTools';
-
+        let cachedCustomTools = [];
         function loadCustomTools() {
-            try {
-                return JSON.parse(localStorage.getItem(CUSTOM_TOOLS_KEY)) || [];
-            } catch (e) {
-                return [];
-            }
+            return cachedCustomTools;
         }
 
         function saveCustomTools(tools) {
-            localStorage.setItem(CUSTOM_TOOLS_KEY, JSON.stringify(tools));
+            cachedCustomTools = tools;
+            kerphSaveCustomTools(tools).catch(() => {});
         }
 
         function updateCustomToolsEmptyState() {
@@ -5294,17 +5719,12 @@
             applyPlanGating();
         }
 
-        /* ---------- LOCAL ACCOUNT PREVIEW (username + avatar) ----------
-           Genuinely functional client-side (localStorage + FileReader), but not a real
-           account system — no server, no Google sign-in, no sync across devices/browsers. */
-        const ACCOUNT_KEY = 'kerphAccount';
-
+        /* ---------- ACCOUNT (username + avatar) ----------
+           Real, Supabase-backed profile (see supabase-client.js) — no longer a local-only
+           preview. loadAccount() stays shape-compatible ({username, avatar, memberSince})
+           so every existing call site on this page keeps working unmodified. */
         function loadAccount() {
-            try {
-                return JSON.parse(localStorage.getItem(ACCOUNT_KEY)) || {};
-            } catch (e) {
-                return {};
-            }
+            return (typeof kerphGetCachedProfile === 'function') ? kerphGetCachedProfile() : {};
         }
 
         function applyAvatarTo(el, dataUrl) {
@@ -5378,9 +5798,10 @@
                 `;
             }).join('');
             list.querySelectorAll('.account-layout-del').forEach(delBtn => {
-                delBtn.addEventListener('click', () => {
+                delBtn.addEventListener('click', async () => {
                     const id = delBtn.getAttribute('data-id');
-                    persistLayouts(loadLayouts().filter(l => l.id !== id));
+                    await kerphDeleteSavedLayout(id);
+                    cachedSavedLayouts = cachedSavedLayouts.filter(l => l.id !== id);
                     renderAccountLayoutsList();
                     renderAccountStats();
                     if (typeof renderSavedLayoutsPicker === 'function') renderSavedLayoutsPicker();
@@ -5430,30 +5851,30 @@
             avatarInput.addEventListener('change', () => {
                 const file = avatarInput.files[0];
                 if (!file) return;
-                const reader = new FileReader();
-                reader.onload = () => {
-                    pendingAvatar = reader.result;
+                kerphDownscaleImage(file, 200).then((dataUrl) => {
+                    pendingAvatar = dataUrl;
                     applyAvatarTo(avatarLarge, pendingAvatar);
-                };
-                reader.readAsDataURL(file);
+                }).catch(() => {
+                    showToast('Could not read that image.');
+                });
             });
 
             cancelBtn.addEventListener('click', () => { overlay.style.display = 'none'; });
 
-            saveBtn.addEventListener('click', () => {
+            saveBtn.addEventListener('click', async () => {
                 const username = usernameInput.value.trim();
                 if (!username) {
                     showToast('Enter a username to save your profile.');
                     return;
                 }
-                // Merge rather than replace — loadAccount() may carry memberSince and other
-                // fields this form doesn't edit, and overwriting the whole object would
-                // silently erase them every time the profile is saved.
-                localStorage.setItem(ACCOUNT_KEY, JSON.stringify({ ...loadAccount(), username, avatar: pendingAvatar }));
+                const { error } = await kerphSaveProfile({ username, avatarDataUrl: pendingAvatar, unitSystem: unitsSelect.value });
+                if (error) {
+                    showToast(error.message || 'Could not save your profile.');
+                    return;
+                }
                 switchUnitSystem(unitsSelect.value);
-                renderAccountBadge();
                 overlay.style.display = 'none';
-                showToast('Profile saved locally.');
+                showToast('Profile saved.');
             });
 
             if (planSelect) {
@@ -5502,7 +5923,7 @@
         function exportAllKerphData() {
             const data = {};
             Object.keys(localStorage).filter(k => k.startsWith('kerph')).forEach(k => { data[k] = localStorage.getItem(k); });
-            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const blob = new Blob([JSON.stringify({ exportedAt: new Date().toISOString(), data }, null, 2)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
@@ -5517,14 +5938,15 @@
         function importAllKerphData(file) {
             const reader = new FileReader();
             reader.onload = () => {
-                let data;
+                let parsed;
                 try {
-                    data = JSON.parse(reader.result);
+                    parsed = JSON.parse(reader.result);
                 } catch (e) {
                     showToast("That file doesn't look like a valid Kerph backup.");
                     return;
                 }
-                const keys = Object.keys(data).filter(k => k.startsWith('kerph'));
+                const data = parsed && parsed.data ? parsed.data : null;
+                const keys = data ? Object.keys(data).filter(k => k.startsWith('kerph')) : [];
                 if (!keys.length) {
                     showToast("That file doesn't look like a valid Kerph backup.");
                     return;
@@ -5537,16 +5959,15 @@
             reader.readAsText(file);
         }
 
-        /* ---------- LOCAL SIGN-IN (inline in the header, not a blocking gate) ----------
-           Preview only, same spirit as the Plan/Account previews — no real backend to check
-           credentials against, so ANY non-empty username+password succeeds. The site itself
-           is fully usable while signed out; only Pro/paywall features additionally require
-           sign-in (see requireProAccess()). Persisted in localStorage so it only asks once
-           per browser until Sign Out. */
-        const AUTH_KEY = 'kerphSignedIn';
-
+        /* ---------- SIGN-IN (Supabase-backed, inline in the header, not a blocking gate) ----------
+           The site itself is fully usable while signed out; only Pro/paywall features
+           additionally require sign-in (see requireProAccess()). applyPlanGating() and
+           renderSavedLayoutsPicker() — the side effects sign-in changes used to trigger
+           directly here — now run from the shared kerphOnAuthChange listener registered
+           near the bottom of this script, since that fires on sign-in, sign-up, AND
+           sign-out alike (one reactive point instead of three call sites doing it by hand). */
         function isSignedIn() {
-            return localStorage.getItem(AUTH_KEY) === 'true';
+            return typeof kerphGetCachedUser === 'function' && !!kerphGetCachedUser();
         }
 
         // Swaps the header between the inline sign-in fields and the account badge.
@@ -5556,45 +5977,64 @@
             document.getElementById('accountBtn').style.display = signedIn ? 'flex' : 'none';
         }
 
-        function completeSignIn(username) {
-            localStorage.setItem(AUTH_KEY, 'true');
-            const acc = loadAccount();
-            acc.username = username;
-            if (!acc.memberSince) acc.memberSince = new Date().toISOString();
-            localStorage.setItem(ACCOUNT_KEY, JSON.stringify(acc));
-            renderAccountBadge();
-            updateHeaderSignInState();
-            applyPlanGating();
-            if (typeof renderSavedLayoutsPicker === 'function') renderSavedLayoutsPicker();
-        }
-
-        function signOut() {
-            localStorage.removeItem(AUTH_KEY);
-            updateHeaderSignInState();
-            applyPlanGating();
-            if (typeof renderSavedLayoutsPicker === 'function') renderSavedLayoutsPicker();
+        async function signOut() {
+            await kerphSignOut();
         }
 
         function initHeaderSignIn() {
-            const usernameInput = document.getElementById('headerSignInUsername');
+            const emailInput = document.getElementById('headerSignInEmail');
             const passwordInput = document.getElementById('headerSignInPassword');
             const signInBtn = document.getElementById('headerSignInBtn');
+            const modeToggle = document.getElementById('headerSignInModeToggle');
 
-            function attemptSignIn() {
-                const username = usernameInput.value.trim();
+            let mode = 'signin';
+            function applyMode() {
+                signInBtn.textContent = mode === 'signin' ? 'Sign In' : 'Sign Up';
+                signInBtn.title = mode === 'signin' ? 'Sign In' : 'Create Account';
+                modeToggle.textContent = mode === 'signin' ? 'New here? Create an account' : 'Already have an account? Sign in';
+            }
+            applyMode();
+
+            modeToggle.addEventListener('click', (e) => {
+                e.preventDefault();
+                mode = mode === 'signin' ? 'signup' : 'signin';
+                applyMode();
+            });
+
+            async function attemptSubmit() {
+                const email = emailInput.value.trim();
                 const password = passwordInput.value;
-                if (!username || !password) {
-                    showToast('Enter a username and password to sign in.');
+                if (!email || !password) {
+                    showToast('Enter an email and password.');
                     return;
                 }
-                completeSignIn(username);
-                usernameInput.value = '';
-                passwordInput.value = '';
+                signInBtn.disabled = true;
+                try {
+                    if (mode === 'signin') {
+                        const { error } = await kerphSignIn(email, password);
+                        if (error) { showToast(error.message || 'Sign in failed.'); return; }
+                        passwordInput.value = '';
+                        showToast('Signed in.');
+                    } else {
+                        const { error, needsConfirmation } = await kerphSignUp(email, password);
+                        if (error) { showToast(error.message || 'Sign up failed.'); return; }
+                        passwordInput.value = '';
+                        if (needsConfirmation) {
+                            showToast('Check your email to confirm your account, then sign in.');
+                            mode = 'signin';
+                            applyMode();
+                        } else {
+                            showToast('Account created.');
+                        }
+                    }
+                } finally {
+                    signInBtn.disabled = false;
+                }
             }
 
-            signInBtn.addEventListener('click', attemptSignIn);
-            [usernameInput, passwordInput].forEach(input => {
-                input.addEventListener('keydown', (e) => { if (e.key === 'Enter') attemptSignIn(); });
+            signInBtn.addEventListener('click', attemptSubmit);
+            [emailInput, passwordInput].forEach(input => {
+                input.addEventListener('keydown', (e) => { if (e.key === 'Enter') attemptSubmit(); });
             });
 
             updateHeaderSignInState();
@@ -5851,19 +6291,10 @@
             });
         }
 
-        /* ---------- SAVED SHOP LAYOUTS (Pro+, local storage stand-in for real cloud accounts) ---------- */
-        const LAYOUTS_KEY = 'kerphSavedLayouts';
-
+        /* ---------- SAVED SHOP LAYOUTS (Pro+, real Supabase-backed) ---------- */
+        let cachedSavedLayouts = [];
         function loadLayouts() {
-            try {
-                return JSON.parse(localStorage.getItem(LAYOUTS_KEY)) || [];
-            } catch (e) {
-                return [];
-            }
-        }
-
-        function persistLayouts(list) {
-            localStorage.setItem(LAYOUTS_KEY, JSON.stringify(list));
+            return cachedSavedLayouts;
         }
 
         function escapeHtml(str) {
@@ -5912,6 +6343,7 @@
                 ceilingHeightFt: getShopCeilingHeightFeet(),
                 scale: document.getElementById('inputScale').value,
                 unitSystem: unitSystem,
+                shopType: shopType,
                 shapeMode: shapeMode,
                 shapePoints: normalizedShapePoints,
                 tools: tools,
@@ -6031,6 +6463,9 @@
             document.getElementById('inputWidth').disabled = false;
             document.getElementById('inputLength').disabled = false;
             updateWorkshopGridSize();
+
+            // Defaults to 'woodworking' for layouts saved before this field existed.
+            switchShopType(layout.shopType || 'woodworking');
 
             // Stored shapePoints/wallFeatures positions are normalized to BASE_PPI (see
             // serializeCurrentLayout) — convert to whatever ppi is live right now.
@@ -6327,7 +6762,7 @@
             const typeSelect = document.getElementById('layoutTypeSelect');
             const select = document.getElementById('savedLayoutsSelect');
 
-            saveBtn.addEventListener('click', () => {
+            saveBtn.addEventListener('click', async () => {
                 if (!requireProAccess('Saved shop layouts are a Pro feature.')) return;
                 const typedName = nameInput.value.trim();
                 const layouts = loadLayouts();
@@ -6345,21 +6780,27 @@
                 const layout = serializeCurrentLayout(name);
                 layout.layoutType = typeSelect.value;
 
-                if (isOverwrite) {
-                    layout.id = existing.id;
-                    layouts[layouts.findIndex(l => l.id === existing.id)] = layout;
-                    persistLayouts(layouts);
-                    nameInput.value = '';
-                    renderSavedLayoutsPicker();
-                    select.value = layout.id;
-                    showToast(`Updated "${name}".`);
-                } else {
-                    layouts.push(layout);
-                    persistLayouts(layouts);
-                    nameInput.value = '';
-                    renderSavedLayoutsPicker();
-                    select.value = layouts[layouts.length - 1].id;
-                    showToast(`Saved "${name}".`);
+                saveBtn.disabled = true;
+                try {
+                    if (isOverwrite) {
+                        const { data, error } = await kerphUpdateSavedLayout(existing.id, layout);
+                        if (error) { showToast('Could not update that layout.'); return; }
+                        cachedSavedLayouts[layouts.findIndex(l => l.id === existing.id)] = data;
+                        nameInput.value = '';
+                        renderSavedLayoutsPicker();
+                        select.value = data.id;
+                        showToast(`Updated "${name}".`);
+                    } else {
+                        const { data, error } = await kerphInsertSavedLayout(layout);
+                        if (error) { showToast('Could not save that layout.'); return; }
+                        cachedSavedLayouts.push(data);
+                        nameInput.value = '';
+                        renderSavedLayoutsPicker();
+                        select.value = data.id;
+                        showToast(`Saved "${name}".`);
+                    }
+                } finally {
+                    saveBtn.disabled = false;
                 }
             });
 
@@ -6376,12 +6817,12 @@
                 }
             });
 
-            document.getElementById('deleteLayoutBtn').addEventListener('click', () => {
+            document.getElementById('deleteLayoutBtn').addEventListener('click', async () => {
                 const layouts = loadLayouts();
                 const current = layouts.find(l => l.id === select.value);
                 if (!current) return;
-                const remaining = layouts.filter(l => l.id !== current.id);
-                persistLayouts(remaining);
+                await kerphDeleteSavedLayout(current.id);
+                cachedSavedLayouts = layouts.filter(l => l.id !== current.id);
                 renderSavedLayoutsPicker();
             });
 
@@ -6723,7 +7164,7 @@
            up their own numbers. Values live in dataset.estCost on each placed node and ride
            along through the same descriptor pipeline as everything else (serialize/restore/
            paste), so they survive save/load and undo/redo like any other placement detail. */
-        const COST_LAYER_LABELS = { tools: 'Tools', cabinets: 'Cabinets', 'dust-collection': 'Dust Collection', lighting: 'Lighting' };
+        const COST_LAYER_LABELS = { tools: 'Tools', cabinets: 'Cabinets', 'dust-collection': 'Dust Collection', lighting: 'Lighting', plumbing: 'Plumbing' };
         let costRowNodes = [];
 
         function getCostItems() {
@@ -6900,7 +7341,7 @@
                         <div class="preview-spec-row"><span class="preview-spec-label">Voltage</span><span class="preview-spec-value">${escapeHtml(specs.voltage || '—')}</span></div>
                         <div class="preview-spec-row"><span class="preview-spec-label">Weight</span><span class="preview-spec-value">${escapeHtml(specs.weight || '—')}</span></div>
                         <div class="preview-spec-note">Specs are typical/representative — verify exact figures for your model before purchase.</div>
-                        <div class="preview-buy-section">Pricing &amp; buy links coming soon</div>
+                        <div class="preview-buy-section">${specs.buyUrl ? `<a href="${escapeHtml(specs.buyUrl)}" target="_blank" rel="noopener noreferrer" class="preview-buy-link">Check current price &rarr;</a>` : 'Pricing &amp; buy links coming soon'}</div>
                     `;
 
                     const rect = item.getBoundingClientRect();
@@ -6934,16 +7375,14 @@
             wall: { width: 24, depth: 12, height: 30 }
         };
 
+        let cachedCabinetTemplates = [];
         function loadCabinetTemplates() {
-            try {
-                return JSON.parse(localStorage.getItem(CABINET_TEMPLATES_KEY)) || [];
-            } catch (e) {
-                return [];
-            }
+            return cachedCabinetTemplates;
         }
 
         function persistCabinetTemplates(list) {
-            localStorage.setItem(CABINET_TEMPLATES_KEY, JSON.stringify(list));
+            cachedCabinetTemplates = list;
+            kerphSaveCabinetTemplates(list).catch(() => {});
         }
 
         function summarizeDrawers(drawers) {
@@ -8103,6 +8542,33 @@
             metricBtn.classList.toggle('active', isMetric);
         }
 
+        // Shows/hides sidebar catalog categories based on the current shopType. Categories
+        // with no data-domain attribute (My Tools, Small Power Tools, Tool Storage, Lighting,
+        // Assembly & Storage, My Custom Tools) are domain-agnostic and always show.
+        function applyShopTypeFilter() {
+            document.querySelectorAll('#sidebar-panel .tool-category[data-domain]').forEach(cat => {
+                const domain = cat.getAttribute('data-domain');
+                cat.style.display = (shopType === 'both' || domain === shopType) ? '' : 'none';
+            });
+        }
+
+        function switchShopType(newType) {
+            shopType = newType;
+            ['shopTypeWoodworkingBtn', 'shopTypeMechanicalBtn', 'shopTypeBothBtn'].forEach(id => {
+                document.getElementById(id).classList.remove('active');
+            });
+            const btnId = newType === 'woodworking' ? 'shopTypeWoodworkingBtn'
+                : newType === 'mechanical' ? 'shopTypeMechanicalBtn' : 'shopTypeBothBtn';
+            document.getElementById(btnId).classList.add('active');
+            applyShopTypeFilter();
+        }
+
+        function initShopTypeToggle() {
+            document.getElementById('shopTypeWoodworkingBtn').addEventListener('click', () => switchShopType('woodworking'));
+            document.getElementById('shopTypeMechanicalBtn').addEventListener('click', () => switchShopType('mechanical'));
+            document.getElementById('shopTypeBothBtn').addEventListener('click', () => switchShopType('both'));
+        }
+
         // Hoisted out of initUnitToggle() so the Account Settings modal's "Preferred Units"
         // field (the account-level default) can switch the live unit system the same way the
         // New Layout modal's toggle buttons do, rather than duplicating this conversion logic.
@@ -8173,16 +8639,52 @@
         initResizeHandles();
         initToolStatusControls();
         initPowerToolSearch();
-        initCustomTools();
         initLayers();
         initPlanSelector();
-        initAccountPanel();
-        initHeaderSignIn();
+
+        // Single reactive point for sign-in/account changes — fires in every open tab
+        // whenever auth state changes anywhere (sign in, sign up, sign out, profile save).
+        // Replaces the applyPlanGating()/renderSavedLayoutsPicker() calls that used to be
+        // hand-written into completeSignIn()/signOut() individually.
+        kerphOnAuthChange(() => {
+            updateHeaderSignInState();
+            renderAccountBadge();
+            applyPlanGating();
+            kerphLoadSavedLayouts().then(({ data }) => {
+                cachedSavedLayouts = data || [];
+                if (typeof renderSavedLayoutsPicker === 'function') renderSavedLayoutsPicker();
+                if (typeof renderAccountLayoutsList === 'function') renderAccountLayoutsList();
+            });
+            kerphLoadToolStatus().then(({ data }) => {
+                cachedToolStatuses = data || {};
+                refreshToolStatusVisuals();
+                if (typeof renderPowerToolSection === 'function') renderPowerToolSection();
+                if (typeof renderOwnedPowerToolsInMyTools === 'function') renderOwnedPowerToolsInMyTools();
+            });
+        });
+
+        // Waits for the first real auth state before wiring/rendering anything
+        // sign-in-dependent, so an actually-signed-in user never sees a flash of the
+        // signed-out header or a Pro feature incorrectly locked on load.
+        kerphAuthReady.then(async () => {
+            initAccountPanel();
+            initHeaderSignIn();
+            // Syncs the account's real preferred-units setting in on a different device
+            // than the one that set it — the localStorage read at module-load time (see
+            // `unitSystem` above) is only an instant-paint fallback to avoid a flash of the
+            // wrong unit before auth resolves.
+            const profileUnit = kerphGetCachedProfile().unitSystem;
+            if (profileUnit && profileUnit !== unitSystem) switchUnitSystem(profileUnit);
+            cachedCustomTools = (await kerphLoadCustomTools()).data || [];
+            initCustomTools();
+            cachedCabinetTemplates = (await kerphLoadCabinetTemplates()).data || [];
+            initCabinetBuilder();
+        });
+
         initUndoRedo();
         initShapeControls();
         initSavedLayouts();
         initToolPreviewPopovers();
-        initCabinetBuilder();
         initMeasureTool();
         initWallFeatures();
         initInternalWallDrawing();
@@ -8198,6 +8700,8 @@
         initPanelAutoStack();
         initNewLayoutModal();
         initUnitToggle();
+        initShopTypeToggle();
+        applyShopTypeFilter();
         initToolSearch();
 
         /* ---------- CURRENT LAYOUT AUTOSAVE (cross-page sync) ----------
@@ -8208,8 +8712,6 @@
            whatever was last on the board instead of always starting from a blank rectangle,
            which is also what makes edits made on another page (dust collection items placed
            there) show up here on next visit. */
-        const CURRENT_LAYOUT_KEY = 'kerphCurrentLayout';
-
         // serializeCurrentLayout() stamps a fresh random id + savedAt on every call, so a
         // naive JSON-string comparison would never dedupe two calls with identical board
         // content — comparing only the meaningful fields is what lets autosaveCurrentLayout
@@ -8221,117 +8723,59 @@
 
         let lastAutosavedContent = null;
 
-        // Set the moment another tab (e.g. Dust Collection, adding a duct drop) writes
-        // kerphCurrentLayout out from under this one, and cleared once the user resolves it
-        // via the banner below. While true, this tab's own DOM is known-stale, so autosave
-        // must not write — a stale write would silently erase whatever the other tab just
-        // added, which is exactly the "drops keep disappearing randomly" bug: this page never
-        // reloads on an external change (see showExternalChangeBanner's comment for why), but
-        // it was still autosaving its own outdated snapshot every 2s/on unload regardless,
-        // clobbering the other tab's write the moment this tab's board changed at all.
-        let externalChangeDetected = false;
-
         function autosaveCurrentLayout() {
-            if (externalChangeDetected) return;
             try {
                 const layout = serializeCurrentLayout('Current Layout');
                 const comparable = serializeForChangeComparison(layout);
-                // Ticks every 2s regardless of whether anything actually happened — writing
-                // unconditionally meant every other open tab (3D viewer, Dust Collection) saw
-                // a "layout changed externally" storage event every 2 seconds forever, even
-                // when the board was untouched, which is what made that notice feel like a
-                // constant, meaningless nag. Skipping a no-op write is what actually fixes it.
                 if (comparable === lastAutosavedContent) return;
                 lastAutosavedContent = comparable;
-                localStorage.setItem(CURRENT_LAYOUT_KEY, JSON.stringify(layout));
+                kerphSaveCurrentLayout(layout).catch(() => {});
             } catch (e) {
-                // localStorage can throw (quota, private browsing) — autosave is best-effort.
+                // best-effort — a save failure here shouldn't interrupt the user
             }
         }
 
-        const savedCurrentLayout = localStorage.getItem(CURRENT_LAYOUT_KEY);
-        if (savedCurrentLayout) {
+        // Real, Supabase-backed persistence now — gated behind kerphAuthReady since the load
+        // requires knowing who's signed in. Runs as its own kerphAuthReady.then() (separate
+        // from the auth-UI one earlier in this script) so it stays textually next to the
+        // autosave logic it's paired with.
+        kerphAuthReady.then(async () => {
             try {
-                applyLayoutState(JSON.parse(savedCurrentLayout));
-                lastAutosavedContent = serializeForChangeComparison(JSON.parse(savedCurrentLayout));
+                const { data } = await kerphLoadCurrentLayout();
+                if (data) {
+                    applyLayoutState(data);
+                    lastAutosavedContent = serializeForChangeComparison(data);
+                } else {
+                    updateWorkshopGridSize();
+                }
             } catch (e) {
                 updateWorkshopGridSize();
             }
-        } else {
-            updateWorkshopGridSize();
-        }
+        });
 
         setInterval(autosaveCurrentLayout, 2000);
         window.addEventListener('beforeunload', autosaveCurrentLayout);
-
-        // Mid-gesture tracking for the silent-reload decision below — capture phase, so this
-        // still sees mousedown/mouseup even though individual drag handlers elsewhere call
-        // e.stopPropagation() on their own listeners (which only blocks bubble-phase delivery).
-        let mouseIsDown = false;
-        document.addEventListener('mousedown', () => { mouseIsDown = true; }, true);
-        document.addEventListener('mouseup', () => { mouseIsDown = false; }, true);
 
         function anyModalOpen() {
             return Array.from(document.querySelectorAll('.modal-overlay'))
                 .some(el => getComputedStyle(el).display !== 'none');
         }
 
-        // Whether pulling in an external change RIGHT NOW would stomp something delicate —
-        // same set of concerns as board.addEventListener('mousedown', ...) above (measure
-        // mode / wall-drawing mode / custom-shape drawing), plus a held-down mouse (covers
-        // node drag/resize/rotate, whose own state lives in per-node closures this code can't
-        // otherwise see) and any open modal.
-        function isMidRiskyGesture() {
-            return mouseIsDown || measureMode || wallFeatureMode === 'wall' || shapeMode === 'drawing' || anyModalOpen();
-        }
-
-        // Actually pulls in whatever's now in kerphCurrentLayout and resyncs the autosave
-        // baseline to it (see the Reload button's original comment) — shared by the silent
-        // path below and the explicit Reload button for when a silent pull isn't safe.
-        function pullInExternalChange() {
-            const raw = localStorage.getItem(CURRENT_LAYOUT_KEY);
-            if (!raw) return false;
-            try {
-                const parsed = JSON.parse(raw);
-                applyLayoutState(parsed);
-                lastAutosavedContent = serializeForChangeComparison(parsed);
-                return true;
-            } catch (e) {
-                return false;
-            }
-        }
-
-        // Cross-tab notice for external kerphCurrentLayout changes (e.g. an edit made in the
-        // Dust Collection page or 3D Shop Viewer). Most of the time — not mid-drag, no modal
-        // open — it's perfectly safe to just pull the change in immediately and say so with a
-        // toast, same as dust-collection.html already does unconditionally. The banner (which
-        // pauses autosave until the user acts — see externalChangeDetected above) is now only
-        // for the genuinely risky moment: something's actively in progress that a silent
-        // rebuild would stomp. This is what actually fixes the banner showing up on every
-        // single cross-tab edit regardless of what this tab happened to be doing.
-        window.addEventListener('storage', (e) => {
-            if (e.key !== CURRENT_LAYOUT_KEY) return;
-            if (isMidRiskyGesture()) {
-                externalChangeDetected = true;
-                document.getElementById('externalChangeBanner').classList.add('visible');
-                return;
-            }
-            if (pullInExternalChange()) showToast('Layout updated from another tab.');
-        });
-
-        document.getElementById('externalChangeReloadBtn').addEventListener('click', () => {
-            if (pullInExternalChange()) showToast('Layout reloaded.');
-            externalChangeDetected = false;
-            document.getElementById('externalChangeBanner').classList.remove('visible');
-        });
-
-        document.getElementById('externalChangeDismissBtn').addEventListener('click', () => {
-            // Explicitly acknowledging and keeping this tab's own version — resume autosave,
-            // which means this tab's next save will overwrite the other tab's change. That's
-            // an informed choice made via the banner, not the silent background clobber this
-            // whole flag exists to prevent.
-            externalChangeDetected = false;
-            document.getElementById('externalChangeBanner').classList.remove('visible');
+        // Cross-device/cross-tab sync: re-fetch whenever this tab regains visibility (no
+        // Realtime subscription — see plan). Skipped while a modal is open, the one residual
+        // case worth guarding since a rebuild mid-modal would be visibly disruptive; the
+        // mid-drag race the old storage-event listener guarded against structurally can't
+        // happen here, since regaining tab visibility can't coincide with an in-progress drag
+        // on this tab.
+        kerphOnVisible(async () => {
+            if (anyModalOpen()) return;
+            const { data } = await kerphLoadCurrentLayout();
+            if (!data) return;
+            const comparable = serializeForChangeComparison(data);
+            if (comparable === lastAutosavedContent) return;
+            applyLayoutState(data);
+            lastAutosavedContent = comparable;
+            showToast('Layout updated from another tab.');
         });
     </script>
 </body>

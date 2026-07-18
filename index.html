@@ -207,9 +207,24 @@
 
         .header-sign-in {
             display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 4px;
+        }
+
+        .header-sign-in-row {
+            display: flex;
             align-items: center;
             gap: 4px;
         }
+
+        .header-sign-in-mode-toggle {
+            font-size: 10px;
+            font-weight: 600;
+            color: #1e3a8a;
+            text-decoration: none;
+        }
+        .header-sign-in-mode-toggle:hover { text-decoration: underline; }
 
         .header-sign-in-input {
             width: 84px;
@@ -905,14 +920,17 @@
         </div>
 
         <div class="plan-badge-group">
-            <div class="header-sign-in" id="headerSignIn" title="Preview only — any username &amp; password signs you in locally in this browser.">
-                <input type="text" class="header-sign-in-input" id="headerSignInUsername" placeholder="Username" autocomplete="username">
-                <input type="password" class="header-sign-in-input" id="headerSignInPassword" placeholder="Password" autocomplete="current-password">
-                <label class="header-sign-in-check" title="Get reminders when tools you own are due for maintenance">
-                    <input type="checkbox" id="headerSignInReminders" checked>
-                    Reminders
-                </label>
-                <button type="button" id="headerSignInBtn" class="mini-btn" title="Sign In">Sign In</button>
+            <div class="header-sign-in" id="headerSignIn" title="Sign in or create a free Kerph account.">
+                <div class="header-sign-in-row">
+                    <input type="email" class="header-sign-in-input" id="headerSignInEmail" placeholder="Email" autocomplete="email">
+                    <input type="password" class="header-sign-in-input" id="headerSignInPassword" placeholder="Password" autocomplete="current-password">
+                    <label class="header-sign-in-check" title="Get reminders when tools you own are due for maintenance">
+                        <input type="checkbox" id="headerSignInReminders" checked>
+                        Reminders
+                    </label>
+                    <button type="button" id="headerSignInBtn" class="mini-btn" title="Sign In">Sign In</button>
+                </div>
+                <a href="#" id="headerSignInModeToggle" class="header-sign-in-mode-toggle">New here? Create an account</a>
             </div>
             <button type="button" id="accountBtn" class="account-btn plan-free" title="Account &amp; Plan Settings — border color shows your plan level" style="display:none;">
                 <span class="account-avatar" id="accountAvatarPreview">&#128100;</span>
@@ -937,7 +955,7 @@
     <div class="modal-overlay" id="accountModalOverlay" style="display:none;">
         <div class="modal-box account-modal-box">
             <div class="modal-title">Account Settings</div>
-            <div class="modal-warning">Saved locally in this browser only — real accounts, Google sign-in, and community features aren't connected yet.</div>
+            <div class="modal-warning">Your account (username, avatar, sign-in) is real and synced via Kerph. Saved layouts, projects, tools, Showcase posts, and reviews are synced too — available on any device you sign into.</div>
 
             <div class="header-field" style="width:100%; margin-bottom:14px; display:flex; flex-direction:column; align-items:center;">
                 <div class="account-avatar-large" id="accountAvatarLarge">&#128100;</div>
@@ -995,8 +1013,8 @@
             <button type="button" id="accountSignOutBtn" class="mini-btn danger" style="width:100%; margin-top:8px;">Sign Out</button>
 
             <div class="account-backup-zone">
-                <div class="account-backup-title">Backup &amp; Restore</div>
-                <div class="account-backup-desc">Everything lives only in this browser — export a copy so a cleared cache or a new device doesn't lose it.</div>
+                <div class="account-backup-title">Local Device Settings</div>
+                <div class="account-backup-desc">Your layouts, projects, tools, Showcase posts, and reviews live on your account now — no backup needed. This just covers a couple of local display preferences still cached in this browser.</div>
                 <div style="display:flex; gap:8px;">
                     <button type="button" id="accountExportBtn" class="mini-btn" style="flex:1;">&#11015;&#65039; Export</button>
                     <button type="button" id="accountImportBtn" class="mini-btn" style="flex:1;">&#11014;&#65039; Import&hellip;</button>
@@ -1006,7 +1024,7 @@
 
             <div class="account-danger-zone">
                 <div class="account-danger-title">Danger Zone</div>
-                <div class="account-danger-desc">Permanently erases every layout, tool status, and preference saved in this browser. This cannot be undone.</div>
+                <div class="account-danger-desc">Resets your local plan-preview selection and cached display preferences on this browser. Your account, layouts, projects, tools, and posts are not affected.</div>
                 <button type="button" id="accountResetAllBtn" class="mini-btn danger" style="width:100%;">Reset All Local Data&hellip;</button>
             </div>
         </div>
@@ -1151,11 +1169,13 @@
         </div>
     </main>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.7/dist/umd/supabase.js"></script>
+    <script src="supabase-client.js"></script>
     <script>
-        /* ---------- SHARED STATE KEYS (must match workshop-planner.html exactly) ---------- */
+        /* ---------- SHARED STATE KEYS (must match workshop-planner.html exactly) ----------
+           kerphAccount/kerphSignedIn are gone — sign-in and profile data are now real,
+           Supabase-backed state (see supabase-client.js), not localStorage flags. */
         const PLAN_KEY = 'kerphPlan';
-        const ACCOUNT_KEY = 'kerphAccount';
-        const AUTH_KEY = 'kerphSignedIn';
         const TOOL_STATUS_KEY = 'kerphToolStatus';
         const MAINTENANCE_REMINDERS_KEY = 'kerphMaintenanceRemindersEnabled';
         const CURRENT_LAYOUT_KEY = 'kerphCurrentLayout';
@@ -1351,12 +1371,11 @@
         }
 
         /* ---------- LOCAL ACCOUNT PREVIEW (username + avatar) ---------- */
+        // Thin wrapper over the real Supabase-backed profile cache (supabase-client.js) —
+        // shape-compatible with the old kerphAccount localStorage record ({username, avatar,
+        // memberSince}) so every other call site on this page keeps working unmodified.
         function loadAccount() {
-            try {
-                return JSON.parse(localStorage.getItem(ACCOUNT_KEY)) || {};
-            } catch (e) {
-                return {};
-            }
+            return (typeof kerphGetCachedProfile === 'function') ? kerphGetCachedProfile() : {};
         }
 
         function applyAvatarTo(el, dataUrl) {
@@ -1388,12 +1407,9 @@
         const LAYOUTS_KEY = 'kerphSavedLayouts';
         const LAYOUT_TYPE_LABELS = { workshop: 'Workshop', 'dust-collection': 'Dust Collection', lighting: 'Lighting' };
 
+        let cachedSavedLayouts = [];
         function loadLayouts() {
-            try { return JSON.parse(localStorage.getItem(LAYOUTS_KEY)) || []; } catch (e) { return []; }
-        }
-
-        function persistLayouts(list) {
-            localStorage.setItem(LAYOUTS_KEY, JSON.stringify(list));
+            return cachedSavedLayouts;
         }
 
         function escapeHtml(str) {
@@ -1429,14 +1445,13 @@
         // Turns the dead space beside the hero intro into a live read of the user's own
         // data — same stat tiles as the account modal, plus whatever's in the shared
         // kerphCurrentLayout (the same key workshop-planner.html/shop-3d-viewer.html use).
-        function renderHomeSnapshot() {
+        async function renderHomeSnapshot() {
             const statsRow = document.getElementById('homeStatsRow');
             if (statsRow) statsRow.innerHTML = statsRowHtml(computeToolStats());
 
             const currentEl = document.getElementById('snapshotCurrent');
             if (currentEl) {
-                let current = null;
-                try { current = JSON.parse(localStorage.getItem(CURRENT_LAYOUT_KEY)); } catch (e) {}
+                const { data: current } = await kerphLoadCurrentLayout();
                 if (current && current.widthFeet) {
                     const itemCount = (current.tools || []).length;
                     currentEl.innerHTML = `
@@ -1505,9 +1520,10 @@
                 `;
             }).join('');
             list.querySelectorAll('.account-layout-del').forEach(delBtn => {
-                delBtn.addEventListener('click', () => {
+                delBtn.addEventListener('click', async () => {
                     const id = delBtn.getAttribute('data-id');
-                    persistLayouts(loadLayouts().filter(l => l.id !== id));
+                    await kerphDeleteSavedLayout(id);
+                    cachedSavedLayouts = cachedSavedLayouts.filter(l => l.id !== id);
                     renderAccountLayoutsList();
                     renderAccountStats();
                     showToast('Layout deleted.');
@@ -1544,8 +1560,8 @@
                 usernameInput.value = acc.username || '';
                 pendingAvatar = acc.avatar || null;
                 applyAvatarTo(avatarLarge, pendingAvatar);
-                unitsSelect.value = localStorage.getItem('kerphUnitSystem') || 'imperial';
-                remindersCheckbox.checked = maintenanceRemindersEnabled();
+                unitsSelect.value = kerphGetCachedProfile().unitSystem || 'imperial';
+                remindersCheckbox.checked = kerphGetCachedProfile().maintenanceRemindersEnabled;
                 renderAccountMemberSince();
                 renderAccountStats();
                 renderAccountPlanCard();
@@ -1558,30 +1574,40 @@
             avatarInput.addEventListener('change', () => {
                 const file = avatarInput.files[0];
                 if (!file) return;
-                const reader = new FileReader();
-                reader.onload = () => {
-                    pendingAvatar = reader.result;
+                // Downscaled client-side (supabase-client.js) — the avatar now travels over
+                // the network on every page load via the profile row, so an unresized phone
+                // photo is a real cost it wasn't back when this was pure localStorage.
+                kerphDownscaleImage(file, 200).then((dataUrl) => {
+                    pendingAvatar = dataUrl;
                     applyAvatarTo(avatarLarge, pendingAvatar);
-                };
-                reader.readAsDataURL(file);
+                }).catch(() => {
+                    showToast('Could not read that image.');
+                });
             });
 
             cancelBtn.addEventListener('click', () => { overlay.style.display = 'none'; });
 
-            saveBtn.addEventListener('click', () => {
+            saveBtn.addEventListener('click', async () => {
                 const username = usernameInput.value.trim();
                 if (!username) {
                     showToast('Enter a username to save your profile.');
                     return;
                 }
-                localStorage.setItem(ACCOUNT_KEY, JSON.stringify({ ...loadAccount(), username, avatar: pendingAvatar }));
+                const { error } = await kerphSaveProfile({
+                    username, avatarDataUrl: pendingAvatar,
+                    unitSystem: unitsSelect.value, maintenanceRemindersEnabled: remindersCheckbox.checked
+                });
+                if (error) {
+                    showToast(error.message || 'Could not save your profile.');
+                    return;
+                }
+                // No manual re-render here — kerphSaveProfile's own change notification
+                // (via the kerphOnAuthChange listener at the bottom of this script) already
+                // refreshes renderAccountBadge/renderToolLists/renderHomeSnapshot.
                 localStorage.setItem('kerphUnitSystem', unitsSelect.value);
                 localStorage.setItem(MAINTENANCE_REMINDERS_KEY, remindersCheckbox.checked ? 'true' : 'false');
-                renderAccountBadge();
-                renderToolLists();
-                renderHomeSnapshot();
                 overlay.style.display = 'none';
-                showToast('Profile saved locally.');
+                showToast('Profile saved.');
             });
 
             if (planSelect) {
@@ -1667,9 +1693,9 @@
             reader.readAsText(file);
         }
 
-        /* ---------- LOCAL SIGN-IN (inline in the header, not a blocking gate) ---------- */
+        /* ---------- REAL SIGN-IN (Supabase-backed, inline in the header, not a blocking gate) ---------- */
         function isSignedIn() {
-            return localStorage.getItem(AUTH_KEY) === 'true';
+            return typeof kerphGetCachedUser === 'function' && !!kerphGetCachedUser();
         }
 
         function updateHeaderSignInState() {
@@ -1678,47 +1704,70 @@
             document.getElementById('accountBtn').style.display = signedIn ? 'flex' : 'none';
         }
 
-        function completeSignIn(username) {
-            localStorage.setItem(AUTH_KEY, 'true');
-            const acc = loadAccount();
-            acc.username = username;
-            if (!acc.memberSince) acc.memberSince = new Date().toISOString();
-            localStorage.setItem(ACCOUNT_KEY, JSON.stringify(acc));
-            renderAccountBadge();
-            updateHeaderSignInState();
-        }
-
-        function signOut() {
-            localStorage.removeItem(AUTH_KEY);
-            updateHeaderSignInState();
+        async function signOut() {
+            // No manual re-render here — the kerphOnAuthChange listener (registered once,
+            // bottom of this script) fires and updates every dependent bit of UI for us.
+            await kerphSignOut();
         }
 
         function initHeaderSignIn() {
-            const usernameInput = document.getElementById('headerSignInUsername');
+            const emailInput = document.getElementById('headerSignInEmail');
             const passwordInput = document.getElementById('headerSignInPassword');
             const remindersInput = document.getElementById('headerSignInReminders');
             const signInBtn = document.getElementById('headerSignInBtn');
+            const modeToggle = document.getElementById('headerSignInModeToggle');
 
             remindersInput.checked = maintenanceRemindersEnabled();
 
-            function attemptSignIn() {
-                const username = usernameInput.value.trim();
+            let mode = 'signin';
+            function applyMode() {
+                signInBtn.textContent = mode === 'signin' ? 'Sign In' : 'Sign Up';
+                signInBtn.title = mode === 'signin' ? 'Sign In' : 'Create Account';
+                modeToggle.textContent = mode === 'signin' ? 'New here? Create an account' : 'Already have an account? Sign in';
+            }
+            applyMode();
+
+            modeToggle.addEventListener('click', (e) => {
+                e.preventDefault();
+                mode = mode === 'signin' ? 'signup' : 'signin';
+                applyMode();
+            });
+
+            async function attemptSubmit() {
+                const email = emailInput.value.trim();
                 const password = passwordInput.value;
-                if (!username || !password) {
-                    showToast('Enter a username and password to sign in.');
+                if (!email || !password) {
+                    showToast('Enter an email and password.');
                     return;
                 }
                 localStorage.setItem(MAINTENANCE_REMINDERS_KEY, remindersInput.checked ? 'true' : 'false');
-                completeSignIn(username);
-                usernameInput.value = '';
-                passwordInput.value = '';
-                renderToolLists();
-                renderHomeSnapshot();
+                signInBtn.disabled = true;
+                try {
+                    if (mode === 'signin') {
+                        const { error } = await kerphSignIn(email, password);
+                        if (error) { showToast(error.message || 'Sign in failed.'); return; }
+                        passwordInput.value = '';
+                        showToast('Signed in.');
+                    } else {
+                        const { error, needsConfirmation } = await kerphSignUp(email, password);
+                        if (error) { showToast(error.message || 'Sign up failed.'); return; }
+                        passwordInput.value = '';
+                        if (needsConfirmation) {
+                            showToast('Check your email to confirm your account, then sign in.');
+                            mode = 'signin';
+                            applyMode();
+                        } else {
+                            showToast('Account created.');
+                        }
+                    }
+                } finally {
+                    signInBtn.disabled = false;
+                }
             }
 
-            signInBtn.addEventListener('click', attemptSignIn);
-            [usernameInput, passwordInput].forEach(input => {
-                input.addEventListener('keydown', (e) => { if (e.key === 'Enter') attemptSignIn(); });
+            signInBtn.addEventListener('click', attemptSubmit);
+            [emailInput, passwordInput].forEach(input => {
+                input.addEventListener('keydown', (e) => { if (e.key === 'Enter') attemptSubmit(); });
             });
 
             updateHeaderSignInState();
@@ -1726,12 +1775,14 @@
 
         /* ---------- MY TOOLS / MY WISHLIST (reads the same kerphToolStatus data the
            workshop planner writes, so marking a tool owned/wishlisted there shows up here). */
+        let cachedToolStatuses = {};
         function loadToolStatuses() {
-            try {
-                return JSON.parse(localStorage.getItem(TOOL_STATUS_KEY)) || {};
-            } catch (e) {
-                return {};
-            }
+            return cachedToolStatuses;
+        }
+
+        function saveToolStatuses(statuses) {
+            cachedToolStatuses = statuses;
+            kerphSaveToolStatus(statuses).catch(() => {});
         }
 
         // Overdue/due-soon/due-ok status text + CSS class for a maintenance reminder's due date.
@@ -1755,7 +1806,7 @@
             } else {
                 current[name].maintenance = maintenance;
             }
-            localStorage.setItem(TOOL_STATUS_KEY, JSON.stringify(current));
+            saveToolStatuses(current);
             renderToolLists();
         }
 
@@ -1771,7 +1822,7 @@
             } else {
                 current[name].replacementValue = num;
             }
-            localStorage.setItem(TOOL_STATUS_KEY, JSON.stringify(current));
+            saveToolStatuses(current);
         }
 
         // Same idea as updateToolValue — user-entered, feeds the Insurance Inventory Report.
@@ -1784,7 +1835,7 @@
             const trimmed = value.trim();
             if (trimmed) current[name].serialNumber = trimmed;
             else delete current[name].serialNumber;
-            localStorage.setItem(TOOL_STATUS_KEY, JSON.stringify(current));
+            saveToolStatuses(current);
         }
 
         function openMaintenanceForm(container, name) {
@@ -1950,7 +2001,7 @@
             removeBtn.addEventListener('click', () => {
                 const current = loadToolStatuses();
                 delete current[name];
-                localStorage.setItem(TOOL_STATUS_KEY, JSON.stringify(current));
+                saveToolStatuses(current);
                 renderToolLists();
             });
             card.appendChild(removeBtn);
@@ -2006,7 +2057,7 @@
                 current[name] = Object.assign({ status, category }, extraFields || {});
                 showToast(status === 'owned' ? 'Added to My Tools.' : 'Added to your Wishlist.');
             }
-            localStorage.setItem(TOOL_STATUS_KEY, JSON.stringify(current));
+            saveToolStatuses(current);
             renderToolLists();
         }
 
@@ -2278,25 +2329,52 @@
             applyInsuranceGating();
         }
 
-        // Keeps this page in sync if the workshop planner is open in another tab and
-        // changes sign-in state, account info, or tool statuses.
+        // Tool status/saved layouts/current layout are all real, Supabase-backed data now —
+        // cross-tab sync for those goes through kerphOnAuthChange + kerphOnVisible, not this
+        // listener. MAINTENANCE_REMINDERS_KEY is still a local-only preference for now.
         window.addEventListener('storage', (e) => {
-            if (e.key === TOOL_STATUS_KEY) renderToolLists();
-            if (e.key === AUTH_KEY) updateHeaderSignInState();
-            if (e.key === ACCOUNT_KEY) renderAccountBadge();
             if (e.key === MAINTENANCE_REMINDERS_KEY) renderToolLists();
-            if (e.key === TOOL_STATUS_KEY || e.key === ACCOUNT_KEY || e.key === LAYOUTS_KEY || e.key === CURRENT_LAYOUT_KEY) renderHomeSnapshot();
+        });
+
+        // Single reactive point for sign-in/account changes — fires in every open tab
+        // whenever auth state changes anywhere (sign in, sign up, sign out, profile save),
+        // replacing the old AUTH_KEY/ACCOUNT_KEY storage-event branches this listener used
+        // to have back when sign-in was purely a local flag.
+        kerphOnAuthChange(() => {
+            updateHeaderSignInState();
+            renderAccountBadge();
+            kerphLoadToolStatus().then(({ data }) => {
+                cachedToolStatuses = data || {};
+                renderToolLists();
+                renderHomeSnapshot();
+            });
+            kerphLoadSavedLayouts().then(({ data }) => { cachedSavedLayouts = data || []; });
         });
 
         document.getElementById('pageNavSelect').addEventListener('change', (e) => { window.location.href = e.target.value; });
-        initPlanSelector();
-        initHeaderSignIn();
-        initAccountPanel();
-        initInsuranceReport();
-        initPowerToolSearch();
-        initFloorToolSearch();
-        renderToolLists();
-        renderHomeSnapshot();
+
+        // Waits for the first real auth state (session restored, or confirmed signed-out)
+        // before wiring/rendering anything sign-in-dependent, so an actually-signed-in user
+        // never sees a flash of the signed-out header or locked Pro features on load.
+        kerphAuthReady.then(async () => {
+            initPlanSelector();
+            initHeaderSignIn();
+            initAccountPanel();
+            initInsuranceReport();
+            initPowerToolSearch();
+            initFloorToolSearch();
+            // Syncs the account's real preferences in on a different device than the one
+            // that set them — the localStorage reads above are only an instant-paint
+            // fallback to avoid a flash of the wrong value before auth resolves.
+            const profile = kerphGetCachedProfile();
+            if (profile.unitSystem) localStorage.setItem('kerphUnitSystem', profile.unitSystem);
+            if (profile.maintenanceRemindersEnabled !== undefined) {
+                localStorage.setItem(MAINTENANCE_REMINDERS_KEY, profile.maintenanceRemindersEnabled ? 'true' : 'false');
+            }
+            cachedToolStatuses = (await kerphLoadToolStatus()).data || {};
+            renderToolLists();
+            renderHomeSnapshot();
+        });
     </script>
 
 </body>

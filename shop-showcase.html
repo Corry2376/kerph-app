@@ -114,7 +114,10 @@
             display: flex; align-items: center; justify-content: center; font-size: 32px;
         }
 
-        .header-sign-in { display: flex; align-items: center; gap: 4px; }
+        .header-sign-in { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+        .header-sign-in-row { display: flex; align-items: center; gap: 4px; }
+        .header-sign-in-mode-toggle { font-size: 10px; font-weight: 600; color: #1e3a8a; text-decoration: none; }
+        .header-sign-in-mode-toggle:hover { text-decoration: underline; }
         .header-sign-in-input { width: 84px; padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 11px; font-weight: 600; }
         .header-sign-in .mini-btn { flex: none; padding: 6px 10px; font-size: 11px; }
 
@@ -348,10 +351,13 @@
             </select>
         </div>
         <div class="plan-badge-group">
-            <div class="header-sign-in" id="headerSignIn" title="Preview only — any username &amp; password signs you in locally in this browser.">
-                <input type="text" class="header-sign-in-input" id="headerSignInUsername" placeholder="Username" autocomplete="username">
-                <input type="password" class="header-sign-in-input" id="headerSignInPassword" placeholder="Password" autocomplete="current-password">
-                <button type="button" id="headerSignInBtn" class="mini-btn" title="Sign In">Sign In</button>
+            <div class="header-sign-in" id="headerSignIn">
+                <div class="header-sign-in-row">
+                    <input type="email" class="header-sign-in-input" id="headerSignInEmail" placeholder="Email" autocomplete="email">
+                    <input type="password" class="header-sign-in-input" id="headerSignInPassword" placeholder="Password" autocomplete="current-password">
+                    <button type="button" id="headerSignInBtn" class="mini-btn" title="Sign In">Sign In</button>
+                </div>
+                <a href="#" class="header-sign-in-mode-toggle" id="headerSignInModeToggle">New here? Create an account</a>
             </div>
             <button type="button" id="accountBtn" class="account-btn plan-free" title="Account &amp; Plan Settings — border color shows your plan level" style="display:none;">
                 <span class="account-avatar" id="accountAvatarPreview">&#128100;</span>
@@ -376,7 +382,7 @@
     <div class="modal-overlay" id="accountModalOverlay" style="display:none;">
         <div class="modal-box account-modal-box">
             <div class="modal-title">Account Settings</div>
-            <div class="modal-warning">Saved locally in this browser only — real accounts, Google sign-in, and community features aren't connected yet.</div>
+            <div class="modal-warning">Your account (username, avatar, sign-in) is real and synced via Kerph. Saved layouts, projects, tools, Showcase posts, and reviews are synced too — available on any device you sign into.</div>
 
             <div class="header-field" style="align-items:center;">
                 <div class="account-avatar-large" id="accountAvatarLarge">&#128100;</div>
@@ -427,8 +433,8 @@
             <button type="button" id="accountSignOutBtn" class="mini-btn danger" style="width:100%; margin-top:8px;">Sign Out</button>
 
             <div class="account-backup-zone">
-                <div class="account-backup-title">Backup &amp; Restore</div>
-                <div class="account-backup-desc">Everything lives only in this browser — export a copy so a cleared cache or a new device doesn't lose it.</div>
+                <div class="account-backup-title">Local Device Settings</div>
+                <div class="account-backup-desc">Your layouts, projects, tools, Showcase posts, and reviews live on your account now — no backup needed. This just covers a couple of local display preferences still cached in this browser.</div>
                 <div style="display:flex; gap:8px;">
                     <button type="button" id="accountExportBtn" class="mini-btn" style="flex:1;">&#11015;&#65039; Export</button>
                     <button type="button" id="accountImportBtn" class="mini-btn" style="flex:1;">&#11014;&#65039; Import&hellip;</button>
@@ -438,7 +444,7 @@
 
             <div class="account-danger-zone">
                 <div class="account-danger-title">Danger Zone</div>
-                <div class="account-danger-desc">Permanently erases every layout, tool status, and preference saved in this browser. This cannot be undone.</div>
+                <div class="account-danger-desc">Resets your local plan-preview selection and cached display preferences on this browser. Your account, layouts, projects, tools, and posts are not affected.</div>
                 <button type="button" id="accountResetAllBtn" class="mini-btn danger" style="width:100%;">Reset All Local Data&hellip;</button>
             </div>
         </div>
@@ -491,7 +497,7 @@
     <main>
         <div class="showcase-eyebrow">Community</div>
         <div class="showcase-title">Shop Showcase</div>
-        <div class="showcase-subtitle">Post pictures of your shop for inspiration, ideas, and bragging rights. Browse what everyone else has built, then click a post to comment. Everything here is saved locally in your browser for now.</div>
+        <div class="showcase-subtitle">Post pictures of your shop for inspiration, ideas, and bragging rights. Browse what everyone else has built, then click a post to comment. Every shop here is visible to the whole Kerph community.</div>
 
         <div class="showcase-toolbar">
             <input type="text" class="input-box" id="postSearchInput" placeholder="&#128269; Search titles &amp; tags&hellip;">
@@ -506,11 +512,13 @@
         <div id="showcaseContent"></div>
     </main>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.7/dist/umd/supabase.js"></script>
+    <script src="supabase-client.js"></script>
     <script>
         /* ---------- SHARED STATE KEYS (must match workshop-planner.html / index.html exactly) ---------- */
         const PLAN_KEY = 'kerphPlan';
-        const ACCOUNT_KEY = 'kerphAccount';
-        const AUTH_KEY = 'kerphSignedIn';
+        /* ACCOUNT_KEY/AUTH_KEY removed — account + sign-in are now real, Supabase-backed
+           (see supabase-client.js) instead of localStorage flags. */
         const TOOL_STATUS_KEY = 'kerphToolStatus';
         const LAYOUTS_KEY = 'kerphSavedLayouts';
         const LAYOUT_TYPE_LABELS = { workshop: 'Workshop', 'dust-collection': 'Dust Collection', lighting: 'Lighting' };
@@ -537,7 +545,7 @@
         }
 
         function loadAccount() {
-            try { return JSON.parse(localStorage.getItem(ACCOUNT_KEY)) || {}; } catch (e) { return {}; }
+            return (typeof kerphGetCachedProfile === 'function') ? kerphGetCachedProfile() : {};
         }
         function applyAvatarTo(el, dataUrl) {
             if (dataUrl) { el.style.backgroundImage = `url(${dataUrl})`; el.textContent = ''; }
@@ -555,14 +563,14 @@
             if (btn) btn.className = 'account-btn plan-' + (plan === 'pro' || plan === 'premier' ? plan : 'free');
         }
 
+        let cachedToolStatuses = {};
         function loadToolStatuses() {
-            try { return JSON.parse(localStorage.getItem(TOOL_STATUS_KEY)) || {}; } catch (e) { return {}; }
+            return cachedToolStatuses;
         }
+        let cachedSavedLayouts = [];
         function loadLayouts() {
-            try { return JSON.parse(localStorage.getItem(LAYOUTS_KEY)) || []; } catch (e) { return []; }
+            return cachedSavedLayouts;
         }
-        function persistLayouts(list) { localStorage.setItem(LAYOUTS_KEY, JSON.stringify(list)); }
-
         function renderAccountStats() {
             const row = document.getElementById('accountStatsRow');
             if (!row) return;
@@ -606,8 +614,10 @@
                 `;
             }).join('');
             list.querySelectorAll('.account-layout-del').forEach(delBtn => {
-                delBtn.addEventListener('click', () => {
-                    persistLayouts(loadLayouts().filter(l => l.id !== delBtn.getAttribute('data-id')));
+                delBtn.addEventListener('click', async () => {
+                    const id = delBtn.getAttribute('data-id');
+                    await kerphDeleteSavedLayout(id);
+                    cachedSavedLayouts = cachedSavedLayouts.filter(l => l.id !== id);
                     renderAccountLayoutsList();
                     renderAccountStats();
                     showToast('Layout deleted.');
@@ -642,7 +652,7 @@
                 usernameInput.value = acc.username || '';
                 pendingAvatar = acc.avatar || null;
                 applyAvatarTo(avatarLarge, pendingAvatar);
-                unitsSelect.value = localStorage.getItem('kerphUnitSystem') || 'imperial';
+                unitsSelect.value = kerphGetCachedProfile().unitSystem || 'imperial';
                 renderAccountMemberSince();
                 renderAccountStats();
                 renderAccountPlanCard();
@@ -654,21 +664,22 @@
             avatarInput.addEventListener('change', () => {
                 const file = avatarInput.files[0];
                 if (!file) return;
-                const reader = new FileReader();
-                reader.onload = () => { pendingAvatar = reader.result; applyAvatarTo(avatarLarge, pendingAvatar); };
-                reader.readAsDataURL(file);
+                kerphDownscaleImage(file, 200).then((dataUrl) => {
+                    pendingAvatar = dataUrl;
+                    applyAvatarTo(avatarLarge, pendingAvatar);
+                });
             });
 
             cancelBtn.addEventListener('click', () => { overlay.style.display = 'none'; });
 
-            saveBtn.addEventListener('click', () => {
+            saveBtn.addEventListener('click', async () => {
                 const username = usernameInput.value.trim();
                 if (!username) { showToast('Enter a username to save your profile.'); return; }
-                localStorage.setItem(ACCOUNT_KEY, JSON.stringify({ ...loadAccount(), username, avatar: pendingAvatar }));
                 localStorage.setItem('kerphUnitSystem', unitsSelect.value);
-                renderAccountBadge();
+                const { error } = await kerphSaveProfile({ username, avatarDataUrl: pendingAvatar, unitSystem: unitsSelect.value });
+                if (error) { showToast(error.message || 'Could not save profile.'); return; }
                 overlay.style.display = 'none';
-                showToast('Profile saved locally.');
+                showToast('Profile saved.');
             });
 
             if (planSelect) {
@@ -738,71 +749,92 @@
             reader.readAsText(file);
         }
 
-        function isSignedIn() { return localStorage.getItem(AUTH_KEY) === 'true'; }
+        function isSignedIn() {
+            return typeof kerphGetCachedUser === 'function' && !!kerphGetCachedUser();
+        }
         function updateHeaderSignInState() {
             const signedIn = isSignedIn();
             document.getElementById('headerSignIn').style.display = signedIn ? 'none' : 'flex';
             document.getElementById('accountBtn').style.display = signedIn ? 'flex' : 'none';
         }
-        function completeSignIn(username) {
-            localStorage.setItem(AUTH_KEY, 'true');
-            const acc = loadAccount();
-            acc.username = username;
-            if (!acc.memberSince) acc.memberSince = new Date().toISOString();
-            localStorage.setItem(ACCOUNT_KEY, JSON.stringify(acc));
-            renderAccountBadge();
-            updateHeaderSignInState();
-        }
-        function signOut() { localStorage.removeItem(AUTH_KEY); updateHeaderSignInState(); }
+        async function signOut() { await kerphSignOut(); }
         function initHeaderSignIn() {
-            const usernameInput = document.getElementById('headerSignInUsername');
+            const emailInput = document.getElementById('headerSignInEmail');
             const passwordInput = document.getElementById('headerSignInPassword');
             const signInBtn = document.getElementById('headerSignInBtn');
-            function attemptSignIn() {
-                const username = usernameInput.value.trim();
-                const password = passwordInput.value;
-                if (!username || !password) { showToast('Enter a username and password to sign in.'); return; }
-                completeSignIn(username);
-                usernameInput.value = '';
-                passwordInput.value = '';
+            const modeToggle = document.getElementById('headerSignInModeToggle');
+
+            let mode = 'signin';
+            function applyMode() {
+                signInBtn.textContent = mode === 'signin' ? 'Sign In' : 'Sign Up';
+                modeToggle.textContent = mode === 'signin' ? 'New here? Create an account' : 'Already have an account? Sign in';
             }
-            signInBtn.addEventListener('click', attemptSignIn);
-            [usernameInput, passwordInput].forEach(input => {
-                input.addEventListener('keydown', (e) => { if (e.key === 'Enter') attemptSignIn(); });
+            applyMode();
+            modeToggle.addEventListener('click', (e) => { e.preventDefault(); mode = mode === 'signin' ? 'signup' : 'signin'; applyMode(); });
+
+            async function attemptSubmit() {
+                const email = emailInput.value.trim();
+                const password = passwordInput.value;
+                if (!email || !password) { showToast('Enter an email and password.'); return; }
+                signInBtn.disabled = true;
+                try {
+                    if (mode === 'signin') {
+                        const { error } = await kerphSignIn(email, password);
+                        if (error) { showToast(error.message || 'Sign in failed.'); return; }
+                        passwordInput.value = '';
+                        showToast('Signed in.');
+                    } else {
+                        const { error, needsConfirmation } = await kerphSignUp(email, password);
+                        if (error) { showToast(error.message || 'Sign up failed.'); return; }
+                        passwordInput.value = '';
+                        if (needsConfirmation) {
+                            showToast('Check your email to confirm your account, then sign in.');
+                            mode = 'signin';
+                            applyMode();
+                        } else {
+                            showToast('Account created.');
+                        }
+                    }
+                } finally {
+                    signInBtn.disabled = false;
+                }
+            }
+
+            signInBtn.addEventListener('click', attemptSubmit);
+            [emailInput, passwordInput].forEach(input => {
+                input.addEventListener('keydown', (e) => { if (e.key === 'Enter') attemptSubmit(); });
             });
             updateHeaderSignInState();
         }
 
         /* ---------- SHOP SHOWCASE ----------
-           Purely local (kerphShowcasePosts in localStorage) — photos are stored as data URLs
-           via FileReader, same pattern as the account avatar upload elsewhere in the app.
-           Likes are a per-browser toggle (kerphShowcaseLiked), not a real global vote count,
-           since there's no backend yet. */
-        const POSTS_KEY = 'kerphShowcasePosts';
-        const LIKED_KEY = 'kerphShowcaseLiked';
-
-        function loadPosts() {
-            try { return JSON.parse(localStorage.getItem(POSTS_KEY)) || []; } catch (e) { return []; }
-        }
-        function savePosts(list) { localStorage.setItem(POSTS_KEY, JSON.stringify(list)); }
-        function loadLiked() {
-            try { return new Set(JSON.parse(localStorage.getItem(LIKED_KEY)) || []); } catch (e) { return new Set(); }
-        }
-        function saveLiked(set) { localStorage.setItem(LIKED_KEY, JSON.stringify(Array.from(set))); }
+           Real, Supabase-backed multi-user content now — showcase_posts/showcase_comments
+           (public-read) + showcase_likes (real per-user votes, denormalized onto likes_count
+           via a DB trigger). Photos live in Supabase Storage (bucket showcase-photos), not as
+           embedded data URLs — image_path is a storage path, resolved via
+           kerphShowcaseImageUrl(). cachedPosts/cachedMyLikes are refreshed on every
+           renderShowcase() call, not just once, since this is now real multi-user data other
+           people can change between renders. */
+        let cachedPosts = [];
+        let cachedMyLikes = [];
 
         function cardMediaHtml(post) {
-            return post.image
-                ? `<img class="post-card-image" src="${post.image}" alt="">`
+            const url = kerphShowcaseImageUrl(post.image_path);
+            return url
+                ? `<img class="post-card-image" src="${url}" alt="">`
                 : `<div class="post-card-placeholder">&#128247;</div>`;
         }
 
-        function renderShowcase() {
+        async function renderShowcase() {
             const content = document.getElementById('showcaseContent');
             const query = document.getElementById('postSearchInput').value.trim().toLowerCase();
             const sort = document.getElementById('postSortSelect').value;
-            const liked = loadLiked();
 
-            let posts = loadPosts();
+            const [postsResult, likesResult] = await Promise.all([kerphLoadShowcasePosts(), kerphLoadMyShowcaseLikes()]);
+            cachedPosts = postsResult.data;
+            cachedMyLikes = likesResult.data;
+
+            let posts = cachedPosts;
             if (query) {
                 posts = posts.filter(p =>
                     p.title.toLowerCase().includes(query) ||
@@ -810,12 +842,12 @@
                 );
             }
             posts = posts.slice();
-            if (sort === 'newest') posts.sort((a, b) => b.date.localeCompare(a.date));
-            else if (sort === 'liked') posts.sort((a, b) => (b.likes || 0) - (a.likes || 0) || b.date.localeCompare(a.date));
-            else if (sort === 'discussed') posts.sort((a, b) => (b.comments || []).length - (a.comments || []).length || b.date.localeCompare(a.date));
+            if (sort === 'newest') posts.sort((a, b) => b.created_at.localeCompare(a.created_at));
+            else if (sort === 'liked') posts.sort((a, b) => (b.likes_count || 0) - (a.likes_count || 0) || b.created_at.localeCompare(a.created_at));
+            else if (sort === 'discussed') posts.sort((a, b) => (b.showcase_comments || []).length - (a.showcase_comments || []).length || b.created_at.localeCompare(a.created_at));
 
             if (!posts.length) {
-                const hasAny = loadPosts().length > 0;
+                const hasAny = cachedPosts.length > 0;
                 content.innerHTML = `
                     <div class="showcase-empty">
                         <div class="showcase-empty-icon">${hasAny ? '&#128269;' : '&#128247;'}</div>
@@ -827,8 +859,8 @@
             }
 
             content.innerHTML = `<div class="showcase-masonry">${posts.map(p => {
-                const dateStr = new Date(p.date).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
-                const isLiked = liked.has(p.id);
+                const dateStr = new Date(p.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+                const isLiked = cachedMyLikes.includes(p.id);
                 const tagsHtml = (p.tags || []).map(t => `<span class="post-tag">${escapeHtml(t)}</span>`).join('');
                 return `
                     <div class="post-card" data-id="${p.id}">
@@ -840,8 +872,8 @@
                             <div class="post-card-footer">
                                 <span><span class="post-author">${escapeHtml(p.author || 'Anonymous')}</span> &middot; ${dateStr}</span>
                                 <span class="post-card-stats">
-                                    <span class="like-btn${isLiked ? ' active' : ''}">&#9829; ${p.likes || 0}</span>
-                                    <span>&#128172; ${(p.comments || []).length}</span>
+                                    <span class="like-btn${isLiked ? ' active' : ''}">&#9829; ${p.likes_count || 0}</span>
+                                    <span>&#128172; ${(p.showcase_comments || []).length}</span>
                                 </span>
                             </div>
                         </div>
@@ -854,49 +886,44 @@
             });
         }
 
-        function toggleLike(id) {
-            const posts = loadPosts();
-            const post = posts.find(p => p.id === id);
-            if (!post) return;
-            const liked = loadLiked();
-            if (liked.has(id)) { liked.delete(id); post.likes = Math.max(0, (post.likes || 0) - 1); }
-            else { liked.add(id); post.likes = (post.likes || 0) + 1; }
-            saveLiked(liked);
-            savePosts(posts);
+        async function toggleLike(id) {
+            if (!isSignedIn()) { showToast('Sign in (top right) to like a post.'); return; }
+            const currentlyLiked = cachedMyLikes.includes(id);
+            await kerphToggleShowcaseLike(id, currentlyLiked);
         }
 
         function openPostDetail(id) {
             const overlay = document.getElementById('postDetailOverlay');
             const box = document.getElementById('postDetailBox');
 
-            function draw() {
-                const posts = loadPosts();
-                const post = posts.find(p => p.id === id);
+            async function draw() {
+                const [postsResult, likesResult] = await Promise.all([kerphLoadShowcasePosts(), kerphLoadMyShowcaseLikes()]);
+                const post = postsResult.data.find(p => p.id === id);
                 if (!post) { overlay.style.display = 'none'; return; }
-                const liked = loadLiked();
-                const isLiked = liked.has(id);
-                const dateStr = new Date(post.date).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+                const isLiked = likesResult.data.includes(id);
+                const dateStr = new Date(post.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
                 const tagsHtml = (post.tags || []).map(t => `<span class="post-tag">${escapeHtml(t)}</span>`).join('');
-                const comments = post.comments || [];
+                const comments = (post.showcase_comments || []).slice().sort((a, b) => a.created_at.localeCompare(b.created_at));
                 const commentsHtml = comments.length
                     ? comments.map(c => `
                         <div class="comment-item">
-                            <span class="comment-author">${escapeHtml(c.author || 'Anonymous')}</span><span class="comment-date">${new Date(c.date).toLocaleDateString()}</span>
-                            <div class="comment-text">${escapeHtml(c.text)}</div>
+                            <span class="comment-author">${escapeHtml(c.author || 'Anonymous')}</span><span class="comment-date">${new Date(c.created_at).toLocaleDateString()}</span>
+                            <div class="comment-text">${escapeHtml(c.body)}</div>
                         </div>
                     `).join('')
                     : '<div class="comments-empty">No comments yet — be the first.</div>';
+                const imageUrl = kerphShowcaseImageUrl(post.image_path);
 
                 box.innerHTML = `
-                    ${post.image ? `<img class="detail-image" src="${post.image}" alt="">` : `<div class="detail-placeholder">&#128247;</div>`}
+                    ${imageUrl ? `<img class="detail-image" src="${imageUrl}" alt="">` : `<div class="detail-placeholder">&#128247;</div>`}
                     <div class="detail-body">
                         <div class="detail-title">${escapeHtml(post.title)}</div>
                         <div class="detail-meta">${escapeHtml(post.author || 'Anonymous')} &middot; ${dateStr}</div>
                         ${post.description ? `<div class="detail-desc">${escapeHtml(post.description)}</div>` : ''}
                         ${tagsHtml ? `<div class="post-tags">${tagsHtml}</div>` : ''}
                         <div class="detail-actions">
-                            <button type="button" class="detail-like-btn${isLiked ? ' active' : ''}" id="detailLikeBtn">&#9829; ${post.likes || 0} Like${post.likes === 1 ? '' : 's'}</button>
-                            <button type="button" class="mini-btn danger" id="detailDeleteBtn" style="flex:none;">Delete Post</button>
+                            <button type="button" class="detail-like-btn${isLiked ? ' active' : ''}" id="detailLikeBtn">&#9829; ${post.likes_count || 0} Like${post.likes_count === 1 ? '' : 's'}</button>
+                            ${isSignedIn() && kerphGetCachedUser().id === post.user_id ? '<button type="button" class="mini-btn danger" id="detailDeleteBtn" style="flex:none;">Delete Post</button>' : ''}
                         </div>
                         <div class="comments-title">Comments (${comments.length})</div>
                         <div id="commentsList">${commentsHtml}</div>
@@ -907,25 +934,25 @@
                     </div>
                 `;
 
-                document.getElementById('detailLikeBtn').addEventListener('click', () => { toggleLike(id); draw(); renderShowcase(); });
-                document.getElementById('detailDeleteBtn').addEventListener('click', () => {
-                    if (!confirm('Delete this post? This cannot be undone.')) return;
-                    savePosts(loadPosts().filter(p => p.id !== id));
-                    overlay.style.display = 'none';
-                    renderShowcase();
-                    showToast('Post deleted.');
-                });
+                document.getElementById('detailLikeBtn').addEventListener('click', async () => { await toggleLike(id); draw(); renderShowcase(); });
+                const deleteBtn = document.getElementById('detailDeleteBtn');
+                if (deleteBtn) {
+                    deleteBtn.addEventListener('click', async () => {
+                        if (!confirm('Delete this post? This cannot be undone.')) return;
+                        await kerphDeleteShowcasePost(id, post.image_path);
+                        overlay.style.display = 'none';
+                        renderShowcase();
+                        showToast('Post deleted.');
+                    });
+                }
 
                 const commentInput = document.getElementById('commentInput');
-                function submitComment() {
+                async function submitComment() {
                     const text = commentInput.value.trim();
                     if (!text) return;
-                    const list = loadPosts();
-                    const p2 = list.find(p => p.id === id);
-                    if (!p2) return;
-                    p2.comments = p2.comments || [];
-                    p2.comments.push({ author: (loadAccount().username || '').trim() || 'Anonymous', text, date: new Date().toISOString() });
-                    savePosts(list);
+                    if (!isSignedIn()) { showToast('Sign in (top right) to comment.'); return; }
+                    const { error } = await kerphAddShowcaseComment(id, text);
+                    if (error) { showToast('Could not post that comment.'); return; }
                     draw();
                     renderShowcase();
                 }
@@ -957,25 +984,27 @@
             const imagePreview = document.getElementById('postImagePreview');
             let pendingImage = null;
 
+            let pendingImageUrl = null;
+
             imageZone.addEventListener('click', () => imageInput.click());
             imageInput.addEventListener('change', () => {
                 const file = imageInput.files[0];
                 if (!file) return;
-                const reader = new FileReader();
-                reader.onload = () => {
-                    pendingImage = reader.result;
-                    imagePreview.src = pendingImage;
-                    imagePreview.style.display = 'block';
-                };
-                reader.readAsDataURL(file);
+                pendingImage = file;
+                if (pendingImageUrl) URL.revokeObjectURL(pendingImageUrl);
+                pendingImageUrl = URL.createObjectURL(file);
+                imagePreview.src = pendingImageUrl;
+                imagePreview.style.display = 'block';
             });
 
             function openModal() {
+                if (!isSignedIn()) { showToast('Sign in (top right) to share your shop.'); return; }
                 titleInput.value = '';
                 descInput.value = '';
                 tagsInput.value = '';
                 authorInput.value = loadAccount().username || '';
                 pendingImage = null;
+                if (pendingImageUrl) { URL.revokeObjectURL(pendingImageUrl); pendingImageUrl = null; }
                 imagePreview.src = '';
                 imagePreview.style.display = 'none';
                 overlay.style.display = 'flex';
@@ -985,39 +1014,59 @@
             openBtn.addEventListener('click', openModal);
             cancelBtn.addEventListener('click', () => { overlay.style.display = 'none'; });
 
-            submitBtn.addEventListener('click', () => {
+            submitBtn.addEventListener('click', async () => {
                 const title = titleInput.value.trim();
                 if (!title) { showToast('Give your post a title.'); titleInput.focus(); return; }
+                if (!isSignedIn()) { showToast('Sign in (top right) to share your shop.'); return; }
                 const tags = tagsInput.value.split(',').map(t => t.trim()).filter(Boolean);
 
-                const list = loadPosts();
-                list.push({
-                    id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
-                    title,
-                    description: descInput.value.trim(),
-                    image: pendingImage,
-                    tags,
-                    author: authorInput.value.trim(),
-                    date: new Date().toISOString(),
-                    likes: 0,
-                    comments: []
-                });
-                savePosts(list);
-                overlay.style.display = 'none';
-                showToast('Posted to the showcase.');
-                renderShowcase();
+                submitBtn.disabled = true;
+                try {
+                    let imagePath = null;
+                    if (pendingImage) {
+                        const { data, error } = await kerphUploadShowcasePhoto(pendingImage);
+                        if (error) { showToast('Could not upload that photo.'); return; }
+                        imagePath = data.path;
+                    }
+                    const { error } = await kerphCreateShowcasePost({
+                        title,
+                        description: descInput.value.trim(),
+                        imagePath,
+                        tags,
+                        author: authorInput.value.trim() || 'Anonymous'
+                    });
+                    if (error) { showToast('Could not create your post.'); return; }
+                    overlay.style.display = 'none';
+                    showToast('Posted to the showcase.');
+                    renderShowcase();
+                } finally {
+                    submitBtn.disabled = false;
+                }
             });
         }
 
         document.getElementById('pageNavSelect').addEventListener('change', (e) => { window.location.href = e.target.value; });
         initPlanSelector();
-        initHeaderSignIn();
-        initAccountPanel();
+
+        kerphOnAuthChange(() => {
+            updateHeaderSignInState();
+            renderAccountBadge();
+            kerphLoadToolStatus().then(({ data }) => { cachedToolStatuses = data || {}; });
+            kerphLoadSavedLayouts().then(({ data }) => { cachedSavedLayouts = data || []; });
+        });
+
+        kerphAuthReady.then(() => {
+            initHeaderSignIn();
+            initAccountPanel();
+            // Public content — renders for signed-out visitors too, just needed auth to
+            // resolve first so kerphLoadMyShowcaseLikes() reflects the right (or no) user.
+            renderShowcase();
+        });
+
         initPostModal();
         initPostDetailOverlay();
         document.getElementById('postSearchInput').addEventListener('input', renderShowcase);
         document.getElementById('postSortSelect').addEventListener('change', renderShowcase);
-        renderShowcase();
     </script>
 </body>
 </html>
