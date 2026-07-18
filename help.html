@@ -209,6 +209,8 @@
             border: 1px solid #cbd5e1;
             border-radius: 12px;
             padding: 18px;
+            max-height: calc(100vh - 48px);
+            overflow-y: auto;
         }
         .help-toc-group { margin-bottom: 16px; }
         .help-toc-group:last-child { margin-bottom: 0; }
@@ -292,16 +294,26 @@
         .snap-diagram-label { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: #94a3b8; }
         .snap-row { display: flex; align-items: center; height: 40px; }
         .snap-duct { width: 70px; height: 16px; background: #cbd5e1; border: 1px solid #64748b; border-radius: 2px; }
+        .snap-duct.snap-duct-wide { height: 22px; }
         .snap-gap { width: 26px; }
         .snap-arrow { font-size: 20px; color: #94a3b8; }
         .snap-glow { box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.35); border-color: #2563eb !important; }
         .snap-port-dot { width: 6px; height: 6px; border-radius: 50%; background: #2563eb; margin: 0 -1px; align-self: center; }
+        .snap-reducer { width: 34px; height: 22px; background: linear-gradient(90deg, #cbd5e1 0%, #cbd5e1 100%); clip-path: polygon(0 30%, 100% 8%, 100% 92%, 0 70%); border: 1px solid #64748b; }
 
         .port-count-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; margin: 14px 0 20px; }
         .port-count-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px; }
         .port-count-name { font-size: 12px; font-weight: 800; color: #0f172a; }
         .port-count-num { font-size: 11px; color: #6b7280; margin-top: 2px; }
-            .header-quick-links { display: flex; align-items: center; gap: 6px; font-size: 11px; }
+
+        /* Small labeled swatch grid — used for the Shop Type and Layers explainers so the
+           three/four options are visually scannable instead of just a paragraph of prose. */
+        .option-card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; margin: 14px 0 20px; }
+        .option-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 14px; }
+        .option-card-name { font-size: 12.5px; font-weight: 800; color: #0f172a; margin-bottom: 3px; }
+        .option-card-desc { font-size: 11.5px; color: #6b7280; line-height: 1.5; }
+
+        .header-quick-links { display: flex; align-items: center; gap: 6px; font-size: 11px; }
         .header-quick-links a { color: #6b7280; font-weight: 600; text-decoration: none; }
         .header-quick-links a:hover { color: #1e3a8a; text-decoration: underline; }
         .header-quick-links-sep { color: #cbd5e1; }
@@ -349,6 +361,8 @@
                 <a href="pricing.html">Plan Comparison</a>
                 <span class="header-quick-links-sep">&middot;</span>
                 <a href="help.html">Trouble with the Kerph</a>
+                <span class="header-quick-links-sep">&middot;</span>
+                <a href="terms.html">Terms</a>
             </div>
             <select class="plan-select" id="planSelector" style="display:none;">
                 <option value="free">Free</option>
@@ -434,34 +448,161 @@
     <div class="help-layout">
         <nav class="help-toc">
             <div class="help-toc-group">
-                <div class="help-toc-group-title">Dust Collection</div>
-                <a href="#dc-port-snapping">Magnetic Port Snapping</a>
-                <a href="#dc-calculator" class="soon">Sizing Calculator<span class="help-toc-soon-badge">Soon</span></a>
+                <div class="help-toc-group-title">Getting Started</div>
+                <a href="#gs-account">Account, Plans &amp; Upgrading</a>
+                <a href="#gs-shop-type">Shop Type: Woodworking, Mechanical, or Both</a>
+                <a href="#gs-layers">Layers: Tools, Dust Collection, Lighting &amp; Plumbing</a>
             </div>
             <div class="help-toc-group">
                 <div class="help-toc-group-title">Workshop Layout Planner</div>
-                <a href="#wp-basics" class="soon">Getting Started<span class="help-toc-soon-badge">Soon</span></a>
-                <a href="#wp-walls" class="soon">Walls &amp; Wall Features<span class="help-toc-soon-badge">Soon</span></a>
+                <a href="#wp-basics">Getting Started</a>
+                <a href="#wp-walls">Walls &amp; Wall Features</a>
+                <a href="#wp-saving">Saving &amp; Loading Layouts</a>
             </div>
             <div class="help-toc-group">
-                <div class="help-toc-group-title">3D Shop Viewer</div>
-                <a href="#viewer-3d-basics" class="soon">Orbiting &amp; Editing in 3D<span class="help-toc-soon-badge">Soon</span></a>
+                <div class="help-toc-group-title">Dust Collection</div>
+                <a href="#dc-port-snapping">Magnetic Port Snapping</a>
+                <a href="#dc-reducers">Reducers &amp; Mixing 4"/6" Duct</a>
+                <a href="#dc-calculator">Sizing Calculator</a>
+            </div>
+            <div class="help-toc-group">
+                <div class="help-toc-group-title">Project Designer</div>
+                <a href="#pd-panels">Panels, Hardware &amp; Cut List Handoff</a>
+                <a href="#pd-3d">3D Preview, Labels &amp; Measurements</a>
+                <a href="#pd-saved">Saved Projects</a>
             </div>
             <div class="help-toc-group">
                 <div class="help-toc-group-title">Cut List Optimizer</div>
-                <a href="#clo-basics" class="soon">Sheets vs. Boards<span class="help-toc-soon-badge">Soon</span></a>
+                <a href="#clo-basics">Sheets vs. Boards</a>
+            </div>
+            <div class="help-toc-group">
+                <div class="help-toc-group-title">3D Shop Viewer</div>
+                <a href="#viewer-3d-basics">Orbiting &amp; Editing in 3D</a>
+            </div>
+            <div class="help-toc-group">
+                <div class="help-toc-group-title">Find a Builder</div>
+                <a href="#fab-basics">Generating a Quote Request</a>
+            </div>
+            <div class="help-toc-group">
+                <div class="help-toc-group-title">Community</div>
+                <a href="#comm-showcase">Shop Showcase</a>
+                <a href="#comm-reviews">Cool Tool Reviews</a>
             </div>
         </nav>
 
         <main class="help-main">
             <div class="help-eyebrow">Trouble with the Kerph</div>
             <div class="help-title">How to use Kerph</div>
-            <div class="help-subtitle">Step-by-step walkthroughs for the trickier parts of the app. This page will grow over time — got a feature that needs an explainer? Let us know.</div>
+            <div class="help-subtitle">Step-by-step walkthroughs for every part of the app. This page will keep growing as new features ship — got something that needs a clearer explainer? Let us know.</div>
+
+            <article class="help-article" id="gs-account">
+                <div class="help-article-eyebrow">Getting Started</div>
+                <h2>Account, Plans &amp; Upgrading</h2>
+                <p>Signing in is free and gets your data synced across every device — your saved layouts, tool tracking, Project Designer work, Shop Showcase posts, and Tool Reviews all live on your account, not just in one browser.</p>
+                <ol>
+                    <li>Click <b>Sign In</b> in the top-right corner of any page.</li>
+                    <li>Click <b>New here? Create an account</b>, enter an email and password, and submit.</li>
+                    <li>Check your email to confirm the account, then sign back in.</li>
+                    <li>Click your new account button (top-right) to set a username and avatar.</li>
+                </ol>
+                <h3>Plans</h3>
+                <p>Kerph has three tiers — <b>Free</b>, <b>Pro</b>, and <b>Premier</b> — each unlocking more of the app (custom shop shapes, cabinetry tools, saved layout limits, and more). See the full breakdown on the <a href="pricing.html">Plan Comparison</a> page.</p>
+                <div class="help-callout help-callout-note">
+                    <b>Heads up:</b> plan selection today is a local preview — it changes which features are unlocked in your browser, but no payment is collected yet. Real billing is coming; see our <a href="terms.html">Terms of Service</a> for the current status.
+                </div>
+            </article>
+
+            <article class="help-article" id="gs-shop-type">
+                <h2>Shop Type: Woodworking, Mechanical, or Both</h2>
+                <p>Kerph isn't just for woodshops. When you start a new layout in the Workshop Layout Planner (<b>+ New Shop Layout</b> or <b>Edit Shop Settings</b>), you'll see a <b>Shop Type</b> toggle at the top of the modal — it controls which tool categories show up in the sidebar catalog.</p>
+                <div class="option-card-grid">
+                    <div class="option-card">
+                        <div class="option-card-name">Woodworking</div>
+                        <div class="option-card-desc">Table saws, bandsaws, jointers/planers, sanding, routing, turning, CNC, dust collection, and more.</div>
+                    </div>
+                    <div class="option-card">
+                        <div class="option-card-name">Mechanical</div>
+                        <div class="option-card-desc">Vehicle lifts, welding, air compressors, jacks &amp; lifting equipment, tire changers, Snap-on/Mac Tools storage.</div>
+                    </div>
+                    <div class="option-card">
+                        <div class="option-card-name">Both</div>
+                        <div class="option-card-desc">Shows every category from both sets at once — for a combined wood shop &amp; garage.</div>
+                    </div>
+                </div>
+                <p>This choice is saved with the layout itself, not your account — so a "Workshop" layout and a "Garage" layout can each remember their own Shop Type. Categories that make sense for any shop (My Tools, Small Power Tools, Tool Storage, Lighting, Plumbing) always show, no matter which option you pick.</p>
+                <div class="help-callout help-callout-tip">
+                    <b>Tip:</b> you can change Shop Type at any time from <b>Edit Shop Settings</b> — nothing already placed on your grid gets removed, it just changes what's available to drag in next.
+                </div>
+            </article>
+
+            <article class="help-article" id="gs-layers">
+                <h2>Layers: Tools, Dust Collection, Lighting &amp; Plumbing</h2>
+                <p>Every item you place belongs to one of four layers. The floating <b>Layers</b> panel lets you show everything at once, or isolate just one layer to reduce visual clutter while you focus on a specific system.</p>
+                <div class="option-card-grid">
+                    <div class="option-card">
+                        <div class="option-card-name">Tools</div>
+                        <div class="option-card-desc">Machines, cabinets, wall features, storage — the physical shop floor plan.</div>
+                    </div>
+                    <div class="option-card">
+                        <div class="option-card-name">Dust Collection</div>
+                        <div class="option-card-desc">Collectors, ductwork, fittings, and blast gates.</div>
+                    </div>
+                    <div class="option-card">
+                        <div class="option-card-name">Lighting</div>
+                        <div class="option-card-desc">Shop lights, high-bay fixtures, task lights.</div>
+                    </div>
+                    <div class="option-card">
+                        <div class="option-card-name">Plumbing</div>
+                        <div class="option-card-desc">Floor drains, utility sinks, water heaters, trench drains, hose bibs — works for any shop type.</div>
+                    </div>
+                </div>
+                <p>Cabinets and wall features (doors, windows, outlets, interior walls) always stay visible regardless of which layer you're viewing — they're structural context for the room itself, not something you'd ever want to hide.</p>
+            </article>
+
+            <article class="help-article" id="wp-basics">
+                <div class="help-article-eyebrow">Workshop Layout Planner</div>
+                <h2>Getting Started</h2>
+                <ol>
+                    <li>Click <b>+ New Shop Layout</b> and set your shop's width, length, ceiling height, grid scale, and Shop Type. Pick a starter template if you want a head start, or start blank.</li>
+                    <li>Drag tools from the left sidebar catalog onto the grid. Hover any tool for a quick popover with its real footprint, power, voltage, and weight — plus a "Check current price" link where available.</li>
+                    <li>Click a placed item to select it; drag to reposition, use the rotation handle to turn it, or press <code>Delete</code> to remove it.</li>
+                    <li>Mark tools you actually own with the checkmark button, or star them as a wishlist item — both show up in <b>My Tools</b> on the home page and in this sidebar.</li>
+                </ol>
+                <h3>Floating panels</h3>
+                <p>Cabinet Builder, Wall Features, Layers, Electrical Load, Clearance Checker, and Cost Rollup all live in small floating panels on the right side of the grid. Click a panel's title bar to expand/collapse it, or drag the title bar to move it out of the way.</p>
+                <div class="help-callout help-callout-tip">
+                    <b>Tip:</b> use <b>Undo</b> (or Ctrl+Z) liberally — it's wired into every placement, drag, resize, and delete, so it's the fastest way to back out of a mistake.
+                </div>
+            </article>
+
+            <article class="help-article" id="wp-walls">
+                <h2>Walls &amp; Wall Features</h2>
+                <p>The <b>Wall Features</b> panel lets you place doors, windows, switches, outlets, electrical panels, mini-splits, and interior walls directly onto your shop's boundary or interior.</p>
+                <ol>
+                    <li>Open the <b>Wall Features</b> panel and pick a feature type.</li>
+                    <li>Click anywhere along an exterior wall (or draw an interior wall first, under <b>Interior Wall</b>) to place it.</li>
+                    <li>Drag a placed feature along its wall to reposition it, or use its edge handles to resize doors and windows.</li>
+                    <li>Outlets prompt for a mounting height and voltage (110V/220V) when placed — useful context once you get to the Electrical Load panel.</li>
+                </ol>
+                <div class="help-callout help-callout-tip">
+                    <b>Tip:</b> the <b>Clearance Checker</b> panel scans your layout for walkways narrower than a set minimum and flags tight spots in red — run it after you've placed your major tools to catch layout problems early.
+                </div>
+            </article>
+
+            <article class="help-article" id="wp-saving">
+                <h2>Saving &amp; Loading Layouts</h2>
+                <p>Your current layout autosaves continuously to your account as you work — you'll never lose progress just by navigating away or closing the tab. <b>Saved Layouts</b> is a separate, named-snapshot system for keeping multiple versions.</p>
+                <ol>
+                    <li>Click <b>Save</b> in the header, give the layout a name, and choose whether to save as a new layout or overwrite your most recent one.</li>
+                    <li>Open your account button (top-right) to see, load, or delete any saved layout.</li>
+                    <li>Saved layouts sync to your account, so they're available on any device you sign into.</li>
+                </ol>
+            </article>
 
             <article class="help-article" id="dc-port-snapping">
                 <div class="help-article-eyebrow">Dust Collection</div>
                 <h2>Magnetic Port Snapping</h2>
-                <p>Every duct piece, elbow, Y-joint, T-joint, and blast gate has invisible "ports" at the points where it's meant to connect to another piece. When you drag one of these near a compatible open port, it automatically snaps into place — sliding and rotating itself so the two pieces line up flush and facing each other. You don't have to nudge things pixel-by-pixel to get a clean-looking run.</p>
+                <p>Every duct piece, elbow, Y-joint, T-joint, reducer, and blast gate has invisible "ports" at the points where it's meant to connect to another piece. When you drag one of these near a compatible open port, it automatically snaps into place — sliding and rotating itself so the two pieces line up flush and facing each other. You don't have to nudge things pixel-by-pixel to get a clean-looking run.</p>
 
                 <div class="snap-diagram">
                     <div class="snap-diagram-col">
@@ -484,13 +625,13 @@
                 <h3>How to connect two pieces</h3>
                 <ol>
                     <li>Place your first piece (usually starting from the dust collector) anywhere on the grid.</li>
-                    <li>Drag a second piece &mdash; a duct segment, elbow, Y-joint, T-joint, or blast gate &mdash; near one end of the first piece.</li>
+                    <li>Drag a second piece &mdash; a duct segment, elbow, Y-joint, T-joint, reducer, or blast gate &mdash; near one end of the first piece.</li>
                     <li>You don't need to be exact. Once you're reasonably close to the open end, the piece snaps: it repositions and rotates itself so its port lines up exactly with the other piece's port.</li>
                     <li>Keep going, piece by piece, working outward from the collector toward each tool.</li>
                 </ol>
 
                 <div class="help-callout help-callout-note">
-                    <b>Only matching duct sizes snap to each other.</b> A 4" piece will only snap to another 4" piece, and a 6" piece only to another 6". If a piece won't snap the way you expect, double-check both pieces are the same diameter &mdash; that's the most common reason.
+                    <b>Only matching duct sizes snap to each other.</b> A 4" piece will only snap to another 4" piece, and a 6" piece only to another 6". The one exception is the Duct Reducer &mdash; see below. If a piece won't snap the way you expect, double-check both pieces are the same diameter &mdash; that's the most common reason.
                 </div>
 
                 <h3>How many ports does each piece have?</h3>
@@ -502,6 +643,7 @@
                     <div class="port-count-card"><div class="port-count-name">Y-Joint</div><div class="port-count-num">3 ports</div></div>
                     <div class="port-count-card"><div class="port-count-name">T-Joint</div><div class="port-count-num">3 ports</div></div>
                     <div class="port-count-card"><div class="port-count-name">Duct Drop</div><div class="port-count-num">2 ports (both ends)</div></div>
+                    <div class="port-count-card"><div class="port-count-name">Duct Reducer</div><div class="port-count-num">2 ports (4" + 6")</div></div>
                 </div>
 
                 <h3>Blast gates and "open" ends</h3>
@@ -526,30 +668,141 @@
                 </div>
             </article>
 
-            <div class="help-placeholder" id="dc-calculator">
-                <h2>Sizing Calculator <span class="help-toc-soon-badge">Coming soon</span></h2>
-                <p>A walkthrough of the branch/main-trunk CFM sizing calculator, collector fan curves, and cost estimate is on the way.</p>
-            </div>
+            <article class="help-article" id="dc-reducers">
+                <h2>Reducers &amp; Mixing 4"/6" Duct</h2>
+                <p>Real shops often run a 6" main trunk off the collector for airflow, then step down to 4" branches near smaller tools. Kerph's <b>4"&ndash;6" Duct Reducer</b> is built exactly for that transition &mdash; it's the one piece in the catalog with two different-sized ports on the same fitting.</p>
 
-            <div class="help-placeholder" id="wp-basics">
-                <h2>Getting Started with the Workshop Layout Planner <span class="help-toc-soon-badge">Coming soon</span></h2>
-                <p>A walkthrough of setting up your shop, placing tools and cabinets, and the floating panels is on the way.</p>
-            </div>
+                <div class="snap-diagram">
+                    <div class="snap-diagram-col">
+                        <div class="snap-diagram-label">6" main</div>
+                        <div class="snap-row"><div class="snap-duct snap-duct-wide snap-glow"></div></div>
+                    </div>
+                    <div class="snap-diagram-col">
+                        <div class="snap-diagram-label">Reducer</div>
+                        <div class="snap-row"><div class="snap-reducer snap-glow"></div></div>
+                    </div>
+                    <div class="snap-diagram-col">
+                        <div class="snap-diagram-label">4" branch</div>
+                        <div class="snap-row"><div class="snap-duct snap-glow"></div></div>
+                    </div>
+                </div>
 
-            <div class="help-placeholder" id="wp-walls">
-                <h2>Walls &amp; Wall Features <span class="help-toc-soon-badge">Coming soon</span></h2>
-                <p>A walkthrough of placing doors, windows, outlets, and interior walls is on the way.</p>
-            </div>
+                <p>Drag a Duct Reducer from the <b>Dust Collection</b> category (it sits above the 4"/6" subgroups, since it belongs to both) to the point where your run needs to change size. Its wide end snaps onto 6" pieces; its narrow end snaps onto 4" pieces &mdash; nothing else in the catalog will connect two different diameters together.</p>
+                <div class="help-callout help-callout-note">
+                    <b>4" and 6" duct can both exist in the same layout freely</b> &mdash; you're never restricted to one size per shop. The reducer is only needed at the specific point where a run actually changes diameter; everywhere else, just keep using matching sizes as usual.
+                </div>
+            </article>
 
-            <div class="help-placeholder" id="viewer-3d-basics">
-                <h2>Orbiting &amp; Editing in 3D <span class="help-toc-soon-badge">Coming soon</span></h2>
-                <p>A walkthrough of navigating, dragging, and rotating items in the 3D Shop Viewer is on the way.</p>
-            </div>
+            <article class="help-article" id="dc-calculator">
+                <h2>Sizing Calculator</h2>
+                <p>The Sizing Calculator (in the floating panel on the Dust Collection page) estimates whether your ductwork and collector can move enough air for the tools you're running.</p>
+                <ol>
+                    <li>Pick your dust collector model from the dropdown, or enter its rated CFM manually.</li>
+                    <li>For each branch, either fill in duct length and elbow count by hand, or click <b>Auto-Fill Branches from Layout</b> to trace it from your actual drawn duct run.</li>
+                    <li>The calculator applies real friction-loss penalties per elbow/fitting and compares the result against your collector's fan curve at that static pressure &mdash; not just a flat CFM number.</li>
+                    <li>A rough material cost estimate totals up based on the duct, fittings, and collector you've placed.</li>
+                </ol>
+                <div class="help-callout help-callout-tip">
+                    <b>Tip:</b> if a branch is coming up short on CFM, try shortening the run, reducing elbow count, or switching that branch to a larger duct size (with a reducer where it meets the main trunk) before assuming you need a bigger collector.
+                </div>
+            </article>
 
-            <div class="help-placeholder" id="clo-basics">
-                <h2>Sheets vs. Boards <span class="help-toc-soon-badge">Coming soon</span></h2>
-                <p>A walkthrough of the Cut List Optimizer's stock settings is on the way.</p>
-            </div>
+            <article class="help-article" id="pd-panels">
+                <div class="help-article-eyebrow">Project Designer</div>
+                <h2>Panels, Hardware &amp; Cut List Handoff</h2>
+                <ol>
+                    <li>Click <b>+ Add Panel</b> to define a piece &mdash; name, material, thickness, width, height, and quantity.</li>
+                    <li>Add hardware (hinges, slides, fasteners) to the Hardware Checklist as your project calls for it.</li>
+                    <li>Use the Notes field for anything you don't want to forget &mdash; it autosaves as you type.</li>
+                    <li>When your panel list is ready, click <b>Send to Cut List Optimizer</b> to hand every panel off for sheet/board layout &mdash; no need to re-enter dimensions.</li>
+                </ol>
+                <div class="help-callout help-callout-tip">
+                    <b>Tip:</b> duplicate a panel (rather than re-entering it) when you need several nearly-identical pieces &mdash; then just tweak the one dimension that's different.
+                </div>
+            </article>
+
+            <article class="help-article" id="pd-3d">
+                <h2>3D Preview, Labels &amp; Measurements</h2>
+                <p>The <b>3D Preview</b> tab renders your panel list as an actual 3D scene, colored by material, with a quantity badge on repeated pieces.</p>
+                <ul>
+                    <li><b>Select &amp; drag</b> a panel to reposition it in 3D; grid-snapping keeps things aligned. Use the free-rotate gizmo for angled assemblies.</li>
+                    <li><b>Auto-Align</b> flattens, flushes, or levels a selected piece against its neighbors in one click.</li>
+                    <li><b>Labels</b> let you tag specific pieces right on the 3D view &mdash; handy for noting orientation or a cut note before you head to the shop.</li>
+                    <li><b>Measurements</b> place a persistent on-diagram dimension between two points, which stays put as you keep working.</li>
+                    <li><b>Undo</b> works in the 3D view the same way it does everywhere else in Kerph.</li>
+                </ul>
+            </article>
+
+            <article class="help-article" id="pd-saved">
+                <h2>Saved Projects</h2>
+                <p>Your current project autosaves continuously, just like the Workshop Layout Planner. Use <b>Save Project</b> to keep a named snapshot you can return to, and the account button's project picker to switch between saved projects. Free accounts can have unlimited live projects but zero saved snapshots; Pro unlocks up to 5 saved projects, and Premier is unlimited &mdash; see <a href="pricing.html">Plan Comparison</a> for current limits.</p>
+            </article>
+
+            <article class="help-article" id="clo-basics">
+                <div class="help-article-eyebrow">Cut List Optimizer</div>
+                <h2>Sheets vs. Boards</h2>
+                <p>The optimizer works in two stock modes, and picking the right one matters for getting a useful layout.</p>
+                <h3>Sheet mode</h3>
+                <p>For sheet goods (plywood, MDF, melamine) &mdash; set your sheet's width and height, and the optimizer packs your parts across the sheet's full 2D area, rotating pieces as needed to minimize waste.</p>
+                <h3>Board mode</h3>
+                <p>For dimensional lumber &mdash; set your board's length, and the optimizer arranges cuts end-to-end along its length only, accounting for kerf width between cuts.</p>
+                <ol>
+                    <li>Add parts manually, or arrive here via <b>Send to Cut List Optimizer</b> from Project Designer.</li>
+                    <li>Set your stock size and kerf width in Settings.</li>
+                    <li>The optimizer lays out the most efficient cut diagram it can and reports total waste.</li>
+                    <li>Export the finished diagram to PDF to bring into the shop.</li>
+                </ol>
+            </article>
+
+            <article class="help-article" id="viewer-3d-basics">
+                <div class="help-article-eyebrow">3D Shop Viewer</div>
+                <h2>Orbiting &amp; Editing in 3D</h2>
+                <p>The 3D Shop Viewer renders your actual Workshop Layout Planner grid &mdash; tools, cabinets, wall features, dust collection, and lighting &mdash; as a real 3D scene, using the same layout data you've already built.</p>
+                <ul>
+                    <li><b>Orbit:</b> click and drag to rotate the camera around your shop.</li>
+                    <li><b>Zoom:</b> scroll to move in and out.</li>
+                    <li><b>Select &amp; edit:</b> click any placed item to select it, then drag to move, use the rotation handle to turn it, or press <code>Delete</code> to remove it &mdash; changes here sync back to your 2D layout.</li>
+                    <li><b>Tooltips:</b> hover an item for a quick info card, same as the 2D sidebar popover.</li>
+                    <li><b>Duct Drops:</b> the one dust-collection piece that actually renders as a vertical pipe here, since 3D can finally show the elevation change a 2D top-down view can't.</li>
+                </ul>
+            </article>
+
+            <article class="help-article" id="fab-basics">
+                <div class="help-article-eyebrow">Find a Builder</div>
+                <h2>Generating a Quote Request</h2>
+                <p>Find a Builder turns your current shop layout into a written summary a contractor or dust-collection installer can actually quote from, instead of you re-describing your shop from scratch.</p>
+                <ol>
+                    <li>Build your layout in the Workshop Layout Planner or Dust Collection page first &mdash; Find a Builder reads whatever your current shop looks like.</li>
+                    <li>Open Find a Builder and review the auto-generated summary (dimensions, placed tools, duct runs).</li>
+                    <li>Add any extra notes specific to your project.</li>
+                    <li>Generate a PDF of your shop layout to attach, then use the pre-filled email draft to send your request &mdash; note that email links can't attach files automatically, so you'll need to attach the downloaded PDF yourself before sending.</li>
+                </ol>
+            </article>
+
+            <article class="help-article" id="comm-showcase">
+                <div class="help-article-eyebrow">Community</div>
+                <h2>Shop Showcase</h2>
+                <p>Shop Showcase is a public gallery where you can post photos of your actual shop for inspiration and feedback from other Kerph users.</p>
+                <ul>
+                    <li>Click <b>+ Share Your Shop</b>, add a photo, title, description, and tags, and post &mdash; you'll need to be signed in.</li>
+                    <li>Browse, search, and sort posts by newest, most liked, or most discussed.</li>
+                    <li>Click any post to view it full-size, like it, or leave a comment.</li>
+                    <li>You can delete your own posts at any time from the post's detail view.</li>
+                </ul>
+                <div class="help-callout help-callout-note">
+                    Posts and photos here are public &mdash; visible to every Kerph user, not just people you know. Don't post anything you wouldn't want broadly visible.
+                </div>
+            </article>
+
+            <article class="help-article" id="comm-reviews">
+                <h2>Cool Tool Reviews</h2>
+                <p>Real, first-hand reviews from other woodworkers and shop owners &mdash; searchable by tool name and filterable by category.</p>
+                <ul>
+                    <li>Click <b>+ Write a Review</b>, pick a category, rate 1&ndash;5 stars, and write your take &mdash; you'll need to be signed in.</li>
+                    <li>Mark other users' reviews as <b>Helpful</b> to surface the most useful ones; sort by newest, highest rated, or most helpful.</li>
+                    <li>Your posted name on a review is snapshotted at the time you post it, so a later username change won't rewrite old reviews.</li>
+                </ul>
+            </article>
         </main>
     </div>
 
