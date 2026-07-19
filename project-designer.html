@@ -638,6 +638,51 @@
             line-height: 1.5;
         }
 
+        /* ---------- PROJECT NOTES: formatting toolbar + preview ----------
+           Notes stay a single plain-text string (same as before) — formatting is just
+           markdown syntax typed into the same textarea, so serializeCurrentProject/
+           restoreProject/kerphSaveProjectNotes/etc. all keep working completely unchanged.
+           The toolbar buttons just insert that syntax at the cursor; Preview mode renders it
+           read-only, with checklist items as real clickable checkboxes. */
+        .notes-toolbar { display: flex; gap: 3px; margin-bottom: 6px; flex-wrap: wrap; }
+        .notes-toolbar button {
+            border: 1px solid #cbd5e1;
+            background-color: #ffffff;
+            border-radius: 5px;
+            padding: 4px 7px;
+            font-size: 11px;
+            font-weight: 700;
+            color: #374151;
+            cursor: pointer;
+            line-height: 1.2;
+        }
+        .notes-toolbar button:hover { background-color: #eef2ff; border-color: #2563eb; color: #1e3a8a; }
+        .notes-mode-toggle { display: flex; gap: 4px; margin-left: auto; }
+        .notes-mode-toggle button.active { background-color: #1e3a8a; color: #ffffff; border-color: #1e3a8a; }
+
+        .notes-preview {
+            width: 100%;
+            min-height: 340px;
+            max-height: 480px;
+            overflow-y: auto;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            padding: 8px 10px;
+            font-size: 13px;
+            line-height: 1.5;
+            background-color: #ffffff;
+        }
+        .notes-preview h3 { font-size: 14.5px; font-weight: 800; color: #0f172a; margin: 4px 0 6px; }
+        .notes-preview h4 { font-size: 13px; font-weight: 800; color: #1e3a8a; margin: 4px 0 4px; }
+        .notes-preview p { margin: 0 0 8px; }
+        .notes-preview ul, .notes-preview ol { margin: 0 0 8px 18px; }
+        .notes-preview li { margin-bottom: 3px; }
+        .notes-preview ul.notes-checklist { list-style: none; margin-left: 2px; }
+        .notes-checklist-item label { display: flex; align-items: flex-start; gap: 6px; cursor: pointer; }
+        .notes-checklist-item input[type="checkbox"] { margin-top: 3px; flex-shrink: 0; cursor: pointer; }
+        .notes-checked { color: #9ca3af; text-decoration: line-through; }
+        .notes-preview-empty { color: #9ca3af; font-style: italic; }
+
         /* ---------- 3D PREVIEW TOOLBAR (Add Label / Measure) ---------- */
         .preview3d-toolbar {
             display: flex;
@@ -674,6 +719,51 @@
         .header-quick-links a { color: #6b7280; font-weight: 600; text-decoration: none; }
         .header-quick-links a:hover { color: #1e3a8a; text-decoration: underline; }
         .header-quick-links-sep { color: #cbd5e1; }
+
+        /* ---------- SHOP JIGS DROPDOWN ---------- */
+        .jigs-dropdown { position: relative; }
+        .jigs-dropdown-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            font-weight: 700;
+            color: #ffffff;
+            background-color: #1e3a8a;
+            padding: 9px 14px;
+            border: none;
+            border-radius: 999px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .jigs-dropdown-btn:hover { background-color: #172d68; }
+        .jigs-dropdown-caret { font-size: 9px; transition: transform 0.15s ease; }
+        .jigs-dropdown.open .jigs-dropdown-caret { transform: rotate(180deg); }
+        .jigs-dropdown-menu {
+            display: none;
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 0;
+            background-color: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            box-shadow: 0 12px 30px -8px rgba(15, 23, 42, 0.3);
+            padding: 6px;
+            min-width: 210px;
+            z-index: 500;
+        }
+        .jigs-dropdown.open .jigs-dropdown-menu { display: block; }
+        .jigs-dropdown-menu a {
+            display: block;
+            padding: 8px 10px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #1e293b;
+            text-decoration: none;
+        }
+        .jigs-dropdown-menu a:hover { background-color: #eef2ff; color: #1e3a8a; }
+        .jigs-dropdown-menu-sep { height: 1px; background-color: #e2e8f0; margin: 5px 2px; }
     </style>
 </head>
 <body>
@@ -692,11 +782,28 @@
                 <option value="dust-collection.html">Dust Collection</option>
                 <option value="project-designer.html" selected>Project Designer</option>
                 <option value="cutlist-optimizer.html">Cut List Optimizer</option>
+                <option value="quote-builder.html">Quote Builder</option>
                 <option value="find-a-builder.html">Find a Builder</option>
                 <option value="shop-3d-viewer.html">3D Shop Viewer</option>
                 <option value="tool-reviews.html">Cool Tool Reviews</option>
                 <option value="shop-showcase.html">Shop Showcase</option>
+                <option value="portfolio.html">Portfolio</option>
+                <option value="print-library.html">3D Print Library</option>
             </select>
+            <div class="jigs-dropdown" id="jigsDropdown">
+                <button type="button" class="jigs-dropdown-btn" id="jigsDropdownBtn">Shop Jigs <span class="jigs-dropdown-caret">&#9662;</span></button>
+                <div class="jigs-dropdown-menu">
+                    <a href="shop-jigs-fraction-converter.html">Fraction Converter</a>
+                    <a href="shop-jigs-add-fractions.html">Add Fractions</a>
+                    <a href="shop-jigs-board-feet.html">Board Foot Calculator</a>
+                    <a href="shop-jigs-angle-chart.html">Polygon Angle Chart</a>
+                    <a href="shop-jigs-wood-movement.html">Wood Movement Calculator</a>
+                    <a href="shop-jigs-speeds-feeds.html">Speeds &amp; Feeds</a>
+                    <a href="shop-jigs-sharpening-angles.html">Sharpening Angle Chart</a>
+                    <div class="jigs-dropdown-menu-sep"></div>
+                    <a href="shop-jigs.html">All Shop Jigs &rarr;</a>
+                </div>
+            </div>
         </div>
         <div class="project-fields-group">
             <div class="header-field header-field-wide">
@@ -779,7 +886,7 @@
                         <option value="premier">Premier</option>
                     </select>
                 </div>
-                <div class="account-plan-upsell" id="accountPlanUpsell" style="display:none;">Saved layouts, custom shapes, cabinetry, and more unlock on Pro.</div>
+                <div class="account-plan-upsell" id="accountPlanUpsell" style="display:none;">Free includes 1 saved shop layout; custom shop shapes and unlimited saves unlock on Pro.</div>
             </div>
 
             <div class="header-field" style="width:100%; margin-top:10px;">
@@ -917,6 +1024,36 @@
         </div>
     </div>
 
+    <div class="modal-overlay" id="templateModalOverlay" style="display:none;">
+        <div class="modal-box" style="width:360px;">
+            <div class="modal-title">Add From Template</div>
+
+            <div class="header-field" style="width:100%;">
+                <label class="header-field-label" for="templateTypeSelect">Assembly Type</label>
+                <select class="select-box" id="templateTypeSelect">
+                    <option value="box">Box (open or lidded)</option>
+                    <option value="cabinet">Carcass / Cabinet</option>
+                    <option value="drawer">Drawer Box</option>
+                    <option value="slab-table">Slab Table</option>
+                    <option value="frame-panel">Frame &amp; Panel (door)</option>
+                </select>
+            </div>
+            <div class="header-field" style="width:100%; margin-top:10px;">
+                <label class="header-field-label" for="templateMaterialSelect">Material</label>
+                <select class="select-box" id="templateMaterialSelect"></select>
+            </div>
+
+            <div id="templateFieldsContainer" style="margin-top:10px;"></div>
+
+            <div id="templateNote" style="font-size:11px; color:#6b7280; line-height:1.5; margin-top:12px; padding-top:10px; border-top:1px solid #e5e7eb;"></div>
+
+            <div class="modal-actions">
+                <button type="button" id="templateCancelBtn" class="mini-btn">Cancel</button>
+                <button type="button" id="templateGenerateBtn" class="mini-btn modal-primary-btn">Generate Parts</button>
+            </div>
+        </div>
+    </div>
+
     <div class="modal-overlay" id="confirmModalOverlay" style="display:none;">
         <div class="modal-box">
             <div class="modal-title">Are you sure?</div>
@@ -945,12 +1082,30 @@
         <div class="sidebar-title">Panels</div>
         <div class="empty-hint" id="panelListEmptyHint">No panels yet. Add the boards this project needs — sides, shelves, doors — each with a width, height, thickness, and material.</div>
         <div id="panelList"></div>
-        <button type="button" class="mini-btn" id="addPanelBtn" style="width:100%;">+ Add Panel</button>
+        <div style="display:flex; gap:6px;">
+            <button type="button" class="mini-btn" id="addPanelBtn" style="flex:1;">+ Add Panel</button>
+            <button type="button" class="mini-btn" id="addTemplateBtn" style="flex:1;">&#128208; From Template</button>
+        </div>
     </div>
 
     <div class="floating-panel notes-panel" id="notesPanel">
         <div class="floating-panel-title">Project Notes</div>
-        <textarea id="projectNotesInput" class="input-box notes-textarea" placeholder="Assembly order, reminders, cut notes, anything worth remembering about this project..."></textarea>
+        <div class="notes-toolbar">
+            <button type="button" id="notesBoldBtn" title="Bold"><b>B</b></button>
+            <button type="button" id="notesItalicBtn" title="Italic"><i>I</i></button>
+            <button type="button" id="notesHeadingBtn" title="Heading">H</button>
+            <button type="button" id="notesBulletBtn" title="Bulleted list">&#8226; List</button>
+            <button type="button" id="notesNumberedBtn" title="Numbered list">1. List</button>
+            <button type="button" id="notesChecklistBtn" title="Checklist">&#9745; Check</button>
+            <div class="notes-mode-toggle">
+                <button type="button" id="notesEditModeBtn" class="active">Edit</button>
+                <button type="button" id="notesPreviewModeBtn">Preview</button>
+            </div>
+        </div>
+        <textarea id="projectNotesInput" class="input-box notes-textarea" placeholder="Assembly order, reminders, cut notes, anything worth remembering about this project...
+
+Use the toolbar above for bold, italic, headings, and lists — or type markdown directly (**bold**, *italic*, # Heading, - bullet, 1. numbered, - [ ] checklist item)."></textarea>
+        <div class="notes-preview" id="notesPreview" style="display:none;"></div>
     </div>
 
     <div id="canvas-area">
@@ -1409,6 +1564,23 @@
         }
 
         document.getElementById('pageNavSelect').addEventListener('change', (e) => { window.location.href = e.target.value; });
+
+        // Standalone header dropdown (not folded into pageNavSelect) so Shop Jigs' four
+        // tools are one click away from every page instead of being buried as just another
+        // option in a 9-item combobox.
+        function initJigsDropdown() {
+            const dropdown = document.getElementById('jigsDropdown');
+            const btn = document.getElementById('jigsDropdownBtn');
+            if (!dropdown || !btn) return;
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                dropdown.classList.toggle('open');
+            });
+            document.addEventListener('click', (e) => {
+                if (!dropdown.contains(e.target)) dropdown.classList.remove('open');
+            });
+        }
+        initJigsDropdown();
         initPlanSelector();
 
         kerphOnAuthChange(() => {
@@ -1477,10 +1649,23 @@
             return div.innerHTML;
         }
 
+        // Tracks in-flight/pending live-state saves so a refresh/close can warn before an
+        // async write (or an armed debounce timer that hasn't fired yet) gets abandoned mid-flight
+        // — see the beforeunload listener below.
+        let pendingSaveCount = 0;
+        function trackSave(promise) {
+            pendingSaveCount++;
+            promise.finally(() => { pendingSaveCount--; });
+        }
+        window.kerphTrackSave = trackSave;
+        window.addEventListener('beforeunload', (e) => {
+            if (pendingSaveCount > 0) { e.preventDefault(); e.returnValue = ''; }
+        });
+
         let panels = [];
 
         function savePanels() {
-            kerphSaveProjectPanels(panels).catch(() => {});
+            trackSave(kerphSaveProjectPanels(panels).catch(() => {}));
         }
 
         // Hardware/consumables: screws, hinges, glue, edge banding — anything beyond the
@@ -1490,7 +1675,7 @@
         let hardware = [];
 
         function saveHardware() {
-            kerphSaveProjectHardware(hardware).catch(() => {});
+            trackSave(kerphSaveProjectHardware(hardware).catch(() => {}));
         }
 
         /* ---------- SAVED PROJECTS ----------
@@ -1579,7 +1764,7 @@
             saveHardware();
             const notesInput = document.getElementById('projectNotesInput');
             notesInput.value = project.notes || '';
-            kerphSaveProjectNotes(notesInput.value).catch(() => {});
+            trackSave(kerphSaveProjectNotes(notesInput.value).catch(() => {}));
             if (typeof window.restoreLabelsAndMeasurements === 'function') {
                 window.restoreLabelsAndMeasurements(project.labels, project.measurements);
             }
@@ -1675,7 +1860,7 @@
             saveHardware();
             const notesInput = document.getElementById('projectNotesInput');
             notesInput.value = '';
-            kerphSaveProjectNotes('').catch(() => {});
+            trackSave(kerphSaveProjectNotes('').catch(() => {}));
             if (typeof window.restoreLabelsAndMeasurements === 'function') window.restoreLabelsAndMeasurements([], []);
             currentProjectId = null;
             document.getElementById('projectNameInput').value = '';
@@ -2050,6 +2235,215 @@
         document.getElementById('panelCancelBtn').addEventListener('click', closePanelModal);
         document.getElementById('panelSaveBtn').addEventListener('click', savePanelFromModal);
 
+        /* ---------- Parametric Assembly Templates ----------
+           Each typology generates a real, correctly-dimensioned panel list from a handful of
+           overall-size inputs, using simple, defensible butt-joint (box/cabinet/drawer) or
+           stub-tenon-and-groove (frame & panel) construction assumptions — documented per type
+           in `note` and shown in the modal. Generated panels are pushed with no xIn/yIn/zIn so
+           the 3D view's existing auto-arrange places them, exactly like a hand-added panel. */
+        const ASSEMBLY_TEMPLATES = {
+            box: {
+                label: 'Box',
+                fields: [
+                    { key: 'width', label: 'Outer Width (in)', default: 12 },
+                    { key: 'depth', label: 'Outer Depth (in)', default: 8 },
+                    { key: 'height', label: 'Outer Height (in)', default: 6 }
+                ],
+                checks: [
+                    { key: 'hasBottom', label: 'Include bottom panel', default: true },
+                    { key: 'hasLid', label: 'Include lid panel', default: false }
+                ],
+                note: 'Sides run full height; front/back are captured (butted) between the sides; the bottom is inset and captured on all four sides. A lid, if included, is a flat panel sized to the full outer footprint.',
+                generate(p, t) {
+                    const parts = [
+                        { name: 'Side (Left/Right)', widthIn: p.height, heightIn: p.depth, thicknessIn: t, qty: 2 },
+                        { name: 'Front/Back', widthIn: p.height, heightIn: p.width - 2 * t, thicknessIn: t, qty: 2 }
+                    ];
+                    if (p.hasBottom) parts.push({ name: 'Bottom', widthIn: p.width - 2 * t, heightIn: p.depth - 2 * t, thicknessIn: t, qty: 1 });
+                    if (p.hasLid) parts.push({ name: 'Lid', widthIn: p.width, heightIn: p.depth, thicknessIn: t, qty: 1 });
+                    return parts;
+                }
+            },
+            cabinet: {
+                label: 'Carcass / Cabinet',
+                fields: [
+                    { key: 'width', label: 'Outer Width (in)', default: 24 },
+                    { key: 'height', label: 'Outer Height (in)', default: 30 },
+                    { key: 'depth', label: 'Outer Depth (in)', default: 20 },
+                    { key: 'backThickness', label: 'Back Panel Thickness (in)', default: 0.25 }
+                ],
+                checks: [
+                    { key: 'hasFaceFrame', label: 'Include face frame (2 stiles + 2 rails, 3/4" hardwood)', default: false }
+                ],
+                note: 'Sides run full height; top/bottom are captured between the sides; the back is a thin panel fastened flat to the rear, sized to the full outer width x height (add a reveal manually if you want it inset in a rabbet). Face frame stock is assumed 3/4" x 1.5" regardless of carcass material.',
+                generate(p, t) {
+                    const parts = [
+                        { name: 'Side (Left/Right)', widthIn: p.height, heightIn: p.depth, thicknessIn: t, qty: 2 },
+                        { name: 'Top/Bottom', widthIn: p.width - 2 * t, heightIn: p.depth, thicknessIn: t, qty: 2 },
+                        { name: 'Back Panel', widthIn: p.width, heightIn: p.height, thicknessIn: p.backThickness, qty: 1 }
+                    ];
+                    if (p.hasFaceFrame) {
+                        parts.push({ name: 'Face Frame Stile', widthIn: p.height, heightIn: 1.5, thicknessIn: 0.75, qty: 2 });
+                        parts.push({ name: 'Face Frame Rail', widthIn: p.width - 2 * 1.5, heightIn: 1.5, thicknessIn: 0.75, qty: 2 });
+                    }
+                    return parts;
+                }
+            },
+            drawer: {
+                label: 'Drawer Box',
+                fields: [
+                    { key: 'width', label: 'Outer Width (in)', default: 16 },
+                    { key: 'depth', label: 'Outer Depth (in)', default: 18 },
+                    { key: 'height', label: 'Outer Height (in)', default: 5 },
+                    { key: 'bottomThickness', label: 'Bottom Panel Thickness (in)', default: 0.25 }
+                ],
+                checks: [
+                    { key: 'hasFalseFront', label: 'Include false/overlay front (3/4", sized to box outer W x H)', default: false }
+                ],
+                note: 'Sides run full depth; front/back are captured between the sides; the bottom is inset and captured on all four sides, like a small box. A false front, if included, is sized to the drawer box\'s outer width and height — add your own reveal for an overlay fit.',
+                generate(p, t) {
+                    const parts = [
+                        { name: 'Drawer Side (Left/Right)', widthIn: p.height, heightIn: p.depth, thicknessIn: t, qty: 2 },
+                        { name: 'Drawer Front/Back', widthIn: p.height, heightIn: p.width - 2 * t, thicknessIn: t, qty: 2 },
+                        { name: 'Drawer Bottom', widthIn: p.width - 2 * t, heightIn: p.depth - 2 * t, thicknessIn: p.bottomThickness, qty: 1 }
+                    ];
+                    if (p.hasFalseFront) parts.push({ name: 'Drawer False Front', widthIn: p.width, heightIn: p.height, thicknessIn: 0.75, qty: 1 });
+                    return parts;
+                }
+            },
+            'slab-table': {
+                label: 'Slab Table',
+                fields: [
+                    { key: 'topWidth', label: 'Tabletop Width (in)', default: 60 },
+                    { key: 'topDepth', label: 'Tabletop Depth (in)', default: 32 },
+                    { key: 'topThickness', label: 'Tabletop Thickness (in)', default: 1.5 },
+                    { key: 'legHeight', label: 'Leg Height (in)', default: 28 },
+                    { key: 'legWidth', label: 'Leg Width (square, in)', default: 3 }
+                ],
+                checks: [
+                    { key: 'hasApron', label: 'Include apron (4 pieces)', default: true }
+                ],
+                note: 'Legs are square in cross-section (leg width used for both faces). Aprons, if included, run between the legs, inset 1.5" from the tabletop edge, 4" tall x 3/4" thick.',
+                generate(p, t) {
+                    const parts = [
+                        { name: 'Tabletop', widthIn: p.topWidth, heightIn: p.topDepth, thicknessIn: p.topThickness, qty: 1 },
+                        { name: 'Leg', widthIn: p.legHeight, heightIn: p.legWidth, thicknessIn: p.legWidth, qty: 4 }
+                    ];
+                    if (p.hasApron) {
+                        const inset = 1.5;
+                        const longApron = p.topWidth - 2 * inset - 2 * p.legWidth;
+                        const shortApron = p.topDepth - 2 * inset - 2 * p.legWidth;
+                        parts.push({ name: 'Apron (Long Side)', widthIn: longApron, heightIn: 4, thicknessIn: 0.75, qty: 2 });
+                        parts.push({ name: 'Apron (Short Side)', widthIn: shortApron, heightIn: 4, thicknessIn: 0.75, qty: 2 });
+                    }
+                    return parts;
+                }
+            },
+            'frame-panel': {
+                label: 'Frame & Panel (door)',
+                fields: [
+                    { key: 'width', label: 'Overall Width (in)', default: 16 },
+                    { key: 'height', label: 'Overall Height (in)', default: 30 },
+                    { key: 'stileWidth', label: 'Stile/Rail Width (in)', default: 2.25 },
+                    { key: 'panelThickness', label: 'Center Panel Thickness (in)', default: 0.25 }
+                ],
+                checks: [],
+                note: 'Stub-tenon-and-groove construction: stiles run full height; rails are captured between the stiles with a 3/8" stub tenon into a matching groove on each end; the floating center panel is sized for the full groove depth minus 1/16" total clearance per axis.',
+                generate(p, t) {
+                    const grooveDepth = 0.375;
+                    const clearance = 0.125;
+                    const railLength = p.width - 2 * p.stileWidth + 2 * grooveDepth;
+                    const panelWidth = p.width - 2 * p.stileWidth + 2 * grooveDepth - clearance;
+                    const panelHeight = p.height - 2 * p.stileWidth + 2 * grooveDepth - clearance;
+                    return [
+                        { name: 'Stile', widthIn: p.height, heightIn: p.stileWidth, thicknessIn: t, qty: 2 },
+                        { name: 'Rail', widthIn: railLength, heightIn: p.stileWidth, thicknessIn: t, qty: 2 },
+                        { name: 'Center Panel', widthIn: panelWidth, heightIn: panelHeight, thicknessIn: p.panelThickness, qty: 1 }
+                    ];
+                }
+            }
+        };
+
+        function renderTemplateFields() {
+            const type = document.getElementById('templateTypeSelect').value;
+            const tpl = ASSEMBLY_TEMPLATES[type];
+            const container = document.getElementById('templateFieldsContainer');
+            let html = '';
+            tpl.fields.forEach(f => {
+                html += `
+                    <div class="header-field" style="width:100%; margin-top:6px;">
+                        <label class="header-field-label" for="tplField_${f.key}">${escapeHtml(f.label)}</label>
+                        <input type="number" class="input-box" id="tplField_${f.key}" step="0.0625" value="${f.default}">
+                    </div>
+                `;
+            });
+            tpl.checks.forEach(c => {
+                html += `
+                    <label style="display:flex; align-items:center; gap:8px; font-size:12.5px; font-weight:600; color:#1e293b; margin-top:8px; cursor:pointer;">
+                        <input type="checkbox" id="tplCheck_${c.key}" ${c.default ? 'checked' : ''}> ${escapeHtml(c.label)}
+                    </label>
+                `;
+            });
+            container.innerHTML = html;
+            document.getElementById('templateNote').textContent = tpl.note;
+        }
+
+        function openTemplateModal() {
+            populateMaterialSelect(document.getElementById('templateMaterialSelect'));
+            document.getElementById('templateTypeSelect').value = 'box';
+            renderTemplateFields();
+            document.getElementById('templateModalOverlay').style.display = 'flex';
+        }
+        function closeTemplateModal() {
+            document.getElementById('templateModalOverlay').style.display = 'none';
+        }
+
+        function generatePartsFromTemplate() {
+            const type = document.getElementById('templateTypeSelect').value;
+            const tpl = ASSEMBLY_TEMPLATES[type];
+            const material = document.getElementById('templateMaterialSelect').value;
+            const t = (MATERIALS[material] || MATERIALS.custom).thicknessIn;
+
+            const params = {};
+            for (const f of tpl.fields) {
+                const val = parseFloat(document.getElementById('tplField_' + f.key).value);
+                if (!val || val <= 0) { showToast(`${f.label} must be greater than 0.`); return; }
+                params[f.key] = val;
+            }
+            for (const c of tpl.checks) {
+                params[c.key] = document.getElementById('tplCheck_' + c.key).checked;
+            }
+
+            let parts;
+            try {
+                parts = tpl.generate(params, t);
+            } catch (e) {
+                showToast('Could not generate parts from these dimensions.');
+                return;
+            }
+            const bad = parts.find(pt => !(pt.widthIn > 0) || !(pt.heightIn > 0) || !(pt.thicknessIn > 0));
+            if (bad) { showToast(`These dimensions are too small to produce a valid "${bad.name}" — increase the overall size or reduce material thickness.`); return; }
+
+            if (typeof window.push3DUndoSnapshot === 'function') window.push3DUndoSnapshot();
+            parts.forEach(pt => {
+                panels.push({
+                    id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+                    name: pt.name, widthIn: Math.round(pt.widthIn * 1000) / 1000, heightIn: Math.round(pt.heightIn * 1000) / 1000,
+                    thicknessIn: pt.thicknessIn, material, qty: pt.qty,
+                    xIn: undefined, yIn: undefined, zIn: undefined, rotXDeg: 0, rotYDeg: 0, rotZDeg: 0
+                });
+            });
+            savePanels();
+            renderAll();
+            closeTemplateModal();
+            showToast(`Added ${parts.length} part${parts.length === 1 ? '' : 's'} from the ${tpl.label} template.`);
+        }
+
+        document.getElementById('addTemplateBtn').addEventListener('click', openTemplateModal);
+        document.getElementById('templateCancelBtn').addEventListener('click', closeTemplateModal);
+        document.getElementById('templateGenerateBtn').addEventListener('click', generatePartsFromTemplate);
+        document.getElementById('templateTypeSelect').addEventListener('change', renderTemplateFields);
+
         document.getElementById('panelMaterialSelect').addEventListener('change', (e) => {
             const mat = MATERIALS[e.target.value];
             if (mat) document.getElementById('panelThicknessInput').value = mat.thicknessIn;
@@ -2088,14 +2482,197 @@
            view, so it lives in the always-visible fixed panel rather than being scoped to
            either tab. No Three.js involvement needed, so unlike panels this never needs a
            window bridge to the module. */
+        function escapeHtmlNotes(str) {
+            const div = document.createElement('div');
+            div.textContent = str == null ? '' : String(str);
+            return div.innerHTML;
+        }
+
+        // Deliberately small and specific to what the toolbar buttons themselves produce, not
+        // a general CommonMark parser: **bold**, *italic*, "# "/"## " headings, "- " bullets,
+        // "1. " numbered lists, and "- [ ] "/"- [x] " checklist items — the last rendered as
+        // real, clickable <input type="checkbox"> elements. data-check-line on each checkbox
+        // is that line's actual index in the source text, so a click can toggle exactly that
+        // line without needing any parallel data structure kept in sync with the plain string.
+        function renderNotesMarkdown(text) {
+            const lines = (text || '').split('\n');
+            let html = '';
+            let listMode = null; // 'checklist' | 'ul' | 'ol' | null
+            function closeList() {
+                if (listMode === 'checklist') html += '</ul>';
+                else if (listMode === 'ul') html += '</ul>';
+                else if (listMode === 'ol') html += '</ol>';
+                listMode = null;
+            }
+            function inline(s) {
+                let out = escapeHtmlNotes(s);
+                out = out.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
+                out = out.replace(/(^|[^*])\*([^*]+?)\*(?!\*)/g, '$1<i>$2</i>');
+                return out;
+            }
+            lines.forEach((line, i) => {
+                const checklistMatch = line.match(/^\s*-\s\[( |x|X)\]\s(.*)$/);
+                const bulletMatch = !checklistMatch && line.match(/^\s*-\s(.*)$/);
+                const numberedMatch = !checklistMatch && line.match(/^\s*\d+\.\s(.*)$/);
+                const h2Match = line.match(/^##\s(.*)$/);
+                const h1Match = !h2Match && line.match(/^#\s(.*)$/);
+
+                if (checklistMatch) {
+                    if (listMode !== 'checklist') { closeList(); html += '<ul class="notes-checklist">'; listMode = 'checklist'; }
+                    const checked = checklistMatch[1].toLowerCase() === 'x';
+                    html += `<li class="notes-checklist-item"><label><input type="checkbox" data-check-line="${i}" ${checked ? 'checked' : ''}> <span class="${checked ? 'notes-checked' : ''}">${inline(checklistMatch[2])}</span></label></li>`;
+                } else if (bulletMatch) {
+                    if (listMode !== 'ul') { closeList(); html += '<ul>'; listMode = 'ul'; }
+                    html += `<li>${inline(bulletMatch[1])}</li>`;
+                } else if (numberedMatch) {
+                    if (listMode !== 'ol') { closeList(); html += '<ol>'; listMode = 'ol'; }
+                    html += `<li>${inline(numberedMatch[1])}</li>`;
+                } else if (h2Match) {
+                    closeList(); html += `<h4>${inline(h2Match[1])}</h4>`;
+                } else if (h1Match) {
+                    closeList(); html += `<h3>${inline(h1Match[1])}</h3>`;
+                } else if (line.trim() === '') {
+                    closeList();
+                } else {
+                    closeList(); html += `<p>${inline(line)}</p>`;
+                }
+            });
+            closeList();
+            return html || '<p class="notes-preview-empty">Nothing here yet — switch to Edit and start typing.</p>';
+        }
+
+        // Applies prefixFn to every line touched by the current selection (or just the current
+        // line, if nothing's selected) — shared by the bullet/numbered/checklist toolbar
+        // buttons so they all select-aware in the same way.
+        function applyLinePrefix(textarea, prefixFn) {
+            const value = textarea.value;
+            let lineStart = value.lastIndexOf('\n', textarea.selectionStart - 1) + 1;
+            let lineEnd = value.indexOf('\n', textarea.selectionEnd);
+            if (lineEnd === -1) lineEnd = value.length;
+            const block = value.slice(lineStart, lineEnd);
+            const newBlock = block.split('\n').map((line, i) => prefixFn(line, i)).join('\n');
+            textarea.value = value.slice(0, lineStart) + newBlock + value.slice(lineEnd);
+            const delta = newBlock.length - block.length;
+            textarea.selectionStart = lineStart;
+            textarea.selectionEnd = lineEnd + delta;
+            textarea.focus();
+            textarea.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+
+        function wrapSelection(textarea, before, after, placeholder) {
+            const start = textarea.selectionStart, end = textarea.selectionEnd;
+            const value = textarea.value;
+            const selected = value.slice(start, end) || placeholder;
+            textarea.value = value.slice(0, start) + before + selected + after + value.slice(end);
+            textarea.selectionStart = start + before.length;
+            textarea.selectionEnd = start + before.length + selected.length;
+            textarea.focus();
+            textarea.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+
+        function toggleChecklistLine(textarea, lineIndex) {
+            const lines = textarea.value.split('\n');
+            const line = lines[lineIndex];
+            if (line == null) return;
+            const checked = /^\s*-\s\[(x|X)\]/.test(line);
+            lines[lineIndex] = checked ? line.replace(/\[(x|X)\]/, '[ ]') : line.replace(/\[ \]/, '[x]');
+            textarea.value = lines.join('\n');
+            textarea.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+
+        // On Enter, continues whatever list the cursor's current line is part of — a plain
+        // <textarea> has no native concept of "list item," so without this, clicking a list
+        // toolbar button only ever formats the one line it was clicked on and every line
+        // typed after Enter starts back at plain text (numbered lists in particular then
+        // never advance past "1."). Matches the standard editor convention: Enter on a
+        // non-empty list line continues the list (incrementing numbers); Enter on an EMPTY
+        // list line exits the list instead of inserting another empty bullet forever.
+        function handleNotesListContinuation(e) {
+            if (e.key !== 'Enter' || e.shiftKey) return;
+            const textarea = e.target;
+            if (textarea.selectionStart !== textarea.selectionEnd) return; // let a real selection just get replaced normally
+            const value = textarea.value;
+            const cursor = textarea.selectionStart;
+            const lineStart = value.lastIndexOf('\n', cursor - 1) + 1;
+            const currentLine = value.slice(lineStart, cursor);
+
+            const checklistMatch = currentLine.match(/^(\s*)-\s\[[ xX]\]\s(.*)$/);
+            const bulletMatch = !checklistMatch && currentLine.match(/^(\s*)-\s(.*)$/);
+            const numberedMatch = !checklistMatch && !bulletMatch && currentLine.match(/^(\s*)(\d+)\.\s(.*)$/);
+            const match = checklistMatch || bulletMatch || numberedMatch;
+            if (!match) return; // not on a list line — let the browser insert a normal newline
+
+            e.preventDefault();
+            const isEmpty = match[match.length - 1].trim() === '';
+            if (isEmpty) {
+                // Empty list item + Enter = exit the list: strip this line's marker instead
+                // of continuing it, same as Word/Docs/Notion.
+                textarea.value = value.slice(0, lineStart) + value.slice(cursor);
+                textarea.selectionStart = textarea.selectionEnd = lineStart;
+            } else {
+                const indent = match[1];
+                let marker;
+                if (checklistMatch) marker = `${indent}- [ ] `;
+                else if (bulletMatch) marker = `${indent}- `;
+                else marker = `${indent}${parseInt(numberedMatch[2], 10) + 1}. `;
+                const insert = `\n${marker}`;
+                textarea.value = value.slice(0, cursor) + insert + value.slice(cursor);
+                textarea.selectionStart = textarea.selectionEnd = cursor + insert.length;
+            }
+            textarea.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+
         function initProjectNotes(initialValue) {
             const input = document.getElementById('projectNotesInput');
+            const preview = document.getElementById('notesPreview');
+            const editBtn = document.getElementById('notesEditModeBtn');
+            const previewBtn = document.getElementById('notesPreviewModeBtn');
             input.value = initialValue || '';
             let saveTimer = null;
+            let notesSavePending = false;
             input.addEventListener('input', () => {
                 clearTimeout(saveTimer);
-                saveTimer = setTimeout(() => kerphSaveProjectNotes(input.value).catch(() => {}), 400);
+                // Count the debounce window itself as pending, not just the eventual network
+                // call — otherwise a refresh in the 400ms gap before the timer fires would slip
+                // past the beforeunload check with real unsaved keystrokes.
+                if (!notesSavePending) { notesSavePending = true; pendingSaveCount++; }
+                saveTimer = setTimeout(() => {
+                    kerphSaveProjectNotes(input.value).catch(() => {}).finally(() => {
+                        notesSavePending = false;
+                        pendingSaveCount--;
+                    });
+                }, 400);
             });
+            input.addEventListener('keydown', handleNotesListContinuation);
+
+            document.getElementById('notesBoldBtn').addEventListener('click', () => wrapSelection(input, '**', '**', 'bold text'));
+            document.getElementById('notesItalicBtn').addEventListener('click', () => wrapSelection(input, '*', '*', 'italic text'));
+            document.getElementById('notesHeadingBtn').addEventListener('click', () => applyLinePrefix(input, line => line.replace(/^#+\s*/, '') ? `## ${line.replace(/^#+\s*/, '')}` : '## '));
+            document.getElementById('notesBulletBtn').addEventListener('click', () => applyLinePrefix(input, line => /^\s*-\s/.test(line) ? line : `- ${line}`));
+            document.getElementById('notesNumberedBtn').addEventListener('click', () => applyLinePrefix(input, (line, i) => /^\s*\d+\.\s/.test(line) ? line : `${i + 1}. ${line}`));
+            document.getElementById('notesChecklistBtn').addEventListener('click', () => applyLinePrefix(input, line => /^\s*-\s\[[ xX]\]\s/.test(line) ? line : `- [ ] ${line}`));
+
+            function showEdit() {
+                input.style.display = 'block';
+                preview.style.display = 'none';
+                editBtn.classList.add('active');
+                previewBtn.classList.remove('active');
+            }
+            function showPreview() {
+                preview.innerHTML = renderNotesMarkdown(input.value);
+                preview.querySelectorAll('input[type="checkbox"][data-check-line]').forEach(cb => {
+                    cb.addEventListener('change', () => {
+                        toggleChecklistLine(input, parseInt(cb.getAttribute('data-check-line'), 10));
+                        showPreview();
+                    });
+                });
+                input.style.display = 'none';
+                preview.style.display = 'block';
+                previewBtn.classList.add('active');
+                editBtn.classList.remove('active');
+            }
+            editBtn.addEventListener('click', showEdit);
+            previewBtn.addEventListener('click', showPreview);
         }
 
         function switchTab(tab) {
@@ -2255,8 +2832,8 @@
             labels = data.labels || [];
             measurementsData = data.measurements || [];
         });
-        function saveLabelsData() { kerphSaveProjectLabels3D(labels).catch(() => {}); }
-        function saveMeasurementsData() { kerphSaveProjectMeasurements3D(measurementsData).catch(() => {}); }
+        function saveLabelsData() { window.kerphTrackSave(kerphSaveProjectLabels3D(labels).catch(() => {})); }
+        function saveMeasurementsData() { window.kerphTrackSave(kerphSaveProjectMeasurements3D(measurementsData).catch(() => {})); }
 
         // Called at the START of every mutating gesture (drag arm, rotate arm, nudge, typed
         // edit, add, remove) — not after — so Undo always rewinds to the state right before

@@ -4,7 +4,7 @@
     <script>if (localStorage.getItem('kerphComingSoonBypass') !== 'true') { location.replace('coming-soon.html'); }</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kerph - Cool Tool Reviews</title>
+    <title>Kerph - Quote Builder</title>
     <style>
         * {
             box-sizing: border-box;
@@ -16,8 +16,9 @@
         body {
             background-color: #eef1f6;
             color: #0f172a;
-            min-height: 100vh;
+            height: 100vh;
             width: 100vw;
+            overflow: hidden;
         }
 
         header {
@@ -135,12 +136,9 @@
         .mini-btn:hover { background-color: #eef2ff; border-color: #2563eb; }
         .mini-btn.danger { color: #b91c1c; }
         .mini-btn.danger:hover { background-color: #fef2f2; border-color: #b91c1c; }
-        .mini-btn.primary { background-color: #1e3a8a; color: #ffffff; border-color: #1e3a8a; }
-        .mini-btn.primary:hover { background-color: #1e40af; }
 
         .input-box { width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; font-weight: 600; }
         .select-box { width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; font-weight: 600; background: #f8fafc; }
-        textarea.input-box { resize: vertical; min-height: 90px; font-family: inherit; font-weight: 400; }
 
         .modal-overlay { position: fixed; inset: 0; background-color: rgba(15, 23, 42, 0.5); z-index: 3000; display: flex; align-items: center; justify-content: center; padding: 24px; }
         .modal-box { background-color: #ffffff; border-radius: 12px; padding: 24px; width: 320px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4); }
@@ -193,122 +191,7 @@
         }
         .upgrade-nudge.visible { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
 
-        /* ---------- PAGE CONTENT ---------- */
-        main {
-            max-width: 1100px;
-            margin: 0 auto;
-            padding: 40px 24px 80px;
-        }
-
-        .reviews-eyebrow {
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            color: #b23b3b;
-            margin-bottom: 8px;
-        }
-        .reviews-title { font-size: 28px; font-weight: 800; color: #0f172a; margin-bottom: 10px; }
-        .reviews-subtitle { font-size: 14.5px; color: #4b5563; line-height: 1.6; margin-bottom: 28px; max-width: 70ch; }
-
-        .reviews-toolbar {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            align-items: center;
-            margin-bottom: 24px;
-            background-color: #ffffff;
-            border: 1px solid #cbd5e1;
-            border-radius: 12px;
-            padding: 14px;
-        }
-        .reviews-toolbar .input-box, .reviews-toolbar .select-box { width: auto; }
-        #reviewSearchInput { flex: 1; min-width: 160px; }
-        #reviewCategoryFilter, #reviewSortSelect { min-width: 150px; }
-        #writeReviewBtn { flex: none; margin-left: auto; padding: 10px 18px; }
-
-        .reviews-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 16px;
-        }
-
-        .review-card {
-            background-color: #ffffff;
-            border: 1px solid #cbd5e1;
-            border-radius: 12px;
-            padding: 18px;
-            box-shadow: 0 10px 25px -12px rgba(15, 23, 42, 0.15);
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .review-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
-        .review-tool-name { font-size: 15.5px; font-weight: 800; color: #0f172a; line-height: 1.3; }
-        .review-category-tag {
-            font-size: 9.5px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.03em;
-            color: #1e3a8a;
-            background-color: #e0e7ff;
-            padding: 3px 8px;
-            border-radius: 999px;
-            white-space: nowrap;
-            flex-shrink: 0;
-        }
-
-        .star-rating { color: #d97706; font-size: 15px; letter-spacing: 1px; }
-        .star-rating .star-empty { color: #d1d5db; }
-
-        .review-text { font-size: 13px; color: #374151; line-height: 1.55; flex: 1; white-space: pre-wrap; }
-
-        .review-card-footer {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 8px;
-            padding-top: 8px;
-            border-top: 1px solid #f1f5f9;
-            font-size: 11.5px;
-            color: #6b7280;
-        }
-        .review-author { font-weight: 700; color: #1e293b; }
-        .review-date { color: #9ca3af; }
-
-        .helpful-btn {
-            border: 1px solid #cbd5e1;
-            background-color: #f8fafc;
-            border-radius: 999px;
-            padding: 4px 10px;
-            font-size: 11px;
-            font-weight: 700;
-            color: #4b5563;
-            cursor: pointer;
-            white-space: nowrap;
-        }
-        .helpful-btn:hover { background-color: #eef2ff; border-color: #2563eb; }
-        .helpful-btn.active { background-color: #dbeafe; border-color: #2563eb; color: #1e3a8a; }
-
-        .reviews-empty {
-            grid-column: 1 / -1;
-            text-align: center;
-            padding: 60px 20px;
-            color: #6b7280;
-            background-color: #ffffff;
-            border: 1px dashed #cbd5e1;
-            border-radius: 12px;
-        }
-        .reviews-empty-icon { font-size: 40px; margin-bottom: 10px; }
-        .reviews-empty-title { font-size: 15px; font-weight: 700; color: #1e293b; margin-bottom: 6px; }
-        .reviews-empty-desc { font-size: 12.5px; max-width: 40ch; margin: 0 auto; line-height: 1.6; }
-
-        .star-picker { display: flex; gap: 4px; font-size: 26px; }
-        .star-picker span { cursor: pointer; color: #d1d5db; transition: color 0.1s ease; }
-        .star-picker span.filled { color: #d97706; }
-        .header-field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; width: 100%; }
-            .header-quick-links { display: flex; align-items: center; gap: 6px; font-size: 11px; }
+        .header-quick-links { display: flex; align-items: center; gap: 6px; font-size: 11px; }
         .header-quick-links a { color: #6b7280; font-weight: 600; text-decoration: none; }
         .header-quick-links a:hover { color: #1e3a8a; text-decoration: underline; }
         .header-quick-links-sep { color: #cbd5e1; }
@@ -316,47 +199,103 @@
         /* ---------- SHOP JIGS DROPDOWN ---------- */
         .jigs-dropdown { position: relative; }
         .jigs-dropdown-btn {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 13px;
-            font-weight: 700;
-            color: #ffffff;
-            background-color: #1e3a8a;
-            padding: 9px 14px;
-            border: none;
-            border-radius: 999px;
-            cursor: pointer;
-            white-space: nowrap;
+            display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700;
+            color: #ffffff; background-color: #1e3a8a; padding: 9px 14px; border: none;
+            border-radius: 999px; cursor: pointer; white-space: nowrap;
         }
         .jigs-dropdown-btn:hover { background-color: #172d68; }
         .jigs-dropdown-caret { font-size: 9px; transition: transform 0.15s ease; }
         .jigs-dropdown.open .jigs-dropdown-caret { transform: rotate(180deg); }
         .jigs-dropdown-menu {
-            display: none;
-            position: absolute;
-            top: calc(100% + 8px);
-            left: 0;
-            background-color: #ffffff;
-            border: 1px solid #cbd5e1;
-            border-radius: 10px;
-            box-shadow: 0 12px 30px -8px rgba(15, 23, 42, 0.3);
-            padding: 6px;
-            min-width: 210px;
-            z-index: 500;
+            display: none; position: absolute; top: calc(100% + 8px); left: 0;
+            background-color: #ffffff; border: 1px solid #cbd5e1; border-radius: 10px;
+            box-shadow: 0 12px 30px -8px rgba(15, 23, 42, 0.3); padding: 6px; min-width: 230px; z-index: 500;
         }
         .jigs-dropdown.open .jigs-dropdown-menu { display: block; }
-        .jigs-dropdown-menu a {
-            display: block;
-            padding: 8px 10px;
-            border-radius: 6px;
-            font-size: 13px;
-            font-weight: 600;
-            color: #1e293b;
-            text-decoration: none;
-        }
+        .jigs-dropdown-menu a { display: block; padding: 8px 10px; border-radius: 6px; font-size: 13px; font-weight: 600; color: #1e293b; text-decoration: none; }
         .jigs-dropdown-menu a:hover { background-color: #eef2ff; color: #1e3a8a; }
         .jigs-dropdown-menu-sep { height: 1px; background-color: #e2e8f0; margin: 5px 2px; }
+
+        /* ---------- SIDEBAR / CANVAS LAYOUT (matches Cut List Optimizer) ---------- */
+        #sidebar-panel {
+            position: absolute; top: 150px; left: 0; width: 300px; height: calc(100vh - 150px);
+            background-color: #ffffff; border-right: 1px solid #cbd5e1; padding: 20px; overflow-y: auto;
+        }
+        .sidebar-title { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: #6b7280; font-weight: 700; margin-bottom: 10px; margin-top: 18px; }
+        .sidebar-title:first-child { margin-top: 0; }
+        .empty-hint { font-size: 12px; color: #9ca3af; font-style: italic; line-height: 1.5; margin-bottom: 12px; }
+
+        .panel-item {
+            background-color: #f9fafb; border: 1px solid #cbd5e1; border-left: 4px solid #1e3a8a;
+            border-radius: 6px; padding: 10px 12px; margin-bottom: 8px;
+            display: flex; align-items: center; justify-content: space-between; gap: 8px;
+        }
+        .panel-item-title { font-size: 13px; font-weight: 700; color: #1e293b; }
+        .panel-item-dims { font-size: 11px; color: #6b7280; margin-top: 2px; }
+        .panel-item-actions { display: flex; gap: 4px; flex-shrink: 0; }
+        .panel-item-actions .mini-btn { flex: none; padding: 5px 8px; font-size: 11px; }
+
+        .settings-row { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; }
+        .settings-row-split { display: flex; gap: 8px; }
+        .settings-row-split .settings-row { flex: 1; margin-bottom: 0; }
+
+        .new-layout-btn { padding: 8px 14px; border: none; border-radius: 8px; background-color: #1e3a8a; color: #ffffff; font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap; text-decoration: none; }
+        .new-layout-btn:hover { background-color: #172d68; }
+
+        #canvas-area {
+            position: absolute; top: 150px; left: 300px; width: calc(100vw - 300px); height: calc(100vh - 150px);
+            overflow-y: auto; padding: 40px;
+        }
+        #quoteWrap { max-width: 720px; margin: 0 auto; }
+
+        .quote-header-card {
+            background-color: #ffffff; border: 1px solid #cbd5e1; border-radius: 12px; padding: 24px; margin-bottom: 20px;
+        }
+        .quote-header-title { font-size: 22px; font-weight: 800; color: #0f172a; }
+        .quote-header-meta { font-size: 13px; color: #6b7280; margin-top: 6px; line-height: 1.6; }
+
+        .quote-breakdown-card {
+            background-color: #ffffff; border: 1px solid #cbd5e1; border-radius: 12px; padding: 24px; margin-bottom: 20px;
+        }
+        .quote-line { display: flex; justify-content: space-between; align-items: baseline; padding: 7px 0; font-size: 13.5px; color: #1e293b; }
+        .quote-line-label { color: #4b5563; }
+        .quote-line-value { font-weight: 700; font-variant-numeric: tabular-nums; }
+        .quote-line-sub { border-top: 1px dashed #e2e8f0; margin-top: 4px; padding-top: 10px; font-weight: 800; }
+        .quote-line-total { border-top: 2px solid #1e3a8a; margin-top: 10px; padding-top: 14px; font-size: 19px; font-weight: 800; color: #1e3a8a; }
+
+        .actual-card { background-color: #ffffff; border: 1px solid #cbd5e1; border-radius: 12px; padding: 24px; margin-bottom: 20px; }
+        .actual-card-title { font-size: 15px; font-weight: 800; color: #0f172a; margin-bottom: 4px; }
+        .actual-card-desc { font-size: 12px; color: #6b7280; margin-bottom: 16px; line-height: 1.5; }
+        .actual-input-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+        .actual-field { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 130px; }
+        .actual-field label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: #6b7280; }
+        .actual-field input { padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; font-weight: 600; }
+        .variance-positive { color: #16a34a; }
+        .variance-negative { color: #dc2626; }
+
+        .placeholder-box { max-width: 420px; text-align: center; padding: 32px; margin: 60px auto 0; }
+        .placeholder-icon { font-size: 40px; margin-bottom: 16px; }
+        .placeholder-title { font-size: 18px; font-weight: 700; color: #0f172a; margin-bottom: 8px; }
+        .placeholder-desc { font-size: 13px; color: #6b7280; line-height: 1.6; }
+
+        .print-only-header { display: none; }
+        .print-watermark { display: none; }
+
+        @media print {
+            @page { size: portrait; margin: 0.6in; }
+            body { background: #fff !important; overflow: visible !important; height: auto !important; }
+            header, #sidebar-panel, .upgrade-nudge, #exportQuotePdfBtn { display: none !important; }
+            .print-only-header { display: block !important; margin-bottom: 18px; }
+            .print-only-header .print-title { font-size: 22px; font-weight: 800; color: #0f172a; }
+            .print-only-header .print-meta { font-size: 12px; color: #475569; margin-top: 2px; }
+            .print-watermark.active {
+                display: block !important; position: fixed; top: 50%; left: 50%;
+                transform: translate(-50%, -50%) rotate(-30deg); font-size: 60px; font-weight: 800;
+                color: rgba(30, 58, 138, 0.16); letter-spacing: 0.04em; white-space: nowrap; z-index: 9999; pointer-events: none;
+            }
+            #canvas-area { position: static !important; width: auto !important; height: auto !important; overflow: visible !important; padding: 0 !important; top: auto !important; left: auto !important; }
+            .actual-card { display: none !important; }
+        }
     </style>
 </head>
 <body>
@@ -375,10 +314,10 @@
                 <option value="dust-collection.html">Dust Collection</option>
                 <option value="project-designer.html">Project Designer</option>
                 <option value="cutlist-optimizer.html">Cut List Optimizer</option>
-                <option value="quote-builder.html">Quote Builder</option>
+                <option value="quote-builder.html" selected>Quote Builder</option>
                 <option value="find-a-builder.html">Find a Builder</option>
                 <option value="shop-3d-viewer.html">3D Shop Viewer</option>
-                <option value="tool-reviews.html" selected>Cool Tool Reviews</option>
+                <option value="tool-reviews.html">Cool Tool Reviews</option>
                 <option value="shop-showcase.html">Shop Showcase</option>
                 <option value="portfolio.html">Portfolio</option>
                 <option value="print-library.html">3D Print Library</option>
@@ -407,7 +346,7 @@
                 </div>
                 <a href="#" class="header-sign-in-mode-toggle" id="headerSignInModeToggle">New here? Create an account</a>
             </div>
-            <button type="button" id="accountBtn" class="account-btn plan-free" title="Account &amp; Plan Settings — border color shows your plan level" style="display:none;">
+            <button type="button" id="accountBtn" class="account-btn plan-free" title="Account &amp; Plan Settings" style="display:none;">
                 <span class="account-avatar" id="accountAvatarPreview">&#128100;</span>
                 <span class="account-btn-text">
                     <span class="account-btn-name" id="accountBtnLabel">Account</span>
@@ -434,14 +373,14 @@
             <div class="modal-title">Account Settings</div>
             <div class="modal-warning">Your account (username, avatar, sign-in) is real and synced via Kerph. Saved layouts, projects, tools, Showcase posts, and reviews are synced too — available on any device you sign into.</div>
 
-            <div class="header-field" style="align-items:center;">
+            <div class="header-field" style="align-items:center; display:flex; flex-direction:column; gap:4px;">
                 <div class="account-avatar-large" id="accountAvatarLarge">&#128100;</div>
                 <input type="file" id="accountAvatarInput" accept="image/*" style="display:none;">
                 <button type="button" id="accountAvatarBtn" class="mini-btn" style="margin-top:10px; flex:none;">Upload Photo</button>
                 <div class="account-member-since" id="accountMemberSince"></div>
             </div>
 
-            <div class="header-field">
+            <div class="header-field" style="display:flex; flex-direction:column; gap:4px; margin-top:12px;">
                 <label class="header-field-label" for="accountUsernameInput">Username</label>
                 <input type="text" class="input-box" id="accountUsernameInput" placeholder="Choose a username">
             </div>
@@ -463,7 +402,7 @@
                 <div class="account-plan-upsell" id="accountPlanUpsell" style="display:none;">Free includes 1 saved shop layout; custom shop shapes and unlimited saves unlock on Pro.</div>
             </div>
 
-            <div class="header-field" style="margin-top:10px;">
+            <div class="header-field" style="display:flex; flex-direction:column; gap:4px; margin-top:10px;">
                 <label class="header-field-label" for="accountUnitsSelect">Preferred Units</label>
                 <select class="select-box" id="accountUnitsSelect">
                     <option value="imperial">Imperial (ft / in)</option>
@@ -471,7 +410,7 @@
                 </select>
             </div>
 
-            <div class="header-field" style="margin-top:14px;">
+            <div class="header-field" style="display:flex; flex-direction:column; gap:4px; margin-top:14px;">
                 <label class="header-field-label">Saved Layouts</label>
                 <div id="accountLayoutsList" class="account-layouts-list"></div>
             </div>
@@ -500,79 +439,133 @@
         </div>
     </div>
 
-    <div class="modal-overlay" id="reviewModalOverlay" style="display:none;">
-        <div class="modal-box" style="width:400px;">
-            <div class="modal-title">Write a Review</div>
-
-            <div class="header-field">
-                <label class="header-field-label" for="reviewToolName">Tool Name</label>
-                <input type="text" class="input-box" id="reviewToolName" placeholder="e.g. SawStop PCS175">
+    <div class="modal-overlay" id="materialModalOverlay" style="display:none;">
+        <div class="modal-box">
+            <div class="modal-title" id="materialModalTitle">Add Material</div>
+            <div class="header-field" style="width:100%;">
+                <label class="header-field-label" for="materialNameInput">Name</label>
+                <input type="text" class="input-box" id="materialNameInput" placeholder="e.g. 3/4&quot; Plywood (4 sheets)">
             </div>
-
-            <div class="header-field">
-                <label class="header-field-label" for="reviewCategorySelect">Category</label>
-                <select class="select-box" id="reviewCategorySelect"></select>
+            <div class="header-field" style="width:100%; margin-top:10px;">
+                <label class="header-field-label" for="materialCostInput">Cost ($)</label>
+                <input type="number" class="input-box" id="materialCostInput" min="0" step="0.01">
             </div>
-
-            <div class="header-field">
-                <label class="header-field-label">Your Rating</label>
-                <div class="star-picker" id="reviewStarPicker">
-                    <span data-value="1">&#9733;</span>
-                    <span data-value="2">&#9733;</span>
-                    <span data-value="3">&#9733;</span>
-                    <span data-value="4">&#9733;</span>
-                    <span data-value="5">&#9733;</span>
-                </div>
-            </div>
-
-            <div class="header-field">
-                <label class="header-field-label" for="reviewText">Review</label>
-                <textarea class="input-box" id="reviewText" placeholder="What do you like or dislike about it? Would you buy it again?"></textarea>
-            </div>
-
-            <div class="header-field">
-                <label class="header-field-label" for="reviewAuthorName">Your Name</label>
-                <input type="text" class="input-box" id="reviewAuthorName" placeholder="Anonymous">
-            </div>
-
             <div class="modal-actions">
-                <button type="button" id="reviewCancelBtn" class="mini-btn">Cancel</button>
-                <button type="button" id="reviewSubmitBtn" class="mini-btn modal-primary-btn">Post Review</button>
+                <button type="button" id="materialCancelBtn" class="mini-btn">Cancel</button>
+                <button type="button" id="materialSaveBtn" class="mini-btn modal-primary-btn">Save</button>
             </div>
         </div>
     </div>
 
     <div class="upgrade-nudge" id="upgradeNudge"></div>
 
-    <main>
-        <div class="reviews-eyebrow">Community</div>
-        <div class="reviews-title">Cool Tool Reviews</div>
-        <div class="reviews-subtitle">Real feedback from real shops — before you buy, see what other woodworkers actually think. Every review here is visible to the whole Kerph community.</div>
-
-        <div class="reviews-toolbar">
-            <input type="text" class="input-box" id="reviewSearchInput" placeholder="&#128269; Search tool names&hellip;">
-            <select class="select-box" id="reviewCategoryFilter"></select>
-            <select class="select-box" id="reviewSortSelect">
-                <option value="newest">Newest</option>
-                <option value="highest">Highest Rated</option>
-                <option value="helpful">Most Helpful</option>
-            </select>
-            <button type="button" id="writeReviewBtn" class="mini-btn primary">+ Write a Review</button>
+    <div id="sidebar-panel">
+        <div class="sidebar-title">Quote Info</div>
+        <div class="settings-row">
+            <label class="header-field-label" for="quoteNameInput">Quote Name</label>
+            <input type="text" class="input-box" id="quoteNameInput" placeholder="e.g. Smith Kitchen Cabinets">
+        </div>
+        <div class="settings-row">
+            <label class="header-field-label" for="clientNameInput">Client Name</label>
+            <input type="text" class="input-box" id="clientNameInput" placeholder="e.g. Jane Smith">
+        </div>
+        <div class="settings-row">
+            <label class="header-field-label" for="projectNameInput">Project</label>
+            <input type="text" class="input-box" id="projectNameInput" placeholder="e.g. Kitchen cabinet rebuild">
+        </div>
+        <div class="settings-row">
+            <label class="header-field-label" for="quoteDateInput">Date</label>
+            <input type="date" class="input-box" id="quoteDateInput">
         </div>
 
-        <div class="reviews-grid" id="reviewsGrid"></div>
-    </main>
+        <div class="sidebar-title">Materials</div>
+        <div class="empty-hint" id="materialsEmptyHint">No materials yet. Add each material or supply cost as its own line.</div>
+        <div id="materialsList"></div>
+        <button type="button" class="mini-btn" id="addMaterialBtn" style="width:100%;">+ Add Material</button>
+
+        <div class="sidebar-title">Labor</div>
+        <div class="settings-row-split">
+            <div class="settings-row">
+                <label class="header-field-label" for="laborHoursInput">Hours</label>
+                <input type="number" class="input-box" id="laborHoursInput" min="0" step="0.25" value="0">
+            </div>
+            <div class="settings-row">
+                <label class="header-field-label" for="laborRateInput">$ / hour</label>
+                <input type="number" class="input-box" id="laborRateInput" min="0" step="1" value="0">
+            </div>
+        </div>
+
+        <div class="sidebar-title">Consumables</div>
+        <div class="settings-row">
+            <label class="header-field-label" for="consumablesInput">Glue, finish, hardware, etc. ($)</label>
+            <input type="number" class="input-box" id="consumablesInput" min="0" step="1" value="0">
+        </div>
+
+        <div class="sidebar-title">Overhead &amp; Margin</div>
+        <div class="settings-row-split">
+            <div class="settings-row">
+                <div class="header-field-label-row">
+                    <label class="header-field-label" for="overheadPctInput">Overhead %</label>
+                    <span class="help-tip" tabindex="0">?<span class="help-tip-bubble">Your real shop cost of doing business — rent, insurance, tool depreciation — spread across jobs as a percentage of materials + labor + consumables.</span></span>
+                </div>
+                <input type="number" class="input-box" id="overheadPctInput" min="0" step="1" value="0">
+            </div>
+            <div class="settings-row">
+                <div class="header-field-label-row">
+                    <label class="header-field-label" for="marginPctInput">Margin %</label>
+                    <span class="help-tip" tabindex="0">?<span class="help-tip-bubble">Your markup/profit on top of true cost (materials + labor + consumables + overhead) — this is what actually pays you beyond breaking even.</span></span>
+                </div>
+                <input type="number" class="input-box" id="marginPctInput" min="0" step="1" value="0">
+            </div>
+        </div>
+
+        <button type="button" id="saveQuoteBtn" class="new-layout-btn" style="width:100%; margin-top:16px;">Save Quote</button>
+
+        <div class="sidebar-title" style="margin-top:20px;">My Quotes</div>
+        <div class="empty-hint" id="quotesListEmptyHint">No saved quotes yet.</div>
+        <div id="quotesList"></div>
+    </div>
+
+    <div class="print-only-header" id="printOnlyHeader"></div>
+    <div class="print-watermark" id="printWatermark">KERPH &mdash; FREE PLAN</div>
+
+    <div id="canvas-area">
+        <div id="quoteWrap">
+            <div class="quote-header-card">
+                <div class="quote-header-title" id="quoteDisplayTitle">New Quote</div>
+                <div class="quote-header-meta" id="quoteDisplayMeta"></div>
+            </div>
+
+            <div class="quote-breakdown-card" id="quoteBreakdown"></div>
+
+            <button type="button" id="exportQuotePdfBtn" class="mini-btn" style="display:block; margin: 0 auto 20px;">&#128196; Export Client PDF</button>
+
+            <div class="actual-card">
+                <div class="actual-card-title">Actual Costs (fill in after the job)</div>
+                <div class="actual-card-desc">Optional — once the job's done, log what it really cost so you can see your true profit vs. what you quoted. Not included in the client PDF.</div>
+                <div class="actual-input-row">
+                    <div class="actual-field">
+                        <label for="actualMaterialsInput">Actual materials ($)</label>
+                        <input type="number" id="actualMaterialsInput" min="0" step="1">
+                    </div>
+                    <div class="actual-field">
+                        <label for="actualLaborHoursInput">Actual labor (hrs)</label>
+                        <input type="number" id="actualLaborHoursInput" min="0" step="0.25">
+                    </div>
+                    <div class="actual-field">
+                        <label for="actualConsumablesInput">Actual consumables ($)</label>
+                        <input type="number" id="actualConsumablesInput" min="0" step="1">
+                    </div>
+                </div>
+                <div id="actualResults"></div>
+            </div>
+        </div>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.7/dist/umd/supabase.js"></script>
     <script src="supabase-client.js"></script>
     <script>
-        /* ---------- SHARED STATE KEYS (must match workshop-planner.html / index.html exactly) ---------- */
         const PLAN_KEY = 'kerphPlan';
-        /* ACCOUNT_KEY/AUTH_KEY removed — account + sign-in are now real, Supabase-backed
-           (see supabase-client.js) instead of localStorage flags. */
-        const TOOL_STATUS_KEY = 'kerphToolStatus';
-        const LAYOUTS_KEY = 'kerphSavedLayouts';
-        const LAYOUT_TYPE_LABELS = { workshop: 'Workshop', 'dust-collection': 'Dust Collection', lighting: 'Lighting' };
 
         function showToast(message) {
             const nudge = document.getElementById('upgradeNudge');
@@ -615,13 +608,10 @@
         }
 
         let cachedToolStatuses = {};
-        function loadToolStatuses() {
-            return cachedToolStatuses;
-        }
+        function loadToolStatuses() { return cachedToolStatuses; }
         let cachedSavedLayouts = [];
-        function loadLayouts() {
-            return cachedSavedLayouts;
-        }
+        function loadLayouts() { return cachedSavedLayouts; }
+
         function renderAccountStats() {
             const row = document.getElementById('accountStatsRow');
             if (!row) return;
@@ -649,6 +639,7 @@
             select.value = plan;
             upsell.style.display = plan === 'free' ? 'block' : 'none';
         }
+        const LAYOUT_TYPE_LABELS = { workshop: 'Workshop', 'dust-collection': 'Dust Collection', lighting: 'Lighting' };
         function renderAccountLayoutsList() {
             const list = document.getElementById('accountLayoutsList');
             if (!list) return;
@@ -858,169 +849,8 @@
             updateHeaderSignInState();
         }
 
-        /* ---------- TOOL REVIEWS ----------
-           Real, Supabase-backed multi-user content now — tool_reviews (public-read) +
-           tool_review_votes (real per-user "helpful" votes, denormalized onto helpful_count
-           via a DB trigger). cachedReviews/cachedMyVotes are refreshed on every renderReviews()
-           call, not just once, since this is now real multi-user data other people can change
-           between renders. */
-        const REVIEW_CATEGORIES = [
-            'Table Saws', 'Bandsaws', 'Jointers & Planers', 'Sanding', 'Drilling & Boring',
-            'Turning', 'Routing', 'Crosscut & Miter', 'Dust Collection', 'Hand Tools',
-            'Measuring & Layout', 'Finishing', 'Storage', 'Other'
-        ];
-        let cachedReviews = [];
-        let cachedMyVotes = [];
-
-        function starsHtml(rating) {
-            let html = '';
-            for (let i = 1; i <= 5; i++) {
-                html += i <= rating ? '&#9733;' : '<span class="star-empty">&#9733;</span>';
-            }
-            return html;
-        }
-
-        function populateCategorySelects() {
-            const filterSel = document.getElementById('reviewCategoryFilter');
-            filterSel.innerHTML = '<option value="">All Categories</option>' +
-                REVIEW_CATEGORIES.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
-
-            const formSel = document.getElementById('reviewCategorySelect');
-            formSel.innerHTML = REVIEW_CATEGORIES.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
-        }
-
-        async function renderReviews() {
-            const grid = document.getElementById('reviewsGrid');
-            const query = document.getElementById('reviewSearchInput').value.trim().toLowerCase();
-            const category = document.getElementById('reviewCategoryFilter').value;
-            const sort = document.getElementById('reviewSortSelect').value;
-
-            const [reviewsResult, votesResult] = await Promise.all([kerphLoadToolReviews(), kerphLoadMyReviewVotes()]);
-            cachedReviews = reviewsResult.data;
-            cachedMyVotes = votesResult.data;
-
-            let reviews = cachedReviews;
-            if (query) reviews = reviews.filter(r => r.tool_name.toLowerCase().includes(query));
-            if (category) reviews = reviews.filter(r => r.category === category);
-
-            reviews = reviews.slice();
-            if (sort === 'newest') reviews.sort((a, b) => b.created_at.localeCompare(a.created_at));
-            else if (sort === 'highest') reviews.sort((a, b) => b.rating - a.rating || b.created_at.localeCompare(a.created_at));
-            else if (sort === 'helpful') reviews.sort((a, b) => (b.helpful_count || 0) - (a.helpful_count || 0) || b.created_at.localeCompare(a.created_at));
-
-            if (!reviews.length) {
-                const hasAny = cachedReviews.length > 0;
-                grid.innerHTML = `
-                    <div class="reviews-empty">
-                        <div class="reviews-empty-icon">${hasAny ? '&#128269;' : '&#11088;'}</div>
-                        <div class="reviews-empty-title">${hasAny ? 'No reviews match your search' : 'No reviews yet'}</div>
-                        <div class="reviews-empty-desc">${hasAny ? 'Try a different search term or category.' : 'Be the first to review a tool — click "+ Write a Review" above.'}</div>
-                    </div>
-                `;
-                return;
-            }
-
-            grid.innerHTML = reviews.map(r => {
-                const dateStr = new Date(r.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
-                const isVoted = cachedMyVotes.includes(r.id);
-                return `
-                    <div class="review-card">
-                        <div class="review-card-top">
-                            <div class="review-tool-name">${escapeHtml(r.tool_name)}</div>
-                            <div class="review-category-tag">${escapeHtml(r.category)}</div>
-                        </div>
-                        <div class="star-rating">${starsHtml(r.rating)}</div>
-                        <div class="review-text">${escapeHtml(r.review_text)}</div>
-                        <div class="review-card-footer">
-                            <span><span class="review-author">${escapeHtml(r.author || 'Anonymous')}</span> &middot; <span class="review-date">${dateStr}</span></span>
-                            <button type="button" class="helpful-btn${isVoted ? ' active' : ''}" data-id="${r.id}">&#128077; Helpful${r.helpful_count ? ' (' + r.helpful_count + ')' : ''}</button>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-
-            grid.querySelectorAll('.helpful-btn').forEach(btn => {
-                btn.addEventListener('click', async () => {
-                    const id = btn.getAttribute('data-id');
-                    if (!isSignedIn()) { showToast('Sign in (top right) to mark a review helpful.'); return; }
-                    const currentlyVoted = cachedMyVotes.includes(id);
-                    await kerphToggleReviewHelpful(id, currentlyVoted);
-                    renderReviews();
-                });
-            });
-        }
-
-        function initReviewModal() {
-            const overlay = document.getElementById('reviewModalOverlay');
-            const openBtn = document.getElementById('writeReviewBtn');
-            const cancelBtn = document.getElementById('reviewCancelBtn');
-            const submitBtn = document.getElementById('reviewSubmitBtn');
-            const toolNameInput = document.getElementById('reviewToolName');
-            const categorySelect = document.getElementById('reviewCategorySelect');
-            const textInput = document.getElementById('reviewText');
-            const authorInput = document.getElementById('reviewAuthorName');
-            const starPicker = document.getElementById('reviewStarPicker');
-            let selectedRating = 0;
-
-            function renderStarPicker() {
-                starPicker.querySelectorAll('span').forEach(s => {
-                    s.classList.toggle('filled', parseInt(s.getAttribute('data-value'), 10) <= selectedRating);
-                });
-            }
-            starPicker.querySelectorAll('span').forEach(s => {
-                s.addEventListener('click', () => {
-                    selectedRating = parseInt(s.getAttribute('data-value'), 10);
-                    renderStarPicker();
-                });
-            });
-
-            function openModal() {
-                if (!isSignedIn()) { showToast('Sign in (top right) to write a review.'); return; }
-                toolNameInput.value = '';
-                categorySelect.value = REVIEW_CATEGORIES[0];
-                textInput.value = '';
-                authorInput.value = loadAccount().username || '';
-                selectedRating = 0;
-                renderStarPicker();
-                overlay.style.display = 'flex';
-                toolNameInput.focus();
-            }
-
-            openBtn.addEventListener('click', openModal);
-            cancelBtn.addEventListener('click', () => { overlay.style.display = 'none'; });
-
-            submitBtn.addEventListener('click', async () => {
-                const toolName = toolNameInput.value.trim();
-                const text = textInput.value.trim();
-                if (!toolName) { showToast('Enter the tool name.'); toolNameInput.focus(); return; }
-                if (!selectedRating) { showToast('Pick a star rating.'); return; }
-                if (!text) { showToast('Write a few words about it.'); textInput.focus(); return; }
-                if (!isSignedIn()) { showToast('Sign in (top right) to write a review.'); return; }
-
-                submitBtn.disabled = true;
-                try {
-                    const { error } = await kerphCreateToolReview({
-                        toolName,
-                        category: categorySelect.value,
-                        rating: selectedRating,
-                        text,
-                        author: authorInput.value.trim() || 'Anonymous'
-                    });
-                    if (error) { showToast('Could not post that review.'); return; }
-                    overlay.style.display = 'none';
-                    showToast('Review posted.');
-                    renderReviews();
-                } finally {
-                    submitBtn.disabled = false;
-                }
-            });
-        }
-
         document.getElementById('pageNavSelect').addEventListener('change', (e) => { window.location.href = e.target.value; });
 
-        // Standalone header dropdown (not folded into pageNavSelect) so Shop Jigs' four
-        // tools are one click away from every page instead of being buried as just another
-        // option in a 9-item combobox.
         function initJigsDropdown() {
             const dropdown = document.getElementById('jigsDropdown');
             const btn = document.getElementById('jigsDropdownBtn');
@@ -1043,19 +873,263 @@
             kerphLoadSavedLayouts().then(({ data }) => { cachedSavedLayouts = data || []; });
         });
 
-        kerphAuthReady.then(() => {
+        kerphAuthReady.then(async () => {
             initHeaderSignIn();
             initAccountPanel();
-            // Public content — renders for signed-out visitors too, just needed auth to
-            // resolve first so kerphLoadMyReviewVotes() reflects the right (or no) user.
-            renderReviews();
+            const { data } = await kerphLoadQuotes();
+            savedQuotes = data || [];
+            renderQuotesList();
         });
 
-        populateCategorySelects();
-        initReviewModal();
-        document.getElementById('reviewSearchInput').addEventListener('input', renderReviews);
-        document.getElementById('reviewCategoryFilter').addEventListener('change', renderReviews);
-        document.getElementById('reviewSortSelect').addEventListener('change', renderReviews);
+        function fmtMoney(n) {
+            const sign = n < 0 ? '-' : '';
+            return `${sign}$${Math.abs(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`;
+        }
+
+        /* =====================================================================
+           QUOTE STATE + MATH — cost-plus pricing:
+             subtotal = materials + labor + consumables
+             cost     = subtotal + overhead (overhead is a real cost of doing
+                        business, priced in as a % of the job's raw cost)
+             total    = cost + margin (margin is the actual profit — clean by
+                        construction, since total - cost === marginAmt exactly)
+           ===================================================================== */
+        function blankQuote() {
+            return {
+                id: null, name: '', clientName: '', projectName: '',
+                date: new Date().toISOString().slice(0, 10),
+                materials: [], laborHours: 0, laborRate: 0, consumables: 0,
+                overheadPct: 0, marginPct: 0,
+                actual: { materialsCost: null, laborHours: null, consumables: null }
+            };
+        }
+        let quote = blankQuote();
+        let savedQuotes = [];
+        let editingMaterialId = null;
+
+        function computeQuoteTotals(q) {
+            const materialsCost = q.materials.reduce((s, m) => s + (m.cost || 0), 0);
+            const laborCost = (q.laborHours || 0) * (q.laborRate || 0);
+            const consumables = q.consumables || 0;
+            const subtotal = materialsCost + laborCost + consumables;
+            const overheadAmt = subtotal * ((q.overheadPct || 0) / 100);
+            const costTotal = subtotal + overheadAmt;
+            const marginAmt = costTotal * ((q.marginPct || 0) / 100);
+            const clientTotal = costTotal + marginAmt;
+            return { materialsCost, laborCost, consumables, subtotal, overheadAmt, costTotal, marginAmt, clientTotal };
+        }
+
+        function computeActualTotals(q) {
+            const a = q.actual || {};
+            if (a.materialsCost == null && a.laborHours == null && a.consumables == null) return null;
+            const materialsCost = a.materialsCost || 0;
+            const laborCost = (a.laborHours || 0) * (q.laborRate || 0);
+            const consumables = a.consumables || 0;
+            const quoted = computeQuoteTotals(q);
+            const actualCostTotal = materialsCost + laborCost + consumables + quoted.overheadAmt;
+            return { materialsCost, laborCost, consumables, actualCostTotal, actualProfit: quoted.clientTotal - actualCostTotal, quotedProfit: quoted.marginAmt };
+        }
+
+        function readQuoteFromForm() {
+            quote.name = document.getElementById('quoteNameInput').value.trim();
+            quote.clientName = document.getElementById('clientNameInput').value.trim();
+            quote.projectName = document.getElementById('projectNameInput').value.trim();
+            quote.date = document.getElementById('quoteDateInput').value || quote.date;
+            quote.laborHours = parseFloat(document.getElementById('laborHoursInput').value) || 0;
+            quote.laborRate = parseFloat(document.getElementById('laborRateInput').value) || 0;
+            quote.consumables = parseFloat(document.getElementById('consumablesInput').value) || 0;
+            quote.overheadPct = parseFloat(document.getElementById('overheadPctInput').value) || 0;
+            quote.marginPct = parseFloat(document.getElementById('marginPctInput').value) || 0;
+        }
+
+        function renderMaterialsList() {
+            const container = document.getElementById('materialsList');
+            const hint = document.getElementById('materialsEmptyHint');
+            container.innerHTML = '';
+            hint.style.display = quote.materials.length ? 'none' : 'block';
+            quote.materials.forEach(m => {
+                const item = document.createElement('div');
+                item.className = 'panel-item';
+                item.innerHTML = `
+                    <div><div class="panel-item-title">${escapeHtml(m.name)}</div><div class="panel-item-dims">${fmtMoney(m.cost)}</div></div>
+                `;
+                const actions = document.createElement('div');
+                actions.className = 'panel-item-actions';
+                const editBtn = document.createElement('button');
+                editBtn.type = 'button'; editBtn.className = 'mini-btn'; editBtn.textContent = 'Edit';
+                editBtn.addEventListener('click', () => openMaterialModal(m));
+                const removeBtn = document.createElement('button');
+                removeBtn.type = 'button'; removeBtn.className = 'mini-btn danger'; removeBtn.textContent = 'Remove';
+                removeBtn.addEventListener('click', () => { quote.materials = quote.materials.filter(x => x.id !== m.id); renderMaterialsList(); renderQuote(); });
+                actions.appendChild(editBtn); actions.appendChild(removeBtn);
+                item.appendChild(actions);
+                container.appendChild(item);
+            });
+        }
+
+        function openMaterialModal(material) {
+            editingMaterialId = material ? material.id : null;
+            document.getElementById('materialModalTitle').textContent = material ? 'Edit Material' : 'Add Material';
+            document.getElementById('materialNameInput').value = material ? material.name : '';
+            document.getElementById('materialCostInput').value = material ? material.cost : '';
+            document.getElementById('materialModalOverlay').style.display = 'flex';
+            document.getElementById('materialNameInput').focus();
+        }
+        document.getElementById('addMaterialBtn').addEventListener('click', () => openMaterialModal(null));
+        document.getElementById('materialCancelBtn').addEventListener('click', () => { document.getElementById('materialModalOverlay').style.display = 'none'; });
+        document.getElementById('materialSaveBtn').addEventListener('click', () => {
+            const name = document.getElementById('materialNameInput').value.trim();
+            const cost = parseFloat(document.getElementById('materialCostInput').value);
+            if (!name) { showToast('Give this material a name.'); return; }
+            if (!(cost >= 0)) { showToast('Enter a cost of 0 or more.'); return; }
+            if (editingMaterialId) {
+                const existing = quote.materials.find(m => m.id === editingMaterialId);
+                if (existing) Object.assign(existing, { name, cost });
+            } else {
+                quote.materials.push({ id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), name, cost });
+            }
+            renderMaterialsList();
+            renderQuote();
+            document.getElementById('materialModalOverlay').style.display = 'none';
+        });
+
+        function renderQuote() {
+            readQuoteFromForm();
+            const t = computeQuoteTotals(quote);
+
+            document.getElementById('quoteDisplayTitle').textContent = quote.name || 'New Quote';
+            const metaParts = [];
+            if (quote.clientName) metaParts.push(`For ${escapeHtml(quote.clientName)}`);
+            if (quote.projectName) metaParts.push(escapeHtml(quote.projectName));
+            if (quote.date) metaParts.push(new Date(quote.date + 'T00:00:00').toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }));
+            document.getElementById('quoteDisplayMeta').innerHTML = metaParts.join(' &middot; ') || 'Fill in the details on the left.';
+
+            document.getElementById('quoteBreakdown').innerHTML = `
+                <div class="quote-line"><span class="quote-line-label">Materials${quote.materials.length ? ` (${quote.materials.length} item${quote.materials.length === 1 ? '' : 's'})` : ''}</span><span class="quote-line-value">${fmtMoney(t.materialsCost)}</span></div>
+                <div class="quote-line"><span class="quote-line-label">Labor (${quote.laborHours || 0} hrs &times; ${fmtMoney(quote.laborRate || 0)}/hr)</span><span class="quote-line-value">${fmtMoney(t.laborCost)}</span></div>
+                <div class="quote-line"><span class="quote-line-label">Consumables</span><span class="quote-line-value">${fmtMoney(t.consumables)}</span></div>
+                <div class="quote-line quote-line-sub"><span class="quote-line-label">Subtotal</span><span class="quote-line-value">${fmtMoney(t.subtotal)}</span></div>
+                <div class="quote-line"><span class="quote-line-label">Overhead (${quote.overheadPct || 0}%)</span><span class="quote-line-value">${fmtMoney(t.overheadAmt)}</span></div>
+                <div class="quote-line"><span class="quote-line-label">Margin (${quote.marginPct || 0}%)</span><span class="quote-line-value">${fmtMoney(t.marginAmt)}</span></div>
+                <div class="quote-line quote-line-total"><span class="quote-line-label">Total</span><span class="quote-line-value">${fmtMoney(t.clientTotal)}</span></div>
+            `;
+
+            renderActual();
+        }
+
+        function renderActual() {
+            const a = computeActualTotals(quote);
+            const el = document.getElementById('actualResults');
+            if (!a) { el.innerHTML = ''; return; }
+            const varianceClass = a.actualProfit >= a.quotedProfit ? 'variance-positive' : 'variance-negative';
+            const varianceAmt = a.actualProfit - a.quotedProfit;
+            el.innerHTML = `
+                <div class="quote-line"><span class="quote-line-label">Actual total cost</span><span class="quote-line-value">${fmtMoney(a.actualCostTotal)}</span></div>
+                <div class="quote-line"><span class="quote-line-label">Quoted profit</span><span class="quote-line-value">${fmtMoney(a.quotedProfit)}</span></div>
+                <div class="quote-line quote-line-sub"><span class="quote-line-label">Actual profit</span><span class="quote-line-value ${varianceClass}">${fmtMoney(a.actualProfit)} (${varianceAmt >= 0 ? '+' : ''}${fmtMoney(varianceAmt)} vs. quoted)</span></div>
+            `;
+        }
+
+        ['quoteNameInput', 'clientNameInput', 'projectNameInput', 'quoteDateInput', 'laborHoursInput', 'laborRateInput', 'consumablesInput', 'overheadPctInput', 'marginPctInput'].forEach(id => {
+            document.getElementById(id).addEventListener('input', renderQuote);
+        });
+        ['actualMaterialsInput', 'actualLaborHoursInput', 'actualConsumablesInput'].forEach(id => {
+            document.getElementById(id).addEventListener('input', () => {
+                quote.actual.materialsCost = document.getElementById('actualMaterialsInput').value === '' ? null : parseFloat(document.getElementById('actualMaterialsInput').value);
+                quote.actual.laborHours = document.getElementById('actualLaborHoursInput').value === '' ? null : parseFloat(document.getElementById('actualLaborHoursInput').value);
+                quote.actual.consumables = document.getElementById('actualConsumablesInput').value === '' ? null : parseFloat(document.getElementById('actualConsumablesInput').value);
+                renderActual();
+            });
+        });
+
+        function loadQuoteIntoForm(q) {
+            quote = JSON.parse(JSON.stringify(q));
+            if (!quote.actual) quote.actual = { materialsCost: null, laborHours: null, consumables: null };
+            document.getElementById('quoteNameInput').value = quote.name || '';
+            document.getElementById('clientNameInput').value = quote.clientName || '';
+            document.getElementById('projectNameInput').value = quote.projectName || '';
+            document.getElementById('quoteDateInput').value = quote.date || '';
+            document.getElementById('laborHoursInput').value = quote.laborHours || 0;
+            document.getElementById('laborRateInput').value = quote.laborRate || 0;
+            document.getElementById('consumablesInput').value = quote.consumables || 0;
+            document.getElementById('overheadPctInput').value = quote.overheadPct || 0;
+            document.getElementById('marginPctInput').value = quote.marginPct || 0;
+            document.getElementById('actualMaterialsInput').value = quote.actual.materialsCost == null ? '' : quote.actual.materialsCost;
+            document.getElementById('actualLaborHoursInput').value = quote.actual.laborHours == null ? '' : quote.actual.laborHours;
+            document.getElementById('actualConsumablesInput').value = quote.actual.consumables == null ? '' : quote.actual.consumables;
+            renderMaterialsList();
+            renderQuote();
+        }
+
+        function renderQuotesList() {
+            const list = document.getElementById('quotesList');
+            const hint = document.getElementById('quotesListEmptyHint');
+            hint.style.display = savedQuotes.length ? 'none' : 'block';
+            list.innerHTML = savedQuotes.slice().reverse().map(q => {
+                const total = computeQuoteTotals(q).clientTotal;
+                return `
+                    <div class="panel-item">
+                        <div><div class="panel-item-title">${escapeHtml(q.name || 'Untitled')}</div><div class="panel-item-dims">${escapeHtml(q.clientName || '')} &mdash; ${fmtMoney(total)}</div></div>
+                        <div class="panel-item-actions">
+                            <button type="button" class="mini-btn" data-load="${q.id}">Open</button>
+                            <button type="button" class="mini-btn danger" data-del="${q.id}">Del</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            list.querySelectorAll('[data-load]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const q = savedQuotes.find(x => x.id === btn.dataset.load);
+                    if (q) loadQuoteIntoForm(q);
+                });
+            });
+            list.querySelectorAll('[data-del]').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    if (!confirm('Delete this quote? This cannot be undone.')) return;
+                    await kerphDeleteQuote(btn.dataset.del);
+                    savedQuotes = savedQuotes.filter(x => x.id !== btn.dataset.del);
+                    renderQuotesList();
+                    showToast('Quote deleted.');
+                });
+            });
+        }
+
+        document.getElementById('saveQuoteBtn').addEventListener('click', async () => {
+            if (!isSignedIn()) { showToast('Sign in (top right) to save quotes.'); return; }
+            readQuoteFromForm();
+            if (!quote.name) { showToast('Give this quote a name before saving.'); return; }
+            let result;
+            if (quote.id) {
+                result = await kerphUpdateQuote(quote.id, quote);
+            } else {
+                result = await kerphInsertQuote(quote);
+            }
+            if (result.error) { showToast(result.error.message || 'Could not save quote.'); return; }
+            quote = result.data;
+            const idx = savedQuotes.findIndex(q => q.id === quote.id);
+            if (idx >= 0) savedQuotes[idx] = quote; else savedQuotes.push(quote);
+            renderQuotesList();
+            showToast('Quote saved.');
+        });
+
+        function exportQuotePdf() {
+            const dateStr = new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+            document.getElementById('printOnlyHeader').innerHTML = `
+                <div class="print-title">${escapeHtml(quote.name || 'Kerph Quote')}</div>
+                <div class="print-meta">Prepared ${dateStr}${quote.clientName ? ` for ${escapeHtml(quote.clientName)}` : ''}</div>
+            `;
+            document.getElementById('printWatermark').classList.toggle('active', getPlan() === 'free');
+            window.print();
+        }
+        document.getElementById('exportQuotePdfBtn').addEventListener('click', exportQuotePdf);
+        window.addEventListener('afterprint', () => {
+            const watermark = document.getElementById('printWatermark');
+            if (watermark) watermark.classList.remove('active');
+        });
+
+        document.getElementById('quoteDateInput').value = quote.date;
+        renderMaterialsList();
+        renderQuote();
     </script>
 </body>
 </html>

@@ -533,6 +533,35 @@
 
         .cut-diagram-linear { max-height: 40px; }
 
+        /* ---------- Kerf blade-preset quickpicks ---------- */
+        .kerf-quickpicks { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+        .kerf-quickpick { font-size: 11px; font-weight: 700; color: #1e3a8a; background: #eef2ff; border: 1px solid #c7d2fe; border-radius: 999px; padding: 3px 10px; cursor: pointer; }
+        .kerf-quickpick:hover { background: #e0e7ff; }
+        .kerf-quickpick.active { background: #1e3a8a; color: #fff; border-color: #1e3a8a; }
+
+        /* ---------- Grain direction (part modal) ---------- */
+        .grain-radio-group { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
+        .grain-radio-group label { display: flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 600; color: #1e293b; cursor: pointer; }
+        .grain-badge { display: inline-flex; align-items: center; gap: 3px; font-size: 9.5px; font-weight: 700; color: #92400e; background: #fffbeb; border: 1px solid #fde68a; border-radius: 4px; padding: 1px 5px; margin-left: 6px; vertical-align: middle; }
+
+        /* ---------- Stock Defects (My Stock) ---------- */
+        .defect-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px; }
+        .defect-item { display: flex; align-items: center; gap: 6px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 6px; padding: 6px 8px; font-size: 11px; color: #7f1d1d; }
+        .defect-item-desc { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .defect-remove-btn { flex-shrink: 0; border: none; background: none; color: #b91c1c; cursor: pointer; font-size: 13px; padding: 0 2px; }
+        .defect-add-row { display: flex; flex-direction: column; gap: 6px; }
+        .defect-add-row select, .defect-add-row input { padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12px; font-weight: 600; }
+        .defect-add-fields { display: flex; gap: 6px; }
+        .defect-add-fields input { flex: 1; min-width: 0; }
+
+        /* ---------- Cut sequence + usable offcuts ---------- */
+        .cut-sequence-title, .offcuts-title { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; color: #1e3a8a; margin: 10px 0 6px; }
+        .cut-sequence-list { font-size: 12.5px; color: #1e293b; line-height: 1.7; padding-left: 20px; margin-bottom: 4px; }
+        .offcuts-list { font-size: 12px; color: #166534; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 6px; padding: 8px 10px; margin-top: 4px; }
+        .offcuts-list-empty { font-size: 11.5px; color: #9ca3af; font-style: italic; }
+
+        .material-result-cost { font-size: 12px; color: #1e3a8a; font-weight: 700; margin-bottom: 10px; }
+
         .print-only-header { display: none; }
         .print-watermark { display: none; }
 
@@ -584,6 +613,51 @@
         .header-quick-links a { color: #6b7280; font-weight: 600; text-decoration: none; }
         .header-quick-links a:hover { color: #1e3a8a; text-decoration: underline; }
         .header-quick-links-sep { color: #cbd5e1; }
+
+        /* ---------- SHOP JIGS DROPDOWN ---------- */
+        .jigs-dropdown { position: relative; }
+        .jigs-dropdown-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            font-weight: 700;
+            color: #ffffff;
+            background-color: #1e3a8a;
+            padding: 9px 14px;
+            border: none;
+            border-radius: 999px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .jigs-dropdown-btn:hover { background-color: #172d68; }
+        .jigs-dropdown-caret { font-size: 9px; transition: transform 0.15s ease; }
+        .jigs-dropdown.open .jigs-dropdown-caret { transform: rotate(180deg); }
+        .jigs-dropdown-menu {
+            display: none;
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 0;
+            background-color: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            box-shadow: 0 12px 30px -8px rgba(15, 23, 42, 0.3);
+            padding: 6px;
+            min-width: 210px;
+            z-index: 500;
+        }
+        .jigs-dropdown.open .jigs-dropdown-menu { display: block; }
+        .jigs-dropdown-menu a {
+            display: block;
+            padding: 8px 10px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #1e293b;
+            text-decoration: none;
+        }
+        .jigs-dropdown-menu a:hover { background-color: #eef2ff; color: #1e3a8a; }
+        .jigs-dropdown-menu-sep { height: 1px; background-color: #e2e8f0; margin: 5px 2px; }
     </style>
 </head>
 <body>
@@ -602,11 +676,28 @@
                 <option value="dust-collection.html">Dust Collection</option>
                 <option value="project-designer.html">Project Designer</option>
                 <option value="cutlist-optimizer.html" selected>Cut List Optimizer</option>
+                <option value="quote-builder.html">Quote Builder</option>
                 <option value="find-a-builder.html">Find a Builder</option>
                 <option value="shop-3d-viewer.html">3D Shop Viewer</option>
                 <option value="tool-reviews.html">Cool Tool Reviews</option>
                 <option value="shop-showcase.html">Shop Showcase</option>
+                <option value="portfolio.html">Portfolio</option>
+                <option value="print-library.html">3D Print Library</option>
             </select>
+            <div class="jigs-dropdown" id="jigsDropdown">
+                <button type="button" class="jigs-dropdown-btn" id="jigsDropdownBtn">Shop Jigs <span class="jigs-dropdown-caret">&#9662;</span></button>
+                <div class="jigs-dropdown-menu">
+                    <a href="shop-jigs-fraction-converter.html">Fraction Converter</a>
+                    <a href="shop-jigs-add-fractions.html">Add Fractions</a>
+                    <a href="shop-jigs-board-feet.html">Board Foot Calculator</a>
+                    <a href="shop-jigs-angle-chart.html">Polygon Angle Chart</a>
+                    <a href="shop-jigs-wood-movement.html">Wood Movement Calculator</a>
+                    <a href="shop-jigs-speeds-feeds.html">Speeds &amp; Feeds</a>
+                    <a href="shop-jigs-sharpening-angles.html">Sharpening Angle Chart</a>
+                    <div class="jigs-dropdown-menu-sep"></div>
+                    <a href="shop-jigs.html">All Shop Jigs &rarr;</a>
+                </div>
+            </div>
         </div>
         <div class="plan-badge-group">
             <div class="header-sign-in" id="headerSignIn">
@@ -670,7 +761,7 @@
                         <option value="premier">Premier</option>
                     </select>
                 </div>
-                <div class="account-plan-upsell" id="accountPlanUpsell" style="display:none;">Saved layouts, custom shapes, cabinetry, and more unlock on Pro.</div>
+                <div class="account-plan-upsell" id="accountPlanUpsell" style="display:none;">Free includes 1 saved shop layout; custom shop shapes and unlimited saves unlock on Pro.</div>
             </div>
 
             <div class="header-field" style="width:100%; margin-top:10px;">
@@ -745,6 +836,11 @@
                 <input type="number" class="input-box" id="partQtyInput" min="1" step="1" value="1">
             </div>
 
+            <div class="grain-radio-group">
+                <label><input type="radio" name="partGrain" value="free" checked> Grain can run either way</label>
+                <label><input type="radio" name="partGrain" value="locked"> Grain locked &mdash; don't rotate (Width/Length above must stay along the grain)</label>
+            </div>
+
             <div class="modal-actions">
                 <button type="button" id="partCancelBtn" class="mini-btn">Cancel</button>
                 <button type="button" id="partSaveBtn" class="mini-btn modal-primary-btn">Save Part</button>
@@ -799,9 +895,46 @@
                 <span class="help-tip" tabindex="0">?<span class="help-tip-bubble">The width of material your blade actually removes with each cut (typically 1/8" for a table saw). The optimizer accounts for this between parts so the nesting is realistic, not just mathematically packed.</span></span>
             </div>
             <input type="number" class="input-box" id="kerfInput" value="0.125" min="0" step="0.0625">
+            <div class="kerf-quickpicks" id="kerfQuickpicks">
+                <span class="kerf-quickpick" data-kerf="0.09375">Thin-kerf (3/32")</span>
+                <span class="kerf-quickpick active" data-kerf="0.125">Standard (1/8")</span>
+                <span class="kerf-quickpick" data-kerf="0.1875">Dado (3/16")</span>
+                <span class="kerf-quickpick" data-kerf="0.25">Dado (1/4")</span>
+            </div>
         </div>
 
-        <button type="button" id="optimizeBtn" class="new-layout-btn" style="width:100%; margin-top:8px;">Optimize Cut List</button>
+        <div class="settings-row">
+            <label class="header-field-label">Cost (optional)</label>
+            <div style="display:flex; gap:6px;">
+                <input type="number" class="input-box" id="sheetCostInput" placeholder="$ / sheet" min="0" step="0.01" style="flex:1; min-width:0;">
+                <input type="number" class="input-box" id="boardCostInput" placeholder="$ / linear ft" min="0" step="0.01" style="flex:1; min-width:0;">
+            </div>
+        </div>
+
+        <div class="sidebar-title" style="margin-top:20px;">
+            My Stock Defects
+            <span class="help-tip" tabindex="0">?<span class="help-tip-bubble">Already own a sheet or board with a knot, check, or void? Mark it here (by material and which sheet/board number it is — "sheet 1", "sheet 2", etc.) and the optimizer routes parts around it instead of cutting through it. Stored on this device only.</span></span>
+        </div>
+        <div class="defect-list" id="defectList"></div>
+        <div class="defect-add-row">
+            <select class="select-box" id="defectMaterialSelect"></select>
+            <div class="defect-add-fields">
+                <input type="number" id="defectStockIndex" placeholder="Sheet/board #" min="1" step="1" value="1" style="max-width:100px;">
+            </div>
+            <div class="defect-add-fields" id="defectSheetFields">
+                <input type="number" id="defectX" placeholder="X (in)" min="0" step="0.25">
+                <input type="number" id="defectY" placeholder="Y (in)" min="0" step="0.25">
+                <input type="number" id="defectW" placeholder="Width (in)" min="0.25" step="0.25">
+                <input type="number" id="defectH" placeholder="Height (in)" min="0.25" step="0.25">
+            </div>
+            <div class="defect-add-fields" id="defectLinearFields" style="display:none;">
+                <input type="number" id="defectStart" placeholder="Start (in from end)" min="0" step="0.25">
+                <input type="number" id="defectLength" placeholder="Length (in)" min="0.25" step="0.25">
+            </div>
+            <button type="button" class="mini-btn" id="addDefectBtn" style="width:100%;">+ Mark Defect</button>
+        </div>
+
+        <button type="button" id="optimizeBtn" class="new-layout-btn" style="width:100%; margin-top:16px;">Optimize Cut List</button>
     </div>
 
     <div class="print-only-header" id="printOnlyHeader"></div>
@@ -1158,6 +1291,23 @@
         }
 
         document.getElementById('pageNavSelect').addEventListener('change', (e) => { window.location.href = e.target.value; });
+
+        // Standalone header dropdown (not folded into pageNavSelect) so Shop Jigs' four
+        // tools are one click away from every page instead of being buried as just another
+        // option in a 9-item combobox.
+        function initJigsDropdown() {
+            const dropdown = document.getElementById('jigsDropdown');
+            const btn = document.getElementById('jigsDropdownBtn');
+            if (!dropdown || !btn) return;
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                dropdown.classList.toggle('open');
+            });
+            document.addEventListener('click', (e) => {
+                if (!dropdown.contains(e.target)) dropdown.classList.remove('open');
+            });
+        }
+        initJigsDropdown();
         initPlanSelector();
 
         kerphOnAuthChange(() => {
@@ -1219,8 +1369,20 @@
 
         let parts = [];
 
+        // Tracks in-flight saves so a refresh/close mid-save can warn instead of silently
+        // dropping whatever hadn't reached the server yet — the async write itself has no way
+        // to finish before the browser navigates away, so this is the actual backstop.
+        let pendingSaveCount = 0;
+        function trackSave(promise) {
+            pendingSaveCount++;
+            promise.finally(() => { pendingSaveCount--; });
+        }
+        window.addEventListener('beforeunload', (e) => {
+            if (pendingSaveCount > 0) { e.preventDefault(); e.returnValue = ''; }
+        });
+
         function saveParts() {
-            kerphSaveCutListParts(parts).catch(() => {});
+            trackSave(kerphSaveCutListParts(parts).catch(() => {}));
         }
 
         function populateMaterialSelect(select) {
@@ -1255,6 +1417,7 @@
             document.getElementById('partMaterialSelect').value = material;
             document.getElementById('partThicknessInput').value = part ? part.thicknessIn : MATERIALS[material].thicknessIn;
             document.getElementById('partQtyInput').value = part ? part.qty : 1;
+            document.querySelector(`input[name="partGrain"][value="${part && part.grainLocked ? 'locked' : 'free'}"]`).checked = true;
             document.getElementById('partModalOverlay').style.display = 'flex';
             document.getElementById('partNameInput').focus();
         }
@@ -1271,17 +1434,18 @@
             const thicknessIn = parseFloat(document.getElementById('partThicknessInput').value);
             const material = document.getElementById('partMaterialSelect').value;
             const qty = Math.max(1, parseInt(document.getElementById('partQtyInput').value, 10) || 1);
+            const grainLocked = document.querySelector('input[name="partGrain"]:checked').value === 'locked';
 
             if (!name) { showToast('Give this part a name.'); return; }
             if (!widthIn || !heightIn || !thicknessIn) { showToast('Width, height, and thickness must be greater than 0.'); return; }
 
             if (editingPartId) {
                 const existing = parts.find(p => p.id === editingPartId);
-                if (existing) Object.assign(existing, { name, widthIn, heightIn, thicknessIn, material, qty });
+                if (existing) Object.assign(existing, { name, widthIn, heightIn, thicknessIn, material, qty, grainLocked });
             } else {
                 parts.push({
                     id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
-                    name, widthIn, heightIn, thicknessIn, material, qty
+                    name, widthIn, heightIn, thicknessIn, material, qty, grainLocked
                 });
             }
             saveParts();
@@ -1306,7 +1470,7 @@
                 const item = document.createElement('div');
                 item.className = 'panel-item';
                 item.innerHTML = `
-                    <div class="panel-item-title">${escapeHtml(p.name)}${p.qty > 1 ? ` &times;${p.qty}` : ''}</div>
+                    <div class="panel-item-title">${escapeHtml(p.name)}${p.qty > 1 ? ` &times;${p.qty}` : ''}${p.grainLocked ? '<span class="grain-badge" title="Grain locked — will not be rotated when nesting">&#8593; grain</span>' : ''}</div>
                     <div class="panel-item-dims">${p.widthIn}" x ${p.heightIn}" x ${p.thicknessIn}" &mdash; ${escapeHtml(mat.label)}</div>
                 `;
                 const actions = document.createElement('div');
@@ -1342,12 +1506,101 @@
 
         populateMaterialSelect(document.getElementById('partMaterialSelect'));
 
+        /* ---------- KERF BLADE-PRESET QUICKPICKS ---------- */
+        document.querySelectorAll('.kerf-quickpick').forEach(chip => {
+            chip.addEventListener('click', () => {
+                document.getElementById('kerfInput').value = chip.dataset.kerf;
+                document.querySelectorAll('.kerf-quickpick').forEach(c => c.classList.toggle('active', c === chip));
+            });
+        });
+        document.getElementById('kerfInput').addEventListener('input', () => {
+            const v = document.getElementById('kerfInput').value;
+            document.querySelectorAll('.kerf-quickpick').forEach(c => c.classList.toggle('active', Math.abs(parseFloat(c.dataset.kerf) - parseFloat(v)) < 0.001));
+        });
+
+        /* ---------- MY STOCK DEFECTS ----------
+           Local-only (not synced through kerphSaveCutListParts, which stays a flat parts
+           array so the existing Project Designer handoff and Supabase schema don't need
+           to change shape) — a defect is scoped to one material and a 1-based "which
+           sheet/board of this material" index, matching how a person actually thinks
+           about their own stock ("my second sheet has a knot"). */
+        const STOCK_DEFECTS_KEY = 'kerphCutlistStockDefects';
+        let stockDefects = [];
+        try { stockDefects = JSON.parse(localStorage.getItem(STOCK_DEFECTS_KEY) || '[]'); } catch (e) { stockDefects = []; }
+
+        function saveStockDefects() {
+            localStorage.setItem(STOCK_DEFECTS_KEY, JSON.stringify(stockDefects));
+        }
+
+        function populateDefectMaterialSelect() {
+            const select = document.getElementById('defectMaterialSelect');
+            select.innerHTML = '';
+            Object.keys(MATERIALS).forEach(key => {
+                const opt = document.createElement('option');
+                opt.value = key;
+                opt.textContent = MATERIALS[key].label;
+                select.appendChild(opt);
+            });
+            toggleDefectFieldsForMaterial();
+        }
+        function toggleDefectFieldsForMaterial() {
+            const key = document.getElementById('defectMaterialSelect').value;
+            const mat = MATERIALS[key] || MATERIALS.custom;
+            document.getElementById('defectSheetFields').style.display = mat.type === 'sheet' ? 'flex' : 'none';
+            document.getElementById('defectLinearFields').style.display = mat.type === 'sheet' ? 'none' : 'flex';
+        }
+        document.getElementById('defectMaterialSelect').addEventListener('change', toggleDefectFieldsForMaterial);
+
+        function renderDefectList() {
+            const list = document.getElementById('defectList');
+            if (!stockDefects.length) { list.innerHTML = ''; return; }
+            list.innerHTML = stockDefects.map(d => {
+                const mat = MATERIALS[d.materialKey] || MATERIALS.custom;
+                const desc = mat.type === 'sheet'
+                    ? `${mat.label}, sheet ${d.stockIndex}: ${fmtIn(d.w)}"x${fmtIn(d.h)}" at (${fmtIn(d.x)}", ${fmtIn(d.y)}")`
+                    : `${mat.label}, board ${d.stockIndex}: ${fmtIn(d.length)}" starting at ${fmtIn(d.start)}"`;
+                return `<div class="defect-item"><span class="defect-item-desc" title="${escapeHtml(desc)}">${escapeHtml(desc)}</span><button type="button" class="defect-remove-btn" data-id="${d.id}" title="Remove">&#10005;</button></div>`;
+            }).join('');
+            list.querySelectorAll('.defect-remove-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    stockDefects = stockDefects.filter(d => d.id !== btn.dataset.id);
+                    saveStockDefects();
+                    renderDefectList();
+                });
+            });
+        }
+
+        document.getElementById('addDefectBtn').addEventListener('click', () => {
+            const materialKey = document.getElementById('defectMaterialSelect').value;
+            const mat = MATERIALS[materialKey] || MATERIALS.custom;
+            const stockIndex = Math.max(1, parseInt(document.getElementById('defectStockIndex').value, 10) || 1);
+            if (mat.type === 'sheet') {
+                const x = parseFloat(document.getElementById('defectX').value) || 0;
+                const y = parseFloat(document.getElementById('defectY').value) || 0;
+                const w = parseFloat(document.getElementById('defectW').value);
+                const h = parseFloat(document.getElementById('defectH').value);
+                if (!w || !h) { showToast('Enter a defect width and height.'); return; }
+                stockDefects.push({ id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), materialKey, stockIndex, x, y, w, h });
+            } else {
+                const start = parseFloat(document.getElementById('defectStart').value) || 0;
+                const length = parseFloat(document.getElementById('defectLength').value);
+                if (!length) { showToast('Enter a defect length.'); return; }
+                stockDefects.push({ id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), materialKey, stockIndex, start, length });
+            }
+            saveStockDefects();
+            renderDefectList();
+            showToast('Defect marked — the optimizer will route around it.');
+        });
+
+        populateDefectMaterialSelect();
+        renderDefectList();
+
         kerphAuthReady.then(async () => {
             const handoff = localStorage.getItem(CUTLIST_HANDOFF_KEY);
             if (handoff) {
                 try {
                     parts = JSON.parse(handoff) || [];
-                    kerphSaveCutListParts(parts).catch(() => {});
+                    trackSave(kerphSaveCutListParts(parts).catch(() => {}));
                     showToast(`Loaded ${parts.length} panel${parts.length === 1 ? '' : 's'} from Project Designer.`);
                 } catch (e) {
                     parts = [];
@@ -1374,10 +1627,42 @@
             return expanded;
         }
 
-        function packSheets(rectList, sheetW, sheetH, kerf) {
+        // AABB overlap test — used to keep placements clear of marked defect zones.
+        function rectsOverlap(ax, ay, aw, ah, bx, by, bw, bh) {
+            return ax < bx + bw && ax + aw > bx && ay < by + bh && ay + ah > by;
+        }
+
+        // stockIndex is 1-based ("sheet 1", "sheet 2"...) matching the order sheets are
+        // opened in — defects[] entries are scoped to a specific stockIndex the same way
+        // a user would say "my third sheet has a knot here." Known limitation: a defect
+        // is only checked against EXISTING sheets/shelves at the moment a part is being
+        // placed — the very first shelf on a brand-new sheet always starts unconditionally
+        // (matches every other "not a certified optimizer, a genuinely useful first pass"
+        // heuristic already in this file).
+        function packSheets(rectList, sheetW, sheetH, kerf, defects) {
+            defects = defects || [];
             const items = rectList.slice().sort((a, b) => Math.max(b.widthIn, b.heightIn) - Math.max(a.widthIn, a.heightIn));
             const sheets = [];
             const oversized = [];
+
+            function defectsFor(stockIndex) { return defects.filter(d => d.stockIndex === stockIndex); }
+            function clear(stockIndex, x, y, w, h) {
+                return !defectsFor(stockIndex).some(d => rectsOverlap(x, y, w, h, d.x, d.y, d.w, d.h));
+            }
+            // The first item on a brand-new shelf can't just assume x=0 — that's exactly
+            // where a corner defect usually sits. Walks x rightward past every defect it
+            // would land in until clear, or returns null if that pushes it off the sheet.
+            function firstClearX(stockIndex, y, w, h) {
+                let x = 0, moved = true;
+                const ds = defectsFor(stockIndex);
+                while (moved) {
+                    moved = false;
+                    for (const d of ds) {
+                        if (rectsOverlap(x, y, w, h, d.x, d.y, d.w, d.h)) { x = d.x + d.w; moved = true; }
+                    }
+                }
+                return x + w <= sheetW ? x : null;
+            }
 
             function placeOnShelf(shelf, w, h, rotated, item) {
                 shelf.parts.push({ label: item.label, x: shelf.usedWidth, y: shelf.y, w, h, rotated });
@@ -1386,16 +1671,20 @@
 
             items.forEach(item => {
                 let placed = false;
+                // A grain-locked part can't be laid the other way just to nest tighter —
+                // every rotated-placement branch below is skipped for it.
+                const allowRotate = !item.grainLocked;
 
                 for (let s = 0; s < sheets.length && !placed; s++) {
                     const sheet = sheets[s];
+                    const stockIndex = s + 1;
                     for (let sh = 0; sh < sheet.shelves.length && !placed; sh++) {
                         const shelf = sheet.shelves[sh];
                         const widthLeft = sheetW - shelf.usedWidth - (shelf.usedWidth > 0 ? kerf : 0);
-                        if (item.widthIn <= widthLeft && item.heightIn <= shelf.height) {
+                        if (item.widthIn <= widthLeft && item.heightIn <= shelf.height && clear(stockIndex, shelf.usedWidth, shelf.y, item.widthIn, item.heightIn)) {
                             placeOnShelf(shelf, item.widthIn, item.heightIn, false, item);
                             placed = true;
-                        } else if (item.heightIn <= widthLeft && item.widthIn <= shelf.height) {
+                        } else if (allowRotate && item.heightIn <= widthLeft && item.widthIn <= shelf.height && clear(stockIndex, shelf.usedWidth, shelf.y, item.heightIn, item.widthIn)) {
                             placeOnShelf(shelf, item.heightIn, item.widthIn, true, item);
                             placed = true;
                         }
@@ -1404,22 +1693,29 @@
                         const usedHeight = sheet.shelves.reduce((sum, s2) => sum + s2.height + kerf, 0);
                         const heightLeft = sheetH - usedHeight;
                         if (item.heightIn <= heightLeft && item.widthIn <= sheetW) {
-                            const shelf = { y: usedHeight, height: item.heightIn, usedWidth: 0, parts: [] };
-                            placeOnShelf(shelf, item.widthIn, item.heightIn, false, item);
-                            sheet.shelves.push(shelf);
-                            placed = true;
-                        } else if (item.widthIn <= heightLeft && item.heightIn <= sheetW) {
-                            const shelf = { y: usedHeight, height: item.widthIn, usedWidth: 0, parts: [] };
-                            placeOnShelf(shelf, item.heightIn, item.widthIn, true, item);
-                            sheet.shelves.push(shelf);
-                            placed = true;
+                            const startX = firstClearX(stockIndex, usedHeight, item.widthIn, item.heightIn);
+                            if (startX != null) {
+                                const shelf = { y: usedHeight, height: item.heightIn, usedWidth: startX, parts: [] };
+                                placeOnShelf(shelf, item.widthIn, item.heightIn, false, item);
+                                sheet.shelves.push(shelf);
+                                placed = true;
+                            }
+                        }
+                        if (!placed && allowRotate && item.widthIn <= heightLeft && item.heightIn <= sheetW) {
+                            const startX = firstClearX(stockIndex, usedHeight, item.heightIn, item.widthIn);
+                            if (startX != null) {
+                                const shelf = { y: usedHeight, height: item.widthIn, usedWidth: startX, parts: [] };
+                                placeOnShelf(shelf, item.heightIn, item.widthIn, true, item);
+                                sheet.shelves.push(shelf);
+                                placed = true;
+                            }
                         }
                     }
                 }
 
                 if (!placed) {
                     const fitsNormal = item.widthIn <= sheetW && item.heightIn <= sheetH;
-                    const fitsRotated = item.heightIn <= sheetW && item.widthIn <= sheetH;
+                    const fitsRotated = allowRotate && item.heightIn <= sheetW && item.widthIn <= sheetH;
                     if (!fitsNormal && !fitsRotated) {
                         oversized.push(item);
                         return;
@@ -1427,7 +1723,16 @@
                     const rotated = !fitsNormal && fitsRotated;
                     const w = rotated ? item.heightIn : item.widthIn;
                     const h = rotated ? item.widthIn : item.heightIn;
-                    const shelf = { y: 0, height: h, usedWidth: 0, parts: [] };
+                    // A fresh sheet's stockIndex is one past however many already exist —
+                    // computed before pushing, same numbering the user sees ("sheet 1",
+                    // "sheet 2"...) when marking a defect.
+                    const newStockIndex = sheets.length + 1;
+                    const startX = firstClearX(newStockIndex, 0, w, h);
+                    if (startX == null) {
+                        oversized.push(item);
+                        return;
+                    }
+                    const shelf = { y: 0, height: h, usedWidth: startX, parts: [] };
                     placeOnShelf(shelf, w, h, rotated, item);
                     sheets.push({ shelves: [shelf] });
                 }
@@ -1436,24 +1741,57 @@
             return { sheets, oversized };
         }
 
-        function packLinear(lenList, boardLen, kerf) {
+        function packLinear(lenList, boardLen, kerf, defects) {
+            defects = defects || [];
             const items = lenList.slice().sort((a, b) => b.lengthIn - a.lengthIn);
             const boards = [];
             const oversized = [];
 
+            function defectsFor(stockIndex) { return defects.filter(d => d.stockIndex === stockIndex); }
+            // Walks `start` forward past any defect zone it would land in or overlap,
+            // rather than just rejecting the board outright — a knot partway down a
+            // board still leaves the rest of it usable.
+            function nextClearStart(stockIndex, from, len) {
+                let start = from, moved = true;
+                const ds = defectsFor(stockIndex);
+                while (moved) {
+                    moved = false;
+                    for (const d of ds) {
+                        const dEnd = d.start + d.length;
+                        if (start < dEnd && start + len > d.start) { start = dEnd + kerf; moved = true; }
+                    }
+                }
+                return start;
+            }
+
             items.forEach(item => {
                 if (item.lengthIn > boardLen) { oversized.push(item); return; }
                 let placed = false;
-                for (const board of boards) {
+                for (let b = 0; b < boards.length && !placed; b++) {
+                    const board = boards[b];
+                    const stockIndex = b + 1;
                     const used = board.parts.reduce((sum, p) => sum + p.lengthIn + kerf, 0);
-                    if (boardLen - used >= item.lengthIn) {
-                        board.parts.push({ label: item.label, lengthIn: item.lengthIn, start: used });
+                    const start = nextClearStart(stockIndex, used, item.lengthIn);
+                    if (start + item.lengthIn <= boardLen) {
+                        // A defect was skipped over — record the skipped span as a
+                        // non-part "gap" so the diagram/sequence can show it as dead
+                        // material instead of silently vanishing from the length math.
+                        if (start > used) board.parts.push({ label: null, lengthIn: start - used, start: used, isGap: true });
+                        board.parts.push({ label: item.label, lengthIn: item.lengthIn, start });
                         placed = true;
-                        break;
                     }
                 }
                 if (!placed) {
-                    boards.push({ parts: [{ label: item.label, lengthIn: item.lengthIn, start: 0 }] });
+                    const stockIndex = boards.length + 1;
+                    const start = nextClearStart(stockIndex, 0, item.lengthIn);
+                    if (start + item.lengthIn <= boardLen) {
+                        const partsArr = [];
+                        if (start > 0) partsArr.push({ label: null, lengthIn: start, start: 0, isGap: true });
+                        partsArr.push({ label: item.label, lengthIn: item.lengthIn, start });
+                        boards.push({ parts: partsArr });
+                    } else {
+                        oversized.push(item);
+                    }
                 }
             });
 
@@ -1497,8 +1835,11 @@
             return `<text x="${x}" y="${y}" text-anchor="middle" dominant-baseline="middle" font-size="${fontSize}" font-weight="${weight}" fill="#ffffff" style="paint-order:stroke; stroke:#0f172a; stroke-width:${(fontSize * 0.06).toFixed(2)}; stroke-opacity:0.35;">${escapeHtml(text)}</text>`;
         }
 
-        function buildSheetSvg(sheet, sheetW, sheetH, labelColorMap) {
+        function buildSheetSvg(sheet, sheetW, sheetH, labelColorMap, sheetDefects) {
             let rects = '';
+            (sheetDefects || []).forEach(d => {
+                rects += `<rect x="${d.x}" y="${d.y}" width="${d.w}" height="${d.h}" fill="#dc2626" fill-opacity="0.25" stroke="#b91c1c" stroke-width="0.4" stroke-dasharray="1.2,0.8"><title>Marked defect — avoided</title></rect>`;
+            });
             sheet.shelves.forEach(shelf => {
                 shelf.parts.forEach(p => {
                     const color = colorForLabel(p.label, labelColorMap);
@@ -1532,6 +1873,12 @@
             const barHeight = 12;
             let rects = '';
             board.parts.forEach(p => {
+                if (p.isGap) {
+                    // A skipped defect zone — hatched red, not a part color, so it
+                    // reads as "dead material" rather than another cut piece.
+                    rects += `<rect x="${p.start}" y="0" width="${p.lengthIn}" height="${barHeight}" fill="#dc2626" fill-opacity="0.25" stroke="#b91c1c" stroke-width="0.4" stroke-dasharray="1.2,0.8"><title>Skipped past a marked defect (${p.lengthIn.toFixed(1)}")</title></rect>`;
+                    return;
+                }
                 const color = colorForLabel(p.label, labelColorMap);
                 const dimsText = `${p.lengthIn.toFixed(1)}"`;
                 rects += `<rect x="${p.start}" y="0" width="${p.lengthIn}" height="${barHeight}" fill="${color}" fill-opacity="0.75" stroke="#0f172a" stroke-width="0.3"><title>${escapeHtml(p.label)} — ${dimsText}</title></rect>`;
@@ -1555,8 +1902,89 @@
         }
 
         function boardWasteFraction(board, boardLen, kerf) {
-            const used = board.parts.reduce((sum, p, i) => sum + p.lengthIn + (i > 0 ? kerf : 0), 0);
+            // Gap entries (skipped defect zones) are excluded from "used" — they're
+            // material lost to the defect, not productive use, so they correctly show
+            // up as waste rather than quietly inflating this board's efficiency.
+            const realParts = board.parts.filter(p => !p.isGap);
+            const used = realParts.reduce((sum, p, i) => sum + p.lengthIn + (i > 0 ? kerf : 0), 0);
             return 1 - (used / boardLen);
+        }
+
+        /* ---------- CUT SEQUENCE ----------
+           A diagram alone doesn't tell you what to actually DO at the saw. This derives
+           a real guillotine order from the same shelf/board data the diagrams already
+           use — no separate algorithm, just a different read of the same placement:
+           for a sheet, each shelf IS a horizontal strip, so step 1 is always "rip the
+           sheet into strips" (one cut per shelf boundary), then step 2 crosscuts each
+           strip into its individual parts. You can't crosscut before ripping on a table
+           saw (there'd be nothing to run the crosscut sled through), so this order is
+           the one that's actually buildable, not just mathematically valid. */
+        function buildSheetCutSequence(sheet, sheetH) {
+            const steps = [];
+            const shelves = sheet.shelves;
+            if (shelves.length > 1) {
+                const ripPoints = [];
+                let y = 0;
+                for (let i = 0; i < shelves.length - 1; i++) { y += shelves[i].height; ripPoints.push(fmtIn(y)); }
+                steps.push(`Rip the sheet into ${shelves.length} strip${shelves.length === 1 ? '' : 's'} — crosscut straight across at ${ripPoints.join('", ')}" from the top edge.`);
+            }
+            shelves.forEach((shelf, i) => {
+                const stripLabel = shelves.length > 1 ? `Strip ${i + 1} (${fmtIn(shelf.height)}" tall)` : 'The sheet';
+                if (shelf.parts.length > 1) {
+                    const cutPoints = [];
+                    let x = 0;
+                    for (let j = 0; j < shelf.parts.length - 1; j++) { x += shelf.parts[j].w; cutPoints.push(fmtIn(x)); }
+                    steps.push(`${stripLabel}: crosscut at ${cutPoints.join('", ')}" from the left edge to separate ${shelf.parts.map(p => p.label).join(', ')}.`);
+                } else if (shelf.parts.length === 1 && shelves.length > 1) {
+                    steps.push(`${stripLabel} is already just ${shelf.parts[0].label} — no further cut needed.`);
+                }
+            });
+            return steps;
+        }
+
+        function buildBoardCutSequence(board) {
+            const realParts = board.parts.filter(p => !p.isGap).sort((a, b) => a.start - b.start);
+            if (realParts.length <= 1) return [];
+            const cutPoints = [];
+            for (let i = 0; i < realParts.length - 1; i++) cutPoints.push(fmtIn(realParts[i].start + realParts[i].lengthIn));
+            return [`Crosscut at ${cutPoints.join('", ')}" from the end to separate ${realParts.map(p => p.label).join(', ')}, in that order.`];
+        }
+
+        function fmtIn(n) {
+            const s = n.toFixed(3);
+            return s.replace(/\.?0+$/, '');
+        }
+
+        /* ---------- USABLE OFFCUTS ----------
+           Reports leftover space big enough to be worth walking to the scrap rack for,
+           not every last sliver of kerf waste. Thresholds are deliberately conservative
+           (12" both ways for sheet goods, 12" of length for linear stock) — smaller than
+           that and it's really just waste, not a drop worth labeling and storing. */
+        const MIN_OFFCUT_SHEET_IN = 12;
+        const MIN_OFFCUT_LINEAR_IN = 12;
+
+        function findSheetOffcuts(sheet, sheetW, sheetH) {
+            const offcuts = [];
+            let usedHeight = 0;
+            sheet.shelves.forEach(shelf => {
+                const widthLeft = sheetW - shelf.usedWidth;
+                if (widthLeft >= MIN_OFFCUT_SHEET_IN && shelf.height >= MIN_OFFCUT_SHEET_IN) {
+                    offcuts.push({ w: widthLeft, h: shelf.height });
+                }
+                usedHeight += shelf.height;
+            });
+            const heightLeft = sheetH - usedHeight;
+            if (heightLeft >= MIN_OFFCUT_SHEET_IN && sheetW >= MIN_OFFCUT_SHEET_IN) {
+                offcuts.push({ w: sheetW, h: heightLeft });
+            }
+            return offcuts;
+        }
+
+        function findBoardOffcut(board, boardLen) {
+            const realParts = board.parts.filter(p => !p.isGap);
+            const usedEnd = realParts.length ? Math.max(...realParts.map(p => p.start + p.lengthIn)) : 0;
+            const tail = boardLen - usedEnd;
+            return tail >= MIN_OFFCUT_LINEAR_IN ? tail : null;
         }
 
         function runOptimization() {
@@ -1580,6 +2008,8 @@
                 : parseFloat(boardLengthVal);
             const boardLenIn = boardLenFt * 12;
             const kerf = parseFloat(document.getElementById('kerfInput').value) || 0.125;
+            const sheetCost = parseFloat(document.getElementById('sheetCostInput').value) || 0;
+            const boardCostPerFt = parseFloat(document.getElementById('boardCostInput').value) || 0;
 
             const byMaterial = {};
             parts.forEach(p => {
@@ -1590,56 +2020,79 @@
             const labelColorMap = {};
             let totalSheets = 0;
             let totalBoards = 0;
+            let totalCost = 0;
+            let totalOffcuts = 0;
             let cardsHtml = '';
 
             Object.keys(byMaterial).forEach(materialKey => {
                 const mat = MATERIALS[materialKey] || MATERIALS.custom;
                 const group = byMaterial[materialKey];
+                const materialDefects = stockDefects.filter(d => d.materialKey === materialKey);
 
                 if (mat.type === 'sheet') {
-                    const rects = expandParts(group).map(p => ({ widthIn: p.widthIn, heightIn: p.heightIn, label: p.name }));
-                    const { sheets, oversized } = packSheets(rects, sheetW, sheetH, kerf);
+                    const rects = expandParts(group).map(p => ({ widthIn: p.widthIn, heightIn: p.heightIn, label: p.name, grainLocked: !!p.grainLocked }));
+                    const { sheets, oversized } = packSheets(rects, sheetW, sheetH, kerf, materialDefects);
                     totalSheets += sheets.length;
+                    if (sheetCost > 0) totalCost += sheets.length * sheetCost;
 
                     const avgWaste = sheets.length
                         ? (sheets.reduce((sum, s) => sum + sheetWasteFraction(s, sheetW, sheetH), 0) / sheets.length) * 100
                         : 0;
 
-                    let diagramsHtml = sheets.map((sheet, i) => `
+                    let diagramsHtml = sheets.map((sheet, i) => {
+                        const stockIndex = i + 1;
+                        const sheetDefects = materialDefects.filter(d => d.stockIndex === stockIndex);
+                        const sequence = buildSheetCutSequence(sheet, sheetH);
+                        const offcuts = findSheetOffcuts(sheet, sheetW, sheetH);
+                        totalOffcuts += offcuts.length;
+                        return `
                         <div class="cut-diagram-block">
                             <div class="cut-diagram-label">Sheet ${i + 1} of ${sheets.length} &mdash; ${(sheetWasteFraction(sheet, sheetW, sheetH) * 100).toFixed(0)}% waste</div>
-                            ${buildSheetSvg(sheet, sheetW, sheetH, labelColorMap)}
+                            ${buildSheetSvg(sheet, sheetW, sheetH, labelColorMap, sheetDefects)}
+                            ${sequence.length ? `<div class="cut-sequence-title">Cut Sequence</div><ol class="cut-sequence-list">${sequence.map(s => `<li>${escapeHtml(s)}</li>`).join('')}</ol>` : ''}
+                            ${offcuts.length ? `<div class="offcuts-title">Usable Offcuts</div><div class="offcuts-list">${offcuts.map(o => `${fmtIn(o.w)}" x ${fmtIn(o.h)}"`).join(' &middot; ')} &mdash; worth keeping.</div>` : ''}
                         </div>
-                    `).join('');
+                    `;
+                    }).join('');
 
                     cardsHtml += `
                         <div class="material-result-card">
                             <div class="material-result-title">${escapeHtml(mat.label)} — ${sheets.length} sheet${sheets.length === 1 ? '' : 's'} (${sheetW}" x ${sheetH}")</div>
                             <div class="material-result-meta">Average waste per sheet: ${avgWaste.toFixed(0)}%</div>
+                            ${sheetCost > 0 ? `<div class="material-result-cost">Estimated cost: $${(sheets.length * sheetCost).toFixed(2)} (${sheets.length} &times; $${sheetCost.toFixed(2)})</div>` : ''}
                             ${oversized.length ? `<div class="oversized-warning">${oversized.length} part(s) are larger than the sheet size in both orientations and couldn't be placed: ${escapeHtml(oversized.map(o => o.label).join(', '))}</div>` : ''}
                             ${diagramsHtml}
                         </div>
                     `;
                 } else {
-                    const lens = expandParts(group).map(p => ({ lengthIn: p.widthIn, label: p.name }));
-                    const { boards, oversized } = packLinear(lens, boardLenIn, kerf);
+                    const lens = expandParts(group).map(p => ({ lengthIn: p.widthIn, label: p.name, grainLocked: !!p.grainLocked }));
+                    const { boards, oversized } = packLinear(lens, boardLenIn, kerf, materialDefects);
                     totalBoards += boards.length;
+                    if (boardCostPerFt > 0) totalCost += boards.length * boardLenFt * boardCostPerFt;
 
                     const avgWaste = boards.length
                         ? (boards.reduce((sum, b) => sum + boardWasteFraction(b, boardLenIn, kerf), 0) / boards.length) * 100
                         : 0;
 
-                    let diagramsHtml = boards.map((board, i) => `
+                    let diagramsHtml = boards.map((board, i) => {
+                        const sequence = buildBoardCutSequence(board);
+                        const offcut = findBoardOffcut(board, boardLenIn);
+                        if (offcut != null) totalOffcuts++;
+                        return `
                         <div class="cut-diagram-block">
                             <div class="cut-diagram-label">Board ${i + 1} of ${boards.length} &mdash; ${(boardWasteFraction(board, boardLenIn, kerf) * 100).toFixed(0)}% waste</div>
                             ${buildBoardSvg(board, boardLenIn, labelColorMap)}
+                            ${sequence.length ? `<div class="cut-sequence-title">Cut Sequence</div><ol class="cut-sequence-list">${sequence.map(s => `<li>${escapeHtml(s)}</li>`).join('')}</ol>` : ''}
+                            ${offcut != null ? `<div class="offcuts-title">Usable Offcut</div><div class="offcuts-list">${fmtIn(offcut)}" leftover &mdash; worth keeping.</div>` : ''}
                         </div>
-                    `).join('');
+                    `;
+                    }).join('');
 
                     cardsHtml += `
                         <div class="material-result-card">
                             <div class="material-result-title">${escapeHtml(mat.label)} — ${boards.length} board${boards.length === 1 ? '' : 's'} (${boardLenFt}ft)</div>
                             <div class="material-result-meta">Average waste per board: ${avgWaste.toFixed(0)}%</div>
+                            ${boardCostPerFt > 0 ? `<div class="material-result-cost">Estimated cost: $${(boards.length * boardLenFt * boardCostPerFt).toFixed(2)} (${boards.length} &times; ${boardLenFt}ft &times; $${boardCostPerFt.toFixed(2)}/ft)</div>` : ''}
                             ${oversized.length ? `<div class="oversized-warning">${oversized.length} part(s) are longer than the board length and couldn't be placed: ${escapeHtml(oversized.map(o => o.label).join(', '))}</div>` : ''}
                             ${diagramsHtml}
                         </div>
@@ -1663,6 +2116,8 @@
                         <div class="summary-value">${totalBoards}</div>
                         <div class="summary-label">Boards Needed</div>
                     </div>
+                    ${totalCost > 0 ? `<div class="summary-card"><div class="summary-value">$${totalCost.toFixed(2)}</div><div class="summary-label">Est. Material Cost</div></div>` : ''}
+                    ${totalOffcuts > 0 ? `<div class="summary-card"><div class="summary-value">${totalOffcuts}</div><div class="summary-label">Usable Offcuts</div></div>` : ''}
                 </div>
                 <button type="button" id="exportPdfBtn" class="mini-btn" style="display:block; margin: 12px auto 0;">&#128196; Export PDF</button>
                 ${cardsHtml}

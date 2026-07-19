@@ -1318,6 +1318,50 @@
             z-index: 850;
         }
 
+        .clearance-zone-overlay {
+            position: absolute;
+            background: rgba(217, 119, 6, 0.14);
+            border: 1.5px dashed rgba(217, 119, 6, 0.55);
+            pointer-events: none;
+            z-index: 5;
+        }
+        .clearance-zone-overlay.violated {
+            background: rgba(220, 38, 38, 0.16);
+            border-color: rgba(220, 38, 38, 0.6);
+        }
+        .clearance-zone-flag-item {
+            outline: 2px solid #d97706 !important;
+            outline-offset: 2px;
+        }
+
+        .clearance-section-divider {
+            display: flex; align-items: center; justify-content: space-between; gap: 8px;
+            margin-top: 16px; padding-top: 12px; border-top: 1px solid #e5e7eb;
+            font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; color: #6b7280;
+        }
+        .clearance-conflict-list {
+            font-size: 11.5px; color: #92400e; background: #fffbeb; border: 1px solid #fde68a;
+            border-radius: 6px; padding: 8px 10px; margin-top: 6px; line-height: 1.6;
+        }
+        .clearance-settings-row {
+            border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px; margin-bottom: 10px;
+        }
+        .clearance-settings-row-title {
+            font-size: 13px; font-weight: 700; color: #1e293b; margin-bottom: 8px;
+        }
+        .clearance-custom-badge {
+            font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em;
+            color: #92400e; background: #fef3c7; border-radius: 4px; padding: 1px 6px; vertical-align: middle;
+        }
+        .clearance-settings-fields {
+            display: flex; align-items: flex-end; gap: 8px; flex-wrap: wrap;
+        }
+        .clearance-settings-field {
+            display: flex; flex-direction: column; gap: 3px; font-size: 10px; font-weight: 700;
+            color: #6b7280; text-transform: uppercase; letter-spacing: 0.03em; width: 62px;
+        }
+        .clearance-settings-field input { width: 100%; padding: 5px 6px; font-size: 12px; }
+
         .cost-panel {
             top: 166px;
             right: 24px;
@@ -2010,7 +2054,7 @@
             body { background: #fff !important; }
             header, #sidebar-panel, .measure-toolbar, .floating-panel, .upgrade-nudge,
             .ruler, .resize-handle, .rotate-handle, .rotate-readout, .node-resize-handle,
-            .open-port-marker, .clearance-wall-marker, .modal-overlay, #shapeDrawControls {
+            .open-port-marker, .clearance-wall-marker, .clearance-zone-overlay, .modal-overlay, #shapeDrawControls {
                 display: none !important;
             }
             .print-only-header {
@@ -2061,6 +2105,51 @@
         .header-quick-links a { color: #6b7280; font-weight: 600; text-decoration: none; }
         .header-quick-links a:hover { color: #1e3a8a; text-decoration: underline; }
         .header-quick-links-sep { color: #cbd5e1; }
+
+        /* ---------- SHOP JIGS DROPDOWN ---------- */
+        .jigs-dropdown { position: relative; }
+        .jigs-dropdown-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            font-weight: 700;
+            color: #ffffff;
+            background-color: #1e3a8a;
+            padding: 9px 14px;
+            border: none;
+            border-radius: 999px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .jigs-dropdown-btn:hover { background-color: #172d68; }
+        .jigs-dropdown-caret { font-size: 9px; transition: transform 0.15s ease; }
+        .jigs-dropdown.open .jigs-dropdown-caret { transform: rotate(180deg); }
+        .jigs-dropdown-menu {
+            display: none;
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 0;
+            background-color: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            box-shadow: 0 12px 30px -8px rgba(15, 23, 42, 0.3);
+            padding: 6px;
+            min-width: 210px;
+            z-index: 500;
+        }
+        .jigs-dropdown.open .jigs-dropdown-menu { display: block; }
+        .jigs-dropdown-menu a {
+            display: block;
+            padding: 8px 10px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #1e293b;
+            text-decoration: none;
+        }
+        .jigs-dropdown-menu a:hover { background-color: #eef2ff; color: #1e3a8a; }
+        .jigs-dropdown-menu-sep { height: 1px; background-color: #e2e8f0; margin: 5px 2px; }
     </style>
 </head>
 <body>
@@ -2079,11 +2168,28 @@
                 <option value="dust-collection.html">Dust Collection</option>
                 <option value="project-designer.html">Project Designer</option>
                 <option value="cutlist-optimizer.html">Cut List Optimizer</option>
+                <option value="quote-builder.html">Quote Builder</option>
                 <option value="find-a-builder.html">Find a Builder</option>
                 <option value="shop-3d-viewer.html">3D Shop Viewer</option>
                 <option value="tool-reviews.html">Cool Tool Reviews</option>
                 <option value="shop-showcase.html">Shop Showcase</option>
+                <option value="portfolio.html">Portfolio</option>
+                <option value="print-library.html">3D Print Library</option>
             </select>
+            <div class="jigs-dropdown" id="jigsDropdown">
+                <button type="button" class="jigs-dropdown-btn" id="jigsDropdownBtn">Shop Jigs <span class="jigs-dropdown-caret">&#9662;</span></button>
+                <div class="jigs-dropdown-menu">
+                    <a href="shop-jigs-fraction-converter.html">Fraction Converter</a>
+                    <a href="shop-jigs-add-fractions.html">Add Fractions</a>
+                    <a href="shop-jigs-board-feet.html">Board Foot Calculator</a>
+                    <a href="shop-jigs-angle-chart.html">Polygon Angle Chart</a>
+                    <a href="shop-jigs-wood-movement.html">Wood Movement Calculator</a>
+                    <a href="shop-jigs-speeds-feeds.html">Speeds &amp; Feeds</a>
+                    <a href="shop-jigs-sharpening-angles.html">Sharpening Angle Chart</a>
+                    <div class="jigs-dropdown-menu-sep"></div>
+                    <a href="shop-jigs.html">All Shop Jigs &rarr;</a>
+                </div>
+            </div>
         </div>
         <div class="header-controls">
             <div class="header-field">
@@ -2097,18 +2203,18 @@
             <div class="header-divider"></div>
 
             <div class="header-field header-field-narrow">
-                <label class="header-field-label" for="layoutTypeSelect">Save As <span class="pro-badge">PRO</span></label>
-                <select class="select-box pro-feature" id="layoutTypeSelect">
+                <label class="header-field-label" for="layoutTypeSelect">Save As</label>
+                <select class="select-box" id="layoutTypeSelect">
                     <option value="workshop">Workshop</option>
                     <option value="dust-collection">Dust Collection</option>
                     <option value="lighting">Lighting</option>
                 </select>
             </div>
             <div class="header-field header-field-wide">
-                <label class="header-field-label" for="layoutNameInput">Layout Name <span class="pro-badge">PRO</span></label>
+                <label class="header-field-label" for="layoutNameInput">Layout Name</label>
                 <div class="header-compound-row">
-                    <input type="text" class="input-box pro-feature" id="layoutNameInput" placeholder="Name this layout">
-                    <button type="button" id="saveLayoutBtn" class="mini-btn pro-feature">Save</button>
+                    <input type="text" class="input-box" id="layoutNameInput" placeholder="Name this layout">
+                    <button type="button" id="saveLayoutBtn" class="mini-btn">Save</button>
                 </div>
             </div>
             <div class="header-field header-field-wide" id="savedLayoutsField" style="display:none;">
@@ -2213,7 +2319,7 @@
                         <option value="premier">Premier</option>
                     </select>
                 </div>
-                <div class="account-plan-upsell" id="accountPlanUpsell" style="display:none;">Saved layouts, custom shapes, cabinetry, and more unlock on Pro.</div>
+                <div class="account-plan-upsell" id="accountPlanUpsell" style="display:none;">Free includes 1 saved shop layout; custom shop shapes and unlimited saves unlock on Pro.</div>
             </div>
 
             <div class="header-field" style="width:100%; margin-top:10px;">
@@ -2375,7 +2481,7 @@
         </details>
         <button type="button" id="addCustomToolBtn" class="mini-btn" style="width:100%; margin-bottom:14px;">+ Add Custom Tool</button>
 
-        <details class="tool-category" data-domain="woodworking">
+        <details class="tool-category" data-domain="woodworking" data-clearance-category="Table Saws">
             <summary class="category-header">
                 <span class="category-header-left">Table Saws <span class="category-count">9</span></span>
                 <span class="category-chevron">&#9656;</span>
@@ -2447,7 +2553,7 @@
             </div>
         </details>
 
-        <details class="tool-category" data-domain="woodworking">
+        <details class="tool-category" data-domain="woodworking" data-clearance-category="Bandsaws">
             <summary class="category-header">
                 <span class="category-header-left">Bandsaws <span class="category-count">5</span></span>
                 <span class="category-chevron">&#9656;</span>
@@ -2491,7 +2597,7 @@
             </div>
         </details>
 
-        <details class="tool-category" data-domain="woodworking">
+        <details class="tool-category" data-domain="woodworking" data-clearance-category="Jointers &amp; Planers">
             <summary class="category-header">
                 <span class="category-header-left">Jointers &amp; Planers <span class="category-count">6</span></span>
                 <span class="category-chevron">&#9656;</span>
@@ -2542,7 +2648,7 @@
             </div>
         </details>
 
-        <details class="tool-category" data-domain="woodworking">
+        <details class="tool-category" data-domain="woodworking" data-clearance-category="Sanding">
             <summary class="category-header">
                 <span class="category-header-left">Sanding <span class="category-count">5</span></span>
                 <span class="category-chevron">&#9656;</span>
@@ -2586,7 +2692,7 @@
             </div>
         </details>
 
-        <details class="tool-category" data-domain="woodworking">
+        <details class="tool-category" data-domain="woodworking" data-clearance-category="Drilling &amp; Boring">
             <summary class="category-header">
                 <span class="category-header-left">Drilling &amp; Boring <span class="category-count">4</span></span>
                 <span class="category-chevron">&#9656;</span>
@@ -2623,7 +2729,7 @@
             </div>
         </details>
 
-        <details class="tool-category" data-domain="woodworking">
+        <details class="tool-category" data-domain="woodworking" data-clearance-category="Turning">
             <summary class="category-header">
                 <span class="category-header-left">Turning <span class="category-count">4</span></span>
                 <span class="category-chevron">&#9656;</span>
@@ -2660,7 +2766,7 @@
             </div>
         </details>
 
-        <details class="tool-category" data-domain="woodworking">
+        <details class="tool-category" data-domain="woodworking" data-clearance-category="Routing">
             <summary class="category-header">
                 <span class="category-header-left">Routing <span class="category-count">3</span></span>
                 <span class="category-chevron">&#9656;</span>
@@ -2690,7 +2796,7 @@
             </div>
         </details>
 
-        <details class="tool-category" data-domain="woodworking">
+        <details class="tool-category" data-domain="woodworking" data-clearance-category="Crosscut &amp; Miter">
             <summary class="category-header">
                 <span class="category-header-left">Crosscut &amp; Miter <span class="category-count">6</span></span>
                 <span class="category-chevron">&#9656;</span>
@@ -3045,7 +3151,7 @@
             </div>
         </details>
 
-        <details class="tool-category" data-domain="woodworking">
+        <details class="tool-category" data-domain="woodworking" data-clearance-category="CNC &amp; Digital Fab">
             <summary class="category-header">
                 <span class="category-header-left">CNC &amp; Digital Fab <span class="category-count">7</span></span>
                 <span class="category-chevron">&#9656;</span>
@@ -3103,7 +3209,7 @@
             </div>
         </details>
 
-        <details class="tool-category" data-domain="mechanical">
+        <details class="tool-category" data-domain="mechanical" data-clearance-category="Vehicle Lifts">
             <summary class="category-header">
                 <span class="category-header-left">Vehicle Lifts <span class="category-count">4</span></span>
                 <span class="category-chevron">&#9656;</span>
@@ -3603,6 +3709,24 @@
             <div id="clearanceResults"></div>
 
             <div class="shape-hint" style="margin-top:10px;">Flags gaps narrower than the minimum between tools/cabinets, and between them and the shop walls. Rotated footprints are approximated as bounding boxes.</div>
+
+            <div class="clearance-section-divider">
+                <span>Tool Operating Clearance</span>
+                <button type="button" id="clearanceSettingsBtn" class="mini-btn" style="flex:none; padding:4px 8px; font-size:11px;">&#9881;&#65039; Defaults</button>
+            </div>
+            <div id="toolClearanceResults"></div>
+            <div class="shape-hint" style="margin-top:6px;">Draws each machine's required working room (infeed/outfeed/sides) as an amber zone and flags it if another tool or cabinet intrudes. Edit the defaults per tool type with "Defaults" above.</div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="clearanceSettingsModalOverlay" style="display:none;">
+        <div class="modal-box" style="width:420px; max-height:80vh; overflow-y:auto;">
+            <div class="modal-title">Tool Operating Clearance Defaults</div>
+            <p style="font-size:12px; color:#6b7280; line-height:1.5; margin:0 0 12px;">Minimum clear space (in feet) required around each machine type, measured from its un-rotated footprint — Left/Right run along the tool's infeed/outfeed axis for most feed-through machines, Top/Bottom are side clearance. The zone rotates with the tool if you rotate it on the grid.</p>
+            <div id="clearanceSettingsList"></div>
+            <div class="modal-actions">
+                <button type="button" id="clearanceSettingsCloseBtn" class="mini-btn modal-primary-btn" style="width:100%;">Done</button>
+            </div>
         </div>
     </div>
 
@@ -3931,6 +4055,7 @@
                 // Standard format tells the browser it's a valid local drag action
                 e.dataTransfer.setData('text/plain', 'active');
 
+                const categoryEl = item.closest('.tool-category');
                 internalDragData = {
                     name: item.getAttribute('data-name'),
                     width: parseFloat(item.getAttribute('data-width')),
@@ -3939,7 +4064,8 @@
                     cabType: item.getAttribute('data-cab-type'),
                     hasDrawers: item.getAttribute('data-has-drawers') === 'true',
                     drawers: JSON.parse(item.getAttribute('data-drawers') || '[]'),
-                    layer: item.getAttribute('data-layer') || 'tools'
+                    layer: item.getAttribute('data-layer') || 'tools',
+                    clearanceCategory: (categoryEl && categoryEl.dataset.clearanceCategory) || null
                 };
             });
         }
@@ -4579,6 +4705,7 @@
                 toolNode.style.left = snapX + 'px';
                 toolNode.style.top = snapY + 'px';
                 toolNode.dataset.toolName = internalDragData.name;
+                if (internalDragData.clearanceCategory) toolNode.dataset.clearanceCategory = internalDragData.clearanceCategory;
                 applyDustCollectionNodeStyling(toolNode, internalDragData.name);
 
                 let displayName = internalDragData.name;
@@ -5668,6 +5795,10 @@
             return plan === 'pro' || plan === 'premier';
         }
 
+        function getMaxSavedLayouts() {
+            return isProOrAbove() ? Infinity : 1;
+        }
+
         function applyPlanGating() {
             // Requires both a Pro/Premier plan AND being signed in — see requireProAccess().
             const pro = isSignedIn() && isProOrAbove();
@@ -6327,7 +6458,8 @@
                 // distinct from `height` above which is the 2D footprint box's pixel size.
                 physicalHeight: node.dataset.height || null,
                 layer: node.dataset.layer || 'tools',
-                estCost: node.dataset.estCost || ''
+                estCost: node.dataset.estCost || '',
+                clearanceCategory: node.dataset.clearanceCategory || null
             }));
 
             const normalizedWallFeatures = (typeof wallFeatures !== 'undefined' ? wallFeatures : [])
@@ -6389,6 +6521,7 @@
             toolNode.dataset.height = t.physicalHeight || '';
             toolNode.dataset.layer = t.layer || (t.cabType ? 'cabinets' : 'tools');
             toolNode.dataset.estCost = t.estCost || '';
+            if (t.clearanceCategory) toolNode.dataset.clearanceCategory = t.clearanceCategory;
             const w = t.width * zoomFactor;
             const h = t.height * zoomFactor;
             toolNode.style.width = w + 'px';
@@ -6426,7 +6559,8 @@
                 cabType: node.dataset.cabType || null,
                 physicalHeight: node.dataset.height || null,
                 layer: node.dataset.layer || 'tools',
-                estCost: node.dataset.estCost || ''
+                estCost: node.dataset.estCost || '',
+                clearanceCategory: node.dataset.clearanceCategory || null
             };
         }
 
@@ -6508,61 +6642,13 @@
         }
 
         /* ---------- STARTER LAYOUT TEMPLATES ----------
-           Each tool entry's wFt/lFt mirror a real catalog item's data-width/data-length
-           (see the sidebar catalog), and leftFt/topFt are hand-placed in feet from the
-           shop's top-left corner — buildTemplateLayout() converts all of that into the
-           same BASE_PPI-normalized descriptor shape applyLayoutState() already expects
-           from a saved layout, so no new placement code path is needed. */
+           Sets shop dimensions only — deliberately no pre-placed tools, so the user starts
+           from an empty floor at a realistic size rather than a stranger's tool arrangement
+           they have to tear out first. */
         const LAYOUT_TEMPLATES = {
-            'one-car': {
-                name: 'Compact One-Car Garage',
-                widthFeet: 12, lengthFeet: 22, ceilingHeightFt: 10, scale: '1.0',
-                tools: [
-                    { name: 'JET DC-1100VX', wFt: 2.2, lFt: 2.2, leftFt: 0.3, topFt: 0.3 },
-                    { name: 'SawStop PCS175', wFt: 3, lFt: 5.2, leftFt: 3, topFt: 0.5 },
-                    { name: 'Laguna 14BX', wFt: 2.1, lFt: 2.5, leftFt: 9, topFt: 0.5 },
-                    { name: 'Assembly Table', wFt: 3, lFt: 6, leftFt: 3, topFt: 6 },
-                    { name: 'Husky 72in Tool Chest Combo', wFt: 2, lFt: 6, leftFt: 0.3, topFt: 12 },
-                    { name: 'Craftsman 26in Rolling Cabinet', wFt: 2.2, lFt: 1.5, leftFt: 7, topFt: 12 }
-                ]
-            },
-            'two-car': {
-                name: 'Two-Car Garage Woodshop',
-                widthFeet: 20, lengthFeet: 24, ceilingHeightFt: 10, scale: '1.0',
-                tools: [
-                    { name: 'JET DC-1100VX', wFt: 2.2, lFt: 2.2, leftFt: 0.3, topFt: 0.3 },
-                    { name: 'SawStop PCS175', wFt: 3, lFt: 5.2, leftFt: 4, topFt: 1 },
-                    { name: 'Laguna 14BX', wFt: 2.1, lFt: 2.5, leftFt: 12, topFt: 1 },
-                    { name: 'Powermatic 201HH', wFt: 2.6, lFt: 3.4, leftFt: 4, topFt: 6 },
-                    { name: 'Festool Kapex KS 120', wFt: 2.5, lFt: 4.5, leftFt: 9, topFt: 6 },
-                    { name: 'JET 22-44 Sander', wFt: 1.5, lFt: 1.5, leftFt: 15, topFt: 6 },
-                    { name: 'Assembly Table', wFt: 3, lFt: 6, leftFt: 4, topFt: 10 },
-                    { name: 'Husky 72in Tool Chest Combo', wFt: 2, lFt: 6, leftFt: 0.3, topFt: 15 },
-                    { name: 'Craftsman 26in Rolling Cabinet', wFt: 2.2, lFt: 1.5, leftFt: 8, topFt: 15 },
-                    { name: 'DEWALT TOUGHSYSTEM 2.0', wFt: 1.8, lFt: 2.0, leftFt: 11, topFt: 15 }
-                ]
-            },
-            'dedicated': {
-                name: 'Dedicated Shop Building',
-                widthFeet: 30, lengthFeet: 40, ceilingHeightFt: 12, scale: '1.0',
-                tools: [
-                    { name: 'Oneida Super Dust Deputy XL', wFt: 1.5, lFt: 1.5, leftFt: 0.3, topFt: 0.3 },
-                    { name: 'SawStop ICS', wFt: 3.2, lFt: 5.5, leftFt: 4, topFt: 1 },
-                    { name: 'Grizzly G0513X2', wFt: 2.2, lFt: 2.6, leftFt: 11, topFt: 1 },
-                    { name: 'Hammer A3-31', wFt: 2.5, lFt: 4.0, leftFt: 16, topFt: 1 },
-                    { name: 'SuperMax 19-38', wFt: 2.0, lFt: 3.5, leftFt: 22, topFt: 1 },
-                    { name: 'Powermatic 3520C', wFt: 2.0, lFt: 6.5, leftFt: 4, topFt: 6 },
-                    { name: 'JET 22-44 Sander', wFt: 1.5, lFt: 1.5, leftFt: 12, topFt: 6 },
-                    { name: 'Festool Kapex KS 120', wFt: 2.5, lFt: 4.5, leftFt: 15, topFt: 6 },
-                    { name: 'Kreg PRS2100', wFt: 1.8, lFt: 2.8, leftFt: 21, topFt: 6 },
-                    { name: 'Assembly Table', wFt: 3, lFt: 6, leftFt: 4, topFt: 12 },
-                    { name: 'Kreg Mobile Project Center', wFt: 2, lFt: 3, leftFt: 12, topFt: 12 },
-                    { name: 'Husky 72in Tool Chest Combo', wFt: 2, lFt: 6, leftFt: 0.3, topFt: 18 },
-                    { name: 'Snap-on KRL1023 Classic 78', wFt: 2.1, lFt: 6.5, leftFt: 8, topFt: 18 },
-                    { name: 'Kobalt 41in Rolling Chest', wFt: 1.5, lFt: 3.4, leftFt: 16, topFt: 18 },
-                    { name: 'US General 56in Roller Cabinet', wFt: 1.8, lFt: 4.7, leftFt: 21, topFt: 18 }
-                ]
-            }
+            'one-car': { name: 'Compact One-Car Garage', widthFeet: 12, lengthFeet: 22, ceilingHeightFt: 10, scale: '1.0' },
+            'two-car': { name: 'Two-Car Garage Woodshop', widthFeet: 20, lengthFeet: 24, ceilingHeightFt: 10, scale: '1.0' },
+            'dedicated': { name: 'Dedicated Shop Building', widthFeet: 30, lengthFeet: 40, ceilingHeightFt: 12, scale: '1.0' }
         };
 
         function buildTemplateLayout(key) {
@@ -6576,19 +6662,7 @@
                 unitSystem: unitSystem,
                 shapeMode: 'rectangle',
                 shapePoints: [],
-                tools: tpl.tools.map(t => ({
-                    label: t.name,
-                    displayName: t.name,
-                    displayDims: '',
-                    left: t.leftFt * BASE_PPI,
-                    top: t.topFt * BASE_PPI,
-                    width: t.lFt * BASE_PPI,
-                    height: t.wFt * BASE_PPI,
-                    rotation: 0,
-                    cabType: null,
-                    physicalHeight: null,
-                    layer: 'tools'
-                })),
+                tools: [],
                 wallFeatures: [],
                 internalWalls: []
             };
@@ -6765,7 +6839,7 @@
             const select = document.getElementById('savedLayoutsSelect');
 
             saveBtn.addEventListener('click', async () => {
-                if (!requireProAccess('Saved shop layouts are a Pro feature.')) return;
+                if (!isSignedIn()) { showToast('Sign in (top right) to save shop layouts.'); return; }
                 const typedName = nameInput.value.trim();
                 const layouts = loadLayouts();
 
@@ -6778,6 +6852,11 @@
                 const existing = targetId ? layouts.find(l => l.id === targetId) : null;
                 const isOverwrite = !!existing && (!typedName || typedName === existing.name);
                 const name = typedName || (existing ? existing.name : `Shop Layout ${new Date().toLocaleString()}`);
+
+                if (!isOverwrite && layouts.length >= getMaxSavedLayouts()) {
+                    showUpgradeNudge(`Free plan is limited to ${getMaxSavedLayouts()} saved shop layout — upgrade to Pro for unlimited.`);
+                    return;
+                }
 
                 const layout = serializeCurrentLayout(name);
                 layout.layoutType = typeSelect.value;
@@ -7154,10 +7233,213 @@
         }
 
         function initClearancePanel() {
-            document.getElementById('clearanceCheckBtn').addEventListener('click', checkClearance);
+            document.getElementById('clearanceCheckBtn').addEventListener('click', runAllClearanceChecks);
             document.getElementById('clearanceMinWidth').addEventListener('change', () => {
-                if (!document.getElementById('clearancePanel').classList.contains('collapsed')) checkClearance();
+                if (!document.getElementById('clearancePanel').classList.contains('collapsed')) runAllClearanceChecks();
             });
+            initClearanceSettingsModal();
+        }
+
+        function runAllClearanceChecks() {
+            checkClearance();
+            checkToolOperatingClearance();
+        }
+
+        /* ---------- TOOL OPERATING CLEARANCE ----------
+           Distinct from the generic walkway checker above: this is about whether there's
+           real working room in front of/behind/beside a specific machine (e.g. enough infeed
+           for a table saw to actually rip a sheet), not just a minimum walking gap. Defaults
+           are per catalog category (not per individual model — clearance need is a function
+           of "it's a table saw," not which brand), user-editable and stored locally, since
+           this is a personal shop-planning preference rather than shared content — same
+           reasoning as the Cut List Optimizer's local-only stock-defects panel.
+           Left/right extend the tool's un-rotated horizontal (catalog "length") axis; top/
+           bottom extend its un-rotated vertical (catalog "width") axis — for most feed-through
+           machines (saws, jointers, planers) that horizontal axis is the infeed/outfeed line,
+           since data-length maps to the placed node's on-grid width (see the drop handler).
+           The whole zone rotates together with the tool when it's rotated on the grid. */
+        const CLEARANCE_CATEGORY_DEFAULTS = {
+            'Table Saws': { left: 8, right: 8, top: 3, bottom: 3 },
+            'Bandsaws': { left: 4, right: 4, top: 3, bottom: 3 },
+            'Jointers & Planers': { left: 6, right: 6, top: 3, bottom: 3 },
+            'Sanding': { left: 3, right: 3, top: 3, bottom: 3 },
+            'Drilling & Boring': { left: 3, right: 3, top: 3, bottom: 2 },
+            'Turning': { left: 4, right: 4, top: 3, bottom: 3 },
+            'Routing': { left: 3, right: 3, top: 3, bottom: 3 },
+            'Crosscut & Miter': { left: 6, right: 6, top: 3, bottom: 2 },
+            'CNC & Digital Fab': { left: 3, right: 3, top: 3, bottom: 3 },
+            'Vehicle Lifts': { left: 3, right: 3, top: 4, bottom: 4 }
+        };
+        const CLEARANCE_SETTINGS_KEY = 'kerphClearanceSettings';
+
+        function loadClearanceOverrides() {
+            try { return JSON.parse(localStorage.getItem(CLEARANCE_SETTINGS_KEY) || '{}'); }
+            catch (e) { return {}; }
+        }
+        function saveClearanceOverrides(overrides) {
+            localStorage.setItem(CLEARANCE_SETTINGS_KEY, JSON.stringify(overrides));
+        }
+        function getClearanceProfile(category) {
+            const defaults = CLEARANCE_CATEGORY_DEFAULTS[category];
+            if (!defaults) return null;
+            const overrides = loadClearanceOverrides();
+            return { ...defaults, ...(overrides[category] || {}) };
+        }
+
+        function rotatePointAroundPx(px, py, cx, cy, angleDeg) {
+            const rad = angleDeg * Math.PI / 180;
+            const cos = Math.cos(rad), sin = Math.sin(rad);
+            const dx = px - cx, dy = py - cy;
+            return { x: cx + (dx * cos - dy * sin), y: cy + (dx * sin + dy * cos) };
+        }
+
+        // Builds the rotated-AABB zone rect for one obstacle, extended by its category's
+        // clearance profile — same asymmetric-rect-rotated-around-a-pivot approach as
+        // getRotatedAabb, just generalized since a clearance zone isn't centered on the tool
+        // when left/right or top/bottom differ.
+        function getToolClearanceZoneRect(obstacle) {
+            const profile = obstacle.clearanceCategory ? getClearanceProfile(obstacle.clearanceCategory) : null;
+            if (!profile) return null;
+            const { rect, angle } = obstacle;
+            // Center is the same regardless of rotation, so it's safe to read off the
+            // (possibly already-rotated) obstacle rect — but the half-extents must come from
+            // the tool's raw, un-rotated footprint (wPx/hPx), not from rect's already-rotated
+            // AABB, or a rotated tool's zone gets rotated a second time on top of that.
+            const cx = (rect.left + rect.right) / 2;
+            const cy = (rect.top + rect.bottom) / 2;
+            const halfW = obstacle.wPx / 2;
+            const halfH = obstacle.hPx / 2;
+            const leftPx = profile.left * ppi, rightPx = profile.right * ppi;
+            const topPx = profile.top * ppi, bottomPx = profile.bottom * ppi;
+            const localCorners = [
+                { x: -halfW - leftPx, y: -halfH - topPx },
+                { x: halfW + rightPx, y: -halfH - topPx },
+                { x: halfW + rightPx, y: halfH + bottomPx },
+                { x: -halfW - leftPx, y: halfH + bottomPx }
+            ];
+            const rotated = localCorners.map(p => rotatePointAroundPx(cx + p.x, cy + p.y, cx, cy, angle));
+            const xs = rotated.map(p => p.x), ys = rotated.map(p => p.y);
+            return { left: Math.min(...xs), right: Math.max(...xs), top: Math.min(...ys), bottom: Math.max(...ys) };
+        }
+
+        function clearToolClearanceZones() {
+            document.querySelectorAll('.clearance-zone-overlay').forEach(n => n.remove());
+            document.querySelectorAll('.clearance-zone-flag-item').forEach(n => n.classList.remove('clearance-zone-flag-item'));
+        }
+
+        function checkToolOperatingClearance() {
+            clearToolClearanceZones();
+            const resultEl = document.getElementById('toolClearanceResults');
+            if (!resultEl) return;
+
+            const obstacles = getFloorObstacles().map(o => ({
+                ...o,
+                angle: parseFloat(o.el.dataset.rotation) || 0,
+                wPx: parseFloat(o.el.style.width) || 0,
+                hPx: parseFloat(o.el.style.height) || 0,
+                clearanceCategory: o.el.dataset.clearanceCategory || null
+            }));
+            const zoned = obstacles.filter(o => o.clearanceCategory && getClearanceProfile(o.clearanceCategory));
+
+            if (!zoned.length) {
+                resultEl.innerHTML = '';
+                return;
+            }
+
+            const conflicts = [];
+            const flaggedEls = new Set();
+
+            zoned.forEach(owner => {
+                const zoneRect = getToolClearanceZoneRect(owner);
+                if (!zoneRect) return;
+                let intrudedBy = [];
+                obstacles.forEach(other => {
+                    if (other === owner) return;
+                    if (rectsOverlap(zoneRect, other.rect)) intrudedBy.push(other.label);
+                });
+                const zone = document.createElement('div');
+                zone.className = 'clearance-zone-overlay' + (intrudedBy.length ? ' violated' : '');
+                zone.style.left = zoneRect.left + 'px';
+                zone.style.top = zoneRect.top + 'px';
+                zone.style.width = (zoneRect.right - zoneRect.left) + 'px';
+                zone.style.height = (zoneRect.bottom - zoneRect.top) + 'px';
+                board.insertBefore(zone, board.firstChild);
+                if (intrudedBy.length) {
+                    flaggedEls.add(owner.el);
+                    conflicts.push(`${owner.label} needs clear space — ${intrudedBy.join(', ')} ${intrudedBy.length === 1 ? 'is' : 'are'} too close`);
+                }
+            });
+
+            flaggedEls.forEach(el => el.classList.add('clearance-zone-flag-item'));
+
+            if (!conflicts.length) {
+                resultEl.innerHTML = `<div class="elec-status-badge ok">&#10003; Operating clearance looks good for ${zoned.length} tool${zoned.length === 1 ? '' : 's'}</div>`;
+            } else {
+                resultEl.innerHTML = `<div class="elec-status-badge warn">&#9888; ${conflicts.length} clearance conflict${conflicts.length === 1 ? '' : 's'}</div>` +
+                    `<div class="clearance-conflict-list">${conflicts.map(c => `<div>${escapeHtml(c)}</div>`).join('')}</div>`;
+            }
+            if (typeof arrangeFloatingPanels === 'function') arrangeFloatingPanels();
+        }
+
+        function renderClearanceSettingsList() {
+            const container = document.getElementById('clearanceSettingsList');
+            if (!container) return;
+            const overrides = loadClearanceOverrides();
+            container.innerHTML = Object.keys(CLEARANCE_CATEGORY_DEFAULTS).map(category => {
+                const profile = getClearanceProfile(category);
+                const isCustom = !!overrides[category];
+                const dirs = [['left', 'Left'], ['right', 'Right'], ['top', 'Top'], ['bottom', 'Bottom']];
+                return `
+                    <div class="clearance-settings-row" data-category="${escapeHtml(category)}">
+                        <div class="clearance-settings-row-title">${escapeHtml(category)}${isCustom ? ' <span class="clearance-custom-badge">Custom</span>' : ''}</div>
+                        <div class="clearance-settings-fields">
+                            ${dirs.map(([key, label]) => `
+                                <label class="clearance-settings-field">
+                                    <span>${label}</span>
+                                    <input type="number" class="input-box clearance-dir-input" data-dir="${key}" min="0" step="0.5" value="${profile[key]}">
+                                </label>
+                            `).join('')}
+                            <button type="button" class="mini-btn clearance-reset-btn" ${isCustom ? '' : 'disabled'}>Reset</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            container.querySelectorAll('.clearance-settings-row').forEach(row => {
+                const category = row.dataset.category;
+                row.querySelectorAll('.clearance-dir-input').forEach(input => {
+                    input.addEventListener('change', () => {
+                        const overrides = loadClearanceOverrides();
+                        const current = getClearanceProfile(category);
+                        current[input.dataset.dir] = Math.max(0, parseFloat(input.value) || 0);
+                        overrides[category] = current;
+                        saveClearanceOverrides(overrides);
+                        renderClearanceSettingsList();
+                    });
+                });
+                const resetBtn = row.querySelector('.clearance-reset-btn');
+                resetBtn.addEventListener('click', () => {
+                    const overrides = loadClearanceOverrides();
+                    delete overrides[category];
+                    saveClearanceOverrides(overrides);
+                    renderClearanceSettingsList();
+                });
+            });
+        }
+
+        function initClearanceSettingsModal() {
+            const overlay = document.getElementById('clearanceSettingsModalOverlay');
+            const openBtn = document.getElementById('clearanceSettingsBtn');
+            if (!overlay || !openBtn) return;
+            openBtn.addEventListener('click', () => {
+                renderClearanceSettingsList();
+                overlay.style.display = 'flex';
+            });
+            document.getElementById('clearanceSettingsCloseBtn').addEventListener('click', () => {
+                overlay.style.display = 'none';
+                if (!document.getElementById('clearancePanel').classList.contains('collapsed')) runAllClearanceChecks();
+            });
+            overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.style.display = 'none'; });
         }
 
         /* ---------- WHOLE-SHOP COST ROLLUP ----------
@@ -8433,8 +8715,8 @@
             const clearancePanel = document.getElementById('clearancePanel');
             makeDraggable(clearancePanel, document.getElementById('clearancePanelHandle'), () => {
                 clearancePanel.classList.toggle('collapsed');
-                if (clearancePanel.classList.contains('collapsed')) clearClearanceFlags();
-                else checkClearance();
+                if (clearancePanel.classList.contains('collapsed')) { clearClearanceFlags(); clearToolClearanceZones(); }
+                else runAllClearanceChecks();
                 arrangeFloatingPanels();
             });
 
@@ -8698,6 +8980,23 @@
         initCostPanel();
         initExportPdf();
         document.getElementById('pageNavSelect').addEventListener('change', (e) => { window.location.href = e.target.value; });
+
+        // Standalone header dropdown (not folded into pageNavSelect) so Shop Jigs' four
+        // tools are one click away from every page instead of being buried as just another
+        // option in a 9-item combobox.
+        function initJigsDropdown() {
+            const dropdown = document.getElementById('jigsDropdown');
+            const btn = document.getElementById('jigsDropdownBtn');
+            if (!dropdown || !btn) return;
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                dropdown.classList.toggle('open');
+            });
+            document.addEventListener('click', (e) => {
+                if (!dropdown.contains(e.target)) dropdown.classList.remove('open');
+            });
+        }
+        initJigsDropdown();
         initDraggablePanels();
         initPanelAutoStack();
         initNewLayoutModal();
@@ -8756,7 +9055,23 @@
         });
 
         setInterval(autosaveCurrentLayout, 2000);
-        window.addEventListener('beforeunload', autosaveCurrentLayout);
+        window.addEventListener('beforeunload', (e) => {
+            // Check for unsaved changes BEFORE calling autosaveCurrentLayout() — it updates
+            // lastAutosavedContent synchronously the moment a save is *initiated* (so the 2s
+            // interval doesn't refire on the same content while a previous save is still
+            // in-flight), which would make a same-tick dirty check always read "clean." Reading
+            // the dirty state first, then firing the save, is what makes this a real backstop:
+            // a refresh/close can still outrun the network round-trip below, so the fire-and-forget
+            // save alone can't be trusted to land before the page actually unloads.
+            let comparable;
+            try { comparable = serializeForChangeComparison(serializeCurrentLayout('Current Layout')); } catch (err) { comparable = null; }
+            const isDirty = comparable !== null && comparable !== lastAutosavedContent;
+            autosaveCurrentLayout();
+            if (isDirty) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
 
         function anyModalOpen() {
             return Array.from(document.querySelectorAll('.modal-overlay'))

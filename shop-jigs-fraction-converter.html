@@ -4,7 +4,7 @@
     <script>if (localStorage.getItem('kerphComingSoonBypass') !== 'true') { location.replace('coming-soon.html'); }</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kerph - Cool Tool Reviews</title>
+    <title>Kerph - Fraction Converter</title>
     <style>
         * {
             box-sizing: border-box;
@@ -135,12 +135,9 @@
         .mini-btn:hover { background-color: #eef2ff; border-color: #2563eb; }
         .mini-btn.danger { color: #b91c1c; }
         .mini-btn.danger:hover { background-color: #fef2f2; border-color: #b91c1c; }
-        .mini-btn.primary { background-color: #1e3a8a; color: #ffffff; border-color: #1e3a8a; }
-        .mini-btn.primary:hover { background-color: #1e40af; }
 
         .input-box { width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; font-weight: 600; }
         .select-box { width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; font-weight: 600; background: #f8fafc; }
-        textarea.input-box { resize: vertical; min-height: 90px; font-family: inherit; font-weight: 400; }
 
         .modal-overlay { position: fixed; inset: 0; background-color: rgba(15, 23, 42, 0.5); z-index: 3000; display: flex; align-items: center; justify-content: center; padding: 24px; }
         .modal-box { background-color: #ffffff; border-radius: 12px; padding: 24px; width: 320px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4); }
@@ -193,122 +190,7 @@
         }
         .upgrade-nudge.visible { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
 
-        /* ---------- PAGE CONTENT ---------- */
-        main {
-            max-width: 1100px;
-            margin: 0 auto;
-            padding: 40px 24px 80px;
-        }
-
-        .reviews-eyebrow {
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            color: #b23b3b;
-            margin-bottom: 8px;
-        }
-        .reviews-title { font-size: 28px; font-weight: 800; color: #0f172a; margin-bottom: 10px; }
-        .reviews-subtitle { font-size: 14.5px; color: #4b5563; line-height: 1.6; margin-bottom: 28px; max-width: 70ch; }
-
-        .reviews-toolbar {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            align-items: center;
-            margin-bottom: 24px;
-            background-color: #ffffff;
-            border: 1px solid #cbd5e1;
-            border-radius: 12px;
-            padding: 14px;
-        }
-        .reviews-toolbar .input-box, .reviews-toolbar .select-box { width: auto; }
-        #reviewSearchInput { flex: 1; min-width: 160px; }
-        #reviewCategoryFilter, #reviewSortSelect { min-width: 150px; }
-        #writeReviewBtn { flex: none; margin-left: auto; padding: 10px 18px; }
-
-        .reviews-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 16px;
-        }
-
-        .review-card {
-            background-color: #ffffff;
-            border: 1px solid #cbd5e1;
-            border-radius: 12px;
-            padding: 18px;
-            box-shadow: 0 10px 25px -12px rgba(15, 23, 42, 0.15);
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .review-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
-        .review-tool-name { font-size: 15.5px; font-weight: 800; color: #0f172a; line-height: 1.3; }
-        .review-category-tag {
-            font-size: 9.5px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.03em;
-            color: #1e3a8a;
-            background-color: #e0e7ff;
-            padding: 3px 8px;
-            border-radius: 999px;
-            white-space: nowrap;
-            flex-shrink: 0;
-        }
-
-        .star-rating { color: #d97706; font-size: 15px; letter-spacing: 1px; }
-        .star-rating .star-empty { color: #d1d5db; }
-
-        .review-text { font-size: 13px; color: #374151; line-height: 1.55; flex: 1; white-space: pre-wrap; }
-
-        .review-card-footer {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 8px;
-            padding-top: 8px;
-            border-top: 1px solid #f1f5f9;
-            font-size: 11.5px;
-            color: #6b7280;
-        }
-        .review-author { font-weight: 700; color: #1e293b; }
-        .review-date { color: #9ca3af; }
-
-        .helpful-btn {
-            border: 1px solid #cbd5e1;
-            background-color: #f8fafc;
-            border-radius: 999px;
-            padding: 4px 10px;
-            font-size: 11px;
-            font-weight: 700;
-            color: #4b5563;
-            cursor: pointer;
-            white-space: nowrap;
-        }
-        .helpful-btn:hover { background-color: #eef2ff; border-color: #2563eb; }
-        .helpful-btn.active { background-color: #dbeafe; border-color: #2563eb; color: #1e3a8a; }
-
-        .reviews-empty {
-            grid-column: 1 / -1;
-            text-align: center;
-            padding: 60px 20px;
-            color: #6b7280;
-            background-color: #ffffff;
-            border: 1px dashed #cbd5e1;
-            border-radius: 12px;
-        }
-        .reviews-empty-icon { font-size: 40px; margin-bottom: 10px; }
-        .reviews-empty-title { font-size: 15px; font-weight: 700; color: #1e293b; margin-bottom: 6px; }
-        .reviews-empty-desc { font-size: 12.5px; max-width: 40ch; margin: 0 auto; line-height: 1.6; }
-
-        .star-picker { display: flex; gap: 4px; font-size: 26px; }
-        .star-picker span { cursor: pointer; color: #d1d5db; transition: color 0.1s ease; }
-        .star-picker span.filled { color: #d97706; }
-        .header-field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; width: 100%; }
-            .header-quick-links { display: flex; align-items: center; gap: 6px; font-size: 11px; }
+        .header-quick-links { display: flex; align-items: center; gap: 6px; font-size: 11px; }
         .header-quick-links a { color: #6b7280; font-weight: 600; text-decoration: none; }
         .header-quick-links a:hover { color: #1e3a8a; text-decoration: underline; }
         .header-quick-links-sep { color: #cbd5e1; }
@@ -356,7 +238,51 @@
             text-decoration: none;
         }
         .jigs-dropdown-menu a:hover { background-color: #eef2ff; color: #1e3a8a; }
+        .jigs-dropdown-menu a.current { background-color: #eef2ff; color: #1e3a8a; }
         .jigs-dropdown-menu-sep { height: 1px; background-color: #e2e8f0; margin: 5px 2px; }
+
+        /* ---------- SINGLE-JIG PAGE LAYOUT ---------- */
+        .jig-page-layout {
+            max-width: 760px;
+            margin: 0 auto;
+            padding: 40px 24px 100px;
+        }
+        .jig-breadcrumb { font-size: 12.5px; font-weight: 600; margin-bottom: 14px; }
+        .jig-breadcrumb a { color: #6b7280; text-decoration: none; }
+        .jig-breadcrumb a:hover { color: #1e3a8a; text-decoration: underline; }
+        .help-eyebrow {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #b23b3b;
+            margin-bottom: 8px;
+        }
+        .help-title { font-size: 28px; font-weight: 800; color: #0f172a; margin-bottom: 10px; }
+        .help-subtitle { font-size: 14.5px; color: #4b5563; line-height: 1.6; margin-bottom: 24px; max-width: 65ch; }
+        .help-article {
+            background-color: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 14px;
+            padding: 32px;
+            box-shadow: 0 12px 30px -12px rgba(15, 23, 42, 0.15);
+        }
+
+        /* ---------- SHOP JIGS TOOL WIDGETS ---------- */
+        .jig-input-row { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; margin-bottom: 14px; }
+        .jig-field { display: flex; flex-direction: column; gap: 4px; }
+        .jig-field label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: #6b7280; }
+        .jig-field input, .jig-field select { padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; font-weight: 600; width: 108px; background: #ffffff; }
+        .jig-field input.narrow { width: 64px; }
+        .jig-radio-group { display: flex; gap: 16px; margin-bottom: 14px; flex-wrap: wrap; }
+        .jig-radio-group label { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: #1e293b; cursor: pointer; }
+
+        .jig-results-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-top: 4px; }
+        .jig-result { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px; }
+        .jig-result-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: #6b7280; }
+        .jig-result-value { font-size: 18px; font-weight: 800; color: #1e3a8a; margin-top: 2px; font-variant-numeric: tabular-nums; }
+        .jig-result-value.big { font-size: 22px; }
+        .jig-result-sub { font-size: 11px; color: #6b7280; margin-top: 2px; }
     </style>
 </head>
 <body>
@@ -378,7 +304,7 @@
                 <option value="quote-builder.html">Quote Builder</option>
                 <option value="find-a-builder.html">Find a Builder</option>
                 <option value="shop-3d-viewer.html">3D Shop Viewer</option>
-                <option value="tool-reviews.html" selected>Cool Tool Reviews</option>
+                <option value="tool-reviews.html">Cool Tool Reviews</option>
                 <option value="shop-showcase.html">Shop Showcase</option>
                 <option value="portfolio.html">Portfolio</option>
                 <option value="print-library.html">3D Print Library</option>
@@ -386,7 +312,7 @@
             <div class="jigs-dropdown" id="jigsDropdown">
                 <button type="button" class="jigs-dropdown-btn" id="jigsDropdownBtn">Shop Jigs <span class="jigs-dropdown-caret">&#9662;</span></button>
                 <div class="jigs-dropdown-menu">
-                    <a href="shop-jigs-fraction-converter.html">Fraction Converter</a>
+                    <a href="shop-jigs-fraction-converter.html" class="current">Fraction Converter</a>
                     <a href="shop-jigs-add-fractions.html">Add Fractions</a>
                     <a href="shop-jigs-board-feet.html">Board Foot Calculator</a>
                     <a href="shop-jigs-angle-chart.html">Polygon Angle Chart</a>
@@ -407,7 +333,7 @@
                 </div>
                 <a href="#" class="header-sign-in-mode-toggle" id="headerSignInModeToggle">New here? Create an account</a>
             </div>
-            <button type="button" id="accountBtn" class="account-btn plan-free" title="Account &amp; Plan Settings — border color shows your plan level" style="display:none;">
+            <button type="button" id="accountBtn" class="account-btn plan-free" title="Account &amp; Plan Settings" style="display:none;">
                 <span class="account-avatar" id="accountAvatarPreview">&#128100;</span>
                 <span class="account-btn-text">
                     <span class="account-btn-name" id="accountBtnLabel">Account</span>
@@ -434,14 +360,14 @@
             <div class="modal-title">Account Settings</div>
             <div class="modal-warning">Your account (username, avatar, sign-in) is real and synced via Kerph. Saved layouts, projects, tools, Showcase posts, and reviews are synced too — available on any device you sign into.</div>
 
-            <div class="header-field" style="align-items:center;">
+            <div class="header-field" style="align-items:center; display:flex; flex-direction:column; gap:4px;">
                 <div class="account-avatar-large" id="accountAvatarLarge">&#128100;</div>
                 <input type="file" id="accountAvatarInput" accept="image/*" style="display:none;">
                 <button type="button" id="accountAvatarBtn" class="mini-btn" style="margin-top:10px; flex:none;">Upload Photo</button>
                 <div class="account-member-since" id="accountMemberSince"></div>
             </div>
 
-            <div class="header-field">
+            <div class="header-field" style="display:flex; flex-direction:column; gap:4px; margin-top:12px;">
                 <label class="header-field-label" for="accountUsernameInput">Username</label>
                 <input type="text" class="input-box" id="accountUsernameInput" placeholder="Choose a username">
             </div>
@@ -463,7 +389,7 @@
                 <div class="account-plan-upsell" id="accountPlanUpsell" style="display:none;">Free includes 1 saved shop layout; custom shop shapes and unlimited saves unlock on Pro.</div>
             </div>
 
-            <div class="header-field" style="margin-top:10px;">
+            <div class="header-field" style="display:flex; flex-direction:column; gap:4px; margin-top:10px;">
                 <label class="header-field-label" for="accountUnitsSelect">Preferred Units</label>
                 <select class="select-box" id="accountUnitsSelect">
                     <option value="imperial">Imperial (ft / in)</option>
@@ -471,7 +397,7 @@
                 </select>
             </div>
 
-            <div class="header-field" style="margin-top:14px;">
+            <div class="header-field" style="display:flex; flex-direction:column; gap:4px; margin-top:14px;">
                 <label class="header-field-label">Saved Layouts</label>
                 <div id="accountLayoutsList" class="account-layouts-list"></div>
             </div>
@@ -500,79 +426,43 @@
         </div>
     </div>
 
-    <div class="modal-overlay" id="reviewModalOverlay" style="display:none;">
-        <div class="modal-box" style="width:400px;">
-            <div class="modal-title">Write a Review</div>
+    <div class="upgrade-nudge" id="upgradeNudge"></div>
 
-            <div class="header-field">
-                <label class="header-field-label" for="reviewToolName">Tool Name</label>
-                <input type="text" class="input-box" id="reviewToolName" placeholder="e.g. SawStop PCS175">
+    <div class="jig-page-layout">
+        <div class="jig-breadcrumb"><a href="shop-jigs.html">Shop Jigs</a> / Fraction Converter</div>
+        <div class="help-eyebrow">Shop Jig</div>
+        <div class="help-title">Fraction Converter</div>
+        <div class="help-subtitle">Convert between millimeters, decimal inches, and real woodworking fractions — down to 1/64". Shows the nearest usable fraction at your chosen precision and how far off it actually is.</div>
+
+        <div class="help-article">
+            <div class="jig-radio-group">
+                <label><input type="radio" name="convMode" value="mm" checked> From millimeters</label>
+                <label><input type="radio" name="convMode" value="decimal"> From decimal inches</label>
+                <label><input type="radio" name="convMode" value="fraction"> From a fraction (in)</label>
             </div>
 
-            <div class="header-field">
-                <label class="header-field-label" for="reviewCategorySelect">Category</label>
-                <select class="select-box" id="reviewCategorySelect"></select>
-            </div>
+            <div class="jig-input-row" id="convInputRow"></div>
 
-            <div class="header-field">
-                <label class="header-field-label">Your Rating</label>
-                <div class="star-picker" id="reviewStarPicker">
-                    <span data-value="1">&#9733;</span>
-                    <span data-value="2">&#9733;</span>
-                    <span data-value="3">&#9733;</span>
-                    <span data-value="4">&#9733;</span>
-                    <span data-value="5">&#9733;</span>
+            <div class="jig-input-row">
+                <div class="jig-field">
+                    <label for="convPrecision">Nearest</label>
+                    <select id="convPrecision">
+                        <option value="8">1/8"</option>
+                        <option value="16" selected>1/16"</option>
+                        <option value="32">1/32"</option>
+                        <option value="64">1/64"</option>
+                    </select>
                 </div>
             </div>
 
-            <div class="header-field">
-                <label class="header-field-label" for="reviewText">Review</label>
-                <textarea class="input-box" id="reviewText" placeholder="What do you like or dislike about it? Would you buy it again?"></textarea>
-            </div>
-
-            <div class="header-field">
-                <label class="header-field-label" for="reviewAuthorName">Your Name</label>
-                <input type="text" class="input-box" id="reviewAuthorName" placeholder="Anonymous">
-            </div>
-
-            <div class="modal-actions">
-                <button type="button" id="reviewCancelBtn" class="mini-btn">Cancel</button>
-                <button type="button" id="reviewSubmitBtn" class="mini-btn modal-primary-btn">Post Review</button>
-            </div>
+            <div class="jig-results-grid" id="convResults"></div>
         </div>
     </div>
-
-    <div class="upgrade-nudge" id="upgradeNudge"></div>
-
-    <main>
-        <div class="reviews-eyebrow">Community</div>
-        <div class="reviews-title">Cool Tool Reviews</div>
-        <div class="reviews-subtitle">Real feedback from real shops — before you buy, see what other woodworkers actually think. Every review here is visible to the whole Kerph community.</div>
-
-        <div class="reviews-toolbar">
-            <input type="text" class="input-box" id="reviewSearchInput" placeholder="&#128269; Search tool names&hellip;">
-            <select class="select-box" id="reviewCategoryFilter"></select>
-            <select class="select-box" id="reviewSortSelect">
-                <option value="newest">Newest</option>
-                <option value="highest">Highest Rated</option>
-                <option value="helpful">Most Helpful</option>
-            </select>
-            <button type="button" id="writeReviewBtn" class="mini-btn primary">+ Write a Review</button>
-        </div>
-
-        <div class="reviews-grid" id="reviewsGrid"></div>
-    </main>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.7/dist/umd/supabase.js"></script>
     <script src="supabase-client.js"></script>
     <script>
-        /* ---------- SHARED STATE KEYS (must match workshop-planner.html / index.html exactly) ---------- */
         const PLAN_KEY = 'kerphPlan';
-        /* ACCOUNT_KEY/AUTH_KEY removed — account + sign-in are now real, Supabase-backed
-           (see supabase-client.js) instead of localStorage flags. */
-        const TOOL_STATUS_KEY = 'kerphToolStatus';
-        const LAYOUTS_KEY = 'kerphSavedLayouts';
-        const LAYOUT_TYPE_LABELS = { workshop: 'Workshop', 'dust-collection': 'Dust Collection', lighting: 'Lighting' };
 
         function showToast(message) {
             const nudge = document.getElementById('upgradeNudge');
@@ -615,13 +505,10 @@
         }
 
         let cachedToolStatuses = {};
-        function loadToolStatuses() {
-            return cachedToolStatuses;
-        }
+        function loadToolStatuses() { return cachedToolStatuses; }
         let cachedSavedLayouts = [];
-        function loadLayouts() {
-            return cachedSavedLayouts;
-        }
+        function loadLayouts() { return cachedSavedLayouts; }
+
         function renderAccountStats() {
             const row = document.getElementById('accountStatsRow');
             if (!row) return;
@@ -649,6 +536,7 @@
             select.value = plan;
             upsell.style.display = plan === 'free' ? 'block' : 'none';
         }
+        const LAYOUT_TYPE_LABELS = { workshop: 'Workshop', 'dust-collection': 'Dust Collection', lighting: 'Lighting' };
         function renderAccountLayoutsList() {
             const list = document.getElementById('accountLayoutsList');
             if (!list) return;
@@ -858,164 +746,6 @@
             updateHeaderSignInState();
         }
 
-        /* ---------- TOOL REVIEWS ----------
-           Real, Supabase-backed multi-user content now — tool_reviews (public-read) +
-           tool_review_votes (real per-user "helpful" votes, denormalized onto helpful_count
-           via a DB trigger). cachedReviews/cachedMyVotes are refreshed on every renderReviews()
-           call, not just once, since this is now real multi-user data other people can change
-           between renders. */
-        const REVIEW_CATEGORIES = [
-            'Table Saws', 'Bandsaws', 'Jointers & Planers', 'Sanding', 'Drilling & Boring',
-            'Turning', 'Routing', 'Crosscut & Miter', 'Dust Collection', 'Hand Tools',
-            'Measuring & Layout', 'Finishing', 'Storage', 'Other'
-        ];
-        let cachedReviews = [];
-        let cachedMyVotes = [];
-
-        function starsHtml(rating) {
-            let html = '';
-            for (let i = 1; i <= 5; i++) {
-                html += i <= rating ? '&#9733;' : '<span class="star-empty">&#9733;</span>';
-            }
-            return html;
-        }
-
-        function populateCategorySelects() {
-            const filterSel = document.getElementById('reviewCategoryFilter');
-            filterSel.innerHTML = '<option value="">All Categories</option>' +
-                REVIEW_CATEGORIES.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
-
-            const formSel = document.getElementById('reviewCategorySelect');
-            formSel.innerHTML = REVIEW_CATEGORIES.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
-        }
-
-        async function renderReviews() {
-            const grid = document.getElementById('reviewsGrid');
-            const query = document.getElementById('reviewSearchInput').value.trim().toLowerCase();
-            const category = document.getElementById('reviewCategoryFilter').value;
-            const sort = document.getElementById('reviewSortSelect').value;
-
-            const [reviewsResult, votesResult] = await Promise.all([kerphLoadToolReviews(), kerphLoadMyReviewVotes()]);
-            cachedReviews = reviewsResult.data;
-            cachedMyVotes = votesResult.data;
-
-            let reviews = cachedReviews;
-            if (query) reviews = reviews.filter(r => r.tool_name.toLowerCase().includes(query));
-            if (category) reviews = reviews.filter(r => r.category === category);
-
-            reviews = reviews.slice();
-            if (sort === 'newest') reviews.sort((a, b) => b.created_at.localeCompare(a.created_at));
-            else if (sort === 'highest') reviews.sort((a, b) => b.rating - a.rating || b.created_at.localeCompare(a.created_at));
-            else if (sort === 'helpful') reviews.sort((a, b) => (b.helpful_count || 0) - (a.helpful_count || 0) || b.created_at.localeCompare(a.created_at));
-
-            if (!reviews.length) {
-                const hasAny = cachedReviews.length > 0;
-                grid.innerHTML = `
-                    <div class="reviews-empty">
-                        <div class="reviews-empty-icon">${hasAny ? '&#128269;' : '&#11088;'}</div>
-                        <div class="reviews-empty-title">${hasAny ? 'No reviews match your search' : 'No reviews yet'}</div>
-                        <div class="reviews-empty-desc">${hasAny ? 'Try a different search term or category.' : 'Be the first to review a tool — click "+ Write a Review" above.'}</div>
-                    </div>
-                `;
-                return;
-            }
-
-            grid.innerHTML = reviews.map(r => {
-                const dateStr = new Date(r.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
-                const isVoted = cachedMyVotes.includes(r.id);
-                return `
-                    <div class="review-card">
-                        <div class="review-card-top">
-                            <div class="review-tool-name">${escapeHtml(r.tool_name)}</div>
-                            <div class="review-category-tag">${escapeHtml(r.category)}</div>
-                        </div>
-                        <div class="star-rating">${starsHtml(r.rating)}</div>
-                        <div class="review-text">${escapeHtml(r.review_text)}</div>
-                        <div class="review-card-footer">
-                            <span><span class="review-author">${escapeHtml(r.author || 'Anonymous')}</span> &middot; <span class="review-date">${dateStr}</span></span>
-                            <button type="button" class="helpful-btn${isVoted ? ' active' : ''}" data-id="${r.id}">&#128077; Helpful${r.helpful_count ? ' (' + r.helpful_count + ')' : ''}</button>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-
-            grid.querySelectorAll('.helpful-btn').forEach(btn => {
-                btn.addEventListener('click', async () => {
-                    const id = btn.getAttribute('data-id');
-                    if (!isSignedIn()) { showToast('Sign in (top right) to mark a review helpful.'); return; }
-                    const currentlyVoted = cachedMyVotes.includes(id);
-                    await kerphToggleReviewHelpful(id, currentlyVoted);
-                    renderReviews();
-                });
-            });
-        }
-
-        function initReviewModal() {
-            const overlay = document.getElementById('reviewModalOverlay');
-            const openBtn = document.getElementById('writeReviewBtn');
-            const cancelBtn = document.getElementById('reviewCancelBtn');
-            const submitBtn = document.getElementById('reviewSubmitBtn');
-            const toolNameInput = document.getElementById('reviewToolName');
-            const categorySelect = document.getElementById('reviewCategorySelect');
-            const textInput = document.getElementById('reviewText');
-            const authorInput = document.getElementById('reviewAuthorName');
-            const starPicker = document.getElementById('reviewStarPicker');
-            let selectedRating = 0;
-
-            function renderStarPicker() {
-                starPicker.querySelectorAll('span').forEach(s => {
-                    s.classList.toggle('filled', parseInt(s.getAttribute('data-value'), 10) <= selectedRating);
-                });
-            }
-            starPicker.querySelectorAll('span').forEach(s => {
-                s.addEventListener('click', () => {
-                    selectedRating = parseInt(s.getAttribute('data-value'), 10);
-                    renderStarPicker();
-                });
-            });
-
-            function openModal() {
-                if (!isSignedIn()) { showToast('Sign in (top right) to write a review.'); return; }
-                toolNameInput.value = '';
-                categorySelect.value = REVIEW_CATEGORIES[0];
-                textInput.value = '';
-                authorInput.value = loadAccount().username || '';
-                selectedRating = 0;
-                renderStarPicker();
-                overlay.style.display = 'flex';
-                toolNameInput.focus();
-            }
-
-            openBtn.addEventListener('click', openModal);
-            cancelBtn.addEventListener('click', () => { overlay.style.display = 'none'; });
-
-            submitBtn.addEventListener('click', async () => {
-                const toolName = toolNameInput.value.trim();
-                const text = textInput.value.trim();
-                if (!toolName) { showToast('Enter the tool name.'); toolNameInput.focus(); return; }
-                if (!selectedRating) { showToast('Pick a star rating.'); return; }
-                if (!text) { showToast('Write a few words about it.'); textInput.focus(); return; }
-                if (!isSignedIn()) { showToast('Sign in (top right) to write a review.'); return; }
-
-                submitBtn.disabled = true;
-                try {
-                    const { error } = await kerphCreateToolReview({
-                        toolName,
-                        category: categorySelect.value,
-                        rating: selectedRating,
-                        text,
-                        author: authorInput.value.trim() || 'Anonymous'
-                    });
-                    if (error) { showToast('Could not post that review.'); return; }
-                    overlay.style.display = 'none';
-                    showToast('Review posted.');
-                    renderReviews();
-                } finally {
-                    submitBtn.disabled = false;
-                }
-            });
-        }
-
         document.getElementById('pageNavSelect').addEventListener('change', (e) => { window.location.href = e.target.value; });
 
         // Standalone header dropdown (not folded into pageNavSelect) so Shop Jigs' four
@@ -1046,16 +776,112 @@
         kerphAuthReady.then(() => {
             initHeaderSignIn();
             initAccountPanel();
-            // Public content — renders for signed-out visitors too, just needed auth to
-            // resolve first so kerphLoadMyReviewVotes() reflects the right (or no) user.
-            renderReviews();
         });
 
-        populateCategorySelects();
-        initReviewModal();
-        document.getElementById('reviewSearchInput').addEventListener('input', renderReviews);
-        document.getElementById('reviewCategoryFilter').addEventListener('change', renderReviews);
-        document.getElementById('reviewSortSelect').addEventListener('change', renderReviews);
+        /* =====================================================================
+           FRACTION CONVERTER — mm / decimal-inch / fraction conversion math
+           ===================================================================== */
+
+        function gcd(a, b) { a = Math.abs(a); b = Math.abs(b); return b === 0 ? (a || 1) : gcd(b, a % b); }
+
+        // Nearest fraction of an inch at the given denominator (8/16/32/64).
+        // Returns the rounded value's own decimal (so callers can diff it against
+        // the true input to show a rounding error) plus ready-to-format parts.
+        function nearestFraction(decimalInches, denom) {
+            const sign = decimalInches < 0 ? -1 : 1;
+            const abs = Math.abs(decimalInches);
+            let whole = Math.floor(abs);
+            let num = Math.round((abs - whole) * denom);
+            let den = denom;
+            if (num === denom) { num = 0; whole += 1; }
+            if (num > 0) { const g = gcd(num, den); num /= g; den /= g; }
+            const roundedAbs = whole + (num > 0 ? num / den : 0);
+            const rounded = sign * roundedAbs;
+            return { sign, whole, num, den, rounded, errorIn: decimalInches - rounded };
+        }
+
+        function formatFraction(f) {
+            const signStr = f.sign < 0 && (f.whole > 0 || f.num > 0) ? '−' : '';
+            if (f.num === 0) return `${signStr}${f.whole}"`;
+            if (f.whole === 0) return `${signStr}${f.num}/${f.den}"`;
+            return `${signStr}${f.whole} ${f.num}/${f.den}"`;
+        }
+
+        function fmtNum(n, places) {
+            const s = n.toFixed(places);
+            return s.replace(/(\.\d*?)0+$/, '$1').replace(/\.$/, '');
+        }
+        function fmtSigned(n, places, suffix) {
+            const rounded = Math.abs(n) < Math.pow(10, -places) / 2 ? 0 : n;
+            const sign = rounded > 0 ? '+' : rounded < 0 ? '−' : '±';
+            return `${sign}${fmtNum(Math.abs(rounded), places)}${suffix}`;
+        }
+
+        const IN_PER_MM = 1 / 25.4;
+
+        function buildConvInputRow(mode) {
+            const row = document.getElementById('convInputRow');
+            if (mode === 'mm') {
+                row.innerHTML = `
+                    <div class="jig-field"><label for="convValMm">Millimeters</label><input type="number" id="convValMm" value="19" step="0.1"></div>
+                `;
+            } else if (mode === 'decimal') {
+                row.innerHTML = `
+                    <div class="jig-field"><label for="convValDec">Decimal inches</label><input type="number" id="convValDec" value="0.75" step="0.001"></div>
+                `;
+            } else {
+                row.innerHTML = `
+                    <div class="jig-field"><label for="convFracWhole">Whole (in)</label><input type="number" id="convFracWhole" value="0" min="0" class="narrow"></div>
+                    <div class="jig-field"><label>&nbsp;</label><span style="padding:8px 2px; font-weight:800; color:#6b7280;">+</span></div>
+                    <div class="jig-field"><label for="convFracNum">Numerator</label><input type="number" id="convFracNum" value="3" min="0" class="narrow"></div>
+                    <div class="jig-field"><label>&nbsp;</label><span style="padding:8px 2px; font-weight:800; color:#6b7280;">/</span></div>
+                    <div class="jig-field"><label for="convFracDen">Denominator</label>
+                        <select id="convFracDen">
+                            <option value="2">2</option><option value="4">4</option><option value="8">8</option>
+                            <option value="16" selected>16</option><option value="32">32</option><option value="64">64</option>
+                        </select>
+                    </div>
+                `;
+            }
+            row.querySelectorAll('input, select').forEach(el => el.addEventListener('input', runConverter));
+        }
+
+        function getConvMode() { return document.querySelector('input[name="convMode"]:checked').value; }
+
+        function readConvValueAsInches() {
+            const mode = getConvMode();
+            if (mode === 'mm') {
+                const mm = parseFloat(document.getElementById('convValMm').value) || 0;
+                return mm * IN_PER_MM;
+            }
+            if (mode === 'decimal') {
+                return parseFloat(document.getElementById('convValDec').value) || 0;
+            }
+            const whole = parseFloat(document.getElementById('convFracWhole').value) || 0;
+            const num = parseFloat(document.getElementById('convFracNum').value) || 0;
+            const den = parseFloat(document.getElementById('convFracDen').value) || 1;
+            return whole + num / den;
+        }
+
+        function runConverter() {
+            const inches = readConvValueAsInches();
+            const mm = inches / IN_PER_MM;
+            const denom = parseInt(document.getElementById('convPrecision').value, 10);
+            const nearest = nearestFraction(inches, denom);
+            const errMm = nearest.errorIn / IN_PER_MM;
+
+            document.getElementById('convResults').innerHTML = `
+                <div class="jig-result"><div class="jig-result-label">Millimeters</div><div class="jig-result-value">${fmtNum(mm, 2)} mm</div></div>
+                <div class="jig-result"><div class="jig-result-label">Centimeters</div><div class="jig-result-value">${fmtNum(mm / 10, 3)} cm</div></div>
+                <div class="jig-result"><div class="jig-result-label">Decimal inches</div><div class="jig-result-value">${fmtNum(inches, 4)}"</div></div>
+                <div class="jig-result"><div class="jig-result-label">Nearest fraction</div><div class="jig-result-value big">${formatFraction(nearest)}</div><div class="jig-result-sub">${fmtSigned(nearest.errorIn, 4, '"')} (${fmtSigned(errMm, 2, ' mm')})</div></div>
+            `;
+        }
+
+        document.querySelectorAll('input[name="convMode"]').forEach(r => r.addEventListener('change', () => { buildConvInputRow(r.value); runConverter(); }));
+        document.getElementById('convPrecision').addEventListener('change', runConverter);
+        buildConvInputRow('mm');
+        runConverter();
     </script>
 </body>
 </html>

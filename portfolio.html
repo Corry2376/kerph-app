@@ -4,7 +4,7 @@
     <script>if (localStorage.getItem('kerphComingSoonBypass') !== 'true') { location.replace('coming-soon.html'); }</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kerph - Cool Tool Reviews</title>
+    <title>Kerph - Portfolio</title>
     <style>
         * {
             box-sizing: border-box;
@@ -40,61 +40,26 @@
         .logo-spotlight { position: relative; display: flex; align-items: center; justify-content: center; width: 382px; height: 105px; }
         .logo-link { display: block; line-height: 0; }
         .logo-image {
-            position: relative;
-            z-index: 1;
-            width: 382px;
-            height: 105px;
-            object-fit: contain;
-            border-radius: 4px;
-            filter: drop-shadow(0 12px 22px rgba(15, 23, 42, 0.4));
-            transition: transform 0.3s ease, filter 0.3s ease;
+            position: relative; z-index: 1; width: 382px; height: 105px; object-fit: contain; border-radius: 4px;
+            filter: drop-shadow(0 12px 22px rgba(15, 23, 42, 0.4)); transition: transform 0.3s ease, filter 0.3s ease;
         }
         .logo-image:hover { transform: scale(1.03); filter: drop-shadow(0 18px 30px rgba(15, 23, 42, 0.5)); }
         .logo-tm { position: absolute; bottom: 6px; right: 22px; z-index: 2; font-size: 12px; font-weight: 800; color: #1e3a8a; line-height: 1; pointer-events: none; }
 
         .page-title-select {
-            font-size: 15px;
-            font-weight: 700;
-            color: #1e3a8a;
-            padding: 6px 6px 6px 16px;
-            border: none;
-            border-left: 1px solid #cbd5e1;
-            background-color: transparent;
-            cursor: pointer;
-            white-space: nowrap;
+            font-size: 15px; font-weight: 700; color: #1e3a8a; padding: 6px 6px 6px 16px; border: none;
+            border-left: 1px solid #cbd5e1; background-color: transparent; cursor: pointer; white-space: nowrap;
         }
         .page-title-select:hover { background-color: #eef2ff; border-radius: 4px; }
 
-        .header-field-label {
-            font-size: 10px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: #6b7280;
-        }
+        .header-field-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #6b7280; }
 
         .plan-badge-group { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; flex-shrink: 0; }
-        .plan-select {
-            padding: 8px 12px;
-            border: 1px solid #cbd5e1;
-            border-radius: 8px;
-            background-color: #ffffff;
-            font-size: 13px;
-            font-weight: 700;
-            color: #1e3a8a;
-            cursor: pointer;
-        }
+        .plan-select { padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background-color: #ffffff; font-size: 13px; font-weight: 700; color: #1e3a8a; cursor: pointer; }
 
         .account-btn {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 5px 14px 5px 5px;
-            border: 3px solid #cbd5e1;
-            border-radius: 999px;
-            background-color: #ffffff;
-            cursor: pointer;
-            transition: background-color 0.15s ease;
+            display: flex; align-items: center; gap: 8px; padding: 5px 14px 5px 5px; border: 3px solid #cbd5e1;
+            border-radius: 999px; background-color: #ffffff; cursor: pointer; transition: background-color 0.15s ease;
         }
         .account-btn:hover { background-color: #eef2ff; }
         .account-btn.plan-free { border-color: #16a34a; }
@@ -104,13 +69,11 @@
         .account-btn-name { font-size: 13px; font-weight: 700; color: #1e3a8a; }
         .account-btn-plan { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: #6b7280; }
         .account-avatar {
-            width: 28px; height: 28px; border-radius: 50%;
-            background-color: #e0e7ff; background-size: cover; background-position: center;
+            width: 28px; height: 28px; border-radius: 50%; background-color: #e0e7ff; background-size: cover; background-position: center;
             display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0;
         }
         .account-avatar-large {
-            width: 72px; height: 72px; border-radius: 50%;
-            background-color: #e0e7ff; background-size: cover; background-position: center;
+            width: 72px; height: 72px; border-radius: 50%; background-color: #e0e7ff; background-size: cover; background-position: center;
             display: flex; align-items: center; justify-content: center; font-size: 32px;
         }
 
@@ -122,29 +85,22 @@
         .header-sign-in .mini-btn { flex: none; padding: 6px 10px; font-size: 11px; }
 
         .mini-btn {
-            flex: 1;
-            padding: 8px 10px;
-            border: 1px solid #cbd5e1;
-            border-radius: 6px;
-            background-color: #ffffff;
-            font-size: 12px;
-            font-weight: 700;
-            color: #1e3a8a;
-            cursor: pointer;
+            flex: 1; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; background-color: #ffffff;
+            font-size: 12px; font-weight: 700; color: #1e3a8a; cursor: pointer;
         }
         .mini-btn:hover { background-color: #eef2ff; border-color: #2563eb; }
         .mini-btn.danger { color: #b91c1c; }
         .mini-btn.danger:hover { background-color: #fef2f2; border-color: #b91c1c; }
         .mini-btn.primary { background-color: #1e3a8a; color: #ffffff; border-color: #1e3a8a; }
-        .mini-btn.primary:hover { background-color: #1e40af; }
 
         .input-box { width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; font-weight: 600; }
         .select-box { width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; font-weight: 600; background: #f8fafc; }
-        textarea.input-box { resize: vertical; min-height: 90px; font-family: inherit; font-weight: 400; }
+        textarea.input-box { resize: vertical; font-family: inherit; }
 
-        .modal-overlay { position: fixed; inset: 0; background-color: rgba(15, 23, 42, 0.5); z-index: 3000; display: flex; align-items: center; justify-content: center; padding: 24px; }
+        .modal-overlay { position: fixed; inset: 0; background-color: rgba(15, 23, 42, 0.5); z-index: 3000; display: flex; align-items: center; justify-content: center; padding: 24px; overflow-y: auto; }
         .modal-box { background-color: #ffffff; border-radius: 12px; padding: 24px; width: 320px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4); }
         .account-modal-box { width: 380px; max-height: 88vh; overflow-y: auto; }
+        .project-modal-box { width: 520px; max-height: 88vh; overflow-y: auto; }
         .account-member-since { font-size: 10.5px; color: #94a3b8; font-weight: 600; margin-top: 6px; }
         .account-stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
         .account-stat { text-align: center; background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 4px; }
@@ -174,189 +130,79 @@
         .modal-primary-btn { background-color: #1e3a8a !important; color: #ffffff !important; border-color: #1e3a8a !important; }
 
         .upgrade-nudge {
-            position: fixed;
-            bottom: 24px;
-            left: 50%;
-            transform: translateX(-50%) translateY(20px);
-            background-color: #0f172a;
-            color: #ffffff;
-            font-size: 13px;
-            font-weight: 600;
-            padding: 10px 12px 10px 18px;
-            border-radius: 8px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.2s ease, transform 0.2s ease;
-            z-index: 2000;
-            max-width: 400px;
+            position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px); background-color: #0f172a; color: #ffffff;
+            font-size: 13px; font-weight: 600; padding: 10px 12px 10px 18px; border-radius: 8px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+            opacity: 0; pointer-events: none; transition: opacity 0.2s ease, transform 0.2s ease; z-index: 2000; max-width: 400px;
         }
         .upgrade-nudge.visible { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
 
-        /* ---------- PAGE CONTENT ---------- */
-        main {
-            max-width: 1100px;
-            margin: 0 auto;
-            padding: 40px 24px 80px;
-        }
-
-        .reviews-eyebrow {
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            color: #b23b3b;
-            margin-bottom: 8px;
-        }
-        .reviews-title { font-size: 28px; font-weight: 800; color: #0f172a; margin-bottom: 10px; }
-        .reviews-subtitle { font-size: 14.5px; color: #4b5563; line-height: 1.6; margin-bottom: 28px; max-width: 70ch; }
-
-        .reviews-toolbar {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            align-items: center;
-            margin-bottom: 24px;
-            background-color: #ffffff;
-            border: 1px solid #cbd5e1;
-            border-radius: 12px;
-            padding: 14px;
-        }
-        .reviews-toolbar .input-box, .reviews-toolbar .select-box { width: auto; }
-        #reviewSearchInput { flex: 1; min-width: 160px; }
-        #reviewCategoryFilter, #reviewSortSelect { min-width: 150px; }
-        #writeReviewBtn { flex: none; margin-left: auto; padding: 10px 18px; }
-
-        .reviews-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 16px;
-        }
-
-        .review-card {
-            background-color: #ffffff;
-            border: 1px solid #cbd5e1;
-            border-radius: 12px;
-            padding: 18px;
-            box-shadow: 0 10px 25px -12px rgba(15, 23, 42, 0.15);
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .review-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
-        .review-tool-name { font-size: 15.5px; font-weight: 800; color: #0f172a; line-height: 1.3; }
-        .review-category-tag {
-            font-size: 9.5px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.03em;
-            color: #1e3a8a;
-            background-color: #e0e7ff;
-            padding: 3px 8px;
-            border-radius: 999px;
-            white-space: nowrap;
-            flex-shrink: 0;
-        }
-
-        .star-rating { color: #d97706; font-size: 15px; letter-spacing: 1px; }
-        .star-rating .star-empty { color: #d1d5db; }
-
-        .review-text { font-size: 13px; color: #374151; line-height: 1.55; flex: 1; white-space: pre-wrap; }
-
-        .review-card-footer {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 8px;
-            padding-top: 8px;
-            border-top: 1px solid #f1f5f9;
-            font-size: 11.5px;
-            color: #6b7280;
-        }
-        .review-author { font-weight: 700; color: #1e293b; }
-        .review-date { color: #9ca3af; }
-
-        .helpful-btn {
-            border: 1px solid #cbd5e1;
-            background-color: #f8fafc;
-            border-radius: 999px;
-            padding: 4px 10px;
-            font-size: 11px;
-            font-weight: 700;
-            color: #4b5563;
-            cursor: pointer;
-            white-space: nowrap;
-        }
-        .helpful-btn:hover { background-color: #eef2ff; border-color: #2563eb; }
-        .helpful-btn.active { background-color: #dbeafe; border-color: #2563eb; color: #1e3a8a; }
-
-        .reviews-empty {
-            grid-column: 1 / -1;
-            text-align: center;
-            padding: 60px 20px;
-            color: #6b7280;
-            background-color: #ffffff;
-            border: 1px dashed #cbd5e1;
-            border-radius: 12px;
-        }
-        .reviews-empty-icon { font-size: 40px; margin-bottom: 10px; }
-        .reviews-empty-title { font-size: 15px; font-weight: 700; color: #1e293b; margin-bottom: 6px; }
-        .reviews-empty-desc { font-size: 12.5px; max-width: 40ch; margin: 0 auto; line-height: 1.6; }
-
-        .star-picker { display: flex; gap: 4px; font-size: 26px; }
-        .star-picker span { cursor: pointer; color: #d1d5db; transition: color 0.1s ease; }
-        .star-picker span.filled { color: #d97706; }
-        .header-field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; width: 100%; }
-            .header-quick-links { display: flex; align-items: center; gap: 6px; font-size: 11px; }
+        .header-quick-links { display: flex; align-items: center; gap: 6px; font-size: 11px; }
         .header-quick-links a { color: #6b7280; font-weight: 600; text-decoration: none; }
         .header-quick-links a:hover { color: #1e3a8a; text-decoration: underline; }
         .header-quick-links-sep { color: #cbd5e1; }
 
-        /* ---------- SHOP JIGS DROPDOWN ---------- */
         .jigs-dropdown { position: relative; }
         .jigs-dropdown-btn {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 13px;
-            font-weight: 700;
-            color: #ffffff;
-            background-color: #1e3a8a;
-            padding: 9px 14px;
-            border: none;
-            border-radius: 999px;
-            cursor: pointer;
-            white-space: nowrap;
+            display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; color: #ffffff;
+            background-color: #1e3a8a; padding: 9px 14px; border: none; border-radius: 999px; cursor: pointer; white-space: nowrap;
         }
         .jigs-dropdown-btn:hover { background-color: #172d68; }
         .jigs-dropdown-caret { font-size: 9px; transition: transform 0.15s ease; }
         .jigs-dropdown.open .jigs-dropdown-caret { transform: rotate(180deg); }
         .jigs-dropdown-menu {
-            display: none;
-            position: absolute;
-            top: calc(100% + 8px);
-            left: 0;
-            background-color: #ffffff;
-            border: 1px solid #cbd5e1;
-            border-radius: 10px;
-            box-shadow: 0 12px 30px -8px rgba(15, 23, 42, 0.3);
-            padding: 6px;
-            min-width: 210px;
-            z-index: 500;
+            display: none; position: absolute; top: calc(100% + 8px); left: 0; background-color: #ffffff; border: 1px solid #cbd5e1;
+            border-radius: 10px; box-shadow: 0 12px 30px -8px rgba(15, 23, 42, 0.3); padding: 6px; min-width: 230px; z-index: 500;
         }
         .jigs-dropdown.open .jigs-dropdown-menu { display: block; }
-        .jigs-dropdown-menu a {
-            display: block;
-            padding: 8px 10px;
-            border-radius: 6px;
-            font-size: 13px;
-            font-weight: 600;
-            color: #1e293b;
-            text-decoration: none;
-        }
+        .jigs-dropdown-menu a { display: block; padding: 8px 10px; border-radius: 6px; font-size: 13px; font-weight: 600; color: #1e293b; text-decoration: none; }
         .jigs-dropdown-menu a:hover { background-color: #eef2ff; color: #1e3a8a; }
         .jigs-dropdown-menu-sep { height: 1px; background-color: #e2e8f0; margin: 5px 2px; }
+
+        /* ---------- PORTFOLIO PAGE LAYOUT ---------- */
+        .portfolio-layout { max-width: 1100px; margin: 0 auto; padding: 32px 24px 100px; }
+        .portfolio-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; }
+        .portfolio-heading-title { font-size: 26px; font-weight: 800; color: #0f172a; }
+        .portfolio-heading-sub { font-size: 13px; color: #6b7280; margin-top: 4px; }
+        .portfolio-share-box { display: flex; align-items: center; gap: 8px; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 8px 10px; font-size: 12px; }
+        .portfolio-share-box input { border: none; font-size: 12px; font-weight: 600; color: #1e3a8a; width: 220px; background: transparent; }
+
+        .portfolio-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; }
+        .portfolio-card {
+            background-color: #ffffff; border: 1px solid #cbd5e1; border-radius: 14px; overflow: hidden; cursor: pointer;
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05); transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+        .portfolio-card:hover { transform: translateY(-2px); box-shadow: 0 12px 24px rgba(15, 23, 42, 0.1); }
+        .portfolio-card-image { width: 100%; height: 160px; object-fit: cover; background: #eef2ff; display: block; }
+        .portfolio-card-image-placeholder {
+            width: 100%; height: 160px; background: #eef2ff; display: flex; align-items: center; justify-content: center; font-size: 32px; color: #c7d2fe;
+        }
+        .portfolio-card-body { padding: 14px 16px; }
+        .portfolio-card-title { font-size: 14.5px; font-weight: 700; color: #0f172a; margin-bottom: 4px; }
+        .portfolio-card-desc { font-size: 12px; color: #6b7280; line-height: 1.4; max-height: 34px; overflow: hidden; }
+        .portfolio-card-badge {
+            display: inline-block; font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em;
+            padding: 2px 7px; border-radius: 4px; margin-top: 8px;
+        }
+        .portfolio-card-badge.public { background: #dcfce7; color: #166534; }
+        .portfolio-card-badge.private { background: #fef3c7; color: #92400e; }
+
+        .portfolio-empty { text-align: center; padding: 60px 20px; color: #9ca3af; }
+        .portfolio-empty-icon { font-size: 40px; margin-bottom: 12px; }
+
+        .project-modal-gallery { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 10px; }
+        .project-modal-gallery img { width: 100%; height: 80px; object-fit: cover; border-radius: 6px; border: 1px solid #e2e8f0; }
+        .gallery-upload-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+        .gallery-thumb { position: relative; width: 64px; height: 64px; border-radius: 6px; overflow: hidden; border: 1px solid #cbd5e1; }
+        .gallery-thumb img { width: 100%; height: 100%; object-fit: cover; }
+        .gallery-thumb-remove {
+            position: absolute; top: 2px; right: 2px; width: 16px; height: 16px; border-radius: 50%; background: rgba(0,0,0,0.6);
+            color: #fff; border: none; font-size: 10px; cursor: pointer; line-height: 16px; padding: 0;
+        }
+
+        .project-view-hero { width: 100%; max-height: 320px; object-fit: cover; border-radius: 10px; margin-bottom: 14px; }
+        .project-view-meta { font-size: 12.5px; color: #6b7280; line-height: 1.6; margin-bottom: 14px; }
+        .project-view-meta strong { color: #1e293b; }
+        .project-view-desc { font-size: 13.5px; color: #1e293b; line-height: 1.6; margin-bottom: 14px; }
     </style>
 </head>
 <body>
@@ -378,9 +224,9 @@
                 <option value="quote-builder.html">Quote Builder</option>
                 <option value="find-a-builder.html">Find a Builder</option>
                 <option value="shop-3d-viewer.html">3D Shop Viewer</option>
-                <option value="tool-reviews.html" selected>Cool Tool Reviews</option>
+                <option value="tool-reviews.html">Cool Tool Reviews</option>
                 <option value="shop-showcase.html">Shop Showcase</option>
-                <option value="portfolio.html">Portfolio</option>
+                <option value="portfolio.html" selected>Portfolio</option>
                 <option value="print-library.html">3D Print Library</option>
             </select>
             <div class="jigs-dropdown" id="jigsDropdown">
@@ -407,7 +253,7 @@
                 </div>
                 <a href="#" class="header-sign-in-mode-toggle" id="headerSignInModeToggle">New here? Create an account</a>
             </div>
-            <button type="button" id="accountBtn" class="account-btn plan-free" title="Account &amp; Plan Settings — border color shows your plan level" style="display:none;">
+            <button type="button" id="accountBtn" class="account-btn plan-free" title="Account &amp; Plan Settings" style="display:none;">
                 <span class="account-avatar" id="accountAvatarPreview">&#128100;</span>
                 <span class="account-btn-text">
                     <span class="account-btn-name" id="accountBtnLabel">Account</span>
@@ -434,14 +280,14 @@
             <div class="modal-title">Account Settings</div>
             <div class="modal-warning">Your account (username, avatar, sign-in) is real and synced via Kerph. Saved layouts, projects, tools, Showcase posts, and reviews are synced too — available on any device you sign into.</div>
 
-            <div class="header-field" style="align-items:center;">
+            <div class="header-field" style="align-items:center; display:flex; flex-direction:column; gap:4px;">
                 <div class="account-avatar-large" id="accountAvatarLarge">&#128100;</div>
                 <input type="file" id="accountAvatarInput" accept="image/*" style="display:none;">
                 <button type="button" id="accountAvatarBtn" class="mini-btn" style="margin-top:10px; flex:none;">Upload Photo</button>
                 <div class="account-member-since" id="accountMemberSince"></div>
             </div>
 
-            <div class="header-field">
+            <div class="header-field" style="display:flex; flex-direction:column; gap:4px; margin-top:12px;">
                 <label class="header-field-label" for="accountUsernameInput">Username</label>
                 <input type="text" class="input-box" id="accountUsernameInput" placeholder="Choose a username">
             </div>
@@ -463,7 +309,7 @@
                 <div class="account-plan-upsell" id="accountPlanUpsell" style="display:none;">Free includes 1 saved shop layout; custom shop shapes and unlimited saves unlock on Pro.</div>
             </div>
 
-            <div class="header-field" style="margin-top:10px;">
+            <div class="header-field" style="display:flex; flex-direction:column; gap:4px; margin-top:10px;">
                 <label class="header-field-label" for="accountUnitsSelect">Preferred Units</label>
                 <select class="select-box" id="accountUnitsSelect">
                     <option value="imperial">Imperial (ft / in)</option>
@@ -471,7 +317,7 @@
                 </select>
             </div>
 
-            <div class="header-field" style="margin-top:14px;">
+            <div class="header-field" style="display:flex; flex-direction:column; gap:4px; margin-top:14px;">
                 <label class="header-field-label">Saved Layouts</label>
                 <div id="accountLayoutsList" class="account-layouts-list"></div>
             </div>
@@ -500,79 +346,84 @@
         </div>
     </div>
 
-    <div class="modal-overlay" id="reviewModalOverlay" style="display:none;">
-        <div class="modal-box" style="width:400px;">
-            <div class="modal-title">Write a Review</div>
+    <div class="modal-overlay" id="projectModalOverlay" style="display:none;">
+        <div class="modal-box project-modal-box">
+            <div class="modal-title" id="projectModalTitle">Add Project</div>
 
-            <div class="header-field">
-                <label class="header-field-label" for="reviewToolName">Tool Name</label>
-                <input type="text" class="input-box" id="reviewToolName" placeholder="e.g. SawStop PCS175">
+            <div class="header-field" style="width:100%;">
+                <label class="header-field-label" for="projTitleInput">Title</label>
+                <input type="text" class="input-box" id="projTitleInput" placeholder="e.g. Walnut Coffee Table">
+            </div>
+            <div class="header-field" style="width:100%; margin-top:10px;">
+                <label class="header-field-label" for="projDescInput">Description</label>
+                <textarea class="input-box" id="projDescInput" rows="3" placeholder="What you built, how, and why."></textarea>
+            </div>
+            <div style="display:flex; gap:8px; margin-top:10px;">
+                <div class="header-field" style="flex:1;">
+                    <label class="header-field-label" for="projMaterialsInput">Materials</label>
+                    <input type="text" class="input-box" id="projMaterialsInput" placeholder="e.g. Black walnut, brass">
+                </div>
+                <div class="header-field" style="flex:1;">
+                    <label class="header-field-label" for="projFinishInput">Finish</label>
+                    <input type="text" class="input-box" id="projFinishInput" placeholder="e.g. Danish oil">
+                </div>
+            </div>
+            <div class="header-field" style="width:100%; margin-top:10px;">
+                <label class="header-field-label" for="projPlanSourceInput">Built From This Plan (optional link/credit)</label>
+                <input type="text" class="input-box" id="projPlanSourceInput" placeholder="e.g. a link to the plan you followed">
             </div>
 
-            <div class="header-field">
-                <label class="header-field-label" for="reviewCategorySelect">Category</label>
-                <select class="select-box" id="reviewCategorySelect"></select>
-            </div>
-
-            <div class="header-field">
-                <label class="header-field-label">Your Rating</label>
-                <div class="star-picker" id="reviewStarPicker">
-                    <span data-value="1">&#9733;</span>
-                    <span data-value="2">&#9733;</span>
-                    <span data-value="3">&#9733;</span>
-                    <span data-value="4">&#9733;</span>
-                    <span data-value="5">&#9733;</span>
+            <div class="header-field" style="width:100%; margin-top:14px;">
+                <label class="header-field-label">Cover Photo</label>
+                <input type="file" id="coverPhotoInput" accept="image/*" style="display:none;">
+                <div style="display:flex; align-items:center; gap:10px; margin-top:4px;">
+                    <div class="gallery-thumb" id="coverThumbWrap" style="display:none;"><img id="coverThumbImg" src=""></div>
+                    <button type="button" class="mini-btn" id="coverPhotoBtn" style="flex:none;">Choose Photo&hellip;</button>
                 </div>
             </div>
 
-            <div class="header-field">
-                <label class="header-field-label" for="reviewText">Review</label>
-                <textarea class="input-box" id="reviewText" placeholder="What do you like or dislike about it? Would you buy it again?"></textarea>
+            <div class="header-field" style="width:100%; margin-top:14px;">
+                <label class="header-field-label">Gallery Photos (up to 5 more)</label>
+                <div style="font-size:11px; color:#6b7280; margin-bottom:4px; line-height:1.4;">Didn't build this in Project Designer? Add build photos here — or snap a photo/scan of plans from a book, magazine, or another site and drop them in too.</div>
+                <input type="file" id="galleryPhotoInput" accept="image/*" style="display:none;">
+                <div class="gallery-upload-row" id="galleryThumbs"></div>
+                <button type="button" class="mini-btn" id="galleryPhotoBtn" style="margin-top:8px;">+ Add Gallery Photo</button>
             </div>
 
-            <div class="header-field">
-                <label class="header-field-label" for="reviewAuthorName">Your Name</label>
-                <input type="text" class="input-box" id="reviewAuthorName" placeholder="Anonymous">
+            <div class="header-field" style="width:100%; margin-top:14px;">
+                <label style="display:flex; align-items:center; gap:8px; font-size:13px; font-weight:600; color:#1e293b; cursor:pointer;">
+                    <input type="checkbox" id="projPublicInput" checked> Public — visible on your shareable portfolio page
+                </label>
             </div>
 
             <div class="modal-actions">
-                <button type="button" id="reviewCancelBtn" class="mini-btn">Cancel</button>
-                <button type="button" id="reviewSubmitBtn" class="mini-btn modal-primary-btn">Post Review</button>
+                <button type="button" id="projectCancelBtn" class="mini-btn">Cancel</button>
+                <button type="button" id="projectSaveBtn" class="mini-btn modal-primary-btn">Save Project</button>
             </div>
         </div>
     </div>
 
+    <div class="modal-overlay" id="projectViewOverlay" style="display:none;">
+        <div class="modal-box project-modal-box" id="projectViewBox"></div>
+    </div>
+
     <div class="upgrade-nudge" id="upgradeNudge"></div>
 
-    <main>
-        <div class="reviews-eyebrow">Community</div>
-        <div class="reviews-title">Cool Tool Reviews</div>
-        <div class="reviews-subtitle">Real feedback from real shops — before you buy, see what other woodworkers actually think. Every review here is visible to the whole Kerph community.</div>
-
-        <div class="reviews-toolbar">
-            <input type="text" class="input-box" id="reviewSearchInput" placeholder="&#128269; Search tool names&hellip;">
-            <select class="select-box" id="reviewCategoryFilter"></select>
-            <select class="select-box" id="reviewSortSelect">
-                <option value="newest">Newest</option>
-                <option value="highest">Highest Rated</option>
-                <option value="helpful">Most Helpful</option>
-            </select>
-            <button type="button" id="writeReviewBtn" class="mini-btn primary">+ Write a Review</button>
+    <div class="portfolio-layout">
+        <div class="portfolio-toolbar">
+            <div>
+                <div class="portfolio-heading-title" id="portfolioHeadingTitle">Portfolio</div>
+                <div class="portfolio-heading-sub" id="portfolioHeadingSub"></div>
+            </div>
+            <div id="portfolioToolbarActions"></div>
         </div>
-
-        <div class="reviews-grid" id="reviewsGrid"></div>
-    </main>
+        <div class="portfolio-grid" id="portfolioGrid"></div>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.7/dist/umd/supabase.js"></script>
     <script src="supabase-client.js"></script>
     <script>
-        /* ---------- SHARED STATE KEYS (must match workshop-planner.html / index.html exactly) ---------- */
         const PLAN_KEY = 'kerphPlan';
-        /* ACCOUNT_KEY/AUTH_KEY removed — account + sign-in are now real, Supabase-backed
-           (see supabase-client.js) instead of localStorage flags. */
-        const TOOL_STATUS_KEY = 'kerphToolStatus';
-        const LAYOUTS_KEY = 'kerphSavedLayouts';
-        const LAYOUT_TYPE_LABELS = { workshop: 'Workshop', 'dust-collection': 'Dust Collection', lighting: 'Lighting' };
 
         function showToast(message) {
             const nudge = document.getElementById('upgradeNudge');
@@ -615,13 +466,10 @@
         }
 
         let cachedToolStatuses = {};
-        function loadToolStatuses() {
-            return cachedToolStatuses;
-        }
+        function loadToolStatuses() { return cachedToolStatuses; }
         let cachedSavedLayouts = [];
-        function loadLayouts() {
-            return cachedSavedLayouts;
-        }
+        function loadLayouts() { return cachedSavedLayouts; }
+
         function renderAccountStats() {
             const row = document.getElementById('accountStatsRow');
             if (!row) return;
@@ -649,6 +497,7 @@
             select.value = plan;
             upsell.style.display = plan === 'free' ? 'block' : 'none';
         }
+        const LAYOUT_TYPE_LABELS = { workshop: 'Workshop', 'dust-collection': 'Dust Collection', lighting: 'Lighting' };
         function renderAccountLayoutsList() {
             const list = document.getElementById('accountLayoutsList');
             if (!list) return;
@@ -858,169 +707,8 @@
             updateHeaderSignInState();
         }
 
-        /* ---------- TOOL REVIEWS ----------
-           Real, Supabase-backed multi-user content now — tool_reviews (public-read) +
-           tool_review_votes (real per-user "helpful" votes, denormalized onto helpful_count
-           via a DB trigger). cachedReviews/cachedMyVotes are refreshed on every renderReviews()
-           call, not just once, since this is now real multi-user data other people can change
-           between renders. */
-        const REVIEW_CATEGORIES = [
-            'Table Saws', 'Bandsaws', 'Jointers & Planers', 'Sanding', 'Drilling & Boring',
-            'Turning', 'Routing', 'Crosscut & Miter', 'Dust Collection', 'Hand Tools',
-            'Measuring & Layout', 'Finishing', 'Storage', 'Other'
-        ];
-        let cachedReviews = [];
-        let cachedMyVotes = [];
-
-        function starsHtml(rating) {
-            let html = '';
-            for (let i = 1; i <= 5; i++) {
-                html += i <= rating ? '&#9733;' : '<span class="star-empty">&#9733;</span>';
-            }
-            return html;
-        }
-
-        function populateCategorySelects() {
-            const filterSel = document.getElementById('reviewCategoryFilter');
-            filterSel.innerHTML = '<option value="">All Categories</option>' +
-                REVIEW_CATEGORIES.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
-
-            const formSel = document.getElementById('reviewCategorySelect');
-            formSel.innerHTML = REVIEW_CATEGORIES.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
-        }
-
-        async function renderReviews() {
-            const grid = document.getElementById('reviewsGrid');
-            const query = document.getElementById('reviewSearchInput').value.trim().toLowerCase();
-            const category = document.getElementById('reviewCategoryFilter').value;
-            const sort = document.getElementById('reviewSortSelect').value;
-
-            const [reviewsResult, votesResult] = await Promise.all([kerphLoadToolReviews(), kerphLoadMyReviewVotes()]);
-            cachedReviews = reviewsResult.data;
-            cachedMyVotes = votesResult.data;
-
-            let reviews = cachedReviews;
-            if (query) reviews = reviews.filter(r => r.tool_name.toLowerCase().includes(query));
-            if (category) reviews = reviews.filter(r => r.category === category);
-
-            reviews = reviews.slice();
-            if (sort === 'newest') reviews.sort((a, b) => b.created_at.localeCompare(a.created_at));
-            else if (sort === 'highest') reviews.sort((a, b) => b.rating - a.rating || b.created_at.localeCompare(a.created_at));
-            else if (sort === 'helpful') reviews.sort((a, b) => (b.helpful_count || 0) - (a.helpful_count || 0) || b.created_at.localeCompare(a.created_at));
-
-            if (!reviews.length) {
-                const hasAny = cachedReviews.length > 0;
-                grid.innerHTML = `
-                    <div class="reviews-empty">
-                        <div class="reviews-empty-icon">${hasAny ? '&#128269;' : '&#11088;'}</div>
-                        <div class="reviews-empty-title">${hasAny ? 'No reviews match your search' : 'No reviews yet'}</div>
-                        <div class="reviews-empty-desc">${hasAny ? 'Try a different search term or category.' : 'Be the first to review a tool — click "+ Write a Review" above.'}</div>
-                    </div>
-                `;
-                return;
-            }
-
-            grid.innerHTML = reviews.map(r => {
-                const dateStr = new Date(r.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
-                const isVoted = cachedMyVotes.includes(r.id);
-                return `
-                    <div class="review-card">
-                        <div class="review-card-top">
-                            <div class="review-tool-name">${escapeHtml(r.tool_name)}</div>
-                            <div class="review-category-tag">${escapeHtml(r.category)}</div>
-                        </div>
-                        <div class="star-rating">${starsHtml(r.rating)}</div>
-                        <div class="review-text">${escapeHtml(r.review_text)}</div>
-                        <div class="review-card-footer">
-                            <span><span class="review-author">${escapeHtml(r.author || 'Anonymous')}</span> &middot; <span class="review-date">${dateStr}</span></span>
-                            <button type="button" class="helpful-btn${isVoted ? ' active' : ''}" data-id="${r.id}">&#128077; Helpful${r.helpful_count ? ' (' + r.helpful_count + ')' : ''}</button>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-
-            grid.querySelectorAll('.helpful-btn').forEach(btn => {
-                btn.addEventListener('click', async () => {
-                    const id = btn.getAttribute('data-id');
-                    if (!isSignedIn()) { showToast('Sign in (top right) to mark a review helpful.'); return; }
-                    const currentlyVoted = cachedMyVotes.includes(id);
-                    await kerphToggleReviewHelpful(id, currentlyVoted);
-                    renderReviews();
-                });
-            });
-        }
-
-        function initReviewModal() {
-            const overlay = document.getElementById('reviewModalOverlay');
-            const openBtn = document.getElementById('writeReviewBtn');
-            const cancelBtn = document.getElementById('reviewCancelBtn');
-            const submitBtn = document.getElementById('reviewSubmitBtn');
-            const toolNameInput = document.getElementById('reviewToolName');
-            const categorySelect = document.getElementById('reviewCategorySelect');
-            const textInput = document.getElementById('reviewText');
-            const authorInput = document.getElementById('reviewAuthorName');
-            const starPicker = document.getElementById('reviewStarPicker');
-            let selectedRating = 0;
-
-            function renderStarPicker() {
-                starPicker.querySelectorAll('span').forEach(s => {
-                    s.classList.toggle('filled', parseInt(s.getAttribute('data-value'), 10) <= selectedRating);
-                });
-            }
-            starPicker.querySelectorAll('span').forEach(s => {
-                s.addEventListener('click', () => {
-                    selectedRating = parseInt(s.getAttribute('data-value'), 10);
-                    renderStarPicker();
-                });
-            });
-
-            function openModal() {
-                if (!isSignedIn()) { showToast('Sign in (top right) to write a review.'); return; }
-                toolNameInput.value = '';
-                categorySelect.value = REVIEW_CATEGORIES[0];
-                textInput.value = '';
-                authorInput.value = loadAccount().username || '';
-                selectedRating = 0;
-                renderStarPicker();
-                overlay.style.display = 'flex';
-                toolNameInput.focus();
-            }
-
-            openBtn.addEventListener('click', openModal);
-            cancelBtn.addEventListener('click', () => { overlay.style.display = 'none'; });
-
-            submitBtn.addEventListener('click', async () => {
-                const toolName = toolNameInput.value.trim();
-                const text = textInput.value.trim();
-                if (!toolName) { showToast('Enter the tool name.'); toolNameInput.focus(); return; }
-                if (!selectedRating) { showToast('Pick a star rating.'); return; }
-                if (!text) { showToast('Write a few words about it.'); textInput.focus(); return; }
-                if (!isSignedIn()) { showToast('Sign in (top right) to write a review.'); return; }
-
-                submitBtn.disabled = true;
-                try {
-                    const { error } = await kerphCreateToolReview({
-                        toolName,
-                        category: categorySelect.value,
-                        rating: selectedRating,
-                        text,
-                        author: authorInput.value.trim() || 'Anonymous'
-                    });
-                    if (error) { showToast('Could not post that review.'); return; }
-                    overlay.style.display = 'none';
-                    showToast('Review posted.');
-                    renderReviews();
-                } finally {
-                    submitBtn.disabled = false;
-                }
-            });
-        }
-
         document.getElementById('pageNavSelect').addEventListener('change', (e) => { window.location.href = e.target.value; });
 
-        // Standalone header dropdown (not folded into pageNavSelect) so Shop Jigs' four
-        // tools are one click away from every page instead of being buried as just another
-        // option in a 9-item combobox.
         function initJigsDropdown() {
             const dropdown = document.getElementById('jigsDropdown');
             const btn = document.getElementById('jigsDropdownBtn');
@@ -1041,21 +729,223 @@
             renderAccountBadge();
             kerphLoadToolStatus().then(({ data }) => { cachedToolStatuses = data || {}; });
             kerphLoadSavedLayouts().then(({ data }) => { cachedSavedLayouts = data || []; });
+            if (ownerMode && portfolioInitialized) initPortfolio();
         });
 
-        kerphAuthReady.then(() => {
+        /* =====================================================================
+           PORTFOLIO
+           No ?user= in the URL -> "my portfolio" (owner mode: full CRUD, private
+           projects visible, share-link shown). ?user=<id> -> read-only public
+           view of that user's public projects, no sign-in required to browse.
+           ===================================================================== */
+        const viewingUserId = new URLSearchParams(location.search).get('user');
+        let ownerMode = !viewingUserId;
+        let portfolioInitialized = false;
+        let projects = [];
+        let editingProjectId = null;
+        let pendingCoverPath = null;
+        let pendingGalleryPaths = [];
+
+        function renderToolbar() {
+            const actions = document.getElementById('portfolioToolbarActions');
+            if (!ownerMode || !isSignedIn()) { actions.innerHTML = ''; return; }
+            actions.innerHTML = `
+                <div class="portfolio-share-box">
+                    Share: <input type="text" readonly id="shareUrlInput" value="${escapeHtml(shareUrl())}">
+                    <button type="button" class="mini-btn" id="copyShareBtn" style="flex:none; padding:4px 8px;">Copy</button>
+                </div>
+                <button type="button" class="mini-btn primary" id="newProjectBtn" style="flex:none; margin-left:8px;">+ New Project</button>
+            `;
+            document.getElementById('copyShareBtn').addEventListener('click', () => {
+                document.getElementById('shareUrlInput').select();
+                navigator.clipboard && navigator.clipboard.writeText(shareUrl()).catch(() => {});
+                showToast('Portfolio link copied.');
+            });
+            document.getElementById('newProjectBtn').addEventListener('click', () => openProjectModal(null));
+        }
+        function shareUrl() {
+            const user = kerphGetCachedUser();
+            return `${location.origin}${location.pathname}?user=${user ? user.id : ''}`;
+        }
+
+        function renderPortfolioGrid() {
+            const grid = document.getElementById('portfolioGrid');
+            if (!projects.length) {
+                grid.innerHTML = `
+                    <div class="portfolio-empty" style="grid-column: 1 / -1;">
+                        <div class="portfolio-empty-icon">&#128444;&#65039;</div>
+                        <div>${ownerMode ? (isSignedIn() ? "No projects yet — click \"New Project\" to add your first build." : 'Sign in (top right) to start building your portfolio.') : 'This portfolio has no public projects yet.'}</div>
+                    </div>
+                `;
+                return;
+            }
+            grid.innerHTML = projects.map(p => {
+                const img = p.cover_path ? kerphPortfolioImageUrl(p.cover_path) : null;
+                return `
+                    <div class="portfolio-card" data-id="${p.id}">
+                        ${img ? `<img class="portfolio-card-image" src="${img}" alt="${escapeHtml(p.title)}">` : `<div class="portfolio-card-image-placeholder">&#128444;&#65039;</div>`}
+                        <div class="portfolio-card-body">
+                            <div class="portfolio-card-title">${escapeHtml(p.title)}</div>
+                            <div class="portfolio-card-desc">${escapeHtml(p.description || '')}</div>
+                            ${ownerMode ? `<span class="portfolio-card-badge ${p.is_public ? 'public' : 'private'}">${p.is_public ? 'Public' : 'Private'}</span>` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            grid.querySelectorAll('.portfolio-card').forEach(card => {
+                card.addEventListener('click', () => openProjectView(projects.find(p => p.id === card.dataset.id)));
+            });
+        }
+
+        function openProjectView(p) {
+            const img = p.cover_path ? kerphPortfolioImageUrl(p.cover_path) : null;
+            const gallery = (p.gallery_paths || []).map(path => `<img src="${kerphPortfolioImageUrl(path)}">`).join('');
+            document.getElementById('projectViewBox').innerHTML = `
+                <div class="modal-title">${escapeHtml(p.title)}</div>
+                ${img ? `<img class="project-view-hero" src="${img}" alt="${escapeHtml(p.title)}">` : ''}
+                <div class="project-view-meta">
+                    ${p.materials ? `<div><strong>Materials:</strong> ${escapeHtml(p.materials)}</div>` : ''}
+                    ${p.finish ? `<div><strong>Finish:</strong> ${escapeHtml(p.finish)}</div>` : ''}
+                    ${p.plan_source ? `<div><strong>Built from:</strong> ${escapeHtml(p.plan_source)}</div>` : ''}
+                </div>
+                ${p.description ? `<div class="project-view-desc">${escapeHtml(p.description)}</div>` : ''}
+                ${gallery ? `<div class="project-modal-gallery">${gallery}</div>` : ''}
+                <div class="modal-actions">
+                    ${ownerMode ? `<button type="button" class="mini-btn" id="viewEditBtn">Edit</button><button type="button" class="mini-btn danger" id="viewDeleteBtn">Delete</button>` : ''}
+                    <button type="button" class="mini-btn modal-primary-btn" id="viewCloseBtn">Close</button>
+                </div>
+            `;
+            document.getElementById('projectViewOverlay').style.display = 'flex';
+            document.getElementById('viewCloseBtn').addEventListener('click', () => { document.getElementById('projectViewOverlay').style.display = 'none'; });
+            if (ownerMode) {
+                document.getElementById('viewEditBtn').addEventListener('click', () => { document.getElementById('projectViewOverlay').style.display = 'none'; openProjectModal(p); });
+                document.getElementById('viewDeleteBtn').addEventListener('click', async () => {
+                    if (!confirm('Delete this project permanently?')) return;
+                    const paths = [p.cover_path, ...(p.gallery_paths || [])].filter(Boolean);
+                    await kerphDeletePortfolioProject(p.id, paths);
+                    projects = projects.filter(x => x.id !== p.id);
+                    document.getElementById('projectViewOverlay').style.display = 'none';
+                    renderPortfolioGrid();
+                    showToast('Project deleted.');
+                });
+            }
+        }
+
+        function renderCoverThumb() {
+            const wrap = document.getElementById('coverThumbWrap');
+            if (pendingCoverPath) {
+                wrap.style.display = 'block';
+                document.getElementById('coverThumbImg').src = kerphPortfolioImageUrl(pendingCoverPath);
+            } else {
+                wrap.style.display = 'none';
+            }
+        }
+        function renderGalleryThumbs() {
+            const wrap = document.getElementById('galleryThumbs');
+            wrap.innerHTML = pendingGalleryPaths.map((path, i) => `
+                <div class="gallery-thumb"><img src="${kerphPortfolioImageUrl(path)}"><button type="button" class="gallery-thumb-remove" data-i="${i}">&times;</button></div>
+            `).join('');
+            wrap.querySelectorAll('.gallery-thumb-remove').forEach(btn => {
+                btn.addEventListener('click', () => { pendingGalleryPaths.splice(parseInt(btn.dataset.i, 10), 1); renderGalleryThumbs(); });
+            });
+        }
+
+        function openProjectModal(p) {
+            editingProjectId = p ? p.id : null;
+            pendingCoverPath = p ? p.cover_path : null;
+            pendingGalleryPaths = p ? (p.gallery_paths || []).slice() : [];
+            document.getElementById('projectModalTitle').textContent = p ? 'Edit Project' : 'Add Project';
+            document.getElementById('projTitleInput').value = p ? p.title : '';
+            document.getElementById('projDescInput').value = p ? (p.description || '') : '';
+            document.getElementById('projMaterialsInput').value = p ? (p.materials || '') : '';
+            document.getElementById('projFinishInput').value = p ? (p.finish || '') : '';
+            document.getElementById('projPlanSourceInput').value = p ? (p.plan_source || '') : '';
+            document.getElementById('projPublicInput').checked = p ? !!p.is_public : true;
+            renderCoverThumb();
+            renderGalleryThumbs();
+            document.getElementById('projectModalOverlay').style.display = 'flex';
+        }
+        document.getElementById('projectCancelBtn').addEventListener('click', () => { document.getElementById('projectModalOverlay').style.display = 'none'; });
+
+        document.getElementById('coverPhotoBtn').addEventListener('click', () => document.getElementById('coverPhotoInput').click());
+        document.getElementById('coverPhotoInput').addEventListener('change', async () => {
+            const file = document.getElementById('coverPhotoInput').files[0];
+            if (!file) return;
+            const { data, error } = await kerphUploadPortfolioPhoto(file);
+            if (error) { showToast(error.message || 'Could not upload photo.'); return; }
+            pendingCoverPath = data.path;
+            renderCoverThumb();
+        });
+        document.getElementById('galleryPhotoBtn').addEventListener('click', () => document.getElementById('galleryPhotoInput').click());
+        document.getElementById('galleryPhotoInput').addEventListener('change', async () => {
+            if (pendingGalleryPaths.length >= 5) { showToast('Up to 5 gallery photos per project.'); return; }
+            const file = document.getElementById('galleryPhotoInput').files[0];
+            if (!file) return;
+            const { data, error } = await kerphUploadPortfolioPhoto(file);
+            if (error) { showToast(error.message || 'Could not upload photo.'); return; }
+            pendingGalleryPaths.push(data.path);
+            renderGalleryThumbs();
+            document.getElementById('galleryPhotoInput').value = '';
+        });
+
+        document.getElementById('projectSaveBtn').addEventListener('click', async () => {
+            const title = document.getElementById('projTitleInput').value.trim();
+            if (!title) { showToast('Give this project a title.'); return; }
+            const project = {
+                title,
+                description: document.getElementById('projDescInput').value.trim(),
+                materials: document.getElementById('projMaterialsInput').value.trim(),
+                finish: document.getElementById('projFinishInput').value.trim(),
+                planSource: document.getElementById('projPlanSourceInput').value.trim(),
+                coverPath: pendingCoverPath,
+                galleryPaths: pendingGalleryPaths,
+                isPublic: document.getElementById('projPublicInput').checked
+            };
+            let result;
+            if (editingProjectId) {
+                result = await kerphUpdatePortfolioProject(editingProjectId, project);
+            } else {
+                result = await kerphCreatePortfolioProject(project);
+            }
+            if (result.error) { showToast(result.error.message || 'Could not save project.'); return; }
+            const idx = projects.findIndex(p => p.id === result.data.id);
+            if (idx >= 0) projects[idx] = result.data; else projects.unshift(result.data);
+            renderPortfolioGrid();
+            document.getElementById('projectModalOverlay').style.display = 'none';
+            showToast('Project saved.');
+        });
+
+        async function initPortfolio() {
+            if (ownerMode) {
+                if (!isSignedIn()) {
+                    document.getElementById('portfolioHeadingTitle').textContent = 'My Portfolio';
+                    document.getElementById('portfolioHeadingSub').textContent = 'Sign in (top right) to build your shareable portfolio.';
+                    projects = [];
+                    renderToolbar();
+                    renderPortfolioGrid();
+                    portfolioInitialized = true;
+                    return;
+                }
+                document.getElementById('portfolioHeadingTitle').textContent = 'My Portfolio';
+                document.getElementById('portfolioHeadingSub').textContent = 'Your permanent, shareable body of work — pulls straight from what you build in Kerph.';
+                const { data } = await kerphLoadMyPortfolioProjects();
+                projects = data || [];
+            } else {
+                document.getElementById('portfolioHeadingTitle').textContent = "Builder's Portfolio";
+                document.getElementById('portfolioHeadingSub').textContent = 'Public projects shared via Kerph.';
+                const { data } = await kerphLoadPublicPortfolio(viewingUserId);
+                projects = data || [];
+            }
+            renderToolbar();
+            renderPortfolioGrid();
+            portfolioInitialized = true;
+        }
+
+        kerphAuthReady.then(async () => {
             initHeaderSignIn();
             initAccountPanel();
-            // Public content — renders for signed-out visitors too, just needed auth to
-            // resolve first so kerphLoadMyReviewVotes() reflects the right (or no) user.
-            renderReviews();
+            await initPortfolio();
         });
-
-        populateCategorySelects();
-        initReviewModal();
-        document.getElementById('reviewSearchInput').addEventListener('input', renderReviews);
-        document.getElementById('reviewCategoryFilter').addEventListener('change', renderReviews);
-        document.getElementById('reviewSortSelect').addEventListener('change', renderReviews);
     </script>
 </body>
 </html>

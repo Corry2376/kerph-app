@@ -4,7 +4,7 @@
     <script>if (localStorage.getItem('kerphComingSoonBypass') !== 'true') { location.replace('coming-soon.html'); }</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kerph - Cool Tool Reviews</title>
+    <title>Kerph - 3D Print Library</title>
     <style>
         * {
             box-sizing: border-box;
@@ -40,61 +40,26 @@
         .logo-spotlight { position: relative; display: flex; align-items: center; justify-content: center; width: 382px; height: 105px; }
         .logo-link { display: block; line-height: 0; }
         .logo-image {
-            position: relative;
-            z-index: 1;
-            width: 382px;
-            height: 105px;
-            object-fit: contain;
-            border-radius: 4px;
-            filter: drop-shadow(0 12px 22px rgba(15, 23, 42, 0.4));
-            transition: transform 0.3s ease, filter 0.3s ease;
+            position: relative; z-index: 1; width: 382px; height: 105px; object-fit: contain; border-radius: 4px;
+            filter: drop-shadow(0 12px 22px rgba(15, 23, 42, 0.4)); transition: transform 0.3s ease, filter 0.3s ease;
         }
         .logo-image:hover { transform: scale(1.03); filter: drop-shadow(0 18px 30px rgba(15, 23, 42, 0.5)); }
         .logo-tm { position: absolute; bottom: 6px; right: 22px; z-index: 2; font-size: 12px; font-weight: 800; color: #1e3a8a; line-height: 1; pointer-events: none; }
 
         .page-title-select {
-            font-size: 15px;
-            font-weight: 700;
-            color: #1e3a8a;
-            padding: 6px 6px 6px 16px;
-            border: none;
-            border-left: 1px solid #cbd5e1;
-            background-color: transparent;
-            cursor: pointer;
-            white-space: nowrap;
+            font-size: 15px; font-weight: 700; color: #1e3a8a; padding: 6px 6px 6px 16px; border: none;
+            border-left: 1px solid #cbd5e1; background-color: transparent; cursor: pointer; white-space: nowrap;
         }
         .page-title-select:hover { background-color: #eef2ff; border-radius: 4px; }
 
-        .header-field-label {
-            font-size: 10px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: #6b7280;
-        }
+        .header-field-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #6b7280; }
 
         .plan-badge-group { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; flex-shrink: 0; }
-        .plan-select {
-            padding: 8px 12px;
-            border: 1px solid #cbd5e1;
-            border-radius: 8px;
-            background-color: #ffffff;
-            font-size: 13px;
-            font-weight: 700;
-            color: #1e3a8a;
-            cursor: pointer;
-        }
+        .plan-select { padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background-color: #ffffff; font-size: 13px; font-weight: 700; color: #1e3a8a; cursor: pointer; }
 
         .account-btn {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 5px 14px 5px 5px;
-            border: 3px solid #cbd5e1;
-            border-radius: 999px;
-            background-color: #ffffff;
-            cursor: pointer;
-            transition: background-color 0.15s ease;
+            display: flex; align-items: center; gap: 8px; padding: 5px 14px 5px 5px; border: 3px solid #cbd5e1;
+            border-radius: 999px; background-color: #ffffff; cursor: pointer; transition: background-color 0.15s ease;
         }
         .account-btn:hover { background-color: #eef2ff; }
         .account-btn.plan-free { border-color: #16a34a; }
@@ -104,13 +69,11 @@
         .account-btn-name { font-size: 13px; font-weight: 700; color: #1e3a8a; }
         .account-btn-plan { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: #6b7280; }
         .account-avatar {
-            width: 28px; height: 28px; border-radius: 50%;
-            background-color: #e0e7ff; background-size: cover; background-position: center;
+            width: 28px; height: 28px; border-radius: 50%; background-color: #e0e7ff; background-size: cover; background-position: center;
             display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0;
         }
         .account-avatar-large {
-            width: 72px; height: 72px; border-radius: 50%;
-            background-color: #e0e7ff; background-size: cover; background-position: center;
+            width: 72px; height: 72px; border-radius: 50%; background-color: #e0e7ff; background-size: cover; background-position: center;
             display: flex; align-items: center; justify-content: center; font-size: 32px;
         }
 
@@ -122,29 +85,22 @@
         .header-sign-in .mini-btn { flex: none; padding: 6px 10px; font-size: 11px; }
 
         .mini-btn {
-            flex: 1;
-            padding: 8px 10px;
-            border: 1px solid #cbd5e1;
-            border-radius: 6px;
-            background-color: #ffffff;
-            font-size: 12px;
-            font-weight: 700;
-            color: #1e3a8a;
-            cursor: pointer;
+            flex: 1; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; background-color: #ffffff;
+            font-size: 12px; font-weight: 700; color: #1e3a8a; cursor: pointer;
         }
         .mini-btn:hover { background-color: #eef2ff; border-color: #2563eb; }
         .mini-btn.danger { color: #b91c1c; }
         .mini-btn.danger:hover { background-color: #fef2f2; border-color: #b91c1c; }
         .mini-btn.primary { background-color: #1e3a8a; color: #ffffff; border-color: #1e3a8a; }
-        .mini-btn.primary:hover { background-color: #1e40af; }
 
         .input-box { width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; font-weight: 600; }
         .select-box { width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; font-weight: 600; background: #f8fafc; }
-        textarea.input-box { resize: vertical; min-height: 90px; font-family: inherit; font-weight: 400; }
+        textarea.input-box { resize: vertical; font-family: inherit; }
 
-        .modal-overlay { position: fixed; inset: 0; background-color: rgba(15, 23, 42, 0.5); z-index: 3000; display: flex; align-items: center; justify-content: center; padding: 24px; }
+        .modal-overlay { position: fixed; inset: 0; background-color: rgba(15, 23, 42, 0.5); z-index: 3000; display: flex; align-items: center; justify-content: center; padding: 24px; overflow-y: auto; }
         .modal-box { background-color: #ffffff; border-radius: 12px; padding: 24px; width: 320px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4); }
         .account-modal-box { width: 380px; max-height: 88vh; overflow-y: auto; }
+        .plan-modal-box { width: 460px; max-height: 88vh; overflow-y: auto; }
         .account-member-since { font-size: 10.5px; color: #94a3b8; font-weight: 600; margin-top: 6px; }
         .account-stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
         .account-stat { text-align: center; background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 4px; }
@@ -174,189 +130,74 @@
         .modal-primary-btn { background-color: #1e3a8a !important; color: #ffffff !important; border-color: #1e3a8a !important; }
 
         .upgrade-nudge {
-            position: fixed;
-            bottom: 24px;
-            left: 50%;
-            transform: translateX(-50%) translateY(20px);
-            background-color: #0f172a;
-            color: #ffffff;
-            font-size: 13px;
-            font-weight: 600;
-            padding: 10px 12px 10px 18px;
-            border-radius: 8px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.2s ease, transform 0.2s ease;
-            z-index: 2000;
-            max-width: 400px;
+            position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px); background-color: #0f172a; color: #ffffff;
+            font-size: 13px; font-weight: 600; padding: 10px 12px 10px 18px; border-radius: 8px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+            opacity: 0; pointer-events: none; transition: opacity 0.2s ease, transform 0.2s ease; z-index: 2000; max-width: 400px;
         }
         .upgrade-nudge.visible { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
 
-        /* ---------- PAGE CONTENT ---------- */
-        main {
-            max-width: 1100px;
-            margin: 0 auto;
-            padding: 40px 24px 80px;
-        }
-
-        .reviews-eyebrow {
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            color: #b23b3b;
-            margin-bottom: 8px;
-        }
-        .reviews-title { font-size: 28px; font-weight: 800; color: #0f172a; margin-bottom: 10px; }
-        .reviews-subtitle { font-size: 14.5px; color: #4b5563; line-height: 1.6; margin-bottom: 28px; max-width: 70ch; }
-
-        .reviews-toolbar {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            align-items: center;
-            margin-bottom: 24px;
-            background-color: #ffffff;
-            border: 1px solid #cbd5e1;
-            border-radius: 12px;
-            padding: 14px;
-        }
-        .reviews-toolbar .input-box, .reviews-toolbar .select-box { width: auto; }
-        #reviewSearchInput { flex: 1; min-width: 160px; }
-        #reviewCategoryFilter, #reviewSortSelect { min-width: 150px; }
-        #writeReviewBtn { flex: none; margin-left: auto; padding: 10px 18px; }
-
-        .reviews-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 16px;
-        }
-
-        .review-card {
-            background-color: #ffffff;
-            border: 1px solid #cbd5e1;
-            border-radius: 12px;
-            padding: 18px;
-            box-shadow: 0 10px 25px -12px rgba(15, 23, 42, 0.15);
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .review-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
-        .review-tool-name { font-size: 15.5px; font-weight: 800; color: #0f172a; line-height: 1.3; }
-        .review-category-tag {
-            font-size: 9.5px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.03em;
-            color: #1e3a8a;
-            background-color: #e0e7ff;
-            padding: 3px 8px;
-            border-radius: 999px;
-            white-space: nowrap;
-            flex-shrink: 0;
-        }
-
-        .star-rating { color: #d97706; font-size: 15px; letter-spacing: 1px; }
-        .star-rating .star-empty { color: #d1d5db; }
-
-        .review-text { font-size: 13px; color: #374151; line-height: 1.55; flex: 1; white-space: pre-wrap; }
-
-        .review-card-footer {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 8px;
-            padding-top: 8px;
-            border-top: 1px solid #f1f5f9;
-            font-size: 11.5px;
-            color: #6b7280;
-        }
-        .review-author { font-weight: 700; color: #1e293b; }
-        .review-date { color: #9ca3af; }
-
-        .helpful-btn {
-            border: 1px solid #cbd5e1;
-            background-color: #f8fafc;
-            border-radius: 999px;
-            padding: 4px 10px;
-            font-size: 11px;
-            font-weight: 700;
-            color: #4b5563;
-            cursor: pointer;
-            white-space: nowrap;
-        }
-        .helpful-btn:hover { background-color: #eef2ff; border-color: #2563eb; }
-        .helpful-btn.active { background-color: #dbeafe; border-color: #2563eb; color: #1e3a8a; }
-
-        .reviews-empty {
-            grid-column: 1 / -1;
-            text-align: center;
-            padding: 60px 20px;
-            color: #6b7280;
-            background-color: #ffffff;
-            border: 1px dashed #cbd5e1;
-            border-radius: 12px;
-        }
-        .reviews-empty-icon { font-size: 40px; margin-bottom: 10px; }
-        .reviews-empty-title { font-size: 15px; font-weight: 700; color: #1e293b; margin-bottom: 6px; }
-        .reviews-empty-desc { font-size: 12.5px; max-width: 40ch; margin: 0 auto; line-height: 1.6; }
-
-        .star-picker { display: flex; gap: 4px; font-size: 26px; }
-        .star-picker span { cursor: pointer; color: #d1d5db; transition: color 0.1s ease; }
-        .star-picker span.filled { color: #d97706; }
-        .header-field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; width: 100%; }
-            .header-quick-links { display: flex; align-items: center; gap: 6px; font-size: 11px; }
+        .header-quick-links { display: flex; align-items: center; gap: 6px; font-size: 11px; }
         .header-quick-links a { color: #6b7280; font-weight: 600; text-decoration: none; }
         .header-quick-links a:hover { color: #1e3a8a; text-decoration: underline; }
         .header-quick-links-sep { color: #cbd5e1; }
 
-        /* ---------- SHOP JIGS DROPDOWN ---------- */
         .jigs-dropdown { position: relative; }
         .jigs-dropdown-btn {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 13px;
-            font-weight: 700;
-            color: #ffffff;
-            background-color: #1e3a8a;
-            padding: 9px 14px;
-            border: none;
-            border-radius: 999px;
-            cursor: pointer;
-            white-space: nowrap;
+            display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; color: #ffffff;
+            background-color: #1e3a8a; padding: 9px 14px; border: none; border-radius: 999px; cursor: pointer; white-space: nowrap;
         }
         .jigs-dropdown-btn:hover { background-color: #172d68; }
         .jigs-dropdown-caret { font-size: 9px; transition: transform 0.15s ease; }
         .jigs-dropdown.open .jigs-dropdown-caret { transform: rotate(180deg); }
         .jigs-dropdown-menu {
-            display: none;
-            position: absolute;
-            top: calc(100% + 8px);
-            left: 0;
-            background-color: #ffffff;
-            border: 1px solid #cbd5e1;
-            border-radius: 10px;
-            box-shadow: 0 12px 30px -8px rgba(15, 23, 42, 0.3);
-            padding: 6px;
-            min-width: 210px;
-            z-index: 500;
+            display: none; position: absolute; top: calc(100% + 8px); left: 0; background-color: #ffffff; border: 1px solid #cbd5e1;
+            border-radius: 10px; box-shadow: 0 12px 30px -8px rgba(15, 23, 42, 0.3); padding: 6px; min-width: 230px; z-index: 500;
         }
         .jigs-dropdown.open .jigs-dropdown-menu { display: block; }
-        .jigs-dropdown-menu a {
-            display: block;
-            padding: 8px 10px;
-            border-radius: 6px;
-            font-size: 13px;
-            font-weight: 600;
-            color: #1e293b;
-            text-decoration: none;
-        }
+        .jigs-dropdown-menu a { display: block; padding: 8px 10px; border-radius: 6px; font-size: 13px; font-weight: 600; color: #1e293b; text-decoration: none; }
         .jigs-dropdown-menu a:hover { background-color: #eef2ff; color: #1e3a8a; }
         .jigs-dropdown-menu-sep { height: 1px; background-color: #e2e8f0; margin: 5px 2px; }
+
+        /* ---------- PRINT LIBRARY PAGE LAYOUT ---------- */
+        .library-layout { max-width: 1100px; margin: 0 auto; padding: 32px 24px 100px; }
+        .library-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 10px; flex-wrap: wrap; }
+        .library-heading-title { font-size: 26px; font-weight: 800; color: #0f172a; }
+        .library-heading-sub { font-size: 13px; color: #6b7280; margin-top: 4px; }
+        .library-filters { display: flex; gap: 8px; margin: 18px 0 22px; flex-wrap: wrap; }
+        .library-filters input[type="text"] { min-width: 220px; }
+        .library-filters select { width: auto; min-width: 150px; }
+
+        .library-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 20px; }
+        .plan-card {
+            background-color: #ffffff; border: 1px solid #cbd5e1; border-radius: 14px; overflow: hidden; cursor: pointer;
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05); transition: transform 0.15s ease, box-shadow 0.15s ease;
+            display: flex; flex-direction: column;
+        }
+        .plan-card:hover { transform: translateY(-2px); box-shadow: 0 12px 24px rgba(15, 23, 42, 0.1); }
+        .plan-card-icon { width: 100%; height: 120px; background: #eef2ff; display: flex; align-items: center; justify-content: center; font-size: 44px; color: #a5b4fc; }
+        .plan-card-body { padding: 14px 16px; flex: 1; }
+        .plan-card-title { font-size: 14.5px; font-weight: 700; color: #0f172a; margin-bottom: 6px; }
+        .plan-card-desc { font-size: 12px; color: #6b7280; line-height: 1.4; max-height: 34px; overflow: hidden; margin-bottom: 8px; }
+        .plan-card-badges { display: flex; gap: 6px; flex-wrap: wrap; }
+        .badge-pill { font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; padding: 2px 7px; border-radius: 4px; }
+        .badge-category { background: #eef2ff; color: #1e3a8a; }
+        .badge-license { background: #f1f5f9; color: #475569; }
+        .badge-license.own { background: #dcfce7; color: #166534; }
+        .badge-license.link-only { background: #fef3c7; color: #92400e; }
+        .plan-card-footer { display: flex; align-items: center; justify-content: space-between; padding: 8px 16px; border-top: 1px solid #f1f5f9; font-size: 11px; color: #6b7280; }
+
+        .library-empty { text-align: center; padding: 60px 20px; color: #9ca3af; grid-column: 1 / -1; }
+        .library-empty-icon { font-size: 40px; margin-bottom: 12px; }
+
+        .plan-view-meta { font-size: 12.5px; color: #6b7280; line-height: 1.7; margin-bottom: 14px; }
+        .plan-view-meta strong { color: #1e293b; }
+        .plan-view-desc { font-size: 13.5px; color: #1e293b; line-height: 1.6; margin-bottom: 14px; }
+        .stl-preview-box { width: 100%; height: 280px; border-radius: 10px; background: #0f172a; overflow: hidden; position: relative; margin-bottom: 14px; }
+        .stl-preview-box canvas { display: block; width: 100%; height: 100%; }
+        .stl-preview-hint { position: absolute; bottom: 8px; left: 0; right: 0; text-align: center; font-size: 10.5px; color: rgba(255,255,255,0.6); pointer-events: none; }
+        .stl-preview-unavailable { display: flex; align-items: center; justify-content: center; height: 100%; color: #94a3b8; font-size: 12.5px; text-align: center; padding: 0 20px; }
+
+        .license-fields { margin-top: 10px; }
     </style>
 </head>
 <body>
@@ -378,10 +219,10 @@
                 <option value="quote-builder.html">Quote Builder</option>
                 <option value="find-a-builder.html">Find a Builder</option>
                 <option value="shop-3d-viewer.html">3D Shop Viewer</option>
-                <option value="tool-reviews.html" selected>Cool Tool Reviews</option>
+                <option value="tool-reviews.html">Cool Tool Reviews</option>
                 <option value="shop-showcase.html">Shop Showcase</option>
                 <option value="portfolio.html">Portfolio</option>
-                <option value="print-library.html">3D Print Library</option>
+                <option value="print-library.html" selected>3D Print Library</option>
             </select>
             <div class="jigs-dropdown" id="jigsDropdown">
                 <button type="button" class="jigs-dropdown-btn" id="jigsDropdownBtn">Shop Jigs <span class="jigs-dropdown-caret">&#9662;</span></button>
@@ -407,7 +248,7 @@
                 </div>
                 <a href="#" class="header-sign-in-mode-toggle" id="headerSignInModeToggle">New here? Create an account</a>
             </div>
-            <button type="button" id="accountBtn" class="account-btn plan-free" title="Account &amp; Plan Settings — border color shows your plan level" style="display:none;">
+            <button type="button" id="accountBtn" class="account-btn plan-free" title="Account &amp; Plan Settings" style="display:none;">
                 <span class="account-avatar" id="accountAvatarPreview">&#128100;</span>
                 <span class="account-btn-text">
                     <span class="account-btn-name" id="accountBtnLabel">Account</span>
@@ -434,14 +275,14 @@
             <div class="modal-title">Account Settings</div>
             <div class="modal-warning">Your account (username, avatar, sign-in) is real and synced via Kerph. Saved layouts, projects, tools, Showcase posts, and reviews are synced too — available on any device you sign into.</div>
 
-            <div class="header-field" style="align-items:center;">
+            <div class="header-field" style="align-items:center; display:flex; flex-direction:column; gap:4px;">
                 <div class="account-avatar-large" id="accountAvatarLarge">&#128100;</div>
                 <input type="file" id="accountAvatarInput" accept="image/*" style="display:none;">
                 <button type="button" id="accountAvatarBtn" class="mini-btn" style="margin-top:10px; flex:none;">Upload Photo</button>
                 <div class="account-member-since" id="accountMemberSince"></div>
             </div>
 
-            <div class="header-field">
+            <div class="header-field" style="display:flex; flex-direction:column; gap:4px; margin-top:12px;">
                 <label class="header-field-label" for="accountUsernameInput">Username</label>
                 <input type="text" class="input-box" id="accountUsernameInput" placeholder="Choose a username">
             </div>
@@ -463,7 +304,7 @@
                 <div class="account-plan-upsell" id="accountPlanUpsell" style="display:none;">Free includes 1 saved shop layout; custom shop shapes and unlimited saves unlock on Pro.</div>
             </div>
 
-            <div class="header-field" style="margin-top:10px;">
+            <div class="header-field" style="display:flex; flex-direction:column; gap:4px; margin-top:10px;">
                 <label class="header-field-label" for="accountUnitsSelect">Preferred Units</label>
                 <select class="select-box" id="accountUnitsSelect">
                     <option value="imperial">Imperial (ft / in)</option>
@@ -471,7 +312,7 @@
                 </select>
             </div>
 
-            <div class="header-field" style="margin-top:14px;">
+            <div class="header-field" style="display:flex; flex-direction:column; gap:4px; margin-top:14px;">
                 <label class="header-field-label">Saved Layouts</label>
                 <div id="accountLayoutsList" class="account-layouts-list"></div>
             </div>
@@ -500,79 +341,105 @@
         </div>
     </div>
 
-    <div class="modal-overlay" id="reviewModalOverlay" style="display:none;">
-        <div class="modal-box" style="width:400px;">
-            <div class="modal-title">Write a Review</div>
+    <div class="modal-overlay" id="planModalOverlay" style="display:none;">
+        <div class="modal-box plan-modal-box">
+            <div class="modal-title" id="planModalTitle">Share a Plan</div>
 
-            <div class="header-field">
-                <label class="header-field-label" for="reviewToolName">Tool Name</label>
-                <input type="text" class="input-box" id="reviewToolName" placeholder="e.g. SawStop PCS175">
+            <div class="header-field" style="width:100%;">
+                <label class="header-field-label" for="planTitleInput">Title</label>
+                <input type="text" class="input-box" id="planTitleInput" placeholder="e.g. Parametric Dust Port Adapter, 4in to 2.5in">
             </div>
-
-            <div class="header-field">
-                <label class="header-field-label" for="reviewCategorySelect">Category</label>
-                <select class="select-box" id="reviewCategorySelect"></select>
+            <div class="header-field" style="width:100%; margin-top:10px;">
+                <label class="header-field-label" for="planDescInput">Description</label>
+                <textarea class="input-box" id="planDescInput" rows="3" placeholder="What it's for, print settings, anything worth knowing before printing."></textarea>
             </div>
-
-            <div class="header-field">
-                <label class="header-field-label">Your Rating</label>
-                <div class="star-picker" id="reviewStarPicker">
-                    <span data-value="1">&#9733;</span>
-                    <span data-value="2">&#9733;</span>
-                    <span data-value="3">&#9733;</span>
-                    <span data-value="4">&#9733;</span>
-                    <span data-value="5">&#9733;</span>
+            <div style="display:flex; gap:8px; margin-top:10px;">
+                <div class="header-field" style="flex:1;">
+                    <label class="header-field-label" for="planCategorySelect">Category</label>
+                    <select class="select-box" id="planCategorySelect">
+                        <option value="jig">Jig</option>
+                        <option value="fixture">Fixture</option>
+                        <option value="dust-collection">Dust Collection</option>
+                        <option value="tool-holder">Tool Holder</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div class="header-field" style="flex:1;">
+                    <label class="header-field-label" for="planLicenseSelect">License</label>
+                    <select class="select-box" id="planLicenseSelect">
+                        <option value="own">My own design</option>
+                        <option value="cc-by">Creative Commons BY</option>
+                        <option value="cc-by-sa">Creative Commons BY-SA</option>
+                        <option value="public-domain">Public Domain</option>
+                        <option value="link-only">Found elsewhere (link out only)</option>
+                    </select>
                 </div>
             </div>
 
-            <div class="header-field">
-                <label class="header-field-label" for="reviewText">Review</label>
-                <textarea class="input-box" id="reviewText" placeholder="What do you like or dislike about it? Would you buy it again?"></textarea>
+            <div class="license-fields" id="fileUploadFields">
+                <label class="header-field-label">Plan File (.stl preview supported; .3mf/.step also accepted for download)</label>
+                <input type="file" id="planFileInput" accept=".stl,.3mf,.step,.stp" style="display:none;">
+                <div style="display:flex; align-items:center; gap:10px; margin-top:4px;">
+                    <span id="planFileNameLabel" style="font-size:12px; color:#6b7280; flex:1;">No file chosen</span>
+                    <button type="button" class="mini-btn" id="planFileBtn" style="flex:none;">Choose File&hellip;</button>
+                </div>
             </div>
-
-            <div class="header-field">
-                <label class="header-field-label" for="reviewAuthorName">Your Name</label>
-                <input type="text" class="input-box" id="reviewAuthorName" placeholder="Anonymous">
+            <div class="license-fields" id="sourceUrlFields" style="display:none;">
+                <label class="header-field-label" for="planSourceUrlInput">Link to the original plan (required — Kerph won't host the file)</label>
+                <input type="text" class="input-box" id="planSourceUrlInput" placeholder="https://...">
             </div>
 
             <div class="modal-actions">
-                <button type="button" id="reviewCancelBtn" class="mini-btn">Cancel</button>
-                <button type="button" id="reviewSubmitBtn" class="mini-btn modal-primary-btn">Post Review</button>
+                <button type="button" id="planCancelBtn" class="mini-btn">Cancel</button>
+                <button type="button" id="planSaveBtn" class="mini-btn modal-primary-btn">Share Plan</button>
             </div>
         </div>
     </div>
 
+    <div class="modal-overlay" id="planViewOverlay" style="display:none;">
+        <div class="modal-box plan-modal-box" id="planViewBox"></div>
+    </div>
+
     <div class="upgrade-nudge" id="upgradeNudge"></div>
 
-    <main>
-        <div class="reviews-eyebrow">Community</div>
-        <div class="reviews-title">Cool Tool Reviews</div>
-        <div class="reviews-subtitle">Real feedback from real shops — before you buy, see what other woodworkers actually think. Every review here is visible to the whole Kerph community.</div>
-
-        <div class="reviews-toolbar">
-            <input type="text" class="input-box" id="reviewSearchInput" placeholder="&#128269; Search tool names&hellip;">
-            <select class="select-box" id="reviewCategoryFilter"></select>
-            <select class="select-box" id="reviewSortSelect">
-                <option value="newest">Newest</option>
-                <option value="highest">Highest Rated</option>
-                <option value="helpful">Most Helpful</option>
-            </select>
-            <button type="button" id="writeReviewBtn" class="mini-btn primary">+ Write a Review</button>
+    <div class="library-layout">
+        <div class="library-toolbar">
+            <div>
+                <div class="library-heading-title">3D Print Library</div>
+                <div class="library-heading-sub">Printable jigs, fixtures, and shop fittings — your own designs, or links out to plans you found elsewhere.</div>
+            </div>
+            <button type="button" class="mini-btn primary" id="sharePlanBtn" style="flex:none;">+ Share a Plan</button>
         </div>
-
-        <div class="reviews-grid" id="reviewsGrid"></div>
-    </main>
+        <div class="library-filters">
+            <input type="text" class="input-box" id="planSearchInput" placeholder="Search plans...">
+            <select class="select-box" id="categoryFilterSelect">
+                <option value="">All Categories</option>
+                <option value="jig">Jig</option>
+                <option value="fixture">Fixture</option>
+                <option value="dust-collection">Dust Collection</option>
+                <option value="tool-holder">Tool Holder</option>
+                <option value="other">Other</option>
+            </select>
+        </div>
+        <div class="library-grid" id="libraryGrid"></div>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.7/dist/umd/supabase.js"></script>
     <script src="supabase-client.js"></script>
-    <script>
-        /* ---------- SHARED STATE KEYS (must match workshop-planner.html / index.html exactly) ---------- */
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+            "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+        }
+    }
+    </script>
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { STLLoader } from 'three/addons/loaders/STLLoader.js';
+
         const PLAN_KEY = 'kerphPlan';
-        /* ACCOUNT_KEY/AUTH_KEY removed — account + sign-in are now real, Supabase-backed
-           (see supabase-client.js) instead of localStorage flags. */
-        const TOOL_STATUS_KEY = 'kerphToolStatus';
-        const LAYOUTS_KEY = 'kerphSavedLayouts';
-        const LAYOUT_TYPE_LABELS = { workshop: 'Workshop', 'dust-collection': 'Dust Collection', lighting: 'Lighting' };
 
         function showToast(message) {
             const nudge = document.getElementById('upgradeNudge');
@@ -615,13 +482,10 @@
         }
 
         let cachedToolStatuses = {};
-        function loadToolStatuses() {
-            return cachedToolStatuses;
-        }
+        function loadToolStatuses() { return cachedToolStatuses; }
         let cachedSavedLayouts = [];
-        function loadLayouts() {
-            return cachedSavedLayouts;
-        }
+        function loadLayouts() { return cachedSavedLayouts; }
+
         function renderAccountStats() {
             const row = document.getElementById('accountStatsRow');
             if (!row) return;
@@ -649,6 +513,7 @@
             select.value = plan;
             upsell.style.display = plan === 'free' ? 'block' : 'none';
         }
+        const LAYOUT_TYPE_LABELS = { workshop: 'Workshop', 'dust-collection': 'Dust Collection', lighting: 'Lighting' };
         function renderAccountLayoutsList() {
             const list = document.getElementById('accountLayoutsList');
             if (!list) return;
@@ -858,169 +723,8 @@
             updateHeaderSignInState();
         }
 
-        /* ---------- TOOL REVIEWS ----------
-           Real, Supabase-backed multi-user content now — tool_reviews (public-read) +
-           tool_review_votes (real per-user "helpful" votes, denormalized onto helpful_count
-           via a DB trigger). cachedReviews/cachedMyVotes are refreshed on every renderReviews()
-           call, not just once, since this is now real multi-user data other people can change
-           between renders. */
-        const REVIEW_CATEGORIES = [
-            'Table Saws', 'Bandsaws', 'Jointers & Planers', 'Sanding', 'Drilling & Boring',
-            'Turning', 'Routing', 'Crosscut & Miter', 'Dust Collection', 'Hand Tools',
-            'Measuring & Layout', 'Finishing', 'Storage', 'Other'
-        ];
-        let cachedReviews = [];
-        let cachedMyVotes = [];
-
-        function starsHtml(rating) {
-            let html = '';
-            for (let i = 1; i <= 5; i++) {
-                html += i <= rating ? '&#9733;' : '<span class="star-empty">&#9733;</span>';
-            }
-            return html;
-        }
-
-        function populateCategorySelects() {
-            const filterSel = document.getElementById('reviewCategoryFilter');
-            filterSel.innerHTML = '<option value="">All Categories</option>' +
-                REVIEW_CATEGORIES.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
-
-            const formSel = document.getElementById('reviewCategorySelect');
-            formSel.innerHTML = REVIEW_CATEGORIES.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
-        }
-
-        async function renderReviews() {
-            const grid = document.getElementById('reviewsGrid');
-            const query = document.getElementById('reviewSearchInput').value.trim().toLowerCase();
-            const category = document.getElementById('reviewCategoryFilter').value;
-            const sort = document.getElementById('reviewSortSelect').value;
-
-            const [reviewsResult, votesResult] = await Promise.all([kerphLoadToolReviews(), kerphLoadMyReviewVotes()]);
-            cachedReviews = reviewsResult.data;
-            cachedMyVotes = votesResult.data;
-
-            let reviews = cachedReviews;
-            if (query) reviews = reviews.filter(r => r.tool_name.toLowerCase().includes(query));
-            if (category) reviews = reviews.filter(r => r.category === category);
-
-            reviews = reviews.slice();
-            if (sort === 'newest') reviews.sort((a, b) => b.created_at.localeCompare(a.created_at));
-            else if (sort === 'highest') reviews.sort((a, b) => b.rating - a.rating || b.created_at.localeCompare(a.created_at));
-            else if (sort === 'helpful') reviews.sort((a, b) => (b.helpful_count || 0) - (a.helpful_count || 0) || b.created_at.localeCompare(a.created_at));
-
-            if (!reviews.length) {
-                const hasAny = cachedReviews.length > 0;
-                grid.innerHTML = `
-                    <div class="reviews-empty">
-                        <div class="reviews-empty-icon">${hasAny ? '&#128269;' : '&#11088;'}</div>
-                        <div class="reviews-empty-title">${hasAny ? 'No reviews match your search' : 'No reviews yet'}</div>
-                        <div class="reviews-empty-desc">${hasAny ? 'Try a different search term or category.' : 'Be the first to review a tool — click "+ Write a Review" above.'}</div>
-                    </div>
-                `;
-                return;
-            }
-
-            grid.innerHTML = reviews.map(r => {
-                const dateStr = new Date(r.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
-                const isVoted = cachedMyVotes.includes(r.id);
-                return `
-                    <div class="review-card">
-                        <div class="review-card-top">
-                            <div class="review-tool-name">${escapeHtml(r.tool_name)}</div>
-                            <div class="review-category-tag">${escapeHtml(r.category)}</div>
-                        </div>
-                        <div class="star-rating">${starsHtml(r.rating)}</div>
-                        <div class="review-text">${escapeHtml(r.review_text)}</div>
-                        <div class="review-card-footer">
-                            <span><span class="review-author">${escapeHtml(r.author || 'Anonymous')}</span> &middot; <span class="review-date">${dateStr}</span></span>
-                            <button type="button" class="helpful-btn${isVoted ? ' active' : ''}" data-id="${r.id}">&#128077; Helpful${r.helpful_count ? ' (' + r.helpful_count + ')' : ''}</button>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-
-            grid.querySelectorAll('.helpful-btn').forEach(btn => {
-                btn.addEventListener('click', async () => {
-                    const id = btn.getAttribute('data-id');
-                    if (!isSignedIn()) { showToast('Sign in (top right) to mark a review helpful.'); return; }
-                    const currentlyVoted = cachedMyVotes.includes(id);
-                    await kerphToggleReviewHelpful(id, currentlyVoted);
-                    renderReviews();
-                });
-            });
-        }
-
-        function initReviewModal() {
-            const overlay = document.getElementById('reviewModalOverlay');
-            const openBtn = document.getElementById('writeReviewBtn');
-            const cancelBtn = document.getElementById('reviewCancelBtn');
-            const submitBtn = document.getElementById('reviewSubmitBtn');
-            const toolNameInput = document.getElementById('reviewToolName');
-            const categorySelect = document.getElementById('reviewCategorySelect');
-            const textInput = document.getElementById('reviewText');
-            const authorInput = document.getElementById('reviewAuthorName');
-            const starPicker = document.getElementById('reviewStarPicker');
-            let selectedRating = 0;
-
-            function renderStarPicker() {
-                starPicker.querySelectorAll('span').forEach(s => {
-                    s.classList.toggle('filled', parseInt(s.getAttribute('data-value'), 10) <= selectedRating);
-                });
-            }
-            starPicker.querySelectorAll('span').forEach(s => {
-                s.addEventListener('click', () => {
-                    selectedRating = parseInt(s.getAttribute('data-value'), 10);
-                    renderStarPicker();
-                });
-            });
-
-            function openModal() {
-                if (!isSignedIn()) { showToast('Sign in (top right) to write a review.'); return; }
-                toolNameInput.value = '';
-                categorySelect.value = REVIEW_CATEGORIES[0];
-                textInput.value = '';
-                authorInput.value = loadAccount().username || '';
-                selectedRating = 0;
-                renderStarPicker();
-                overlay.style.display = 'flex';
-                toolNameInput.focus();
-            }
-
-            openBtn.addEventListener('click', openModal);
-            cancelBtn.addEventListener('click', () => { overlay.style.display = 'none'; });
-
-            submitBtn.addEventListener('click', async () => {
-                const toolName = toolNameInput.value.trim();
-                const text = textInput.value.trim();
-                if (!toolName) { showToast('Enter the tool name.'); toolNameInput.focus(); return; }
-                if (!selectedRating) { showToast('Pick a star rating.'); return; }
-                if (!text) { showToast('Write a few words about it.'); textInput.focus(); return; }
-                if (!isSignedIn()) { showToast('Sign in (top right) to write a review.'); return; }
-
-                submitBtn.disabled = true;
-                try {
-                    const { error } = await kerphCreateToolReview({
-                        toolName,
-                        category: categorySelect.value,
-                        rating: selectedRating,
-                        text,
-                        author: authorInput.value.trim() || 'Anonymous'
-                    });
-                    if (error) { showToast('Could not post that review.'); return; }
-                    overlay.style.display = 'none';
-                    showToast('Review posted.');
-                    renderReviews();
-                } finally {
-                    submitBtn.disabled = false;
-                }
-            });
-        }
-
         document.getElementById('pageNavSelect').addEventListener('change', (e) => { window.location.href = e.target.value; });
 
-        // Standalone header dropdown (not folded into pageNavSelect) so Shop Jigs' four
-        // tools are one click away from every page instead of being buried as just another
-        // option in a 9-item combobox.
         function initJigsDropdown() {
             const dropdown = document.getElementById('jigsDropdown');
             const btn = document.getElementById('jigsDropdownBtn');
@@ -1043,19 +747,264 @@
             kerphLoadSavedLayouts().then(({ data }) => { cachedSavedLayouts = data || []; });
         });
 
-        kerphAuthReady.then(() => {
-            initHeaderSignIn();
-            initAccountPanel();
-            // Public content — renders for signed-out visitors too, just needed auth to
-            // resolve first so kerphLoadMyReviewVotes() reflects the right (or no) user.
-            renderReviews();
+        /* =====================================================================
+           3D PRINT LIBRARY — a single shared, public library (like Shop Showcase),
+           not per-user pages. Anyone can browse; sign-in is only required to share
+           a plan. License-aware: "own design" and CC/public-domain plans host a
+           real file (with in-browser STL preview); "found elsewhere" plans store
+           no file at all, just a required link-out + attribution note.
+           ===================================================================== */
+        const CATEGORY_LABELS = { jig: 'Jig', fixture: 'Fixture', 'dust-collection': 'Dust Collection', 'tool-holder': 'Tool Holder', other: 'Other' };
+        const CATEGORY_ICONS = { jig: '\u{1F4D0}', fixture: '\u{1F527}', 'dust-collection': '\u{1F32A}️', 'tool-holder': '\u{1F9F0}', other: '\u{1F5A8}️' };
+        const LICENSE_LABELS = { own: 'My Own Design', 'cc-by': 'CC BY', 'cc-by-sa': 'CC BY-SA', 'public-domain': 'Public Domain', 'link-only': 'Link Out Only' };
+
+        let allPlans = [];
+        let pendingFilePath = null;
+        let pendingFileName = null;
+        let editingCategoryValue = 'jig';
+
+        function matchesFilters(p, search, category) {
+            if (category && p.category !== category) return false;
+            if (!search) return true;
+            const haystack = `${p.title} ${p.description || ''}`.toLowerCase();
+            return haystack.includes(search);
+        }
+
+        function renderLibraryGrid() {
+            const grid = document.getElementById('libraryGrid');
+            const search = document.getElementById('planSearchInput').value.trim().toLowerCase();
+            const category = document.getElementById('categoryFilterSelect').value;
+            const filtered = allPlans.filter(p => matchesFilters(p, search, category));
+
+            if (!filtered.length) {
+                grid.innerHTML = `
+                    <div class="library-empty">
+                        <div class="library-empty-icon">&#128230;</div>
+                        <div>${allPlans.length ? 'No plans match your search.' : 'No plans shared yet — be the first to add one.'}</div>
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = filtered.map(p => {
+                const licenseClass = p.license === 'own' ? 'own' : (p.license === 'link-only' ? 'link-only' : '');
+                return `
+                    <div class="plan-card" data-id="${p.id}">
+                        <div class="plan-card-icon">${CATEGORY_ICONS[p.category] || CATEGORY_ICONS.other}</div>
+                        <div class="plan-card-body">
+                            <div class="plan-card-title">${escapeHtml(p.title)}</div>
+                            <div class="plan-card-desc">${escapeHtml(p.description || '')}</div>
+                            <div class="plan-card-badges">
+                                <span class="badge-pill badge-category">${CATEGORY_LABELS[p.category] || 'Other'}</span>
+                                <span class="badge-pill badge-license ${licenseClass}">${LICENSE_LABELS[p.license] || p.license}</span>
+                            </div>
+                        </div>
+                        <div class="plan-card-footer">
+                            <span>${escapeHtml(p.author || 'Anonymous')}</span>
+                            <span>${p.license === 'link-only' ? 'View original &rarr;' : `&#11015;&#65039; ${p.downloads_count || 0}`}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            grid.querySelectorAll('.plan-card').forEach(card => {
+                card.addEventListener('click', () => openPlanView(allPlans.find(p => p.id === card.dataset.id)));
+            });
+        }
+
+        let stlRenderer = null, stlAnimHandle = null;
+        function disposeStlPreview() {
+            if (stlAnimHandle) cancelAnimationFrame(stlAnimHandle);
+            stlAnimHandle = null;
+            if (stlRenderer) { stlRenderer.dispose(); stlRenderer = null; }
+        }
+
+        function initStlPreview(container, fileUrl) {
+            const scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x0f172a);
+            const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 5000);
+            stlRenderer = new THREE.WebGLRenderer({ antialias: true });
+            stlRenderer.setSize(container.clientWidth, container.clientHeight);
+            stlRenderer.setPixelRatio(window.devicePixelRatio || 1);
+            container.appendChild(stlRenderer.domElement);
+
+            scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+            const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
+            dirLight.position.set(1, 1.5, 1);
+            scene.add(dirLight);
+            const dirLight2 = new THREE.DirectionalLight(0x88aaff, 0.5);
+            dirLight2.position.set(-1, -0.5, -1);
+            scene.add(dirLight2);
+
+            const controls = new OrbitControls(camera, stlRenderer.domElement);
+            controls.enableDamping = true;
+
+            const loader = new STLLoader();
+            loader.load(fileUrl, (geometry) => {
+                geometry.computeBoundingBox();
+                geometry.center();
+                const size = new THREE.Vector3();
+                geometry.boundingBox.getSize(size);
+                const maxDim = Math.max(size.x, size.y, size.z) || 1;
+
+                const material = new THREE.MeshStandardMaterial({ color: 0x60a5fa, roughness: 0.5, metalness: 0.15 });
+                const mesh = new THREE.Mesh(geometry, material);
+                scene.add(mesh);
+
+                const dist = maxDim * 2.2;
+                camera.position.set(dist, dist * 0.8, dist);
+                camera.lookAt(0, 0, 0);
+                controls.target.set(0, 0, 0);
+                controls.update();
+
+                function animate() {
+                    stlAnimHandle = requestAnimationFrame(animate);
+                    controls.update();
+                    stlRenderer.render(scene, camera);
+                }
+                animate();
+            }, undefined, () => {
+                container.innerHTML = '<div class="stl-preview-unavailable">Could not load this file for preview.</div>';
+            });
+        }
+
+        function openPlanView(p) {
+            disposeStlPreview();
+            const box = document.getElementById('planViewBox');
+            const isStl = p.file_name && /\.stl$/i.test(p.file_name);
+            const fileUrl = p.file_path ? kerphPrintPlanFileUrl(p.file_path) : null;
+
+            box.innerHTML = `
+                <div class="modal-title">${escapeHtml(p.title)}</div>
+                <div class="stl-preview-box" id="stlPreviewContainer">
+                    ${isStl ? '<div class="stl-preview-hint">Drag to orbit</div>' : `<div class="stl-preview-unavailable">${p.license === 'link-only' ? 'Hosted on the original site — no in-app preview.' : 'In-browser preview is only available for .stl files.'}</div>`}
+                </div>
+                <div class="plan-view-meta">
+                    <div><strong>Category:</strong> ${CATEGORY_LABELS[p.category] || 'Other'}</div>
+                    <div><strong>License:</strong> ${LICENSE_LABELS[p.license] || p.license}</div>
+                    <div><strong>Shared by:</strong> ${escapeHtml(p.author || 'Anonymous')}</div>
+                </div>
+                ${p.description ? `<div class="plan-view-desc">${escapeHtml(p.description)}</div>` : ''}
+                <div class="modal-actions">
+                    ${p.license === 'link-only'
+                        ? `<a href="${escapeHtml(p.source_url)}" target="_blank" rel="noopener noreferrer" class="mini-btn modal-primary-btn" style="text-align:center; text-decoration:none;">View Original Plan &rarr;</a>`
+                        : `<button type="button" class="mini-btn modal-primary-btn" id="downloadPlanBtn">&#11015;&#65039; Download</button>`}
+                    ${isSignedIn() && kerphGetCachedUser().id === p.user_id ? '<button type="button" class="mini-btn danger" id="deletePlanBtn">Delete</button>' : ''}
+                    <button type="button" class="mini-btn" id="closePlanViewBtn">Close</button>
+                </div>
+            `;
+            document.getElementById('planViewOverlay').style.display = 'flex';
+            document.getElementById('closePlanViewBtn').addEventListener('click', () => {
+                document.getElementById('planViewOverlay').style.display = 'none';
+                disposeStlPreview();
+            });
+
+            const downloadBtn = document.getElementById('downloadPlanBtn');
+            if (downloadBtn) {
+                downloadBtn.addEventListener('click', async () => {
+                    await kerphIncrementPrintPlanDownloads(p.id);
+                    p.downloads_count = (p.downloads_count || 0) + 1;
+                    window.open(fileUrl, '_blank', 'noopener,noreferrer');
+                });
+            }
+            const deleteBtn = document.getElementById('deletePlanBtn');
+            if (deleteBtn) {
+                deleteBtn.addEventListener('click', async () => {
+                    if (!confirm('Delete this shared plan permanently?')) return;
+                    await kerphDeletePrintPlan(p.id, p.file_path);
+                    allPlans = allPlans.filter(x => x.id !== p.id);
+                    document.getElementById('planViewOverlay').style.display = 'none';
+                    disposeStlPreview();
+                    renderLibraryGrid();
+                    showToast('Plan deleted.');
+                });
+            }
+
+            if (isStl && fileUrl) {
+                requestAnimationFrame(() => {
+                    const container = document.getElementById('stlPreviewContainer');
+                    if (container) initStlPreview(container, fileUrl);
+                });
+            }
+        }
+
+        function toggleLicenseFields() {
+            const license = document.getElementById('planLicenseSelect').value;
+            const isLinkOnly = license === 'link-only';
+            document.getElementById('fileUploadFields').style.display = isLinkOnly ? 'none' : 'block';
+            document.getElementById('sourceUrlFields').style.display = isLinkOnly ? 'block' : 'none';
+        }
+
+        function openShareModal() {
+            if (!isSignedIn()) { showToast('Sign in (top right) to share a plan.'); return; }
+            document.getElementById('planTitleInput').value = '';
+            document.getElementById('planDescInput').value = '';
+            document.getElementById('planCategorySelect').value = 'jig';
+            document.getElementById('planLicenseSelect').value = 'own';
+            document.getElementById('planSourceUrlInput').value = '';
+            document.getElementById('planFileNameLabel').textContent = 'No file chosen';
+            pendingFilePath = null;
+            pendingFileName = null;
+            toggleLicenseFields();
+            document.getElementById('planModalOverlay').style.display = 'flex';
+        }
+        document.getElementById('sharePlanBtn').addEventListener('click', openShareModal);
+        document.getElementById('planCancelBtn').addEventListener('click', () => { document.getElementById('planModalOverlay').style.display = 'none'; });
+        document.getElementById('planLicenseSelect').addEventListener('change', toggleLicenseFields);
+
+        document.getElementById('planFileBtn').addEventListener('click', () => document.getElementById('planFileInput').click());
+        document.getElementById('planFileInput').addEventListener('change', async () => {
+            const file = document.getElementById('planFileInput').files[0];
+            if (!file) return;
+            document.getElementById('planFileNameLabel').textContent = 'Uploading...';
+            const { data, error } = await kerphUploadPrintPlanFile(file);
+            if (error) { showToast(error.message || 'Could not upload file.'); document.getElementById('planFileNameLabel').textContent = 'No file chosen'; return; }
+            pendingFilePath = data.path;
+            pendingFileName = data.fileName;
+            document.getElementById('planFileNameLabel').textContent = data.fileName;
         });
 
-        populateCategorySelects();
-        initReviewModal();
-        document.getElementById('reviewSearchInput').addEventListener('input', renderReviews);
-        document.getElementById('reviewCategoryFilter').addEventListener('change', renderReviews);
-        document.getElementById('reviewSortSelect').addEventListener('change', renderReviews);
+        document.getElementById('planSaveBtn').addEventListener('click', async () => {
+            const title = document.getElementById('planTitleInput').value.trim();
+            if (!title) { showToast('Give this plan a title.'); return; }
+            const license = document.getElementById('planLicenseSelect').value;
+            const category = document.getElementById('planCategorySelect').value;
+            const description = document.getElementById('planDescInput').value.trim();
+
+            let sourceUrl = null;
+            if (license === 'link-only') {
+                sourceUrl = document.getElementById('planSourceUrlInput').value.trim();
+                if (!sourceUrl) { showToast('Add a link to the original plan.'); return; }
+            } else if (!pendingFilePath) {
+                showToast('Choose a plan file, or switch the license to "Found elsewhere" to link out instead.');
+                return;
+            }
+
+            const { data, error } = await kerphCreatePrintPlan({
+                title, description, category, license,
+                sourceUrl, filePath: pendingFilePath, fileName: pendingFileName
+            });
+            if (error) { showToast(error.message || 'Could not share this plan.'); return; }
+            allPlans.unshift(data);
+            renderLibraryGrid();
+            document.getElementById('planModalOverlay').style.display = 'none';
+            showToast('Plan shared with the library.');
+        });
+
+        document.getElementById('planSearchInput').addEventListener('input', renderLibraryGrid);
+        document.getElementById('categoryFilterSelect').addEventListener('change', renderLibraryGrid);
+
+        async function initLibrary() {
+            const { data } = await kerphLoadPrintPlans();
+            allPlans = data || [];
+            renderLibraryGrid();
+        }
+
+        kerphAuthReady.then(async () => {
+            initHeaderSignIn();
+            initAccountPanel();
+            await initLibrary();
+        });
     </script>
 </body>
 </html>

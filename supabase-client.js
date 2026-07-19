@@ -266,6 +266,17 @@
     const kerphUpdateSavedProject = savedProjectsDomain.update;
     const kerphDeleteSavedProject = savedProjectsDomain.del;
 
+    function rowToQuote(row) {
+        return { ...row.data, id: row.id, name: row.name, savedAt: row.updated_at };
+    }
+    const quotesDomain = makeNamedSaveDomain('quotes', rowToQuote, (quote) => ({
+        name: quote.name, data: quote
+    }));
+    const kerphLoadQuotes = quotesDomain.load;
+    const kerphInsertQuote = quotesDomain.insert;
+    const kerphUpdateQuote = quotesDomain.update;
+    const kerphDeleteQuote = quotesDomain.del;
+
     /* ---------- Shop Showcase: real multi-user content + Storage-backed photos ---------- */
 
     // Same downscale logic as kerphDownscaleImage but resolves a Blob (for direct Storage
@@ -354,6 +365,110 @@
             return { error };
         }
         const { error } = await kerphSupabase.from('showcase_likes').insert({ post_id: postId, user_id: state.user.id });
+        return { error };
+    }
+
+    /* ---------- Portfolio: permanent per-project pages, tied into Shop Showcase ---------- */
+
+    async function kerphUploadPortfolioPhoto(file) {
+        if (!state.user) return { data: null, error: { message: 'Not signed in.' } };
+        const blob = await kerphDownscaleImageToBlob(file, 1200, 0.85);
+        const path = `${state.user.id}/${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}.jpg`;
+        const { error } = await kerphSupabase.storage.from('portfolio-photos').upload(path, blob, { contentType: 'image/jpeg' });
+        if (error) return { data: null, error };
+        return { data: { path }, error: null };
+    }
+
+    function kerphPortfolioImageUrl(path) {
+        if (!path) return null;
+        return kerphSupabase.storage.from('portfolio-photos').getPublicUrl(path).data.publicUrl;
+    }
+
+    // Own projects (any visibility) — for the "manage my portfolio" view.
+    async function kerphLoadMyPortfolioProjects() {
+        if (!state.user) return { data: [], error: null };
+        const { data, error } = await kerphSupabase.from('portfolio_projects')
+            .select('*').eq('user_id', state.user.id).order('created_at', { ascending: false });
+        return { data: data || [], error };
+    }
+
+    // Another user's PUBLIC projects only — RLS also enforces this server-side, this
+    // client-side filter just avoids ever asking for private rows in the first place.
+    async function kerphLoadPublicPortfolio(userId) {
+        const { data, error } = await kerphSupabase.from('portfolio_projects')
+            .select('*').eq('user_id', userId).eq('is_public', true).order('created_at', { ascending: false });
+        return { data: data || [], error };
+    }
+
+    async function kerphCreatePortfolioProject(project) {
+        if (!state.user) return { data: null, error: { message: 'Not signed in.' } };
+        return kerphSupabase.from('portfolio_projects').insert({
+            user_id: state.user.id,
+            title: project.title, description: project.description || null,
+            materials: project.materials || null, finish: project.finish || null,
+            plan_source: project.planSource || null,
+            cover_path: project.coverPath || null, gallery_paths: project.galleryPaths || [],
+            is_public: project.isPublic !== false
+        }).select().single();
+    }
+
+    async function kerphUpdatePortfolioProject(id, project) {
+        if (!state.user) return { data: null, error: { message: 'Not signed in.' } };
+        return kerphSupabase.from('portfolio_projects').update({
+            title: project.title, description: project.description || null,
+            materials: project.materials || null, finish: project.finish || null,
+            plan_source: project.planSource || null,
+            cover_path: project.coverPath || null, gallery_paths: project.galleryPaths || [],
+            is_public: project.isPublic !== false,
+            updated_at: new Date().toISOString()
+        }).eq('id', id).eq('user_id', state.user.id).select().single();
+    }
+
+    async function kerphDeletePortfolioProject(id, photoPaths) {
+        if (photoPaths && photoPaths.length) await kerphSupabase.storage.from('portfolio-photos').remove(photoPaths);
+        const { error } = await kerphSupabase.from('portfolio_projects').delete().eq('id', id).eq('user_id', state.user.id);
+        return { error };
+    }
+
+    /* ---------- 3D-Print Plans Library: shared, searchable printable jigs/fixtures ---------- */
+
+    async function kerphUploadPrintPlanFile(file) {
+        if (!state.user) return { data: null, error: { message: 'Not signed in.' } };
+        const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+        const path = `${state.user.id}/${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}_${safeName}`;
+        const { error } = await kerphSupabase.storage.from('print-plans').upload(path, file);
+        if (error) return { data: null, error };
+        return { data: { path, fileName: file.name }, error: null };
+    }
+
+    function kerphPrintPlanFileUrl(path) {
+        if (!path) return null;
+        return kerphSupabase.storage.from('print-plans').getPublicUrl(path).data.publicUrl;
+    }
+
+    async function kerphLoadPrintPlans() {
+        const { data, error } = await kerphSupabase.from('print_plans').select('*').order('created_at', { ascending: false });
+        return { data: data || [], error };
+    }
+
+    async function kerphCreatePrintPlan({ title, description, category, license, sourceUrl, filePath, fileName }) {
+        if (!state.user) return { data: null, error: { message: 'Not signed in.' } };
+        const author = (kerphGetCachedProfile().username || '').trim() || 'Anonymous';
+        return kerphSupabase.from('print_plans').insert({
+            user_id: state.user.id, title, description: description || null,
+            category, license, source_url: sourceUrl || null,
+            file_path: filePath || null, file_name: fileName || null, author
+        }).select().single();
+    }
+
+    async function kerphDeletePrintPlan(id, filePath) {
+        if (filePath) await kerphSupabase.storage.from('print-plans').remove([filePath]);
+        const { error } = await kerphSupabase.from('print_plans').delete().eq('id', id).eq('user_id', state.user.id);
+        return { error };
+    }
+
+    async function kerphIncrementPrintPlanDownloads(id) {
+        const { error } = await kerphSupabase.rpc('increment_print_plan_downloads', { plan_id: id });
         return { error };
     }
 
@@ -514,6 +629,11 @@
     window.kerphUpdateSavedProject = kerphUpdateSavedProject;
     window.kerphDeleteSavedProject = kerphDeleteSavedProject;
 
+    window.kerphLoadQuotes = kerphLoadQuotes;
+    window.kerphInsertQuote = kerphInsertQuote;
+    window.kerphUpdateQuote = kerphUpdateQuote;
+    window.kerphDeleteQuote = kerphDeleteQuote;
+
     window.kerphDownscaleImageToBlob = kerphDownscaleImageToBlob;
     window.kerphUploadShowcasePhoto = kerphUploadShowcasePhoto;
     window.kerphShowcaseImageUrl = kerphShowcaseImageUrl;
@@ -523,6 +643,21 @@
     window.kerphAddShowcaseComment = kerphAddShowcaseComment;
     window.kerphLoadMyShowcaseLikes = kerphLoadMyShowcaseLikes;
     window.kerphToggleShowcaseLike = kerphToggleShowcaseLike;
+
+    window.kerphUploadPortfolioPhoto = kerphUploadPortfolioPhoto;
+    window.kerphPortfolioImageUrl = kerphPortfolioImageUrl;
+    window.kerphLoadMyPortfolioProjects = kerphLoadMyPortfolioProjects;
+    window.kerphLoadPublicPortfolio = kerphLoadPublicPortfolio;
+    window.kerphCreatePortfolioProject = kerphCreatePortfolioProject;
+    window.kerphUpdatePortfolioProject = kerphUpdatePortfolioProject;
+    window.kerphDeletePortfolioProject = kerphDeletePortfolioProject;
+
+    window.kerphUploadPrintPlanFile = kerphUploadPrintPlanFile;
+    window.kerphPrintPlanFileUrl = kerphPrintPlanFileUrl;
+    window.kerphLoadPrintPlans = kerphLoadPrintPlans;
+    window.kerphCreatePrintPlan = kerphCreatePrintPlan;
+    window.kerphDeletePrintPlan = kerphDeletePrintPlan;
+    window.kerphIncrementPrintPlanDownloads = kerphIncrementPrintPlanDownloads;
 
     window.kerphLoadToolReviews = kerphLoadToolReviews;
     window.kerphCreateToolReview = kerphCreateToolReview;

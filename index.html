@@ -456,6 +456,7 @@
             color: #1e3a8a;
             font-weight: 700;
             border-radius: 6px;
+            border-bottom: 2px solid #1e3a8a;
         }
         .category-header::-webkit-details-marker { display: none; }
         .category-header:hover { background-color: #eef2ff; }
@@ -894,6 +895,51 @@
         .header-quick-links a { color: #6b7280; font-weight: 600; text-decoration: none; }
         .header-quick-links a:hover { color: #1e3a8a; text-decoration: underline; }
         .header-quick-links-sep { color: #cbd5e1; }
+
+        /* ---------- SHOP JIGS DROPDOWN ---------- */
+        .jigs-dropdown { position: relative; }
+        .jigs-dropdown-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            font-weight: 700;
+            color: #ffffff;
+            background-color: #1e3a8a;
+            padding: 9px 14px;
+            border: none;
+            border-radius: 999px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .jigs-dropdown-btn:hover { background-color: #172d68; }
+        .jigs-dropdown-caret { font-size: 9px; transition: transform 0.15s ease; }
+        .jigs-dropdown.open .jigs-dropdown-caret { transform: rotate(180deg); }
+        .jigs-dropdown-menu {
+            display: none;
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 0;
+            background-color: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            box-shadow: 0 12px 30px -8px rgba(15, 23, 42, 0.3);
+            padding: 6px;
+            min-width: 210px;
+            z-index: 500;
+        }
+        .jigs-dropdown.open .jigs-dropdown-menu { display: block; }
+        .jigs-dropdown-menu a {
+            display: block;
+            padding: 8px 10px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #1e293b;
+            text-decoration: none;
+        }
+        .jigs-dropdown-menu a:hover { background-color: #eef2ff; color: #1e3a8a; }
+        .jigs-dropdown-menu-sep { height: 1px; background-color: #e2e8f0; margin: 5px 2px; }
     </style>
 </head>
 <body>
@@ -912,11 +958,28 @@
                 <option value="dust-collection.html">Dust Collection</option>
                 <option value="project-designer.html">Project Designer</option>
                 <option value="cutlist-optimizer.html">Cut List Optimizer</option>
+                <option value="quote-builder.html">Quote Builder</option>
                 <option value="find-a-builder.html">Find a Builder</option>
                 <option value="shop-3d-viewer.html">3D Shop Viewer</option>
                 <option value="tool-reviews.html">Cool Tool Reviews</option>
                 <option value="shop-showcase.html">Shop Showcase</option>
+                <option value="portfolio.html">Portfolio</option>
+                <option value="print-library.html">3D Print Library</option>
             </select>
+            <div class="jigs-dropdown" id="jigsDropdown">
+                <button type="button" class="jigs-dropdown-btn" id="jigsDropdownBtn">Shop Jigs <span class="jigs-dropdown-caret">&#9662;</span></button>
+                <div class="jigs-dropdown-menu">
+                    <a href="shop-jigs-fraction-converter.html">Fraction Converter</a>
+                    <a href="shop-jigs-add-fractions.html">Add Fractions</a>
+                    <a href="shop-jigs-board-feet.html">Board Foot Calculator</a>
+                    <a href="shop-jigs-angle-chart.html">Polygon Angle Chart</a>
+                    <a href="shop-jigs-wood-movement.html">Wood Movement Calculator</a>
+                    <a href="shop-jigs-speeds-feeds.html">Speeds &amp; Feeds</a>
+                    <a href="shop-jigs-sharpening-angles.html">Sharpening Angle Chart</a>
+                    <div class="jigs-dropdown-menu-sep"></div>
+                    <a href="shop-jigs.html">All Shop Jigs &rarr;</a>
+                </div>
+            </div>
         </div>
 
         <div class="plan-badge-group">
@@ -985,7 +1048,7 @@
                         <option value="premier">Premier</option>
                     </select>
                 </div>
-                <div class="account-plan-upsell" id="accountPlanUpsell" style="display:none;">Saved layouts, custom shapes, cabinetry, and more unlock on Pro.</div>
+                <div class="account-plan-upsell" id="accountPlanUpsell" style="display:none;">Free includes 1 saved shop layout; custom shop shapes and unlimited saves unlock on Pro.</div>
             </div>
 
             <div class="header-field" style="width:100%; margin-top:10px;">
@@ -1157,17 +1220,23 @@
                 <div class="tool-card-desc">Share photos of your shop layout and browse everyone else's for inspiration.</div>
             </a>
 
-            <a href="help.html" class="tool-card">
-                <div class="tool-card-icon">&#10067;</div>
-                <div class="tool-card-title">Trouble with the Kerph <span class="badge-new">New</span></div>
-                <div class="tool-card-desc">Step-by-step walkthroughs for the trickier parts of the app, starting with dust collection port snapping.</div>
+            <a href="portfolio.html" class="tool-card">
+                <div class="tool-card-icon">&#128188;</div>
+                <div class="tool-card-title">Portfolio <span class="badge-new">New</span></div>
+                <div class="tool-card-desc">A permanent, shareable page for everything you've built — pull from Project Designer or upload photos and plans from anywhere.</div>
             </a>
 
-            <div class="tool-card tool-card-placeholder">
-                <div class="tool-card-icon">&#128736;</div>
-                <div class="tool-card-title">More tools <span class="badge-soon">Coming soon</span></div>
-                <div class="tool-card-desc">This page is set up to grow — new tools will show up here as they're built.</div>
-            </div>
+            <a href="quote-builder.html" class="tool-card">
+                <div class="tool-card-icon">&#129309;</div>
+                <div class="tool-card-title">Quote builder <span class="badge-new">New</span></div>
+                <div class="tool-card-desc">Turn a cut list into a real client quote — materials, labor, overhead, and margin, exported as a PDF.</div>
+            </a>
+
+            <a href="print-library.html" class="tool-card">
+                <div class="tool-card-icon">&#128230;</div>
+                <div class="tool-card-title">3D print library <span class="badge-new">New</span></div>
+                <div class="tool-card-desc">Browse printable jigs and fixtures with an in-browser 3D preview, or share your own designs.</div>
+            </a>
         </div>
     </main>
 
@@ -2354,6 +2423,23 @@
         });
 
         document.getElementById('pageNavSelect').addEventListener('change', (e) => { window.location.href = e.target.value; });
+
+        // Standalone header dropdown (not folded into pageNavSelect) so Shop Jigs' four
+        // tools are one click away from every page instead of being buried as just another
+        // option in a 9-item combobox.
+        function initJigsDropdown() {
+            const dropdown = document.getElementById('jigsDropdown');
+            const btn = document.getElementById('jigsDropdownBtn');
+            if (!dropdown || !btn) return;
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                dropdown.classList.toggle('open');
+            });
+            document.addEventListener('click', (e) => {
+                if (!dropdown.contains(e.target)) dropdown.classList.remove('open');
+            });
+        }
+        initJigsDropdown();
 
         // Waits for the first real auth state (session restored, or confirmed signed-out)
         // before wiring/rendering anything sign-in-dependent, so an actually-signed-in user

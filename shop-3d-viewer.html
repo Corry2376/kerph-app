@@ -351,6 +351,51 @@
         .header-quick-links a { color: #6b7280; font-weight: 600; text-decoration: none; }
         .header-quick-links a:hover { color: #1e3a8a; text-decoration: underline; }
         .header-quick-links-sep { color: #cbd5e1; }
+
+        /* ---------- SHOP JIGS DROPDOWN ---------- */
+        .jigs-dropdown { position: relative; }
+        .jigs-dropdown-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            font-weight: 700;
+            color: #ffffff;
+            background-color: #1e3a8a;
+            padding: 9px 14px;
+            border: none;
+            border-radius: 999px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .jigs-dropdown-btn:hover { background-color: #172d68; }
+        .jigs-dropdown-caret { font-size: 9px; transition: transform 0.15s ease; }
+        .jigs-dropdown.open .jigs-dropdown-caret { transform: rotate(180deg); }
+        .jigs-dropdown-menu {
+            display: none;
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 0;
+            background-color: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            box-shadow: 0 12px 30px -8px rgba(15, 23, 42, 0.3);
+            padding: 6px;
+            min-width: 210px;
+            z-index: 500;
+        }
+        .jigs-dropdown.open .jigs-dropdown-menu { display: block; }
+        .jigs-dropdown-menu a {
+            display: block;
+            padding: 8px 10px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #1e293b;
+            text-decoration: none;
+        }
+        .jigs-dropdown-menu a:hover { background-color: #eef2ff; color: #1e3a8a; }
+        .jigs-dropdown-menu-sep { height: 1px; background-color: #e2e8f0; margin: 5px 2px; }
     </style>
 </head>
 <body>
@@ -369,11 +414,28 @@
                 <option value="dust-collection.html">Dust Collection</option>
                 <option value="project-designer.html">Project Designer</option>
                 <option value="cutlist-optimizer.html">Cut List Optimizer</option>
+                <option value="quote-builder.html">Quote Builder</option>
                 <option value="find-a-builder.html">Find a Builder</option>
                 <option value="shop-3d-viewer.html" selected>3D Shop Viewer</option>
                 <option value="tool-reviews.html">Cool Tool Reviews</option>
                 <option value="shop-showcase.html">Shop Showcase</option>
+                <option value="portfolio.html">Portfolio</option>
+                <option value="print-library.html">3D Print Library</option>
             </select>
+            <div class="jigs-dropdown" id="jigsDropdown">
+                <button type="button" class="jigs-dropdown-btn" id="jigsDropdownBtn">Shop Jigs <span class="jigs-dropdown-caret">&#9662;</span></button>
+                <div class="jigs-dropdown-menu">
+                    <a href="shop-jigs-fraction-converter.html">Fraction Converter</a>
+                    <a href="shop-jigs-add-fractions.html">Add Fractions</a>
+                    <a href="shop-jigs-board-feet.html">Board Foot Calculator</a>
+                    <a href="shop-jigs-angle-chart.html">Polygon Angle Chart</a>
+                    <a href="shop-jigs-wood-movement.html">Wood Movement Calculator</a>
+                    <a href="shop-jigs-speeds-feeds.html">Speeds &amp; Feeds</a>
+                    <a href="shop-jigs-sharpening-angles.html">Sharpening Angle Chart</a>
+                    <div class="jigs-dropdown-menu-sep"></div>
+                    <a href="shop-jigs.html">All Shop Jigs &rarr;</a>
+                </div>
+            </div>
         </div>
         <div class="plan-badge-group">
             <div class="header-sign-in" id="headerSignIn">
@@ -437,7 +499,7 @@
                         <option value="premier">Premier</option>
                     </select>
                 </div>
-                <div class="account-plan-upsell" id="accountPlanUpsell" style="display:none;">Saved layouts, custom shapes, cabinetry, and more unlock on Pro.</div>
+                <div class="account-plan-upsell" id="accountPlanUpsell" style="display:none;">Free includes 1 saved shop layout; custom shop shapes and unlimited saves unlock on Pro.</div>
             </div>
 
             <div class="header-field" style="width:100%; margin-top:14px;">
@@ -539,6 +601,7 @@
         import * as THREE from 'three';
         import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
         import { TransformControls } from 'three/addons/controls/TransformControls.js';
+        import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
         /* ---------- SHARED HEADER / ACCOUNT (same pattern as every other page) ---------- */
         const PLAN_KEY = 'kerphPlan';
@@ -902,6 +965,43 @@
             cabinetHandle: 0xe8ddc8
         };
 
+        // Per-accent-color PBR hints (roughness/metalness) so the same handful of reused
+        // COLORS constants render as the material they're standing in for — brushed steel,
+        // cast iron, brass, painted sheet metal, wood laminate, plastic — instead of every
+        // single part sharing MeshStandardMaterial's flat default (roughness 1, metalness 0).
+        // Looked up by color value in addPart/addCylinderPart, so this is the one place to
+        // tune a material's "feel" rather than touching every call site that uses it.
+        const MATERIAL_HINTS = {
+            [COLORS.toolAccentMetal]: { roughness: 0.28, metalness: 0.85 },   // brushed aluminum/steel trim
+            [COLORS.toolAccentBlade]: { roughness: 0.32, metalness: 0.75 },   // dark cast-steel blade/bit
+            [COLORS.toolAccentDark]: { roughness: 0.55, metalness: 0.4 },     // painted steel legs/frame
+            [COLORS.cabinetAccentDark]: { roughness: 0.72, metalness: 0.04 }, // darker wood trim
+            [COLORS.cabinetHandle]: { roughness: 0.35, metalness: 0.7 },      // brushed pull handle
+            [COLORS.tool]: { roughness: 0.7, metalness: 0.12 },               // painted sheet-metal body
+            [COLORS.cabinet]: { roughness: 0.82, metalness: 0.03 },           // wood/laminate body
+            // COLORS.duct is intentionally NOT keyed here — it's the same 0x94a3b8 value as
+            // COLORS.minisplitVent below, and object-literal keys collapse on collision (the
+            // later entry silently wins). Duct pipes pass their hint explicitly instead, at
+            // their one construction site in addToolMesh, to avoid depending on hex-value
+            // uniqueness across an unrelated part of COLORS.
+            [COLORS.dcDrop]: { roughness: 0.55, metalness: 0.1 },             // painted/plastic fitting
+            [COLORS.doorPanel]: { roughness: 0.75, metalness: 0.02 },
+            [COLORS.doorFrame]: { roughness: 0.7, metalness: 0.02 },
+            [COLORS.doorKnob]: { roughness: 0.22, metalness: 0.92 },          // polished brass
+            [COLORS.windowFrame]: { roughness: 0.65, metalness: 0.05 },
+            [COLORS.window]: { roughness: 0.06, metalness: 0.1 },             // glass pane
+            [COLORS.plate]: { roughness: 0.5, metalness: 0.1 },               // plastic cover plate
+            [COLORS.plateAccent]: { roughness: 0.35, metalness: 0.15 },       // plastic toggle/blades
+            [COLORS.panelBody]: { roughness: 0.45, metalness: 0.55 },         // electrical panel steel
+            [COLORS.panelDoor]: { roughness: 0.4, metalness: 0.6 },
+            [COLORS.panelHandle]: { roughness: 0.25, metalness: 0.85 },
+            [COLORS.minisplitBody]: { roughness: 0.45, metalness: 0.08 },     // white plastic housing
+            [COLORS.minisplitVent]: { roughness: 0.5, metalness: 0.35 },
+            [COLORS.wall]: { roughness: 0.92, metalness: 0 },
+            [COLORS.innerWall]: { roughness: 0.92, metalness: 0 }
+        };
+        const DEFAULT_MATERIAL_HINT = { roughness: 0.8, metalness: 0.05 };
+
         // Real-world default heights for wall features that don't carry stored height
         // data today (see the plan: only outlets store a real mountHeightIn). Also used
         // to decide where doors/windows leave a real gap in the wall (see
@@ -987,7 +1087,24 @@
             renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(canvasWrap.clientWidth, canvasWrap.clientHeight);
             renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+            // Soft shadows + filmic tone mapping are what actually separate "flat-lit CAD
+            // block" from "a room with real objects sitting in it" — everything else here
+            // (materials, lighting rig) is tuned assuming both of these are on.
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            renderer.toneMappingExposure = 1.05;
+            renderer.outputColorSpace = THREE.SRGBColorSpace;
             canvasWrap.appendChild(renderer.domElement);
+
+            // A generic indoor-room environment map, baked once and left on the scene for
+            // its whole lifetime (scene.environment survives clearScene()'s child-clearing —
+            // it's a scene property, not a child). Gives every MeshStandardMaterial a subtle,
+            // physically plausible reflection/ambient term instead of looking lit from a
+            // single flat direction with pitch-black reflections, at zero ongoing cost.
+            const pmremGenerator = new THREE.PMREMGenerator(renderer);
+            scene.environment = pmremGenerator.fromScene(new RoomEnvironment(), 0.04).texture;
+            pmremGenerator.dispose();
 
             controls = new OrbitControls(camera, renderer.domElement);
             controls.enableDamping = true;
@@ -1043,10 +1160,16 @@
             if (len < 0.03 || h < 0.03) return;
             const midT = (tStart + tEnd) / 2;
             const geo = new THREE.BoxGeometry(len, h, thicknessFt);
-            const mat = new THREE.MeshStandardMaterial({ color, transparent: true, opacity: 0.65 });
+            const mat = new THREE.MeshStandardMaterial({ color, transparent: true, opacity: 0.65, roughness: 0.92, metalness: 0 });
             const mesh = new THREE.Mesh(geo, mat);
             mesh.position.set(ax + dirX * midT, yBottom + h / 2, az + dirZ * midT);
             mesh.rotation.y = -Math.atan2(dirZ, dirX);
+            // Receives shadows from tools/fixtures near it (a floor lamp's shadow climbing
+            // the wall behind it, etc.) but doesn't cast its own — a translucent wall casting
+            // a fully opaque shadow (three.js shadow maps ignore material opacity) would look
+            // like a solid slab, undercutting the whole point of making walls see-through.
+            mesh.castShadow = false;
+            mesh.receiveShadow = true;
             scene.add(mesh);
         }
 
@@ -1139,6 +1262,40 @@
                 }
             });
             return best;
+        }
+
+        // A subtle procedural concrete-slab texture (speckle + faint control joints on a
+        // 4ft grid, matching typical real slab spacing) — generated once on a canvas and
+        // cached, since a flat solid color read as noticeably "renderer default gray" once
+        // real lighting/shadows were added elsewhere. Only .repeat changes per rebuild to
+        // match the current shop footprint; the pixels themselves never need regenerating.
+        let floorTextureCache = null;
+        function getFloorTexture(widthFt, lengthFt) {
+            if (!floorTextureCache) {
+                const size = 512;
+                const canvas = document.createElement('canvas');
+                canvas.width = size; canvas.height = size;
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = '#d7cdb8';
+                ctx.fillRect(0, 0, size, size);
+                for (let i = 0; i < 4000; i++) {
+                    const x = Math.random() * size, y = Math.random() * size;
+                    const a = Math.random() * 0.12;
+                    ctx.fillStyle = Math.random() > 0.5 ? `rgba(70,62,46,${a})` : `rgba(255,250,235,${a})`;
+                    ctx.fillRect(x, y, 1.4, 1.4);
+                }
+                ctx.strokeStyle = 'rgba(90, 80, 60, 0.16)';
+                ctx.lineWidth = 2;
+                for (let i = 1; i < 4; i++) {
+                    ctx.beginPath(); ctx.moveTo(0, (size * i) / 4); ctx.lineTo(size, (size * i) / 4); ctx.stroke();
+                    ctx.beginPath(); ctx.moveTo((size * i) / 4, 0); ctx.lineTo((size * i) / 4, size); ctx.stroke();
+                }
+                floorTextureCache = new THREE.CanvasTexture(canvas);
+                floorTextureCache.wrapS = floorTextureCache.wrapT = THREE.RepeatWrapping;
+                floorTextureCache.colorSpace = THREE.SRGBColorSpace;
+            }
+            floorTextureCache.repeat.set(Math.max(widthFt / 4, 1), Math.max(lengthFt / 4, 1));
+            return floorTextureCache;
         }
 
         // Custom rectangular grid (instead of THREE.GridHelper, which is always square)
@@ -1246,9 +1403,11 @@
                     const bottomFt = getDropBottomFt(pipeLen, ceilingFt);
                     const actualLen = topFt - bottomFt;
                     const geo = new THREE.CylinderGeometry(pipeRadius, pipeRadius, actualLen, 12);
-                    const mat = new THREE.MeshStandardMaterial({ color: COLORS.dcDrop });
+                    const mat = materialForColor(COLORS.dcDrop);
                     mesh = new THREE.Mesh(geo, mat);
                     mesh.position.set(centerX, bottomFt + actualLen / 2, centerZ);
+                    mesh.castShadow = true;
+                    mesh.receiveShadow = true;
 
                     // A 90-degree elbow at the top, where the drop actually meets the overhead
                     // run — without it the pipe just dead-ends in mid-air with nothing showing
@@ -1259,11 +1418,15 @@
                     const elbowGroup = new THREE.Group();
                     const knuckle = new THREE.Mesh(new THREE.SphereGeometry(pipeRadius * 1.35, 12, 10), mat);
                     knuckle.position.set(0, actualLen / 2, 0);
+                    knuckle.castShadow = true;
+                    knuckle.receiveShadow = true;
                     elbowGroup.add(knuckle);
                     const stubLen = pipeRadius * 5;
                     const stub = new THREE.Mesh(new THREE.CylinderGeometry(pipeRadius, pipeRadius, stubLen, 12), mat);
                     stub.rotation.z = Math.PI / 2;
                     stub.position.set(stubLen / 2, actualLen / 2, 0);
+                    stub.castShadow = true;
+                    stub.receiveShadow = true;
                     elbowGroup.add(stub);
                     elbowGroup.rotation.y = rotY;
                     mesh.add(elbowGroup);
@@ -1279,11 +1442,15 @@
                 }
                 const pipeLen = Math.max(wFt, hFt);
                 const geo = new THREE.CylinderGeometry(pipeRadius, pipeRadius, pipeLen, 12);
-                const mat = new THREE.MeshStandardMaterial({ color: COLORS.duct });
+                // Explicit hint (galvanized sheet duct) rather than a COLORS-value lookup —
+                // see the comment above MATERIAL_HINTS for why COLORS.duct can't be keyed there.
+                const mat = materialForColor(COLORS.duct, null, { roughness: 0.4, metalness: 0.6 });
                 mesh = new THREE.Mesh(geo, mat);
                 mesh.rotation.z = Math.PI / 2;
                 mesh.position.set(centerX, elevFt, centerZ);
                 mesh.rotation.y = rotY;
+                mesh.castShadow = true;
+                mesh.receiveShadow = true;
                 // Draggable in XZ only — elevation stays fixed since onDragMove never
                 // touches position.y. No port-snapping/duct-auto-reconnect parity with the
                 // 2D planner, see the plan.
@@ -1291,13 +1458,40 @@
                 mesh.userData.toolIndex = index;
             } else if (layer === 'lighting') {
                 const elevFt = physFt || (ceilingFt - 0.3);
-                const geo = new THREE.BoxGeometry(Math.max(wFt, 0.3), 0.15, Math.max(hFt, 0.3));
-                const mat = new THREE.MeshStandardMaterial({ color: COLORS.lighting, emissive: 0xfff3b0, emissiveIntensity: 0.7 });
+                const fixtureW = Math.max(wFt, 0.3), fixtureD = Math.max(hFt, 0.3);
+                const geo = new THREE.BoxGeometry(fixtureW, 0.15, fixtureD);
+                const mat = new THREE.MeshStandardMaterial({ color: COLORS.lighting, emissive: 0xfff3b0, emissiveIntensity: 0.85, roughness: 0.4, metalness: 0 });
                 mesh = new THREE.Mesh(geo, mat);
                 mesh.position.set(centerX, elevFt, centerZ);
                 mesh.rotation.y = rotY;
                 mesh.userData.draggable = true;
                 mesh.userData.toolIndex = index;
+                // A lit lens doesn't need to catch or throw shadows itself — it's the
+                // scene's light source, not something being lit.
+                mesh.castShadow = false;
+                mesh.receiveShadow = false;
+
+                // A thin housing frame just above the lens is what turns "flat glowing
+                // plate floating in midair" into "a real fixture" — parented to mesh (like
+                // the point light below) so getMeshHalfExtentsFt's drag/overlap math, which
+                // only ever reads the parent's own BoxGeometry, is unaffected by it.
+                const housingW = fixtureW * 1.08, housingD = fixtureD * 1.08;
+                const housing = new THREE.Mesh(new THREE.BoxGeometry(housingW, 0.05, housingD), materialForColor(COLORS.toolAccentDark));
+                housing.position.y = 0.1;
+                housing.castShadow = true;
+                housing.receiveShadow = true;
+                mesh.add(housing);
+
+                // Suspension rods from the ceiling down to the fixture, only when it's
+                // actually mounted with real drop below the ceiling — a flush/near-ceiling
+                // fixture (today's default) would otherwise show two disconnected stubs.
+                const dropFt = ceilingFt - elevFt;
+                if (dropFt > 0.5) {
+                    [[-housingW * 0.32, -housingD * 0.32], [housingW * 0.32, housingD * 0.32]].forEach(([rx, rz]) => {
+                        addCylinderPart(mesh, 0.015, dropFt, rx, dropFt / 2 + 0.12, rz, COLORS.toolAccentMetal);
+                    });
+                }
+
                 // Parented (unlike the label sprite) so it rides along during drag for free —
                 // safe here because THREE.Light has no .geometry, so unlike a mesh child it
                 // doesn't get picked up by selectMesh()'s BoxHelper bounding-box calculation.
@@ -1307,10 +1501,12 @@
             } else {
                 const boxH = physFt || 3;
                 const geo = new THREE.BoxGeometry(wFt, boxH, hFt);
-                const mat = new THREE.MeshStandardMaterial({ color: t.cabType ? COLORS.cabinet : COLORS.tool });
+                const mat = materialForColor(t.cabType ? COLORS.cabinet : COLORS.tool);
                 mesh = new THREE.Mesh(geo, mat);
                 mesh.position.set(centerX, boxH / 2, centerZ);
                 mesh.rotation.y = rotY;
+                mesh.castShadow = true;
+                mesh.receiveShadow = true;
                 // Only floor items (tools/cabinets) are draggable in Phase 2 — dust-collection
                 // and lighting stay elevation-positioned/read-only, see the plan.
                 mesh.userData.draggable = true;
@@ -1335,6 +1531,12 @@
                     // is invisible (unlike raycasting, which ignores .visible altogether), so
                     // mesh.visible = false would have silently hidden decoGroup too.
                     mesh.material.visible = false;
+                    // The invisible fallback box itself shouldn't cast a solid box-shaped
+                    // shadow underneath the decorated shape it's standing in for — every
+                    // decoGroup part already casts its own (real) shadow via addPart/
+                    // addCylinderPart's defaults.
+                    mesh.castShadow = false;
+                    mesh.receiveShadow = false;
                 }
 
             }
@@ -1362,12 +1564,25 @@
             return (adjust(r) << 16) | (adjust(g) << 8) | adjust(b);
         }
 
+        // Looks up the PBR hint for a color (see MATERIAL_HINTS) and builds the matching
+        // MeshStandardMaterial — the one spot every addPart/addCylinderPart call routes
+        // through, so tuning a color's "feel" there covers every part built from it.
+        function materialForColor(color, opacity, hintOverride) {
+            const hint = hintOverride || MATERIAL_HINTS[color] || DEFAULT_MATERIAL_HINT;
+            const opts = { color, roughness: hint.roughness, metalness: hint.metalness };
+            if (opacity != null) { opts.transparent = true; opts.opacity = opacity; }
+            return new THREE.MeshStandardMaterial(opts);
+        }
+
         function addPart(group, w, h, d, x, y, z, color, opacity) {
-            const mat = new THREE.MeshStandardMaterial(
-                opacity != null ? { color, transparent: true, opacity } : { color }
-            );
+            const mat = materialForColor(color, opacity);
             const mesh = new THREE.Mesh(new THREE.BoxGeometry(Math.max(w, 0.01), Math.max(h, 0.01), Math.max(d, 0.01)), mat);
             mesh.position.set(x, y, z);
+            // Glass panes (transparent, near-zero roughness) skip shadow casting — a
+            // window "casting" an opaque shadow reads worse than the small realism loss
+            // of it not blocking light at all; every solid part still casts+receives.
+            mesh.castShadow = opacity == null;
+            mesh.receiveShadow = true;
             group.add(mesh);
             return mesh;
         }
@@ -1375,14 +1590,18 @@
         // Same idea as addPart but for round details (wheels, columns, spindles, casters).
         // axis picks which local axis the cylinder's own height runs along before it's placed
         // ('y' — the geometry's native axis — is the default, e.g. a drill-press column).
-        function addCylinderPart(group, radius, height, x, y, z, color, axis) {
+        // segments defaults to 14 (matches the original fixed value) but a genuine circular
+        // silhouette seen edge-on close-up (a saw blade) wants more — pass a higher count.
+        function addCylinderPart(group, radius, height, x, y, z, color, axis, segments) {
             const mesh = new THREE.Mesh(
-                new THREE.CylinderGeometry(radius, radius, Math.max(height, 0.01), 14),
-                new THREE.MeshStandardMaterial({ color })
+                new THREE.CylinderGeometry(radius, radius, Math.max(height, 0.01), segments || 14),
+                materialForColor(color)
             );
             if (axis === 'x') mesh.rotation.z = Math.PI / 2;
             else if (axis === 'z') mesh.rotation.x = Math.PI / 2;
             mesh.position.set(x, y, z);
+            mesh.castShadow = true;
+            mesh.receiveShadow = true;
             group.add(mesh);
             return mesh;
         }
@@ -1485,8 +1704,17 @@
             if (category === 'Table Saws') {
                 addPart(group, wFt * 0.98, boxH * 0.06, hFt * 0.98, 0, boxH * 0.42, 0, body);
                 addLegs(0.15, 0.08, boxH * 0.39, -boxH / 2);
-                addPart(group, 0.04, boxH * 0.08, hFt * 0.7, 0, boxH * 0.46, 0, COLORS.toolAccentBlade);
+                // A real circular blade (most of the disc sits below the tabletop and is
+                // naturally occluded by it via normal depth testing — only the top arc pokes
+                // up through the slot) reads as an actual blade instead of the thin vertical
+                // slot-marker box this used to be. Higher segment count than the shared
+                // default since a round part this close to camera shows faceting otherwise.
+                const bladeRadius = Math.min(wFt, hFt) * 0.22;
+                addCylinderPart(group, bladeRadius, 0.035, 0, boxH * 0.36, 0, COLORS.toolAccentBlade, 'x', 28);
                 addPart(group, wFt * 0.9, 0.05, 0.05, 0, boxH * 0.46, hFt * 0.3, metal);
+                // Motor housing hanging below the table at the back — without it the blade
+                // reads as spinning on nothing.
+                addPart(group, wFt * 0.22, boxH * 0.18, hFt * 0.2, 0, -boxH * 0.02, -hFt * 0.3, dark);
             } else if (category === 'Bandsaws') {
                 addPart(group, wFt * 0.9, boxH * 0.25, hFt * 0.9, 0, -boxH * 0.375, 0, body);
                 addPart(group, wFt * 0.25, boxH * 0.9, hFt * 0.25, 0, 0, -hFt * 0.15, body);
@@ -1514,7 +1742,11 @@
                 addCylinderPart(group, Math.min(wFt, hFt) * 0.12, boxH * 0.85, -wFt * 0.15, 0, -hFt * 0.15, dark);
                 addPart(group, wFt * 0.5, 0.05, hFt * 0.5, -wFt * 0.15, -boxH * 0.05, 0, metal);
                 addPart(group, wFt * 0.4, boxH * 0.22, hFt * 0.35, -wFt * 0.15, boxH * 0.35, -hFt * 0.1, body);
-                addCylinderPart(group, 0.05, boxH * 0.15, -wFt * 0.15, boxH * 0.18, 0.05, COLORS.toolAccentBlade);
+                addCylinderPart(group, 0.05, boxH * 0.15, -wFt * 0.15, boxH * 0.18, 0.05, COLORS.toolAccentBlade, 'y', 16);
+                // Chuck — a short wider metal cylinder right where the bit meets the quill —
+                // is what makes the thin bit read as "held by a drill press" instead of a
+                // rod just floating below the head with nothing gripping it.
+                addCylinderPart(group, 0.09, boxH * 0.08, -wFt * 0.15, boxH * 0.295, 0.05, metal, 'y', 16);
             } else if (category === 'Turning') {
                 addPart(group, wFt * 0.9, boxH * 0.15, hFt * 0.35, 0, -boxH * 0.1, 0, body);
                 addPart(group, wFt * 0.22, boxH * 0.35, hFt * 0.45, -wFt * 0.35, boxH * 0.08, 0, body);
@@ -1534,7 +1766,10 @@
                 addPart(group, wFt * 0.95, boxH * 0.08, hFt * 0.6, 0, -boxH * 0.05, 0, body);
                 addPart(group, wFt * 0.95, boxH * 0.25, 0.06, 0, boxH * 0.13, -hFt * 0.28, metal);
                 addPart(group, wFt * 0.12, boxH * 0.35, hFt * 0.15, 0, boxH * 0.25, -hFt * 0.15, dark);
-                addCylinderPart(group, hFt * 0.18, 0.04, 0, boxH * 0.42, -hFt * 0.1, COLORS.toolAccentBlade, 'z');
+                // A real disc, same axis convention as the table saw blade (kerf runs along
+                // the fence direction, flat face visible from the side) instead of the old
+                // flat-facing-front disc, at a higher segment count for a clean circular edge.
+                addCylinderPart(group, hFt * 0.18, 0.04, 0, boxH * 0.42, -hFt * 0.1, COLORS.toolAccentBlade, 'x', 24);
             } else if (category === 'CNC & Digital Fab') {
                 addPart(group, wFt * 0.92, boxH * 0.6, hFt * 0.92, 0, -boxH * 0.05, 0, body);
                 addPart(group, wFt * 0.92, 0.06, hFt * 0.15, 0, boxH * 0.42, -hFt * 0.35, metal);
@@ -1557,8 +1792,8 @@
                 // drum with a smaller motor/filter housing on top and a side inlet stub where
                 // the ductwork connects in, so they read as a collector rather than a plain box.
                 const r = Math.min(wFt, hFt) * 0.42;
-                addCylinderPart(group, r, boxH * 0.62, 0, -boxH * 0.19, 0, body);
-                addCylinderPart(group, r * 0.62, boxH * 0.34, 0, boxH * 0.29, 0, dark);
+                addCylinderPart(group, r, boxH * 0.62, 0, -boxH * 0.19, 0, body, 'y', 22);
+                addCylinderPart(group, r * 0.62, boxH * 0.34, 0, boxH * 0.29, 0, dark, 'y', 22);
                 const stubLen = Math.min(wFt, hFt) * 0.3;
                 addCylinderPart(group, r * 0.16, stubLen, r + stubLen / 2, -boxH * 0.05, 0, metal, 'x');
             }
@@ -1586,6 +1821,8 @@
                 new THREE.MeshBasicMaterial()
             );
             hitMesh.visible = false;
+            hitMesh.castShadow = false;
+            hitMesh.receiveShadow = false;
             hitMesh.position.set(xFt, centerY, zFt);
             hitMesh.rotation.y = angleRad;
             hitMesh.userData = {
@@ -1633,16 +1870,52 @@
             currentShopLengthFt = lengthFt;
 
             scene.background = new THREE.Color(0xdbe6f2);
-            scene.add(new THREE.AmbientLight(0xffffff, 0.55));
-            const dirLight = new THREE.DirectionalLight(0xffffff, 0.7);
-            dirLight.position.set(widthFt * 0.3, ceilingFt * 4, lengthFt * 0.7);
+
+            // Sky/ground hemisphere replaces the old flat white AmbientLight — it gives
+            // upward-facing surfaces a cool sky tint and downward-facing ones a warm floor
+            // bounce instead of every surface receiving identical flat fill light.
+            scene.add(new THREE.HemisphereLight(0xdbe6f2, 0x8a7d5c, 0.6));
+
+            // Key light: a real shadow-casting sun. Its shadow camera frustum is sized to
+            // the current shop's footprint each rebuild (buildScene starts from clearScene(),
+            // so the light itself is recreated every time — sizing it here instead of once
+            // keeps the shadow resolution tight/sharp instead of using a fixed frustum big
+            // enough for the largest possible shop and wasting resolution on small ones).
+            const dirLight = new THREE.DirectionalLight(0xfff3e0, 2.4);
+            const sunDist = Math.max(widthFt, lengthFt, ceilingFt) * 1.4;
+            dirLight.position.set(widthFt * 0.5 + sunDist * 0.5, ceilingFt + sunDist, lengthFt * 0.5 + sunDist * 0.35);
+            dirLight.target.position.set(widthFt / 2, 0, lengthFt / 2);
+            scene.add(dirLight.target);
+            dirLight.castShadow = true;
+            dirLight.shadow.mapSize.set(2048, 2048);
+            const shadowMargin = Math.max(widthFt, lengthFt) * 0.15 + 2;
+            const shadowHalfSize = Math.max(widthFt, lengthFt) / 2 + shadowMargin;
+            dirLight.shadow.camera.left = -shadowHalfSize;
+            dirLight.shadow.camera.right = shadowHalfSize;
+            dirLight.shadow.camera.top = shadowHalfSize;
+            dirLight.shadow.camera.bottom = -shadowHalfSize;
+            dirLight.shadow.camera.near = 1;
+            dirLight.shadow.camera.far = sunDist * 2.5;
+            dirLight.shadow.bias = -0.0015;
+            dirLight.shadow.normalBias = 0.02;
             scene.add(dirLight);
 
+            // Soft fill from the opposite side, no shadow of its own — without this the
+            // key light's shadow side reads as pure black-ish instead of gently shaded, since
+            // there's no bounce light in a synthetic scene to fill it in naturally.
+            const fillLight = new THREE.DirectionalLight(0xcfe0ff, 0.55);
+            fillLight.position.set(-sunDist * 0.4, ceilingFt * 2, -sunDist * 0.2);
+            scene.add(fillLight);
+
             const floorGeo = new THREE.PlaneGeometry(widthFt, lengthFt);
-            const floorMat = new THREE.MeshStandardMaterial({ color: COLORS.floor, side: THREE.DoubleSide });
+            const floorMat = new THREE.MeshStandardMaterial({
+                color: COLORS.floor, side: THREE.DoubleSide, roughness: 0.88, metalness: 0.02,
+                map: getFloorTexture(widthFt, lengthFt)
+            });
             const floor = new THREE.Mesh(floorGeo, floorMat);
             floor.rotation.x = -Math.PI / 2;
             floor.position.set(widthFt / 2, 0, lengthFt / 2);
+            floor.receiveShadow = true;
             scene.add(floor);
 
             const grid = buildFloorGrid(widthFt, lengthFt);
@@ -2239,6 +2512,23 @@
         kerphOnVisible(loadSharedLayout);
 
         document.getElementById('pageNavSelect').addEventListener('change', (e) => { window.location.href = e.target.value; });
+
+        // Standalone header dropdown (not folded into pageNavSelect) so Shop Jigs' four
+        // tools are one click away from every page instead of being buried as just another
+        // option in a 9-item combobox.
+        function initJigsDropdown() {
+            const dropdown = document.getElementById('jigsDropdown');
+            const btn = document.getElementById('jigsDropdownBtn');
+            if (!dropdown || !btn) return;
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                dropdown.classList.toggle('open');
+            });
+            document.addEventListener('click', (e) => {
+                if (!dropdown.contains(e.target)) dropdown.classList.remove('open');
+            });
+        }
+        initJigsDropdown();
         initPlanSelector();
 
         kerphOnAuthChange(() => {
