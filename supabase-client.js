@@ -41,6 +41,15 @@
     // issues supabase/auth-js#762 and supabase/supabase-js#1594) that hangs every
     // subsequent Supabase call on the page until reload. The setTimeout(..., 0) deferral
     // is Supabase's own documented workaround, not a stylistic choice — do not remove it.
+    //
+    // migrationAttempted guards against a real race: Supabase can fire two auth events
+    // back-to-back on a fresh load (e.g. INITIAL_SESSION + SIGNED_IN) whose setTimeout(...,0)
+    // callbacks both read `wasReady` as false before either has set state.ready — verified
+    // live, this caused kerphRunLocalMigration() to run twice concurrently and double-insert
+    // every migrateCollection() row (saved_layouts, saved_projects). migrateSingleton()'s
+    // upserts happened to mask the same race. This flag is set synchronously (no await
+    // between the check and the set), so the second callback's check always sees it in time.
+    let migrationAttempted = false;
     kerphSupabase.auth.onAuthStateChange((event, session) => {
         setTimeout(async () => {
             const wasReady = state.ready;
@@ -50,7 +59,8 @@
             // auth event) — kerphRunLocalMigration itself is a fast no-op after the first
             // time via its own sentinel, but this also skips it during INITIAL_SESSION
             // signed-out resolution and other no-op events.
-            if (!wasReady && state.user) {
+            if (!wasReady && state.user && !migrationAttempted) {
+                migrationAttempted = true;
                 await kerphRunLocalMigration();
             }
             if (!state.ready) {
