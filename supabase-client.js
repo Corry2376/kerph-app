@@ -524,6 +524,14 @@
         const userId = state.user.id;
         const sentinel = 'kerphLocalMigrationDone_' + userId;
         if (localStorage.getItem(sentinel)) return;
+        // Claim the sentinel synchronously, before any await, not after migration finishes.
+        // Verified live: the whole migration takes several sequential network round-trips, so
+        // a second kerphRunLocalMigration() call (from any source — a duplicate auth event, a
+        // second script instance, whatever) landing anywhere in that window would find the
+        // sentinel still unset and re-run migrateCollection()'s non-idempotent inserts,
+        // producing duplicate saved_layouts/saved_projects rows. Setting it here closes that
+        // whole window instead of just the moment right before the callback that invokes this.
+        localStorage.setItem(sentinel, 'true');
 
         async function migrateSingleton(localKey, loadFn, saveFn, isEmptyLocal) {
             try {
@@ -590,8 +598,6 @@
                 });
             }
         } catch (e) { /* best-effort */ }
-
-        localStorage.setItem(sentinel, 'true');
     }
 
     function kerphOnVisible(callback) {
