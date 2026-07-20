@@ -4,7 +4,7 @@
     <script>if (localStorage.getItem('kerphComingSoonBypass') !== 'true') { location.replace('coming-soon.html'); }</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kerph - Find a Builder</title>
+    <title>Kerph - Follow Us</title>
     <style>
         * {
             box-sizing: border-box;
@@ -74,8 +74,6 @@
         }
 
         .plan-badge-group { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; flex-shrink: 0; }
-        .plan-label { font-size: 11px; font-weight: 700; color: #4b5563; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
-        .plan-label abbr { cursor: help; text-decoration: none; }
         .plan-select {
             padding: 8px 12px;
             border: 1px solid #cbd5e1;
@@ -99,15 +97,12 @@
             transition: background-color 0.15s ease;
         }
         .account-btn:hover { background-color: #eef2ff; }
-
         .account-btn.plan-free { border-color: #16a34a; }
         .account-btn.plan-pro { border-color: #2563eb; }
         .account-btn.plan-premier { border-color: #ca8a04; }
-
         .account-btn-text { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.2; }
         .account-btn-name { font-size: 13px; font-weight: 700; color: #1e3a8a; }
         .account-btn-plan { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: #6b7280; }
-
         .account-avatar {
             width: 28px; height: 28px; border-radius: 50%;
             background-color: #e0e7ff; background-size: cover; background-position: center;
@@ -144,7 +139,7 @@
         .input-box { width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; font-weight: 600; }
         .select-box { width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; font-weight: 600; background: #f8fafc; }
 
-        .modal-overlay { position: fixed; inset: 0; background-color: rgba(15, 23, 42, 0.5); z-index: 3000; display: flex; align-items: center; justify-content: center; }
+        .modal-overlay { position: fixed; inset: 0; background-color: rgba(15, 23, 42, 0.5); z-index: 3000; display: flex; align-items: center; justify-content: center; padding: 24px; }
         .modal-box { background-color: #ffffff; border-radius: 12px; padding: 24px; width: 320px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4); }
         .account-modal-box { width: 380px; max-height: 88vh; overflow-y: auto; }
         .account-member-since { font-size: 10.5px; color: #94a3b8; font-weight: 600; margin-top: 6px; }
@@ -195,125 +190,7 @@
         }
         .upgrade-nudge.visible { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
 
-        /* ---------- PAGE CONTENT ---------- */
-        main {
-            max-width: 720px;
-            margin: 0 auto;
-            padding: 48px 24px 80px;
-        }
-
-        .finder-eyebrow {
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            color: #b23b3b;
-            margin-bottom: 8px;
-        }
-
-        .finder-title { font-size: 28px; font-weight: 800; color: #0f172a; margin-bottom: 10px; }
-        .finder-subtitle { font-size: 14.5px; color: #4b5563; line-height: 1.6; margin-bottom: 32px; max-width: 60ch; }
-
-        .finder-card {
-            background-color: #ffffff;
-            border: 1px solid #cbd5e1;
-            border-radius: 14px;
-            padding: 28px;
-            box-shadow: 0 12px 30px -12px rgba(15, 23, 42, 0.15);
-        }
-
-        .finder-row { display: flex; gap: 10px; align-items: flex-end; }
-        .finder-row .header-field { flex: 1; display: flex; flex-direction: column; gap: 4px; }
-        #zipInput { font-size: 16px; letter-spacing: 0.02em; }
-        #zipSearchBtn {
-            flex: none;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 8px;
-            background-color: #1e3a8a;
-            color: #ffffff;
-            font-size: 13px;
-            font-weight: 700;
-            cursor: pointer;
-        }
-        #zipSearchBtn:hover { background-color: #1e40af; }
-
-        .zip-error { font-size: 12px; color: #b91c1c; margin-top: 6px; min-height: 16px; }
-
-        .category-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #6b7280; margin: 22px 0 10px; }
-        .category-chips { display: flex; flex-wrap: wrap; gap: 8px; }
-        .category-chip {
-            padding: 8px 14px;
-            border: 1px solid #cbd5e1;
-            border-radius: 999px;
-            background-color: #f8fafc;
-            font-size: 12.5px;
-            font-weight: 600;
-            color: #1e3a8a;
-            cursor: pointer;
-        }
-        .category-chip:hover { background-color: #eef2ff; border-color: #2563eb; }
-
-        .finder-secondary {
-            margin-top: 20px;
-            padding-top: 20px;
-            border-top: 1px solid #e2e8f0;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-        .finder-secondary-text { font-size: 12px; color: #6b7280; }
-        .finder-secondary a {
-            font-size: 12.5px;
-            font-weight: 700;
-            color: #1e3a8a;
-            text-decoration: none;
-            white-space: nowrap;
-        }
-        .finder-secondary a:hover { text-decoration: underline; }
-
-        .why-note {
-            margin-top: 24px;
-            font-size: 12px;
-            color: #6b7280;
-            line-height: 1.6;
-            background-color: rgba(30, 58, 138, 0.05);
-            border: 1px solid #dbe4ef;
-            border-left: 3px solid #1e3a8a;
-            border-radius: 8px;
-            padding: 12px 14px;
-        }
-        .why-note b { color: #1e293b; }
-
-        /* ---------- CONCIERGE QUOTE REQUEST (Premier) ---------- */
-        .concierge-card {
-            margin-top: 20px;
-            border-color: #eab308;
-            background-image: linear-gradient(160deg, #fffbeb 0%, #ffffff 45%);
-        }
-        .concierge-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
-        .concierge-eyebrow { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: #b45309; margin-bottom: 4px; }
-        .concierge-title { font-size: 17px; font-weight: 800; color: #0f172a; }
-        .premier-badge {
-            flex-shrink: 0;
-            background-color: #ca8a04;
-            color: #ffffff;
-            font-size: 10px;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 0.04em;
-            padding: 4px 10px;
-            border-radius: 999px;
-            margin-top: 2px;
-        }
-        .concierge-locked-note { font-size: 13px; color: #6b7280; line-height: 1.6; }
-        .concierge-desc { font-size: 12.5px; color: #6b7280; line-height: 1.5; margin-bottom: 14px; }
-        .concierge-next-note { font-size: 11.5px; color: #92400e; margin-top: 10px; line-height: 1.5; }
-        textarea.input-box { resize: vertical; font-family: inherit; }
-        #conciergeOutputText { font-family: ui-monospace, "Cascadia Code", Consolas, monospace; font-size: 12px; }
-            .header-quick-links { display: flex; align-items: center; gap: 6px; font-size: 11px; }
+        .header-quick-links { display: flex; align-items: center; gap: 6px; font-size: 11px; }
         .header-quick-links a { color: #6b7280; font-weight: 600; text-decoration: none; }
         .header-quick-links a:hover { color: #1e3a8a; text-decoration: underline; }
         .header-quick-links-sep { color: #cbd5e1; }
@@ -363,40 +240,37 @@
         .jigs-dropdown-menu a:hover { background-color: #eef2ff; color: #1e3a8a; }
         .jigs-dropdown-menu-sep { height: 1px; background-color: #e2e8f0; margin: 5px 2px; }
 
-        .concierge-checkbox-row {
-            display: flex;
-            align-items: flex-start;
-            gap: 8px;
-            font-size: 12.5px;
-            color: #374151;
-            line-height: 1.4;
-            cursor: pointer;
-        }
-        .concierge-checkbox-row input[type="checkbox"] { margin-top: 2px; flex-shrink: 0; }
+        /* ---------- FOLLOW US PAGE ---------- */
+        .follow-layout { max-width: 900px; margin: 0 auto; padding: 48px 24px 100px; text-align: center; }
+        .follow-eyebrow { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #b23b3b; margin-bottom: 8px; }
+        .follow-title { font-size: 30px; font-weight: 800; color: #0f172a; margin-bottom: 10px; }
+        .follow-subtitle { font-size: 14.5px; color: #4b5563; line-height: 1.6; max-width: 60ch; margin: 0 auto 40px; }
 
-        /* Same window.print()-based export pattern as the Insurance Report on the home page —
-           no PDF library. A summary (dimensions + equipment list), not a rendered visual floor
-           plan — the actual grid graphics live in the Workshop Layout Planner's own renderer,
-           which isn't something this page has a copy of. */
-        @media print {
-            body.printing-shop-summary > *:not(#shopSummaryPrintArea) { display: none !important; }
-            body.printing-shop-summary { padding-top: 0 !important; background: #fff !important; }
-            body.printing-shop-summary #shopSummaryPrintArea {
-                display: block !important;
-                font-family: inherit;
-                color: #0f172a;
-            }
-            @page { size: portrait; margin: 0.6in; }
-            .shop-summary-title { font-size: 22px; font-weight: 800; }
-            .shop-summary-meta { font-size: 11px; color: #475569; margin-top: 4px; margin-bottom: 18px; }
-            .shop-summary-table { width: 100%; border-collapse: collapse; font-size: 11px; }
-            .shop-summary-table th {
-                text-align: left; padding: 6px 8px; font-size: 9px; text-transform: uppercase;
-                letter-spacing: 0.04em; color: #64748b; border-bottom: 2px solid #1e3a8a;
-            }
-            .shop-summary-table td { padding: 6px 8px; border-bottom: 1px solid #e2e8f0; }
-            .shop-summary-disclaimer { margin-top: 22px; font-size: 10px; color: #6b7280; line-height: 1.6; border-top: 1px solid #e2e8f0; padding-top: 10px; }
+        .follow-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 18px; text-align: left; }
+        .follow-card {
+            background-color: #ffffff; border: 1px solid #cbd5e1; border-radius: 14px; padding: 22px 18px;
+            display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px;
+            box-shadow: 0 8px 20px -10px rgba(15, 23, 42, 0.15); transition: transform 0.15s ease, box-shadow 0.15s ease;
         }
+        .follow-card.live { text-decoration: none; cursor: pointer; }
+        .follow-card.live:hover { transform: translateY(-3px); box-shadow: 0 14px 28px -10px rgba(15, 23, 42, 0.22); }
+        .follow-card.pending { opacity: 0.55; }
+
+        .follow-badge {
+            width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 24px; font-weight: 800; color: #ffffff; flex-shrink: 0;
+        }
+        .follow-badge.x { background-color: #000000; font-size: 22px; }
+        .follow-badge.instagram { background: radial-gradient(circle at 30% 110%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%); font-size: 26px; }
+        .follow-badge.facebook { background-color: #1877f2; font-size: 28px; }
+        .follow-badge.youtube { background-color: #ff0000; font-size: 22px; border-radius: 14px; width: 60px; }
+        .follow-badge.pinterest { background-color: #e60023; font-size: 26px; }
+
+        .follow-card-name { font-size: 14.5px; font-weight: 800; color: #0f172a; }
+        .follow-card-handle { font-size: 12.5px; color: #1e3a8a; font-weight: 700; }
+        .follow-card-status { font-size: 11px; color: #9ca3af; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
+
+        .follow-note { margin-top: 40px; font-size: 12.5px; color: #9ca3af; }
     </style>
 </head>
 <body>
@@ -416,7 +290,7 @@
                 <option value="project-designer.html">Project Designer</option>
                 <option value="cutlist-optimizer.html">Cut List Optimizer</option>
                 <option value="quote-builder.html">Quote Builder</option>
-                <option value="find-a-builder.html" selected>Find a Builder</option>
+                <option value="find-a-builder.html">Find a Builder</option>
                 <option value="shop-3d-viewer.html">3D Shop Viewer</option>
                 <option value="tool-reviews.html">Cool Tool Reviews</option>
                 <option value="shop-showcase.html">Shop Showcase</option>
@@ -447,7 +321,7 @@
                 </div>
                 <a href="#" class="header-sign-in-mode-toggle" id="headerSignInModeToggle">New here? Create an account</a>
             </div>
-            <button type="button" id="accountBtn" class="account-btn plan-free" title="Account &amp; Plan Settings — border color shows your plan level" style="display:none;">
+            <button type="button" id="accountBtn" class="account-btn plan-free" title="Account &amp; Plan Settings" style="display:none;">
                 <span class="account-avatar" id="accountAvatarPreview">&#128100;</span>
                 <span class="account-btn-text">
                     <span class="account-btn-name" id="accountBtnLabel">Account</span>
@@ -476,14 +350,14 @@
             <div class="modal-title">Account Settings</div>
             <div class="modal-warning">Your account (username, avatar, sign-in) is real and synced via Kerph. Saved layouts, projects, tools, Showcase posts, and reviews are synced too — available on any device you sign into.</div>
 
-            <div class="header-field" style="width:100%; margin-bottom:14px; display:flex; flex-direction:column; align-items:center;">
+            <div class="header-field" style="align-items:center; display:flex; flex-direction:column; gap:4px;">
                 <div class="account-avatar-large" id="accountAvatarLarge">&#128100;</div>
                 <input type="file" id="accountAvatarInput" accept="image/*" style="display:none;">
                 <button type="button" id="accountAvatarBtn" class="mini-btn" style="margin-top:10px; flex:none;">Upload Photo</button>
                 <div class="account-member-since" id="accountMemberSince"></div>
             </div>
 
-            <div class="header-field" style="width:100%;">
+            <div class="header-field" style="display:flex; flex-direction:column; gap:4px; margin-top:12px;">
                 <label class="header-field-label" for="accountUsernameInput">Username</label>
                 <input type="text" class="input-box" id="accountUsernameInput" placeholder="Choose a username">
             </div>
@@ -505,7 +379,7 @@
                 <div class="account-plan-upsell" id="accountPlanUpsell" style="display:none;">Free includes 1 saved shop layout; custom shop shapes and unlimited saves unlock on Pro.</div>
             </div>
 
-            <div class="header-field" style="width:100%; margin-top:10px;">
+            <div class="header-field" style="display:flex; flex-direction:column; gap:4px; margin-top:10px;">
                 <label class="header-field-label" for="accountUnitsSelect">Preferred Units</label>
                 <select class="select-box" id="accountUnitsSelect">
                     <option value="imperial">Imperial (ft / in)</option>
@@ -513,7 +387,7 @@
                 </select>
             </div>
 
-            <div class="header-field" style="width:100%; margin-top:14px;">
+            <div class="header-field" style="display:flex; flex-direction:column; gap:4px; margin-top:14px;">
                 <label class="header-field-label">Saved Layouts</label>
                 <div id="accountLayoutsList" class="account-layouts-list"></div>
             </div>
@@ -544,137 +418,18 @@
 
     <div class="upgrade-nudge" id="upgradeNudge"></div>
 
-    <main>
-        <div class="finder-eyebrow">Resource &middot; not a Kerph directory</div>
-        <div class="finder-title">Find a pole barn / post-frame builder</div>
-        <div class="finder-subtitle">Designed your shop — now find someone to build it. Enter a zip code and we'll hand you straight to Google Maps, filtered to builders near you, with real ratings and reviews.</div>
-
-        <div class="finder-card">
-            <div class="finder-row">
-                <div class="header-field">
-                    <label class="header-field-label" for="zipInput">ZIP Code</label>
-                    <input type="text" class="input-box" id="zipInput" placeholder="e.g. 46601" inputmode="numeric" maxlength="5">
-                </div>
-                <button type="button" id="zipSearchBtn">Search Builders</button>
-            </div>
-            <div class="zip-error" id="zipError"></div>
-
-            <div class="category-label">Or search a more specific term near that zip</div>
-            <div class="category-chips" id="categoryChips">
-                <button type="button" class="category-chip" data-term="pole barn builders">Pole Barn Builders</button>
-                <button type="button" class="category-chip" data-term="post frame construction contractors">Post-Frame Contractors</button>
-                <button type="button" class="category-chip" data-term="metal building contractors">Metal Building Contractors</button>
-                <button type="button" class="category-chip" data-term="barndominium builders">Barndominium Builders</button>
-                <button type="button" class="category-chip" data-term="ag building contractors">Ag Building Contractors</button>
-            </div>
-
-            <div class="finder-secondary">
-                <span class="finder-secondary-text">Want reviews, forums, and price discussion beyond Maps listings?</span>
-                <a id="webSearchLink" href="#" target="_blank" rel="noopener">Search the web &#8594;</a>
-            </div>
-        </div>
-
-        <div class="finder-card concierge-card" id="conciergeCard">
-            <div class="concierge-header">
-                <div>
-                    <div class="concierge-eyebrow">Premier</div>
-                    <div class="concierge-title">Draft your builder quote request</div>
-                </div>
-                <span class="premier-badge">Premier</span>
-            </div>
-
-            <div class="concierge-locked-note" id="conciergeLockedNote">
-                Premier members can generate a polished, ready-to-send quote request pulled straight from their actual shop layout — no retyping the same project description for every builder you contact.
-                <div style="margin-top:10px;">
-                    <button type="button" class="mini-btn modal-primary-btn" id="conciergeUpgradeBtn">Switch to Premier (preview)</button>
-                </div>
-            </div>
-
-            <div id="conciergeForm" style="display:none;">
-                <p class="concierge-desc">Fill this out once — we'll draft a professional inquiry, pre-filled with your actual shop dimensions where available, that you can send to any builder you find above.</p>
-
-                <div class="header-field" style="margin-bottom:10px;">
-                    <label class="header-field-label" for="conciergeProjectType">Project</label>
-                    <select class="select-box" id="conciergeProjectType">
-                        <option value="pole barn / detached shop">Pole barn / detached shop</option>
-                        <option value="garage conversion">Garage conversion</option>
-                        <option value="post-frame addition">Post-frame addition</option>
-                        <option value="barndominium">Barndominium</option>
-                        <option value="other outbuilding">Other outbuilding</option>
-                    </select>
-                </div>
-
-                <div class="finder-row" style="margin-bottom:10px; align-items: stretch;">
-                    <div class="header-field">
-                        <label class="header-field-label" for="conciergeBudget">Budget range</label>
-                        <select class="select-box" id="conciergeBudget">
-                            <option value="not sure yet">Not sure yet</option>
-                            <option value="under $20,000">Under $20,000</option>
-                            <option value="$20,000-$50,000">$20,000&ndash;$50,000</option>
-                            <option value="$50,000-$100,000">$50,000&ndash;$100,000</option>
-                            <option value="$100,000+">$100,000+</option>
-                        </select>
-                    </div>
-                    <div class="header-field">
-                        <label class="header-field-label" for="conciergeTimeline">Timeline</label>
-                        <select class="select-box" id="conciergeTimeline">
-                            <option value="just exploring">Just exploring</option>
-                            <option value="within 3 months">Within 3 months</option>
-                            <option value="3-6 months">3&ndash;6 months</option>
-                            <option value="6-12 months">6&ndash;12 months</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="header-field" style="margin-bottom:10px;">
-                    <label class="header-field-label" for="conciergeNotes">Anything else the builder should know?</label>
-                    <textarea class="input-box" id="conciergeNotes" rows="3" placeholder="e.g. needs 200-amp service, gravel driveway access, HOA restrictions..."></textarea>
-                </div>
-
-                <div class="header-field" style="margin-bottom:14px;">
-                    <label class="header-field-label" for="conciergeContact">Your contact info (goes in the message)</label>
-                    <input type="text" class="input-box" id="conciergeContact" placeholder="Name, phone or email">
-                </div>
-
-                <div class="header-field" style="margin-bottom:14px;">
-                    <label class="header-field-label" for="conciergeRecipients">Builder email addresses (optional)</label>
-                    <textarea class="input-box" id="conciergeRecipients" rows="2" placeholder="One per line or comma-separated &mdash; as many builders as you want to reach out to."></textarea>
-                </div>
-
-                <label class="concierge-checkbox-row" for="conciergeIncludePdf">
-                    <input type="checkbox" id="conciergeIncludePdf">
-                    <span>Include a shop layout summary PDF (dimensions + equipment list from your current layout)</span>
-                </label>
-
-                <button type="button" class="mini-btn modal-primary-btn" id="conciergeGenerateBtn" style="width:100%; margin-top:10px;">Draft My Quote Request</button>
-
-                <div id="conciergeOutput" style="display:none; margin-top:16px;">
-                    <label class="header-field-label" for="conciergeOutputText" style="display:block; margin-bottom:6px;">Your draft &mdash; copy it or open it in email</label>
-                    <textarea class="input-box" id="conciergeOutputText" rows="9" readonly></textarea>
-                    <div style="display:flex; gap:8px; margin-top:8px;">
-                        <button type="button" class="mini-btn" id="conciergeCopyBtn" style="flex:1;">&#128203; Copy Request</button>
-                        <button type="button" class="mini-btn" id="conciergeEmailBtn" style="flex:1;">&#9993;&#65039; Open in Email</button>
-                    </div>
-                    <button type="button" class="mini-btn" id="conciergePdfBtn" style="width:100%; margin-top:8px; display:none;">&#128196; Download Shop Layout PDF</button>
-                    <div class="concierge-next-note" id="conciergeNextNote">Next: search above, then send this to your top picks &mdash; most Maps listings show a phone number or a website with a contact form right on the card.</div>
-                </div>
-            </div>
-        </div>
-
-        <div id="shopSummaryPrintArea"></div>
-
-        <div class="why-note">
-            <b>Why we link out instead of hosting our own list:</b> Google Maps' listings, ratings, and reviews stay current on their own — a directory we maintained ourselves would go stale and risks pointing you to bad contact info. This always shows real, live listings for your area.
-        </div>
-    </main>
+    <div class="follow-layout">
+        <div class="follow-eyebrow">Community</div>
+        <div class="follow-title">Follow Kerph</div>
+        <div class="follow-subtitle">Shop builds, feature previews, and the occasional sawdust photo. Follow along wherever you already are.</div>
+        <div class="follow-grid" id="followGrid"></div>
+        <div class="follow-note">More platforms coming as we launch them.</div>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.7/dist/umd/supabase.js"></script>
     <script src="supabase-client.js"></script>
     <script>
-        /* ---------- SHARED STATE KEYS (must match workshop-planner.html / index.html exactly) ---------- */
         const PLAN_KEY = 'kerphPlan';
-        /* ACCOUNT_KEY/AUTH_KEY removed — account + sign-in are now real, Supabase-backed
-           (see supabase-client.js) instead of localStorage flags. */
 
         function showToast(message) {
             const nudge = document.getElementById('upgradeNudge');
@@ -684,27 +439,26 @@
             showToast._timer = setTimeout(() => nudge.classList.remove('visible'), 3500);
         }
 
-        function getPlan() { return localStorage.getItem(PLAN_KEY) || 'free'; }
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str == null ? '' : String(str);
+            return div.innerHTML;
+        }
 
+        function getPlan() { return localStorage.getItem(PLAN_KEY) || 'free'; }
         function initPlanSelector() {
             const select = document.getElementById('planSelector');
             select.value = getPlan();
-            select.addEventListener('change', () => {
-                localStorage.setItem(PLAN_KEY, select.value);
-                renderAccountBadge();
-                if (typeof applyPlanGating === 'function') applyPlanGating();
-            });
+            select.addEventListener('change', () => { localStorage.setItem(PLAN_KEY, select.value); });
         }
 
         function loadAccount() {
             return (typeof kerphGetCachedProfile === 'function') ? kerphGetCachedProfile() : {};
         }
-
         function applyAvatarTo(el, dataUrl) {
             if (dataUrl) { el.style.backgroundImage = `url(${dataUrl})`; el.textContent = ''; }
             else { el.style.backgroundImage = ''; el.textContent = '\u{1F464}'; }
         }
-
         function renderAccountBadge() {
             const acc = loadAccount();
             document.getElementById('accountBtnLabel').textContent = acc.username || 'Account';
@@ -717,28 +471,10 @@
             if (btn) btn.className = 'account-btn plan-' + (plan === 'pro' || plan === 'premier' ? plan : 'free');
         }
 
-        /* ---------- Account extras shared with the other pages: tool-status stats, saved
-           layouts (read-only view — editing lives in Workshop Layout Planner), plan card,
-           member-since, danger zone. ---------- */
-        const TOOL_STATUS_KEY = 'kerphToolStatus';
-        const LAYOUTS_KEY = 'kerphSavedLayouts';
-        const LAYOUT_TYPE_LABELS = { workshop: 'Workshop', 'dust-collection': 'Dust Collection', lighting: 'Lighting' };
-
         let cachedToolStatuses = {};
-        function loadToolStatuses() {
-            return cachedToolStatuses;
-        }
-
+        function loadToolStatuses() { return cachedToolStatuses; }
         let cachedSavedLayouts = [];
-        function loadLayouts() {
-            return cachedSavedLayouts;
-        }
-
-        function escapeHtml(str) {
-            const div = document.createElement('div');
-            div.textContent = str == null ? '' : String(str);
-            return div.innerHTML;
-        }
+        function loadLayouts() { return cachedSavedLayouts; }
 
         function renderAccountStats() {
             const row = document.getElementById('accountStatsRow');
@@ -756,7 +492,6 @@
                 <div class="account-stat"><div class="account-stat-value">${layoutCount}</div><div class="account-stat-label">Layouts</div></div>
             `;
         }
-
         function renderAccountPlanCard() {
             const nameEl = document.getElementById('accountPlanName');
             const select = document.getElementById('accountPlanSelect');
@@ -768,7 +503,7 @@
             select.value = plan;
             upsell.style.display = plan === 'free' ? 'block' : 'none';
         }
-
+        const LAYOUT_TYPE_LABELS = { workshop: 'Workshop', 'dust-collection': 'Dust Collection', lighting: 'Lighting' };
         function renderAccountLayoutsList() {
             const list = document.getElementById('accountLayoutsList');
             if (!list) return;
@@ -795,7 +530,6 @@
                 });
             });
         }
-
         function renderAccountMemberSince() {
             const el = document.getElementById('accountMemberSince');
             if (!el) return;
@@ -859,7 +593,6 @@
                     localStorage.setItem(PLAN_KEY, planSelect.value);
                     const headerSelect = document.getElementById('planSelector');
                     if (headerSelect) headerSelect.value = planSelect.value;
-                    if (typeof applyPlanGating === 'function') applyPlanGating();
                     renderAccountPlanCard();
                     renderAccountBadge();
                     showToast(`Switched to the ${planSelect.value[0].toUpperCase()}${planSelect.value.slice(1)} plan (preview).`);
@@ -925,15 +658,12 @@
         function isSignedIn() {
             return typeof kerphGetCachedUser === 'function' && !!kerphGetCachedUser();
         }
-
         function updateHeaderSignInState() {
             const signedIn = isSignedIn();
             document.getElementById('headerSignIn').style.display = signedIn ? 'none' : 'flex';
             document.getElementById('accountBtn').style.display = signedIn ? 'flex' : 'none';
         }
-
         async function signOut() { await kerphSignOut(); }
-
         function initHeaderSignIn() {
             const emailInput = document.getElementById('headerSignInEmail');
             const passwordInput = document.getElementById('headerSignInPassword');
@@ -983,235 +713,8 @@
             updateHeaderSignInState();
         }
 
-        /* ---------- BUILDER FINDER ---------- */
-        function isValidZip(zip) {
-            return /^\d{5}$/.test(zip);
-        }
-
-        function mapsSearchUrl(term, zip) {
-            return 'https://www.google.com/maps/search/' + encodeURIComponent(term + ' near ' + zip);
-        }
-
-        function webSearchUrl(term, zip) {
-            return 'https://www.google.com/search?q=' + encodeURIComponent(term + ' near ' + zip + ' reviews');
-        }
-
-        function currentZip() {
-            return document.getElementById('zipInput').value.trim();
-        }
-
-        function initBuilderFinder() {
-            const zipInput = document.getElementById('zipInput');
-            const zipError = document.getElementById('zipError');
-            const searchBtn = document.getElementById('zipSearchBtn');
-            const webLink = document.getElementById('webSearchLink');
-
-            function runSearch(term) {
-                const zip = currentZip();
-                if (!isValidZip(zip)) {
-                    zipError.textContent = 'Enter a valid 5-digit ZIP code first.';
-                    zipInput.focus();
-                    return;
-                }
-                zipError.textContent = '';
-                window.open(mapsSearchUrl(term, zip), '_blank', 'noopener');
-            }
-
-            searchBtn.addEventListener('click', () => runSearch('pole barn builders'));
-            zipInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') runSearch('pole barn builders'); });
-            zipInput.addEventListener('input', () => {
-                zipInput.value = zipInput.value.replace(/\D/g, '').slice(0, 5);
-                zipError.textContent = '';
-            });
-
-            document.querySelectorAll('.category-chip').forEach(chip => {
-                chip.addEventListener('click', () => runSearch(chip.getAttribute('data-term')));
-            });
-
-            webLink.addEventListener('click', (e) => {
-                const zip = currentZip();
-                if (!isValidZip(zip)) {
-                    e.preventDefault();
-                    zipError.textContent = 'Enter a valid 5-digit ZIP code first.';
-                    zipInput.focus();
-                    return;
-                }
-                webLink.href = webSearchUrl('pole barn builders', zip);
-            });
-        }
-
-        /* ---------- CONCIERGE QUOTE REQUEST (Premier) ----------
-           No real vetted-builder database or outbound email service exists yet (see the
-           why-note above — this page deliberately doesn't host its own directory), so this
-           can't literally "auto-send to 3 vetted builders" without either fabricating builder
-           contacts or building real backend infrastructure. What it can honestly do today:
-           draft the inquiry once — pulling real data from the user's own shop layout — so they
-           aren't retyping the same project description into every builder's contact form. */
-        function isPremium() { return getPlan() === 'premier'; }
-
-        function applyPlanGating() {
-            const locked = !isPremium();
-            const lockedNote = document.getElementById('conciergeLockedNote');
-            const form = document.getElementById('conciergeForm');
-            if (lockedNote) lockedNote.style.display = locked ? 'block' : 'none';
-            if (form) form.style.display = locked ? 'none' : 'block';
-        }
-
-        // Reads the same shared kerphCurrentLayout key the Workshop Layout Planner autosaves
-        // to, so the drafted request can reference the user's real planned shop size instead
-        // of asking them to type it in a third time. Returns the full tools array too (not just
-        // a count) so the optional PDF summary below can list them out.
-        async function loadCurrentShopSummary() {
-            const { data: layout } = await kerphLoadCurrentLayout();
-            if (!layout || !layout.widthFeet || !layout.lengthFeet) return null;
-            return {
-                widthFeet: layout.widthFeet,
-                lengthFeet: layout.lengthFeet,
-                ceilingHeightFt: layout.ceilingHeightFt || null,
-                tools: layout.tools || []
-            };
-        }
-
-        // Splits on commas AND newlines so pasting either a comma-separated list or one address
-        // per line both work — no cap on how many, unlike a real vetted-directory "send to your
-        // top N" flow this deliberately isn't (see the comment above).
-        function parseBuilderRecipients() {
-            const raw = document.getElementById('conciergeRecipients').value;
-            return raw.split(/[\n,]/).map(s => s.trim()).filter(Boolean);
-        }
-
-        async function buildQuoteRequestText() {
-            const projectType = document.getElementById('conciergeProjectType').value;
-            const budget = document.getElementById('conciergeBudget').value;
-            const timeline = document.getElementById('conciergeTimeline').value;
-            const notes = document.getElementById('conciergeNotes').value.trim();
-            const contact = document.getElementById('conciergeContact').value.trim();
-            const includePdf = document.getElementById('conciergeIncludePdf').checked;
-            const zip = currentZip();
-            const shop = await loadCurrentShopSummary();
-
-            const lines = [];
-            lines.push(`Hi — I'm looking for a quote on a ${projectType}${zip ? ` near ${zip}` : ''}.`);
-            lines.push('');
-            if (shop) {
-                lines.push(`Planned size: ${shop.widthFeet}' x ${shop.lengthFeet}'${shop.tools.length ? ` (already laid out with ${shop.tools.length} tool/equipment placements in Kerph)` : ''}.`);
-            }
-            lines.push(`Budget: ${budget}.`);
-            lines.push(`Timeline: ${timeline}.`);
-            if (notes) { lines.push(''); lines.push(notes); }
-            if (includePdf && shop) { lines.push(''); lines.push(`I've attached a PDF summary of my planned shop layout (dimensions + equipment list).`); }
-            lines.push('');
-            lines.push(`Could you let me know if this is something you'd be able to quote, and what you'd need from me to get started?`);
-            if (contact) { lines.push(''); lines.push('Thanks,'); lines.push(contact); }
-            return lines.join('\n');
-        }
-
-        // Same window.print() pattern as the home page's Insurance Report — no PDF library, no
-        // real attachment mechanism (mailto: links can't attach files; that's a hard limitation
-        // of the URI scheme, not something any amount of JS here can work around). This lets the
-        // user save a PDF via their browser's print dialog, then attach it themselves once their
-        // email client opens — the toast on the "Open in Email" button spells that out so it's
-        // not a silent assumption.
-        async function generateShopLayoutSummaryPDF() {
-            const shop = await loadCurrentShopSummary();
-            if (!shop) {
-                showToast('No current shop layout found — lay one out in the Workshop Layout Planner first.');
-                return;
-            }
-            const today = new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
-            const rows = shop.tools.map(t => `<tr>
-                <td>${escapeHtml(t.displayName || t.label || 'Item')}</td>
-                <td>${escapeHtml(t.layer || '—')}</td>
-                <td>${escapeHtml(t.displayDims || '—')}</td>
-            </tr>`).join('');
-
-            const printArea = document.getElementById('shopSummaryPrintArea');
-            printArea.innerHTML = `
-                <div class="shop-summary-title">Planned Shop Layout</div>
-                <div class="shop-summary-meta">
-                    Prepared via Kerph on ${today} &mdash; ${shop.widthFeet}' x ${shop.lengthFeet}'${shop.ceilingHeightFt ? ` x ${shop.ceilingHeightFt}' ceiling` : ''}, ${shop.tools.length} item${shop.tools.length === 1 ? '' : 's'}
-                </div>
-                <table class="shop-summary-table">
-                    <thead><tr><th>Item</th><th>Category</th><th>Dimensions</th></tr></thead>
-                    <tbody>${rows || '<tr><td colspan="3">No items placed yet.</td></tr>'}</tbody>
-                </table>
-                <div class="shop-summary-disclaimer">
-                    This is a dimensions + equipment summary generated from the shop layout as currently planned in Kerph, not a scaled architectural drawing. Provide alongside any other project details the builder requests.
-                </div>
-            `;
-            document.body.classList.add('printing-shop-summary');
-            window.print();
-            setTimeout(() => document.body.classList.remove('printing-shop-summary'), 500);
-        }
-
-        function initConcierge() {
-            const upgradeBtn = document.getElementById('conciergeUpgradeBtn');
-            if (upgradeBtn) {
-                upgradeBtn.addEventListener('click', () => {
-                    localStorage.setItem(PLAN_KEY, 'premier');
-                    const headerSelect = document.getElementById('planSelector');
-                    if (headerSelect) headerSelect.value = 'premier';
-                    applyPlanGating();
-                    renderAccountBadge();
-                    showToast('Switched to the Premier plan (preview).');
-                });
-            }
-
-            const output = document.getElementById('conciergeOutput');
-            const outputText = document.getElementById('conciergeOutputText');
-
-            const pdfBtn = document.getElementById('conciergePdfBtn');
-            const includePdfCheckbox = document.getElementById('conciergeIncludePdf');
-            const nextNote = document.getElementById('conciergeNextNote');
-            const defaultNextNote = nextNote.textContent;
-
-            document.getElementById('conciergeGenerateBtn').addEventListener('click', async () => {
-                outputText.value = await buildQuoteRequestText();
-                output.style.display = 'block';
-                pdfBtn.style.display = includePdfCheckbox.checked ? 'block' : 'none';
-                nextNote.textContent = includePdfCheckbox.checked
-                    ? `${defaultNextNote} Download the PDF below and attach it before you hit send — mailto: links can't attach files automatically.`
-                    : defaultNextNote;
-                output.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-            });
-
-            document.getElementById('conciergeCopyBtn').addEventListener('click', () => {
-                navigator.clipboard.writeText(outputText.value).then(() => {
-                    showToast('Request copied — paste it into an email or contact form.');
-                }).catch(() => {
-                    outputText.select();
-                    showToast('Select-all applied — copy with Ctrl/Cmd+C.');
-                });
-            });
-
-            // No cap on recipients — comma/newline-separated, all handed straight through to
-            // mailto:'s own to= field, which supports as many comma-separated addresses as you
-            // give it. Left blank, this is the same blank-recipient behavior as before.
-            document.getElementById('conciergeEmailBtn').addEventListener('click', () => {
-                // Commas here must stay literal, not percent-encoded — mailto:'s recipient list
-                // (the part before "?") is comma-separated addresses, and encoding the commas
-                // would make mail clients read the whole thing as one (invalid) address instead
-                // of a list. Individual addresses don't need escaping; they don't contain
-                // characters that are unsafe in a URI.
-                const recipients = parseBuilderRecipients().join(',');
-                const subject = encodeURIComponent(`Quote request: ${document.getElementById('conciergeProjectType').value}`);
-                const body = encodeURIComponent(outputText.value);
-                if (includePdfCheckbox.checked) {
-                    showToast('Remember to attach the shop layout PDF before sending.');
-                }
-                window.location.href = `mailto:${recipients}?subject=${subject}&body=${body}`;
-            });
-
-            pdfBtn.addEventListener('click', generateShopLayoutSummaryPDF);
-
-            applyPlanGating();
-        }
-
         document.getElementById('pageNavSelect').addEventListener('change', (e) => { window.location.href = e.target.value; });
 
-        // Standalone header dropdown (not folded into pageNavSelect) so Shop Jigs' four
-        // tools are one click away from every page instead of being buried as just another
-        // option in a 9-item combobox.
         function initJigsDropdown() {
             const dropdown = document.getElementById('jigsDropdown');
             const btn = document.getElementById('jigsDropdownBtn');
@@ -1227,6 +730,35 @@
         initJigsDropdown();
         initPlanSelector();
 
+        /* ---------- SOCIAL PLATFORMS ----------
+           handle: null means the account doesn't exist yet — renders as a dimmed "Coming Soon"
+           card with no link, rather than guessing at a URL that might not exist or might be
+           wrong. Flip handle+url once the account is live. */
+        const SOCIAL_PLATFORMS = [
+            { key: 'x', name: 'X', icon: '&#120143;', badgeClass: 'x', handle: '@kerphplans', url: 'https://x.com/kerphplans' },
+            { key: 'instagram', name: 'Instagram', icon: '&#128248;', badgeClass: 'instagram', handle: '@kerphplans', url: 'https://www.instagram.com/kerphplans/' },
+            { key: 'facebook', name: 'Facebook', icon: 'f', badgeClass: 'facebook', handle: null, url: null },
+            { key: 'youtube', name: 'YouTube', icon: '&#9654;&#65039;', badgeClass: 'youtube', handle: null, url: null },
+            { key: 'pinterest', name: 'Pinterest', icon: '&#128204;', badgeClass: 'pinterest', handle: null, url: null }
+        ];
+
+        function renderFollowGrid() {
+            const grid = document.getElementById('followGrid');
+            grid.innerHTML = SOCIAL_PLATFORMS.map(p => {
+                const isLive = !!p.url;
+                const tag = isLive ? 'a' : 'div';
+                const attrs = isLive ? `href="${p.url}" target="_blank" rel="noopener noreferrer"` : '';
+                return `
+                    <${tag} class="follow-card ${isLive ? 'live' : 'pending'}" ${attrs}>
+                        <div class="follow-badge ${p.badgeClass}">${p.icon}</div>
+                        <div class="follow-card-name">${escapeHtml(p.name)}</div>
+                        ${isLive ? `<div class="follow-card-handle">${escapeHtml(p.handle)}</div>` : `<div class="follow-card-status">Coming Soon</div>`}
+                    </${tag}>
+                `;
+            }).join('');
+        }
+        renderFollowGrid();
+
         kerphOnAuthChange(() => {
             updateHeaderSignInState();
             renderAccountBadge();
@@ -1238,9 +770,6 @@
             initHeaderSignIn();
             initAccountPanel();
         });
-
-        initBuilderFinder();
-        initConcierge();
     </script>
 </body>
 </html>
