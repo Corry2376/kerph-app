@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <script>if (localStorage.getItem('kerphComingSoonBypass') !== 'true') { location.replace('coming-soon.html'); }</script>
+    <script>(function(){if(new URLSearchParams(location.search).get('user'))return;var r={free:0,pro:1,premier:2};if((r[localStorage.getItem('kerphPlan')||'free']||0)<r.premier){location.replace('pricing.html?locked=portfolio.html');}})();</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kerph - Portfolio</title>
@@ -136,7 +137,8 @@
         }
         .upgrade-nudge.visible { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
 
-        .header-quick-links { display: flex; align-items: center; gap: 6px; font-size: 11px; }
+        .header-quick-links { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; font-size: 11px; }
+        .header-quick-links-row { display: flex; align-items: center; gap: 6px; }
         .header-quick-links a { color: #6b7280; font-weight: 600; text-decoration: none; }
         .header-quick-links a:hover { color: #1e3a8a; text-decoration: underline; }
         .header-quick-links-sep { color: #cbd5e1; }
@@ -217,7 +219,6 @@
             </div>
             <select class="page-title-select" id="pageNavSelect">
                 <option value="index.html">Home</option>
-                <option value="my-workspace.html">My Workspace</option>
                 <option value="workshop-planner.html">Workshop Layout Planner</option>
                 <option value="dust-collection.html">Dust Collection</option>
                 <option value="project-designer.html">Project Designer</option>
@@ -262,13 +263,14 @@
                 </span>
             </button>
             <div class="header-quick-links">
-                <a href="pricing.html">Plan Comparison</a>
-                <span class="header-quick-links-sep">&middot;</span>
+                <div class="header-quick-links-row">
+                    <a href="pricing.html">Plan Comparison</a>
+                    <span class="header-quick-links-sep">&middot;</span>
+                    <a href="follow.html">Follow Us</a>
+                    <span class="header-quick-links-sep">&middot;</span>
+                    <a href="terms.html">Terms</a>
+                </div>
                 <a href="help.html">Trouble with the Kerph</a>
-                <span class="header-quick-links-sep">&middot;</span>
-                <a href="follow.html">Follow Us</a>
-                <span class="header-quick-links-sep">&middot;</span>
-                <a href="terms.html">Terms</a>
             </div>
             <select class="plan-select" id="planSelector" style="display:none;">
                 <option value="free">Free</option>

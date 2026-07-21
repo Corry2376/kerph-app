@@ -106,19 +106,21 @@
             avatar: state.profile.avatar_data_url || null,
             memberSince: state.profile.created_at || null,
             unitSystem: state.profile.unit_system || 'imperial',
-            maintenanceRemindersEnabled: state.profile.maintenance_reminders_enabled !== false
+            maintenanceRemindersEnabled: state.profile.maintenance_reminders_enabled !== false,
+            homeTileOrder: state.profile.home_tile_order || null
         };
     }
 
     // upsert (not update) so a missing profile row — trigger failure, edge case, whatever —
     // never permanently locks a signed-in user out of saving; the INSERT RLS policy exists
     // specifically to make this self-healing path work.
-    async function kerphSaveProfile({ username, avatarDataUrl, unitSystem, maintenanceRemindersEnabled } = {}) {
+    async function kerphSaveProfile({ username, avatarDataUrl, unitSystem, maintenanceRemindersEnabled, homeTileOrder } = {}) {
         if (!state.user) return { error: { message: 'Not signed in.' } };
         const updates = { id: state.user.id, username };
         if (avatarDataUrl !== undefined) updates.avatar_data_url = avatarDataUrl;
         if (unitSystem !== undefined) updates.unit_system = unitSystem;
         if (maintenanceRemindersEnabled !== undefined) updates.maintenance_reminders_enabled = maintenanceRemindersEnabled;
+        if (homeTileOrder !== undefined) updates.home_tile_order = homeTileOrder;
         const { data, error } = await kerphSupabase.from('profiles').upsert(updates).select().maybeSingle();
         if (!error && data) {
             state.profile = data;
@@ -605,6 +607,104 @@
             if (document.visibilityState === 'visible') callback();
         });
     }
+
+    /* ---------- TOOL TIER GATING (soft/local — kerphPlan isn't billing-enforced yet) ----------
+       Distinct from the sub-feature gating that already lives inside each tool (saved-layout
+       caps, watermarks, etc.) — this is a new, separate axis: can the page be opened at all.
+       The actual hard block lives in a small inline script at the top of each gated page's
+       <head> (same pattern as the existing Coming Soon bypass check) since it has to run
+       synchronously before this file even loads. What lives here is the *visible* half —
+       graying out the nav dropdown and home-page tiles — so the restriction is obvious
+       before a locked page is ever clicked, not just discovered via a redirect. */
+    const KERPH_PLAN_RANK = { free: 0, pro: 1, premier: 2 };
+    const KERPH_TOOL_TIER_MAP = {
+        'project-designer.html': 'pro',
+        'shop-3d-viewer.html': 'pro',
+        'quote-builder.html': 'premier',
+        'portfolio.html': 'premier'
+    };
+    const KERPH_TIER_LABELS = { pro: 'Pro', premier: 'Premier' };
+
+    function kerphPlanMeetsTier(plan, requiredTier) {
+        return (KERPH_PLAN_RANK[plan] || 0) >= (KERPH_PLAN_RANK[requiredTier] || 0);
+    }
+
+    function kerphRequiredTierFor(page) {
+        return KERPH_TOOL_TIER_MAP[page] || null;
+    }
+
+    // Grays out + disables any pageNavSelect <option> whose page isn't included in the
+    // current plan, tagging its label with a lock icon + tier name. Self-running (no
+    // per-page wiring) so every page's copy of the dropdown picks this up automatically —
+    // also re-run on any known plan-switching control (pricing.html's preview buttons, the
+    // account modal's plan select, the legacy header plan select) via event delegation, so
+    // it reflects a plan change made without leaving the page.
+    function kerphApplyNavTierLocks() {
+        const select = document.getElementById('pageNavSelect');
+        if (!select) return;
+        const plan = localStorage.getItem('kerphPlan') || 'free';
+        Array.from(select.options).forEach((opt) => {
+            const tier = KERPH_TOOL_TIER_MAP[opt.value];
+            if (!tier) return;
+            const baseText = opt.textContent.replace(/^\u{1F512} /u, '').replace(/ — (Pro|Premier)$/, '');
+            if (kerphPlanMeetsTier(plan, tier)) {
+                opt.disabled = false;
+                opt.textContent = baseText;
+            } else {
+                opt.disabled = true;
+                opt.textContent = `\u{1F512} ${baseText} — ${KERPH_TIER_LABELS[tier]}`;
+            }
+        });
+    }
+
+    // Dims + badges any home-page tool-card tile whose href is a gated page the current
+    // plan doesn't reach. Doesn't intercept the click — the tile stays a real link, and
+    // the gated page's own top-of-head redirect (see above) is what actually stops it;
+    // this just sets the right expectation before the click happens.
+    function kerphApplyToolCardTierLocks() {
+        const cards = document.querySelectorAll('.tool-card[href]');
+        if (!cards.length) return;
+        const plan = localStorage.getItem('kerphPlan') || 'free';
+        cards.forEach((card) => {
+            const tier = KERPH_TOOL_TIER_MAP[card.getAttribute('href')];
+            if (!tier) return;
+            let badge = card.querySelector('.tool-card-tier-badge');
+            if (kerphPlanMeetsTier(plan, tier)) {
+                card.classList.remove('tool-card-locked');
+                if (badge) badge.remove();
+                return;
+            }
+            card.classList.add('tool-card-locked');
+            if (!badge) {
+                badge = document.createElement('span');
+                badge.className = 'tool-card-tier-badge';
+                card.appendChild(badge);
+            }
+            badge.textContent = `\u{1F512} ${KERPH_TIER_LABELS[tier]}`;
+        });
+    }
+
+    function kerphRefreshTierLocks() {
+        kerphApplyNavTierLocks();
+        kerphApplyToolCardTierLocks();
+    }
+
+    document.addEventListener('DOMContentLoaded', kerphRefreshTierLocks);
+    // Same-tab plan changes don't fire the 'storage' event (that's cross-tab only), so this
+    // delegated listener is what catches pricing.html's preview buttons, the account modal's
+    // plan select, and the legacy header plan select without needing each page wired up
+    // individually. setTimeout defers to after the click/change handler's own localStorage
+    // write actually lands.
+    document.addEventListener('click', (e) => {
+        if (e.target.closest('[data-tier-btn]')) setTimeout(kerphRefreshTierLocks, 0);
+    });
+    document.addEventListener('change', (e) => {
+        if (e.target.id === 'accountPlanSelect' || e.target.id === 'planSelector') setTimeout(kerphRefreshTierLocks, 0);
+    });
+
+    window.kerphPlanMeetsTier = kerphPlanMeetsTier;
+    window.kerphRequiredTierFor = kerphRequiredTierFor;
+    window.kerphRefreshTierLocks = kerphRefreshTierLocks;
 
     window.kerphSupabase = kerphSupabase;
     window.kerphAuthReady = kerphAuthReady;

@@ -217,6 +217,18 @@
             text-align: center;
         }
 
+        .pricing-locked-banner {
+            max-width: 680px;
+            margin: 14px auto 0;
+            font-size: 13px;
+            font-weight: 600;
+            color: #ffffff;
+            background-color: #0f172a;
+            border-radius: 8px;
+            padding: 12px 16px;
+            text-align: center;
+        }
+
         .pricing-cards {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -256,7 +268,14 @@
         .tier-premier .pricing-plan-name { color: #ca8a04; }
         .pricing-price { font-size: 34px; font-weight: 800; color: #0f172a; margin: 10px 0 2px; }
         .pricing-price .period { font-size: 13px; font-weight: 600; color: #94a3b8; }
+        .pricing-annual-note { font-size: 11px; color: #16a34a; font-weight: 700; min-height: 14px; margin-bottom: 4px; }
         .pricing-seats { font-size: 12px; color: #6b7280; font-weight: 600; margin-bottom: 6px; }
+
+        .billing-toggle { display: flex; justify-content: center; gap: 0; margin: 22px auto 0; background-color: #eef2ff; border-radius: 999px; padding: 4px; width: fit-content; }
+        .billing-toggle-btn { display: flex; align-items: center; gap: 6px; border: none; background: none; padding: 8px 16px; font-size: 12.5px; font-weight: 700; color: #1e3a8a; border-radius: 999px; cursor: pointer; }
+        .billing-toggle-btn.active { background-color: #1e3a8a; color: #ffffff; }
+        .billing-toggle-save { font-size: 9.5px; font-weight: 800; color: #16a34a; background-color: #dcfce7; padding: 2px 6px; border-radius: 999px; }
+        .billing-toggle-btn.active .billing-toggle-save { color: #15803d; background-color: #ffffff; }
         .pricing-blurb { font-size: 12.5px; color: #4b5563; line-height: 1.5; margin: 10px 0 20px; flex: 1; }
         .pricing-cta { width: 100%; padding: 10px; font-size: 13px; }
         .pricing-cta.is-current-cta { background-color: #f1f5f9; color: #94a3b8; cursor: default; }
@@ -309,7 +328,8 @@
         .compare-table .dash { color: #cbd5e1; font-weight: 700; }
 
         .pricing-footnote { font-size: 11.5px; color: #9ca3af; line-height: 1.6; margin-top: 18px; padding: 0 20px 16px; }
-            .header-quick-links { display: flex; align-items: center; gap: 6px; font-size: 11px; }
+            .header-quick-links { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; font-size: 11px; }
+            .header-quick-links-row { display: flex; align-items: center; gap: 6px; }
         .header-quick-links a { color: #6b7280; font-weight: 600; text-decoration: none; }
         .header-quick-links a:hover { color: #1e3a8a; text-decoration: underline; }
         .header-quick-links-sep { color: #cbd5e1; }
@@ -372,7 +392,6 @@
             </div>
             <select class="page-title-select" id="pageNavSelect">
                 <option value="index.html">Home</option>
-                <option value="my-workspace.html">My Workspace</option>
                 <option value="workshop-planner.html">Workshop Layout Planner</option>
                 <option value="dust-collection.html">Dust Collection</option>
                 <option value="project-designer.html">Project Designer</option>
@@ -417,13 +436,14 @@
                 </span>
             </button>
             <div class="header-quick-links">
-                <a href="pricing.html">Plan Comparison</a>
-                <span class="header-quick-links-sep">&middot;</span>
+                <div class="header-quick-links-row">
+                    <a href="pricing.html">Plan Comparison</a>
+                    <span class="header-quick-links-sep">&middot;</span>
+                    <a href="follow.html">Follow Us</a>
+                    <span class="header-quick-links-sep">&middot;</span>
+                    <a href="terms.html">Terms</a>
+                </div>
                 <a href="help.html">Trouble with the Kerph</a>
-                <span class="header-quick-links-sep">&middot;</span>
-                <a href="follow.html">Follow Us</a>
-                <span class="header-quick-links-sep">&middot;</span>
-                <a href="terms.html">Terms</a>
             </div>
             <select class="plan-select" id="planSelector" style="display:none;">
                 <option value="free">Free</option>
@@ -513,28 +533,37 @@
             <div class="pricing-subtitle">From a single-project free plan to unlimited multi-project access with concierge builder quotes — pick the tier that matches how much you're building.</div>
         </div>
 
+        <div class="pricing-locked-banner" id="pricingLockedBanner" style="display:none;"></div>
         <div class="pricing-preview-note">This is a local preview, not a real payment system — no card is charged. Use a card's button below (or the Account panel once signed in) to switch tiers instantly in this browser.</div>
+
+        <div class="billing-toggle" id="billingToggle">
+            <button type="button" class="billing-toggle-btn" data-cycle="monthly">Monthly</button>
+            <button type="button" class="billing-toggle-btn" data-cycle="annual">Annual <span class="billing-toggle-save">Save ~20%</span></button>
+        </div>
 
         <div class="pricing-cards" id="pricingCards">
             <div class="pricing-card tier-free" data-tier="free">
                 <div class="pricing-plan-name">Free</div>
-                <div class="pricing-price">$0<span class="period">/mo</span></div>
+                <div class="pricing-price" data-monthly="0" data-annual="0">$0<span class="period">/mo</span></div>
+                <div class="pricing-annual-note"></div>
                 <div class="pricing-seats">1 seat</div>
                 <div class="pricing-blurb">The full Workshop &amp; Dust Collection planners, cabinetry builder, and Cut List Optimizer — everything you need to lay out a shop and cut real material, watermarked on export.</div>
                 <button type="button" class="mini-btn pricing-cta" data-tier-btn="free">Preview Free</button>
             </div>
             <div class="pricing-card tier-pro" data-tier="pro">
                 <div class="pricing-plan-name">Pro</div>
-                <div class="pricing-price">$8<span class="period">/mo</span></div>
+                <div class="pricing-price" data-monthly="9" data-annual="7">$9<span class="period">/mo</span></div>
+                <div class="pricing-annual-note"></div>
                 <div class="pricing-seats">2 seats included</div>
-                <div class="pricing-blurb">Everything in Free, plus custom shop shapes, unlimited saved layouts, clean unwatermarked exports, and full Project Designer access with 5 saved projects.</div>
+                <div class="pricing-blurb">Everything in Free, plus custom shop shapes, unlimited saved layouts, clean unwatermarked exports, full Project Designer access with 5 saved projects, and the 3D Shop Viewer.</div>
                 <button type="button" class="mini-btn pricing-cta" data-tier-btn="pro">Preview Pro</button>
             </div>
             <div class="pricing-card tier-premier" data-tier="premier">
                 <div class="pricing-plan-name">Premier</div>
-                <div class="pricing-price">$14<span class="period">/mo</span></div>
+                <div class="pricing-price" data-monthly="15" data-annual="12">$15<span class="period">/mo</span></div>
+                <div class="pricing-annual-note"></div>
                 <div class="pricing-seats">4 seats included &mdash; +$5/seat after that</div>
-                <div class="pricing-blurb">Everything in Pro, plus unlimited saved projects, the auto-generated insurance inventory report, and concierge Find-a-Builder quote requests.</div>
+                <div class="pricing-blurb">Everything in Pro, plus unlimited saved projects, Quote Builder, Portfolio, the auto-generated insurance inventory report, and concierge Find-a-Builder quote requests.</div>
                 <button type="button" class="mini-btn pricing-cta" data-tier-btn="premier">Preview Premier</button>
             </div>
         </div>
@@ -576,16 +605,27 @@
                     <tr class="feature-row"><td>Sheet &amp; board nesting/optimization</td><td class="plan-cell check">&#10003;</td><td class="plan-cell check">&#10003;</td><td class="plan-cell check">&#10003;</td></tr>
                     <tr class="feature-row"><td>PDF cut list export</td><td class="plan-cell">Watermarked</td><td class="plan-cell">Clean</td><td class="plan-cell">Clean</td></tr>
 
+                    <tr class="section-row"><td colspan="4">3D Shop Viewer</td></tr>
+                    <tr class="feature-row"><td>View your shop assembled in 3D</td><td class="plan-cell dash">&mdash;</td><td class="plan-cell check">&#10003;</td><td class="plan-cell check">&#10003;</td></tr>
+                    <tr class="feature-row"><td>Drag, rotate &amp; edit items in 3D</td><td class="plan-cell dash">&mdash;</td><td class="plan-cell check">&#10003;</td><td class="plan-cell check">&#10003;</td></tr>
+
+                    <tr class="section-row"><td colspan="4">Quote Builder</td></tr>
+                    <tr class="feature-row"><td>Client quotes from a cut list &mdash; materials, labor, margin</td><td class="plan-cell dash">&mdash;</td><td class="plan-cell dash">&mdash;</td><td class="plan-cell check">&#10003;</td></tr>
+                    <tr class="feature-row"><td>Exported as PDF</td><td class="plan-cell dash">&mdash;</td><td class="plan-cell dash">&mdash;</td><td class="plan-cell check">&#10003;</td></tr>
+
+                    <tr class="section-row"><td colspan="4">Portfolio</td></tr>
+                    <tr class="feature-row"><td>Shareable page for everything you&rsquo;ve built</td><td class="plan-cell dash">&mdash;</td><td class="plan-cell dash">&mdash;</td><td class="plan-cell check">&#10003;</td></tr>
+
                     <tr class="section-row"><td colspan="4">Reports &amp; Concierge</td></tr>
                     <tr class="feature-row"><td>Auto-generated insurance inventory report</td><td class="plan-cell dash">&mdash;</td><td class="plan-cell dash">&mdash;</td><td class="plan-cell check">&#10003;</td></tr>
                     <tr class="feature-row"><td>Concierge Find-a-Builder quote requests</td><td class="plan-cell dash">&mdash;</td><td class="plan-cell dash">&mdash;</td><td class="plan-cell check">&#10003;</td></tr>
 
                     <tr class="section-row"><td colspan="4">Account</td></tr>
                     <tr class="feature-row"><td>Seats included</td><td class="plan-cell">1</td><td class="plan-cell">2</td><td class="plan-cell">4 (+$5/seat)</td></tr>
-                    <tr class="feature-row"><td>Price</td><td class="plan-cell">$0</td><td class="plan-cell">$8/mo</td><td class="plan-cell">$14/mo</td></tr>
+                    <tr class="feature-row"><td>Price</td><td class="plan-cell">$0</td><td class="plan-cell">$9/mo<div style="font-size:10.5px; color:#9ca3af; font-weight:600;">$7/mo billed annually</div></td><td class="plan-cell">$15/mo<div style="font-size:10.5px; color:#9ca3af; font-weight:600;">$12/mo billed annually</div></td></tr>
                 </tbody>
             </table>
-            <div class="pricing-footnote">Plan tier is stored locally in this browser for preview purposes — no payment, billing, or multi-seat account system is connected yet. Feature availability above reflects what's actually built in the app today.</div>
+            <div class="pricing-footnote">Plan tier is stored locally in this browser for preview purposes — no payment, billing, or multi-seat account system is connected yet. Feature availability above reflects what's actually built in the app today. Annual rates reflect the discount for paying a full year up front, once billing goes live.</div>
         </div>
     </div>
 
@@ -925,6 +965,33 @@
             renderPricingCards();
         }
 
+        // Purely a display toggle for the marketing cards — doesn't touch the local plan-preview
+        // system (kerphPlan) at all, since billing cadence and feature tier are independent axes.
+        let billingCycle = 'annual';
+        function renderBillingCycle() {
+            document.querySelectorAll('.billing-toggle-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.getAttribute('data-cycle') === billingCycle);
+            });
+            document.querySelectorAll('.pricing-card').forEach(card => {
+                const priceEl = card.querySelector('.pricing-price');
+                const noteEl = card.querySelector('.pricing-annual-note');
+                const monthly = Number(priceEl.getAttribute('data-monthly'));
+                const annual = Number(priceEl.getAttribute('data-annual'));
+                const shown = billingCycle === 'annual' ? annual : monthly;
+                priceEl.innerHTML = `$${shown}<span class="period">/mo</span>`;
+                noteEl.textContent = (billingCycle === 'annual' && annual > 0) ? `billed $${annual * 12}/yr` : '';
+            });
+        }
+        function initBillingToggle() {
+            document.querySelectorAll('.billing-toggle-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    billingCycle = btn.getAttribute('data-cycle');
+                    renderBillingCycle();
+                });
+            });
+            renderBillingCycle();
+        }
+
         document.getElementById('pageNavSelect').addEventListener('change', (e) => { window.location.href = e.target.value; });
 
         // Standalone header dropdown (not folded into pageNavSelect) so Shop Jigs' four
@@ -942,8 +1009,31 @@
                 if (!dropdown.contains(e.target)) dropdown.classList.remove('open');
             });
         }
+        // Reads ?locked=<page>, set by the redirect a gated page's own top-of-head script
+        // fires when the current plan doesn't reach that tool's required tier (see
+        // supabase-client.js's KERPH_TOOL_TIER_MAP) — surfaces why the visitor landed here
+        // instead of the tool they clicked into.
+        const TOOL_DISPLAY_NAMES = {
+            'project-designer.html': 'Project Designer',
+            'shop-3d-viewer.html': '3D Shop Viewer',
+            'quote-builder.html': 'Quote Builder',
+            'portfolio.html': 'Portfolio'
+        };
+        function initLockedBanner() {
+            const locked = new URLSearchParams(location.search).get('locked');
+            const toolName = TOOL_DISPLAY_NAMES[locked];
+            if (!toolName || typeof kerphRequiredTierFor !== 'function') return;
+            const tier = kerphRequiredTierFor(locked);
+            const tierLabel = tier === 'premier' ? 'Premier' : 'Pro';
+            const banner = document.getElementById('pricingLockedBanner');
+            banner.textContent = `\u{1F512} ${toolName} needs the ${tierLabel} plan — pick it below to unlock it.`;
+            banner.style.display = 'block';
+        }
+
         initJigsDropdown();
         initPlanSelector();
+        initBillingToggle();
+        initLockedBanner();
 
         kerphOnAuthChange(() => {
             updateHeaderSignInState();

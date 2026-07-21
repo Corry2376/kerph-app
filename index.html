@@ -672,49 +672,41 @@
         .hero-row {
             display: flex;
             gap: 28px;
-            align-items: stretch;
-            margin-bottom: 40px;
+            align-items: flex-start;
             flex-wrap: wrap;
         }
 
+        .home-main-col {
+            flex: 1 1 480px;
+            min-width: 0;
+        }
+
         .hero-intro {
-            flex: 1 1 380px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-
-        .hero-cta {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            margin-top: 18px;
-            align-self: flex-start;
-            background-color: #1e3a8a;
-            color: #ffffff;
-            font-weight: 700;
-            font-size: 14px;
-            padding: 12px 20px;
-            border-radius: 8px;
-            text-decoration: none;
-            transition: background-color 0.15s ease, transform 0.15s ease;
-        }
-
-        .hero-cta:hover {
-            background-color: #1e40af;
-            transform: translateY(-1px);
+            margin-bottom: 24px;
         }
 
         .snapshot-panel {
             flex: 0 0 300px;
             background-color: #ffffff;
+            background-image: linear-gradient(180deg, #ffffff 0%, #f6f8fb 100%);
             border: 1px solid #cbd5e1;
             border-radius: 14px;
             padding: 20px;
-            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.9),
+                0 1px 2px rgba(15, 23, 42, 0.06),
+                0 6px 14px -6px rgba(15, 23, 42, 0.16),
+                0 16px 28px -16px rgba(15, 23, 42, 0.16);
         }
 
         .snapshot-title {
+            font-size: 19px;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 2px;
+        }
+
+        .snapshot-subtitle {
             font-size: 11px;
             text-transform: uppercase;
             letter-spacing: 0.05em;
@@ -749,6 +741,27 @@
         }
 
         .snapshot-link:hover { text-decoration: underline; }
+
+        .snapshot-cta {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            margin-top: 14px;
+            background-color: #1e3a8a;
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 14px;
+            padding: 12px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: background-color 0.15s ease, transform 0.15s ease;
+        }
+
+        .snapshot-cta:hover {
+            background-color: #1e40af;
+            transform: translateY(-1px);
+        }
 
         /* Premier-only perk callout inside the snapshot panel — the first thing anyone sees
            on the home page, and a much more discoverable spot for a Premier-gated action than
@@ -813,29 +826,64 @@
             gap: 20px;
         }
 
+        /* ---- Drag-to-reorder (see initTileReorder) ---- */
+        .tool-card-drag-handle {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            font-size: 13px;
+            line-height: 1;
+            color: #b7c0cc;
+            opacity: 0;
+            transition: opacity 0.15s ease;
+            pointer-events: none;
+        }
+        .tool-card:not(.tool-card-featured):hover .tool-card-drag-handle { opacity: 1; }
+        .tool-card:not(.tool-card-featured) { cursor: grab; }
+        .tool-card:not(.tool-card-featured):active { cursor: grabbing; }
+        .tool-card.tool-card-dragging { opacity: 0.4; }
+        .tool-card.tool-card-drag-over { border-color: #1e3a8a; border-style: dashed; }
+
         .tool-card {
             display: block;
+            position: relative;
             background-color: #ffffff;
+            background-image: linear-gradient(180deg, #ffffff 0%, #f6f8fb 100%);
             border: 1px solid #cbd5e1;
             border-radius: 14px;
             padding: 24px;
             text-decoration: none;
             color: inherit;
-            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
-            transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+            /* Resting state needs to read as a raised card on its own, not just on hover — an
+               inset top highlight (light catching the upper bevel) plus three graduated outer
+               shadow layers (tight contact, mid, and a soft far one) do that; hover just scales
+               the outer layers further rather than swapping to a different shape. */
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.9),
+                0 1px 2px rgba(15, 23, 42, 0.06),
+                0 6px 14px -6px rgba(15, 23, 42, 0.16),
+                0 16px 28px -16px rgba(15, 23, 42, 0.16);
+            transition: border-color 0.15s ease, box-shadow 0.2s ease, transform 0.2s ease;
         }
 
         .tool-card:hover {
             border-color: #1e3a8a;
-            box-shadow: 0 12px 24px -8px rgba(30, 58, 138, 0.25);
-            transform: translateY(-2px);
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.9),
+                0 2px 5px rgba(15, 23, 42, 0.07),
+                0 10px 20px -8px rgba(30, 58, 138, 0.22),
+                0 24px 38px -16px rgba(30, 58, 138, 0.32);
+            transform: translateY(-3px);
         }
 
         .tool-card-icon {
             width: 44px;
             height: 44px;
             border-radius: 10px;
-            background-color: #e0e7ff;
+            background: linear-gradient(150deg, #e9edff 0%, #d3dcfe 100%);
+            /* Inner highlight/shade gives the chip a slight embossed depth instead of reading
+               as a flat color swatch; the outer shadow lifts it just off the card surface. */
+            box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.75), inset 0 -1px 1px rgba(30, 58, 138, 0.08), 0 3px 6px rgba(30, 58, 138, 0.16);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -870,6 +918,36 @@
             vertical-align: middle;
         }
 
+        /* Gated tools (see kerphApplyToolCardTierLocks in supabase-client.js) stay clickable
+           — the destination page's own top-of-head redirect is the actual gate — this just
+           sets the right expectation before the click happens. */
+        .tool-card.tool-card-locked {
+            opacity: 0.6;
+            filter: grayscale(45%);
+            position: relative;
+        }
+        .tool-card.tool-card-locked:hover {
+            border-color: #cbd5e1;
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.9),
+                0 1px 2px rgba(15, 23, 42, 0.06),
+                0 6px 14px -6px rgba(15, 23, 42, 0.16),
+                0 16px 28px -16px rgba(15, 23, 42, 0.16);
+            transform: none;
+        }
+        .tool-card-tier-badge {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            background-color: #0f172a;
+            color: #ffffff;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 3px 9px;
+            border-radius: 999px;
+            letter-spacing: 0.02em;
+        }
+
         .tool-card-placeholder {
             opacity: 0.55;
             cursor: default;
@@ -877,7 +955,11 @@
 
         .tool-card-placeholder:hover {
             border-color: #cbd5e1;
-            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.9),
+                0 1px 2px rgba(15, 23, 42, 0.06),
+                0 6px 14px -6px rgba(15, 23, 42, 0.16),
+                0 16px 28px -16px rgba(15, 23, 42, 0.16);
             transform: none;
         }
 
@@ -891,7 +973,8 @@
             letter-spacing: 0.03em;
             vertical-align: middle;
         }
-            .header-quick-links { display: flex; align-items: center; gap: 6px; font-size: 11px; }
+            .header-quick-links { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; font-size: 11px; }
+            .header-quick-links-row { display: flex; align-items: center; gap: 6px; }
         .header-quick-links a { color: #6b7280; font-weight: 600; text-decoration: none; }
         .header-quick-links a:hover { color: #1e3a8a; text-decoration: underline; }
         .header-quick-links-sep { color: #cbd5e1; }
@@ -954,7 +1037,6 @@
             </div>
             <select class="page-title-select" id="pageNavSelect">
                 <option value="index.html" selected>Home</option>
-                <option value="my-workspace.html">My Workspace</option>
                 <option value="workshop-planner.html">Workshop Layout Planner</option>
                 <option value="dust-collection.html">Dust Collection</option>
                 <option value="project-designer.html">Project Designer</option>
@@ -1004,13 +1086,14 @@
                 </span>
             </button>
             <div class="header-quick-links">
-                <a href="pricing.html">Plan Comparison</a>
-                <span class="header-quick-links-sep">&middot;</span>
+                <div class="header-quick-links-row">
+                    <a href="pricing.html">Plan Comparison</a>
+                    <span class="header-quick-links-sep">&middot;</span>
+                    <a href="follow.html">Follow Us</a>
+                    <span class="header-quick-links-sep">&middot;</span>
+                    <a href="terms.html">Terms</a>
+                </div>
                 <a href="help.html">Trouble with the Kerph</a>
-                <span class="header-quick-links-sep">&middot;</span>
-                <a href="follow.html">Follow Us</a>
-                <span class="header-quick-links-sep">&middot;</span>
-                <a href="terms.html">Terms</a>
             </div>
             <select class="plan-select" id="planSelector" style="display:none;">
                 <option value="free">Free</option>
@@ -1159,88 +1242,91 @@
 
     <main>
         <div class="hero-row">
-            <div class="hero-intro">
-                <div class="intro-title" id="heroTitle">Workshop &amp; project tools</div>
-                <div class="intro-subtitle" id="heroSubtitle">Pick a tool to get started. More will show up here over time.</div>
-                <a href="workshop-planner.html" class="hero-cta">Open Workshop Layout Planner &rarr;</a>
+            <div class="home-main-col">
+                <div class="hero-intro">
+                    <div class="intro-title" id="heroTitle">Workshop &amp; project tools</div>
+                    <div class="intro-subtitle" id="heroSubtitle">Pick a tool to get started. More will show up here over time.</div>
+                </div>
+
+                <div class="tool-grid">
+                    <a href="workshop-planner.html" class="tool-card tool-card-featured">
+                        <div class="tool-card-icon">&#128736;</div>
+                        <div>
+                            <div class="tool-card-title">Workshop layout planner</div>
+                            <div class="tool-card-desc">Lay out your shop floor to scale — tools, cabinets, dust collection, and lighting, all placed and sized for real. Start here — everything else below builds on the shop you lay out.</div>
+                        </div>
+                    </a>
+
+                    <a href="dust-collection.html" class="tool-card">
+                        <div class="tool-card-icon">&#128168;</div>
+                        <div class="tool-card-title">Dust collection <span class="badge-new">New</span></div>
+                        <div class="tool-card-desc">Lay out dust collection gear on the same shop grid as your Workshop Layout Planner, plus a duct sizing calculator.</div>
+                    </a>
+
+                    <a href="project-designer.html" class="tool-card">
+                        <div class="tool-card-icon">&#128208;</div>
+                        <div class="tool-card-title">Project designer <span class="badge-new">New</span></div>
+                        <div class="tool-card-desc">Design a piece from individual panels and boards, and get an automatically generated cut list.</div>
+                    </a>
+
+                    <a href="cutlist-optimizer.html" class="tool-card">
+                        <div class="tool-card-icon">&#9986;&#65039;</div>
+                        <div class="tool-card-title">Cut list optimizer <span class="badge-new">New</span></div>
+                        <div class="tool-card-desc">Turn a parts list into an optimized cutting layout across sheets and boards, with diagrams and waste estimates.</div>
+                    </a>
+
+                    <a href="find-a-builder.html" class="tool-card">
+                        <div class="tool-card-icon">&#127959;&#65039;</div>
+                        <div class="tool-card-title">Find a builder <span class="badge-new">New</span></div>
+                        <div class="tool-card-desc">Designed your shop — now find a pole barn or post-frame contractor near you to build it, with real Google reviews.</div>
+                    </a>
+
+                    <a href="shop-3d-viewer.html" class="tool-card">
+                        <div class="tool-card-icon">&#129482;</div>
+                        <div class="tool-card-title">3D shop viewer <span class="badge-new">New</span></div>
+                        <div class="tool-card-desc">See the shop you built in the Workshop Layout Planner assembled in 3D — orbit, pan, and zoom around it.</div>
+                    </a>
+
+                    <a href="tool-reviews.html" class="tool-card">
+                        <div class="tool-card-icon">&#11088;</div>
+                        <div class="tool-card-title">Cool tool reviews <span class="badge-new">New</span></div>
+                        <div class="tool-card-desc">Real feedback from real shops — browse tool reviews by category and star rating, or write your own.</div>
+                    </a>
+
+                    <a href="shop-showcase.html" class="tool-card">
+                        <div class="tool-card-icon">&#128247;</div>
+                        <div class="tool-card-title">Shop showcase <span class="badge-new">New</span></div>
+                        <div class="tool-card-desc">Share photos of your shop layout and browse everyone else's for inspiration.</div>
+                    </a>
+
+                    <a href="portfolio.html" class="tool-card">
+                        <div class="tool-card-icon">&#128188;</div>
+                        <div class="tool-card-title">Portfolio <span class="badge-new">New</span></div>
+                        <div class="tool-card-desc">A permanent, shareable page for everything you've built — pull from Project Designer or upload photos and plans from anywhere.</div>
+                    </a>
+
+                    <a href="quote-builder.html" class="tool-card">
+                        <div class="tool-card-icon">&#129309;</div>
+                        <div class="tool-card-title">Quote builder <span class="badge-new">New</span></div>
+                        <div class="tool-card-desc">Turn a cut list into a real client quote — materials, labor, overhead, and margin, exported as a PDF.</div>
+                    </a>
+
+                    <a href="print-library.html" class="tool-card">
+                        <div class="tool-card-icon">&#128230;</div>
+                        <div class="tool-card-title">3D print library <span class="badge-new">New</span></div>
+                        <div class="tool-card-desc">Browse printable jigs and fixtures with an in-browser 3D preview, or share your own designs.</div>
+                    </a>
+                </div>
             </div>
+
             <div class="snapshot-panel">
-                <div class="snapshot-title">Your shop at a glance</div>
+                <div class="snapshot-title">My Workspace</div>
+                <div class="snapshot-subtitle">Your shop at a glance</div>
                 <div class="account-stats-row" id="homeStatsRow"></div>
                 <div class="snapshot-current" id="snapshotCurrent"></div>
                 <div id="snapshotPremierPerk"></div>
-                <a href="my-workspace.html" class="snapshot-link" style="display:block; margin-top:10px;">View my full workspace &rarr;</a>
+                <a href="my-workspace.html" class="snapshot-cta">Go to My Workspace &rarr;</a>
             </div>
-        </div>
-
-        <div class="tool-grid">
-            <a href="workshop-planner.html" class="tool-card tool-card-featured">
-                <div class="tool-card-icon">&#128736;</div>
-                <div>
-                    <div class="tool-card-title">Workshop layout planner</div>
-                    <div class="tool-card-desc">Lay out your shop floor to scale — tools, cabinets, dust collection, and lighting, all placed and sized for real. Start here — everything else below builds on the shop you lay out.</div>
-                </div>
-            </a>
-
-            <a href="dust-collection.html" class="tool-card">
-                <div class="tool-card-icon">&#128168;</div>
-                <div class="tool-card-title">Dust collection <span class="badge-new">New</span></div>
-                <div class="tool-card-desc">Lay out dust collection gear on the same shop grid as your Workshop Layout Planner, plus a duct sizing calculator.</div>
-            </a>
-
-            <a href="project-designer.html" class="tool-card">
-                <div class="tool-card-icon">&#128208;</div>
-                <div class="tool-card-title">Project designer <span class="badge-new">New</span></div>
-                <div class="tool-card-desc">Design a piece from individual panels and boards, and get an automatically generated cut list.</div>
-            </a>
-
-            <a href="cutlist-optimizer.html" class="tool-card">
-                <div class="tool-card-icon">&#9986;&#65039;</div>
-                <div class="tool-card-title">Cut list optimizer <span class="badge-new">New</span></div>
-                <div class="tool-card-desc">Turn a parts list into an optimized cutting layout across sheets and boards, with diagrams and waste estimates.</div>
-            </a>
-
-            <a href="find-a-builder.html" class="tool-card">
-                <div class="tool-card-icon">&#127959;&#65039;</div>
-                <div class="tool-card-title">Find a builder <span class="badge-new">New</span></div>
-                <div class="tool-card-desc">Designed your shop — now find a pole barn or post-frame contractor near you to build it, with real Google reviews.</div>
-            </a>
-
-            <a href="shop-3d-viewer.html" class="tool-card">
-                <div class="tool-card-icon">&#129482;</div>
-                <div class="tool-card-title">3D shop viewer <span class="badge-new">New</span></div>
-                <div class="tool-card-desc">See the shop you built in the Workshop Layout Planner assembled in 3D — orbit, pan, and zoom around it.</div>
-            </a>
-
-            <a href="tool-reviews.html" class="tool-card">
-                <div class="tool-card-icon">&#11088;</div>
-                <div class="tool-card-title">Cool tool reviews <span class="badge-new">New</span></div>
-                <div class="tool-card-desc">Real feedback from real shops — browse tool reviews by category and star rating, or write your own.</div>
-            </a>
-
-            <a href="shop-showcase.html" class="tool-card">
-                <div class="tool-card-icon">&#128247;</div>
-                <div class="tool-card-title">Shop showcase <span class="badge-new">New</span></div>
-                <div class="tool-card-desc">Share photos of your shop layout and browse everyone else's for inspiration.</div>
-            </a>
-
-            <a href="portfolio.html" class="tool-card">
-                <div class="tool-card-icon">&#128188;</div>
-                <div class="tool-card-title">Portfolio <span class="badge-new">New</span></div>
-                <div class="tool-card-desc">A permanent, shareable page for everything you've built — pull from Project Designer or upload photos and plans from anywhere.</div>
-            </a>
-
-            <a href="quote-builder.html" class="tool-card">
-                <div class="tool-card-icon">&#129309;</div>
-                <div class="tool-card-title">Quote builder <span class="badge-new">New</span></div>
-                <div class="tool-card-desc">Turn a cut list into a real client quote — materials, labor, overhead, and margin, exported as a PDF.</div>
-            </a>
-
-            <a href="print-library.html" class="tool-card">
-                <div class="tool-card-icon">&#128230;</div>
-                <div class="tool-card-title">3D print library <span class="badge-new">New</span></div>
-                <div class="tool-card-desc">Browse printable jigs and fixtures with an in-browser 3D preview, or share your own designs.</div>
-            </a>
         </div>
     </main>
 
@@ -2411,6 +2497,114 @@
             if (e.key === MAINTENANCE_REMINDERS_KEY) renderToolLists();
         });
 
+        /* ---------- HOME PAGE TILE REORDER ----------
+           The Workshop Layout Planner's featured tile is pinned first (see the CSS comment
+           above .tool-card-featured — it's deliberately the one non-equal-weight tile) and
+           isn't part of the reorderable/draggable set. Every other tile can be dragged into
+           whatever order the user wants; that order is cached locally for an instant paint
+           and synced to the account (home_tile_order on profiles) so it follows them across
+           devices, the same pattern unit_system/maintenance reminders already use. */
+        const HOME_TILE_ORDER_KEY = 'kerphHomeTileOrder';
+
+        function getReorderableCards() {
+            const grid = document.querySelector('.tool-grid');
+            return grid ? Array.from(grid.querySelectorAll('.tool-card:not(.tool-card-featured)')) : [];
+        }
+
+        // No saved order yet (or a saved order is missing a tile — e.g. a new tool shipped
+        // since the user last arranged things) falls back to this: unlocked tiles first in
+        // their catalog order, then locked ones — computed live off the current plan rather
+        // than ever being persisted itself, so a plan upgrade naturally surfaces a
+        // newly-unlocked tile without touching whatever the user has actually arranged.
+        function splitByLock(hrefs) {
+            const plan = localStorage.getItem(PLAN_KEY) || 'free';
+            const unlocked = [], locked = [];
+            hrefs.forEach((href) => {
+                const tier = (typeof kerphRequiredTierFor === 'function') ? kerphRequiredTierFor(href) : null;
+                const ok = !tier || (typeof kerphPlanMeetsTier !== 'function') || kerphPlanMeetsTier(plan, tier);
+                (ok ? unlocked : locked).push(href);
+            });
+            return unlocked.concat(locked);
+        }
+
+        function resolveTileOrder(savedOrder) {
+            const liveHrefs = getReorderableCards().map((c) => c.getAttribute('href'));
+            if (!Array.isArray(savedOrder) || !savedOrder.length) return splitByLock(liveHrefs);
+            const known = savedOrder.filter((h) => liveHrefs.includes(h));
+            const missing = liveHrefs.filter((h) => !known.includes(h));
+            if (!missing.length) return known;
+            // Any missing hrefs (a new tool shipped since this order was saved) get slotted
+            // in via the same unlocked/locked split — unlocked ones ahead of the user's
+            // saved order (so a new free tool doesn't hide at the bottom), locked ones behind.
+            const plan = localStorage.getItem(PLAN_KEY) || 'free';
+            const missingUnlocked = [], missingLocked = [];
+            missing.forEach((href) => {
+                const tier = (typeof kerphRequiredTierFor === 'function') ? kerphRequiredTierFor(href) : null;
+                const ok = !tier || (typeof kerphPlanMeetsTier !== 'function') || kerphPlanMeetsTier(plan, tier);
+                (ok ? missingUnlocked : missingLocked).push(href);
+            });
+            return missingUnlocked.concat(known, missingLocked);
+        }
+
+        function applyTileOrder(order) {
+            const grid = document.querySelector('.tool-grid');
+            if (!grid || !order || !order.length) return;
+            const byHref = {};
+            getReorderableCards().forEach((c) => { byHref[c.getAttribute('href')] = c; });
+            order.forEach((href) => {
+                const card = byHref[href];
+                if (card) grid.appendChild(card);
+            });
+        }
+
+        function currentTileOrder() {
+            return getReorderableCards().map((c) => c.getAttribute('href'));
+        }
+
+        function saveTileOrder(order) {
+            localStorage.setItem(HOME_TILE_ORDER_KEY, JSON.stringify(order));
+            kerphSaveProfile({ username: kerphGetCachedProfile().username, homeTileOrder: order }).catch(() => {});
+        }
+
+        function initTileReorder() {
+            const grid = document.querySelector('.tool-grid');
+            if (!grid) return;
+            let draggedCard = null;
+
+            getReorderableCards().forEach((card) => {
+                if (!card.querySelector('.tool-card-drag-handle')) {
+                    const handle = document.createElement('span');
+                    handle.className = 'tool-card-drag-handle';
+                    handle.title = 'Drag to reorder';
+                    handle.textContent = '⋮⋮';
+                    card.appendChild(handle);
+                }
+                card.setAttribute('draggable', 'true');
+                card.addEventListener('dragstart', (e) => {
+                    draggedCard = card;
+                    card.classList.add('tool-card-dragging');
+                    e.dataTransfer.effectAllowed = 'move';
+                    e.dataTransfer.setData('text/plain', card.getAttribute('href') || '');
+                });
+                card.addEventListener('dragend', () => {
+                    card.classList.remove('tool-card-dragging');
+                    draggedCard = null;
+                    grid.querySelectorAll('.tool-card-drag-over').forEach((c) => c.classList.remove('tool-card-drag-over'));
+                    saveTileOrder(currentTileOrder());
+                });
+                card.addEventListener('dragover', (e) => {
+                    if (!draggedCard || draggedCard === card) return;
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = 'move';
+                    grid.querySelectorAll('.tool-card-drag-over').forEach((c) => c.classList.remove('tool-card-drag-over'));
+                    card.classList.add('tool-card-drag-over');
+                    const rect = card.getBoundingClientRect();
+                    const before = (e.clientX - rect.left) < rect.width / 2;
+                    card.parentNode.insertBefore(draggedCard, before ? card : card.nextSibling);
+                });
+            });
+        }
+
         // Single reactive point for sign-in/account changes — fires in every open tab
         // whenever auth state changes anywhere (sign in, sign up, sign out, profile save),
         // replacing the old AUTH_KEY/ACCOUNT_KEY storage-event branches this listener used
@@ -2425,6 +2619,16 @@
             });
             kerphLoadSavedLayouts().then(({ data }) => { cachedSavedLayouts = data || []; });
         });
+
+        // Instant-paint from whatever's cached locally (or the live unlocked-first default
+        // if nothing's cached yet) — runs immediately since the tool grid is already in the
+        // DOM by the time this inline script executes, well before kerphAuthReady resolves.
+        (function paintInitialTileOrder() {
+            let cached = null;
+            try { cached = JSON.parse(localStorage.getItem(HOME_TILE_ORDER_KEY) || 'null'); } catch (e) { /* ignore */ }
+            applyTileOrder(resolveTileOrder(cached));
+        })();
+        initTileReorder();
 
         document.getElementById('pageNavSelect').addEventListener('change', (e) => { window.location.href = e.target.value; });
 
@@ -2462,6 +2666,14 @@
             if (profile.unitSystem) localStorage.setItem('kerphUnitSystem', profile.unitSystem);
             if (profile.maintenanceRemindersEnabled !== undefined) {
                 localStorage.setItem(MAINTENANCE_REMINDERS_KEY, profile.maintenanceRemindersEnabled ? 'true' : 'false');
+            }
+            // The account's real saved order (if any) takes over from whatever the local
+            // instant-paint above used — e.g. an order set on another device — and refreshes
+            // the local cache to match so the next load's instant-paint is already correct.
+            if (profile.homeTileOrder && profile.homeTileOrder.length) {
+                const resolved = resolveTileOrder(profile.homeTileOrder);
+                applyTileOrder(resolved);
+                localStorage.setItem(HOME_TILE_ORDER_KEY, JSON.stringify(resolved));
             }
             cachedToolStatuses = (await kerphLoadToolStatus()).data || {};
             renderToolLists();
