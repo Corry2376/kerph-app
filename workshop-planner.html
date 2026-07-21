@@ -1966,6 +1966,24 @@
 
         .rotate-readout.visible { opacity: 1; }
 
+        .cabinet-height-badge {
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #0f766e;
+            color: #ffffff;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 4px;
+            white-space: nowrap;
+            cursor: pointer;
+            z-index: 521;
+            border: none;
+        }
+        .cabinet-height-badge:hover { background-color: #115e59; }
+
         /* TOOL PREVIEW POPOVER */
         .tool-preview-popover {
             position: fixed;
@@ -2054,6 +2072,7 @@
             body { background: #fff !important; }
             header, #sidebar-panel, .measure-toolbar, .floating-panel, .upgrade-nudge,
             .ruler, .resize-handle, .rotate-handle, .rotate-readout, .node-resize-handle,
+            .cabinet-height-badge,
             .open-port-marker, .clearance-wall-marker, .clearance-zone-overlay, .modal-overlay, #shapeDrawControls {
                 display: none !important;
             }
@@ -2101,7 +2120,8 @@
             }
             .placed-tool-node.selected-node { outline: none !important; }
         }
-            .header-quick-links { display: flex; align-items: center; gap: 6px; font-size: 11px; }
+            .header-quick-links { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; font-size: 11px; }
+            .header-quick-links-row { display: flex; align-items: center; gap: 6px; }
         .header-quick-links a { color: #6b7280; font-weight: 600; text-decoration: none; }
         .header-quick-links a:hover { color: #1e3a8a; text-decoration: underline; }
         .header-quick-links-sep { color: #cbd5e1; }
@@ -2164,7 +2184,6 @@
             </div>
             <select class="page-title-select" id="pageNavSelect">
                 <option value="index.html">Home</option>
-                <option value="my-workspace.html">My Workspace</option>
                 <option value="workshop-planner.html" selected>Workshop Layout Planner</option>
                 <option value="dust-collection.html">Dust Collection</option>
                 <option value="project-designer.html">Project Designer</option>
@@ -2244,13 +2263,14 @@
                 </span>
             </button>
             <div class="header-quick-links">
-                <a href="pricing.html">Plan Comparison</a>
-                <span class="header-quick-links-sep">&middot;</span>
+                <div class="header-quick-links-row">
+                    <a href="pricing.html">Plan Comparison</a>
+                    <span class="header-quick-links-sep">&middot;</span>
+                    <a href="follow.html">Follow Us</a>
+                    <span class="header-quick-links-sep">&middot;</span>
+                    <a href="terms.html">Terms</a>
+                </div>
                 <a href="help.html">Trouble with the Kerph</a>
-                <span class="header-quick-links-sep">&middot;</span>
-                <a href="follow.html">Follow Us</a>
-                <span class="header-quick-links-sep">&middot;</span>
-                <a href="terms.html">Terms</a>
             </div>
             <select class="plan-select" id="planSelector" style="display:none;">
                 <option value="free">Free</option>
@@ -3766,6 +3786,28 @@
         </div>
     </div>
 
+    <div class="modal-overlay" id="cabinetHeightModalOverlay" style="display:none;">
+        <div class="modal-box">
+            <div class="modal-title" id="cabinetHeightModalTitle">Wall Cabinet Height</div>
+            <div class="modal-warning">How high off the floor should the bottom of this cabinet sit?</div>
+
+            <div class="header-field" style="width:100%;">
+                <label class="header-field-label" for="cabinetHeightInput">Height (in, from floor to cabinet bottom)</label>
+                <input type="number" class="input-box" id="cabinetHeightInput" value="54" min="0">
+            </div>
+            <div class="header-compound-row" style="margin-top:8px; flex-wrap:wrap; gap:6px;">
+                <button type="button" class="mini-btn cabinet-height-preset" data-height="48" style="flex:none;">48" Over Base</button>
+                <button type="button" class="mini-btn cabinet-height-preset" data-height="54" style="flex:none;">54" Standard</button>
+                <button type="button" class="mini-btn cabinet-height-preset" data-height="60" style="flex:none;">60" High</button>
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" id="cabinetHeightCancelBtn" class="mini-btn">Cancel</button>
+                <button type="button" id="cabinetHeightConfirmBtn" class="mini-btn modal-primary-btn">Confirm</button>
+            </div>
+        </div>
+    </div>
+
     <div class="upgrade-nudge" id="upgradeNudge"></div>
     <div class="tool-preview-popover" id="toolPreviewPopover"></div>
 
@@ -4665,11 +4707,12 @@
                 const toolW = internalDragData.length * ppi;
                 const toolH = internalDragData.width * ppi;
 
-                const scaleMultiplier = parseFloat(document.getElementById('inputScale').value) || 1.0;
-                // Dust collection items (ducts especially) need much finer placement than the
-                // shop's coarse grid scale to route cleanly between fixed points — the shop's
-                // 1ft+ grid made every run jump between a few fixed spots instead of gliding.
-                const snapInterval = internalDragData.layer === 'dust-collection' ? (ppi / 6) : (scaleMultiplier * ppi);
+                // Placement snaps to a fixed 6in grid regardless of the ruler's displayed grid
+                // scale (1ft/2ft/etc.) — that scale is a ruler/visual setting, not a placement
+                // granularity, and 6in gives real positioning control next to walls/other items.
+                // Dust collection items (ducts especially) need finer placement still, to route
+                // cleanly between fixed points without every run jumping between a few spots.
+                const snapInterval = internalDragData.layer === 'dust-collection' ? (ppi / 6) : (ppi / 2);
 
                 // Enforces snapping alignment parameters
                 let snapX = Math.round((mouseX - toolW / 2) / snapInterval) * snapInterval;
@@ -4692,60 +4735,86 @@
                     }
                 }
 
-                pushUndoSnapshot();
-                const toolNode = document.createElement('div');
-                toolNode.className = 'placed-tool-node';
-                if (internalDragData.cabType) {
-                    toolNode.classList.add('placed-cabinet-node', 'cabinet-' + internalDragData.cabType);
-                    toolNode.dataset.cabType = internalDragData.cabType;
-                }
-                // Cabinets are always-visible structural context regardless of internalDragData's
-                // (unset) layer — everything else carries the layer tag from its catalog item.
-                toolNode.dataset.layer = internalDragData.cabType ? 'cabinets' : (internalDragData.layer || 'tools');
-                toolNode.dataset.height = internalDragData.height || '';
-                toolNode.style.width = toolW + 'px';
-                toolNode.style.height = toolH + 'px';
-                toolNode.style.left = snapX + 'px';
-                toolNode.style.top = snapY + 'px';
-                toolNode.dataset.toolName = internalDragData.name;
-                if (internalDragData.clearanceCategory) toolNode.dataset.clearanceCategory = internalDragData.clearanceCategory;
-                applyDustCollectionNodeStyling(toolNode, internalDragData.name);
-
-                let displayName = internalDragData.name;
-                let displayDims;
-                if (internalDragData.cabType) {
-                    const widthIn = Math.round(internalDragData.length * 12 * 10) / 10;
-                    const depthIn = Math.round(internalDragData.width * 12 * 10) / 10;
-                    displayDims = `${widthIn}"W x ${depthIn}"D`;
-                    if (internalDragData.hasDrawers && internalDragData.drawers.length) {
-                        displayDims += ` +${internalDragData.drawers.length} drwrs`;
-                    }
-                } else {
-                    const statuses = loadToolStatuses();
-                    const entry = statuses[internalDragData.name];
-                    if (entry && entry.status === 'owned' && entry.nickname) {
-                        displayName = entry.nickname;
-                    }
-                    displayDims = `${internalDragData.width.toFixed(1)}' x ${internalDragData.length.toFixed(1)}'`;
-                }
-                buildPlacedNodeContent(toolNode, displayName, displayDims);
-                applyVerticalLabelIfNarrow(toolNode, internalDragData.name, toolW, toolH);
-
-                makeElementInteractive(toolNode, toolW, toolH);
-                makeElementRotatable(toolNode);
-                if (internalDragData.cabType) makeElementResizable(toolNode);
-                if (internalDragData.layer === 'dust-collection') applyDustCollectionSnap(toolNode);
-                board.appendChild(toolNode);
-
-                if (!internalDragData.cabType && (internalDragData.layer || 'tools') === 'tools') {
-                    const statuses = loadToolStatuses();
-                    const entry = statuses[internalDragData.name];
-                    if (entry && entry.attachDC) autoRouteDustCollection(snapX, snapY, toolW, toolH);
-                }
-
+                const placement = { ...internalDragData, snapX, snapY, toolW, toolH };
                 internalDragData = null;
-                applyLayerVisibility();
+
+                // Wall cabinets need a mount height before they can be finalized — captured
+                // in a popup right at placement time (same pattern as the outlet height
+                // modal above) rather than defaulted, since it's the one dimension a
+                // top-down 2D grid can't let the user set by eye.
+                if (placement.cabType === 'wall') {
+                    openCabinetHeightModal(placement);
+                    return;
+                }
+
+                placeToolNodeOnBoard(placement, null);
             });
+        }
+
+        // Shared tail of the drop handler above — also called from the wall-cabinet-height
+        // modal's confirm handler once a mount height has been captured, so both paths
+        // (immediate placement, and placement deferred behind the height popup) build an
+        // identical node. Top-level (not nested in initDragAndDropEngine) since the height
+        // modal's own init function needs to call it too.
+        function placeToolNodeOnBoard(placement, mountHeightIn) {
+            const { snapX, snapY, toolW, toolH } = placement;
+            pushUndoSnapshot();
+            const toolNode = document.createElement('div');
+            toolNode.className = 'placed-tool-node';
+            if (placement.cabType) {
+                toolNode.classList.add('placed-cabinet-node', 'cabinet-' + placement.cabType);
+                toolNode.dataset.cabType = placement.cabType;
+            }
+            // Cabinets are always-visible structural context regardless of placement's
+            // (unset) layer — everything else carries the layer tag from its catalog item.
+            toolNode.dataset.layer = placement.cabType ? 'cabinets' : (placement.layer || 'tools');
+            toolNode.dataset.height = placement.height || '';
+            if (placement.cabType === 'wall') toolNode.dataset.mountHeightIn = mountHeightIn || '';
+            toolNode.style.width = toolW + 'px';
+            toolNode.style.height = toolH + 'px';
+            toolNode.style.left = snapX + 'px';
+            toolNode.style.top = snapY + 'px';
+            toolNode.dataset.toolName = placement.name;
+            if (placement.clearanceCategory) toolNode.dataset.clearanceCategory = placement.clearanceCategory;
+            applyDustCollectionNodeStyling(toolNode, placement.name);
+
+            let displayName = placement.name;
+            let displayDims;
+            if (placement.cabType) {
+                const widthIn = Math.round(placement.length * 12 * 10) / 10;
+                const depthIn = Math.round(placement.width * 12 * 10) / 10;
+                displayDims = `${widthIn}"W x ${depthIn}"D`;
+                if (placement.hasDrawers && placement.drawers.length) {
+                    displayDims += ` +${placement.drawers.length} drwrs`;
+                }
+                if (placement.cabType === 'wall' && mountHeightIn) {
+                    displayDims += ` @ ${mountHeightIn}"H`;
+                }
+            } else {
+                const statuses = loadToolStatuses();
+                const entry = statuses[placement.name];
+                if (entry && entry.status === 'owned' && entry.nickname) {
+                    displayName = entry.nickname;
+                }
+                displayDims = `${placement.width.toFixed(1)}' x ${placement.length.toFixed(1)}'`;
+            }
+            buildPlacedNodeContent(toolNode, displayName, displayDims);
+            applyVerticalLabelIfNarrow(toolNode, placement.name, toolW, toolH);
+
+            makeElementInteractive(toolNode, toolW, toolH);
+            makeElementRotatable(toolNode);
+            if (placement.cabType) makeElementResizable(toolNode);
+            if (placement.cabType === 'wall') addCabinetHeightBadge(toolNode);
+            if (placement.layer === 'dust-collection') applyDustCollectionSnap(toolNode);
+            board.appendChild(toolNode);
+
+            if (!placement.cabType && (placement.layer || 'tools') === 'tools') {
+                const statuses = loadToolStatuses();
+                const entry = statuses[placement.name];
+                if (entry && entry.attachDC) autoRouteDustCollection(snapX, snapY, toolW, toolH);
+            }
+
+            applyLayerVisibility();
         }
 
         /* ---------- GRID PANNING (click-drag empty grid to scroll, instead of scrollbars) ----------
@@ -4954,8 +5023,8 @@
                 const deltaY = e.clientY - startMouseY;
                 let targetX = startLeft + deltaX;
                 let targetY = startTop + deltaY;
-                const currentMultiplier = parseFloat(document.getElementById('inputScale').value) || 1.0;
-                const currentSnap = el.dataset.layer === 'dust-collection' ? (ppi / 6) : (currentMultiplier * ppi);
+                // Fixed 6in placement snap regardless of ruler grid scale — see the drop handler above.
+                const currentSnap = el.dataset.layer === 'dust-collection' ? (ppi / 6) : (ppi / 2);
                 targetX = Math.round(targetX / currentSnap) * currentSnap;
                 targetY = Math.round(targetY / currentSnap) * currentSnap;
 
@@ -5067,6 +5136,8 @@
                 text = `${widthIn}"W x ${depthIn}"D`;
                 const drawerMatch = dimsEl.textContent.match(/\+\d+ drwrs/);
                 if (drawerMatch) text += ` ${drawerMatch[0]}`;
+                const heightMatch = dimsEl.textContent.match(/@\s*[\d.]+"H/);
+                if (heightMatch) text += ` ${heightMatch[0]}`;
             } else {
                 text = `${wFt.toFixed(1)}' x ${hFt.toFixed(1)}'`;
             }
@@ -5108,8 +5179,9 @@
 
             document.addEventListener('mousemove', (e) => {
                 if (!mode) return;
-                const scaleMultiplier = parseFloat(document.getElementById('inputScale').value) || 1.0;
-                const snap = scaleMultiplier * ppi;
+                // Fixed 6in snap regardless of ruler grid scale — matches the placement/
+                // reposition snap everywhere else on the board.
+                const snap = ppi / 2;
                 const minPx = snap;
                 const angle = parseFloat(el.dataset.rotation) || 0;
                 const curW = parseFloat(el.style.width) || 0;
@@ -6460,6 +6532,9 @@
                 // physicalHeight is the object's real-world vertical height in feet (for future 3D),
                 // distinct from `height` above which is the 2D footprint box's pixel size.
                 physicalHeight: node.dataset.height || null,
+                // Only meaningful for wall cabinets — inches from floor to the cabinet's
+                // bottom, so the 3D viewer can render it mounted rather than floor-standing.
+                mountHeightIn: node.dataset.mountHeightIn || null,
                 layer: node.dataset.layer || 'tools',
                 estCost: node.dataset.estCost || '',
                 clearanceCategory: node.dataset.clearanceCategory || null
@@ -6522,6 +6597,7 @@
             }
             applyDustCollectionNodeStyling(toolNode, t.label);
             toolNode.dataset.height = t.physicalHeight || '';
+            if (t.cabType === 'wall' && t.mountHeightIn) toolNode.dataset.mountHeightIn = t.mountHeightIn;
             toolNode.dataset.layer = t.layer || (t.cabType ? 'cabinets' : 'tools');
             toolNode.dataset.estCost = t.estCost || '';
             if (t.clearanceCategory) toolNode.dataset.clearanceCategory = t.clearanceCategory;
@@ -6537,6 +6613,7 @@
             makeElementInteractive(toolNode, w, h);
             makeElementRotatable(toolNode);
             if (t.cabType) makeElementResizable(toolNode);
+            if (t.cabType === 'wall') addCabinetHeightBadge(toolNode);
             if (t.rotation) {
                 toolNode.style.transform = `rotate(${t.rotation}deg)`;
                 toolNode.dataset.rotation = t.rotation;
@@ -6561,6 +6638,7 @@
                 rotation: parseFloat(node.dataset.rotation) || 0,
                 cabType: node.dataset.cabType || null,
                 physicalHeight: node.dataset.height || null,
+                mountHeightIn: node.dataset.mountHeightIn || null,
                 layer: node.dataset.layer || 'tools',
                 estCost: node.dataset.estCost || '',
                 clearanceCategory: node.dataset.clearanceCategory || null
@@ -8594,6 +8672,92 @@
             });
         }
 
+        // Small always-visible pill on a placed wall-cabinet node showing its current mount
+        // height, clickable to re-open the height modal in "edit" mode — the only way to
+        // change a wall cabinet's height after it's already on the board, since drag/resize
+        // only ever touch its footprint, not its elevation.
+        function addCabinetHeightBadge(toolNode) {
+            let badge = toolNode.querySelector('.cabinet-height-badge');
+            if (!badge) {
+                badge = document.createElement('button');
+                badge.type = 'button';
+                badge.className = 'cabinet-height-badge';
+                badge.setAttribute('draggable', 'false');
+                badge.addEventListener('mousedown', (e) => e.stopPropagation());
+                badge.addEventListener('dblclick', (e) => e.stopPropagation());
+                badge.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    openCabinetHeightEditModal(toolNode);
+                });
+                toolNode.appendChild(badge);
+            }
+            updateCabinetHeightBadge(toolNode);
+        }
+
+        function updateCabinetHeightBadge(toolNode) {
+            const badge = toolNode.querySelector('.cabinet-height-badge');
+            if (!badge) return;
+            const h = toolNode.dataset.mountHeightIn;
+            badge.textContent = h ? `${h}" high` : 'Set height';
+            badge.title = 'Height off floor to bottom of cabinet — click to edit';
+        }
+
+        let pendingCabinetPlacement = null;
+        let editingCabinetHeightNode = null;
+
+        function openCabinetHeightModal(placement) {
+            pendingCabinetPlacement = placement;
+            editingCabinetHeightNode = null;
+            document.getElementById('cabinetHeightModalTitle').textContent = 'Wall Cabinet Height';
+            document.getElementById('cabinetHeightInput').value = 54;
+            document.getElementById('cabinetHeightModalOverlay').style.display = 'flex';
+        }
+
+        function openCabinetHeightEditModal(node) {
+            editingCabinetHeightNode = node;
+            pendingCabinetPlacement = null;
+            document.getElementById('cabinetHeightModalTitle').textContent = 'Edit Cabinet Height';
+            document.getElementById('cabinetHeightInput').value = node.dataset.mountHeightIn || 54;
+            document.getElementById('cabinetHeightModalOverlay').style.display = 'flex';
+        }
+
+        function initCabinetHeightModal() {
+            const overlay = document.getElementById('cabinetHeightModalOverlay');
+            const input = document.getElementById('cabinetHeightInput');
+
+            document.getElementById('cabinetHeightCancelBtn').addEventListener('click', () => {
+                overlay.style.display = 'none';
+                pendingCabinetPlacement = null;
+                editingCabinetHeightNode = null;
+            });
+
+            document.querySelectorAll('.cabinet-height-preset').forEach(btn => {
+                btn.addEventListener('click', () => { input.value = btn.dataset.height; });
+            });
+
+            document.getElementById('cabinetHeightConfirmBtn').addEventListener('click', () => {
+                const heightIn = parseFloat(input.value) || 54;
+                if (pendingCabinetPlacement) {
+                    placeToolNodeOnBoard(pendingCabinetPlacement, heightIn);
+                    pendingCabinetPlacement = null;
+                } else if (editingCabinetHeightNode) {
+                    const node = editingCabinetHeightNode;
+                    node.dataset.mountHeightIn = heightIn;
+                    updateCabinetHeightBadge(node);
+                    const dimsEl = node.querySelector('.node-dims');
+                    if (dimsEl) {
+                        const text = dimsEl.textContent.replace(/\s*@\s*[\d.]+"H$/, '') + ` @ ${heightIn}"H`;
+                        dimsEl.textContent = text;
+                        node.dataset.displayDims = text;
+                    }
+                    editingCabinetHeightNode = null;
+                    autosaveCurrentLayout();
+                    showToast('Cabinet height updated.');
+                }
+                overlay.style.display = 'none';
+            });
+        }
+
         // onClick (optional) fires on a genuine click — mousedown+mouseup with no real
         // movement — so a handle can be BOTH a drag grip and a click target (e.g. collapse
         // toggle) without the two fighting. The pixel-position takeover (right:auto etc.)
@@ -8986,6 +9150,7 @@
         initWallFeatures();
         initInternalWallDrawing();
         initOutletHeightModal();
+        initCabinetHeightModal();
         initZoomControls();
         initHideDcLabels();
         initElectricalPanel();
