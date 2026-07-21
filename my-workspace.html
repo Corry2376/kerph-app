@@ -4,7 +4,7 @@
     <script>if (localStorage.getItem('kerphComingSoonBypass') !== 'true') { location.replace('coming-soon.html'); }</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kerph - Board Foot Calculator</title>
+    <title>Kerph - My Workspace</title>
     <style>
         * {
             box-sizing: border-box;
@@ -40,61 +40,26 @@
         .logo-spotlight { position: relative; display: flex; align-items: center; justify-content: center; width: 382px; height: 105px; }
         .logo-link { display: block; line-height: 0; }
         .logo-image {
-            position: relative;
-            z-index: 1;
-            width: 382px;
-            height: 105px;
-            object-fit: contain;
-            border-radius: 4px;
-            filter: drop-shadow(0 12px 22px rgba(15, 23, 42, 0.4));
-            transition: transform 0.3s ease, filter 0.3s ease;
+            position: relative; z-index: 1; width: 382px; height: 105px; object-fit: contain; border-radius: 4px;
+            filter: drop-shadow(0 12px 22px rgba(15, 23, 42, 0.4)); transition: transform 0.3s ease, filter 0.3s ease;
         }
         .logo-image:hover { transform: scale(1.03); filter: drop-shadow(0 18px 30px rgba(15, 23, 42, 0.5)); }
         .logo-tm { position: absolute; bottom: 6px; right: 22px; z-index: 2; font-size: 12px; font-weight: 800; color: #1e3a8a; line-height: 1; pointer-events: none; }
 
         .page-title-select {
-            font-size: 15px;
-            font-weight: 700;
-            color: #1e3a8a;
-            padding: 6px 6px 6px 16px;
-            border: none;
-            border-left: 1px solid #cbd5e1;
-            background-color: transparent;
-            cursor: pointer;
-            white-space: nowrap;
+            font-size: 15px; font-weight: 700; color: #1e3a8a; padding: 6px 6px 6px 16px; border: none;
+            border-left: 1px solid #cbd5e1; background-color: transparent; cursor: pointer; white-space: nowrap;
         }
         .page-title-select:hover { background-color: #eef2ff; border-radius: 4px; }
 
-        .header-field-label {
-            font-size: 10px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: #6b7280;
-        }
+        .header-field-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #6b7280; }
 
         .plan-badge-group { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; flex-shrink: 0; }
-        .plan-select {
-            padding: 8px 12px;
-            border: 1px solid #cbd5e1;
-            border-radius: 8px;
-            background-color: #ffffff;
-            font-size: 13px;
-            font-weight: 700;
-            color: #1e3a8a;
-            cursor: pointer;
-        }
+        .plan-select { padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background-color: #ffffff; font-size: 13px; font-weight: 700; color: #1e3a8a; cursor: pointer; }
 
         .account-btn {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 5px 14px 5px 5px;
-            border: 3px solid #cbd5e1;
-            border-radius: 999px;
-            background-color: #ffffff;
-            cursor: pointer;
-            transition: background-color 0.15s ease;
+            display: flex; align-items: center; gap: 8px; padding: 5px 14px 5px 5px; border: 3px solid #cbd5e1;
+            border-radius: 999px; background-color: #ffffff; cursor: pointer; transition: background-color 0.15s ease;
         }
         .account-btn:hover { background-color: #eef2ff; }
         .account-btn.plan-free { border-color: #16a34a; }
@@ -104,13 +69,11 @@
         .account-btn-name { font-size: 13px; font-weight: 700; color: #1e3a8a; }
         .account-btn-plan { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: #6b7280; }
         .account-avatar {
-            width: 28px; height: 28px; border-radius: 50%;
-            background-color: #e0e7ff; background-size: cover; background-position: center;
+            width: 28px; height: 28px; border-radius: 50%; background-color: #e0e7ff; background-size: cover; background-position: center;
             display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0;
         }
         .account-avatar-large {
-            width: 72px; height: 72px; border-radius: 50%;
-            background-color: #e0e7ff; background-size: cover; background-position: center;
+            width: 72px; height: 72px; border-radius: 50%; background-color: #e0e7ff; background-size: cover; background-position: center;
             display: flex; align-items: center; justify-content: center; font-size: 32px;
         }
 
@@ -122,24 +85,18 @@
         .header-sign-in .mini-btn { flex: none; padding: 6px 10px; font-size: 11px; }
 
         .mini-btn {
-            flex: 1;
-            padding: 8px 10px;
-            border: 1px solid #cbd5e1;
-            border-radius: 6px;
-            background-color: #ffffff;
-            font-size: 12px;
-            font-weight: 700;
-            color: #1e3a8a;
-            cursor: pointer;
+            flex: 1; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; background-color: #ffffff;
+            font-size: 12px; font-weight: 700; color: #1e3a8a; cursor: pointer;
         }
         .mini-btn:hover { background-color: #eef2ff; border-color: #2563eb; }
         .mini-btn.danger { color: #b91c1c; }
         .mini-btn.danger:hover { background-color: #fef2f2; border-color: #b91c1c; }
+        .mini-btn.primary { background-color: #1e3a8a; color: #ffffff; border-color: #1e3a8a; }
 
         .input-box { width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; font-weight: 600; }
         .select-box { width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; font-weight: 600; background: #f8fafc; }
 
-        .modal-overlay { position: fixed; inset: 0; background-color: rgba(15, 23, 42, 0.5); z-index: 3000; display: flex; align-items: center; justify-content: center; padding: 24px; }
+        .modal-overlay { position: fixed; inset: 0; background-color: rgba(15, 23, 42, 0.5); z-index: 3000; display: flex; align-items: center; justify-content: center; padding: 24px; overflow-y: auto; }
         .modal-box { background-color: #ffffff; border-radius: 12px; padding: 24px; width: 320px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4); }
         .account-modal-box { width: 380px; max-height: 88vh; overflow-y: auto; }
         .account-member-since { font-size: 10.5px; color: #94a3b8; font-weight: 600; margin-top: 6px; }
@@ -171,22 +128,9 @@
         .modal-primary-btn { background-color: #1e3a8a !important; color: #ffffff !important; border-color: #1e3a8a !important; }
 
         .upgrade-nudge {
-            position: fixed;
-            bottom: 24px;
-            left: 50%;
-            transform: translateX(-50%) translateY(20px);
-            background-color: #0f172a;
-            color: #ffffff;
-            font-size: 13px;
-            font-weight: 600;
-            padding: 10px 12px 10px 18px;
-            border-radius: 8px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.2s ease, transform 0.2s ease;
-            z-index: 2000;
-            max-width: 400px;
+            position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px); background-color: #0f172a; color: #ffffff;
+            font-size: 13px; font-weight: 600; padding: 10px 12px 10px 18px; border-radius: 8px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+            opacity: 0; pointer-events: none; transition: opacity 0.2s ease, transform 0.2s ease; z-index: 2000; max-width: 400px;
         }
         .upgrade-nudge.visible { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
 
@@ -195,97 +139,78 @@
         .header-quick-links a:hover { color: #1e3a8a; text-decoration: underline; }
         .header-quick-links-sep { color: #cbd5e1; }
 
-        /* ---------- SHOP JIGS DROPDOWN ---------- */
         .jigs-dropdown { position: relative; }
         .jigs-dropdown-btn {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 13px;
-            font-weight: 700;
-            color: #ffffff;
-            background-color: #1e3a8a;
-            padding: 9px 14px;
-            border: none;
-            border-radius: 999px;
-            cursor: pointer;
-            white-space: nowrap;
+            display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; color: #ffffff;
+            background-color: #1e3a8a; padding: 9px 14px; border: none; border-radius: 999px; cursor: pointer; white-space: nowrap;
         }
         .jigs-dropdown-btn:hover { background-color: #172d68; }
         .jigs-dropdown-caret { font-size: 9px; transition: transform 0.15s ease; }
         .jigs-dropdown.open .jigs-dropdown-caret { transform: rotate(180deg); }
         .jigs-dropdown-menu {
-            display: none;
-            position: absolute;
-            top: calc(100% + 8px);
-            left: 0;
-            background-color: #ffffff;
-            border: 1px solid #cbd5e1;
-            border-radius: 10px;
-            box-shadow: 0 12px 30px -8px rgba(15, 23, 42, 0.3);
-            padding: 6px;
-            min-width: 210px;
-            z-index: 2500;
+            display: none; position: absolute; top: calc(100% + 8px); left: 0; background-color: #ffffff; border: 1px solid #cbd5e1;
+            border-radius: 10px; box-shadow: 0 12px 30px -8px rgba(15, 23, 42, 0.3); padding: 6px; min-width: 230px; z-index: 2500;
         }
         .jigs-dropdown.open .jigs-dropdown-menu { display: block; }
-        .jigs-dropdown-menu a {
-            display: block;
-            padding: 8px 10px;
-            border-radius: 6px;
-            font-size: 13px;
-            font-weight: 600;
-            color: #1e293b;
-            text-decoration: none;
-        }
+        .jigs-dropdown-menu a { display: block; padding: 8px 10px; border-radius: 6px; font-size: 13px; font-weight: 600; color: #1e293b; text-decoration: none; }
         .jigs-dropdown-menu a:hover { background-color: #eef2ff; color: #1e3a8a; }
-        .jigs-dropdown-menu a.current { background-color: #eef2ff; color: #1e3a8a; }
         .jigs-dropdown-menu-sep { height: 1px; background-color: #e2e8f0; margin: 5px 2px; }
 
-        /* ---------- SINGLE-JIG PAGE LAYOUT ---------- */
-        .jig-page-layout {
-            max-width: 760px;
-            margin: 0 auto;
-            padding: 40px 24px 100px;
+        /* ---------- WORKSPACE PAGE LAYOUT ---------- */
+        .workspace-layout { max-width: 1180px; margin: 0 auto; padding: 32px 24px 100px; }
+        .workspace-hero-title { font-size: 27px; font-weight: 800; color: #0f172a; }
+        .workspace-hero-sub { font-size: 13.5px; color: #6b7280; margin-top: 4px; line-height: 1.5; }
+        .workspace-signed-out { text-align: center; padding: 80px 20px; color: #6b7280; }
+        .workspace-signed-out-icon { font-size: 42px; margin-bottom: 14px; }
+
+        .workspace-stats-row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; margin: 24px 0 36px; }
+        .workspace-stat { background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 8px; text-align: center; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04); }
+        .workspace-stat-value { font-size: 22px; font-weight: 800; color: #1e3a8a; font-variant-numeric: tabular-nums; }
+        .workspace-stat-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: #6b7280; margin-top: 3px; }
+
+        .workspace-section { margin-bottom: 34px; }
+        .workspace-section-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 12px; }
+        .workspace-section-title { font-size: 17px; font-weight: 800; color: #0f172a; display: flex; align-items: center; gap: 8px; }
+        .workspace-section-title .emoji { font-size: 18px; }
+        .workspace-section-count { font-size: 12px; color: #6b7280; font-weight: 600; }
+        .workspace-section-viewall { font-size: 12px; font-weight: 700; color: #1e3a8a; text-decoration: none; white-space: nowrap; }
+        .workspace-section-viewall:hover { text-decoration: underline; }
+
+        .workspace-card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
+        .workspace-card {
+            background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 16px; text-decoration: none; color: inherit;
+            display: block; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04); transition: transform 0.15s ease, box-shadow 0.15s ease;
         }
-        .jig-breadcrumb { font-size: 12.5px; font-weight: 600; margin-bottom: 14px; }
-        .jig-breadcrumb a { color: #6b7280; text-decoration: none; }
-        .jig-breadcrumb a:hover { color: #1e3a8a; text-decoration: underline; }
-        .help-eyebrow {
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            color: #b23b3b;
-            margin-bottom: 8px;
-        }
-        .help-title { font-size: 28px; font-weight: 800; color: #0f172a; margin-bottom: 10px; }
-        .help-subtitle { font-size: 14.5px; color: #4b5563; line-height: 1.6; margin-bottom: 24px; max-width: 65ch; }
-        .help-article {
-            background-color: #ffffff;
-            border: 1px solid #cbd5e1;
-            border-radius: 14px;
-            padding: 32px;
-            box-shadow: 0 12px 30px -12px rgba(15, 23, 42, 0.15);
+        .workspace-card:hover { transform: translateY(-2px); box-shadow: 0 10px 22px rgba(15, 23, 42, 0.09); }
+        .workspace-card-title { font-size: 13.5px; font-weight: 700; color: #0f172a; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .workspace-card-sub { font-size: 11.5px; color: #6b7280; margin-top: 4px; }
+        .workspace-card-badge {
+            display: inline-block; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em;
+            padding: 2px 6px; border-radius: 4px; margin-top: 8px; background: #eef2ff; color: #1e3a8a;
         }
 
-        /* ---------- SHOP JIGS TOOL WIDGETS ---------- */
-        .jig-input-row { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; margin-bottom: 14px; }
-        .jig-field { display: flex; flex-direction: column; gap: 4px; }
-        .jig-field label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: #6b7280; }
-        .jig-field input, .jig-field select { padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; font-weight: 600; width: 108px; background: #ffffff; }
-        .jig-field input.narrow { width: 64px; }
+        .workspace-empty { font-size: 12.5px; color: #9ca3af; font-style: italic; padding: 18px; text-align: center; background: #ffffff; border: 1px dashed #cbd5e1; border-radius: 12px; }
 
-        .jig-results-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-top: 4px; }
-        .jig-result { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px; }
-        .jig-result-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: #6b7280; }
-        .jig-result-value { font-size: 18px; font-weight: 800; color: #1e3a8a; margin-top: 2px; font-variant-numeric: tabular-nums; }
-        .jig-result-value.big { font-size: 22px; }
-        .jig-result-sub { font-size: 11px; color: #6b7280; margin-top: 2px; }
+        .workspace-shop-card {
+            background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 18px 20px; display: flex; align-items: center;
+            justify-content: space-between; gap: 16px; flex-wrap: wrap; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04); margin-bottom: 16px;
+        }
+        .workspace-shop-card-meta { font-size: 13px; color: #374151; }
+        .workspace-shop-card-meta strong { color: #0f172a; }
 
-        .bf-quickpicks { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
-        .bf-quickpick { font-size: 11px; font-weight: 700; color: #1e3a8a; background: #eef2ff; border: 1px solid #c7d2fe; border-radius: 999px; padding: 3px 10px; cursor: pointer; }
-        .bf-quickpick:hover { background: #e0e7ff; }
-        .bf-quickpick.active { background: #1e3a8a; color: #fff; border-color: #1e3a8a; }
+        .workspace-tools-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .workspace-tools-panel { background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 16px; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04); }
+        .workspace-tools-panel-title { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; color: #6b7280; margin-bottom: 8px; }
+        .workspace-tools-list { font-size: 12.5px; color: #1e293b; line-height: 1.9; max-height: 150px; overflow-y: auto; }
+
+        .workspace-future-note {
+            font-size: 12px; color: #92400e; background-color: #fffbeb; border: 1px solid #fde68a; border-radius: 10px; padding: 12px 16px; line-height: 1.5;
+        }
+
+        @media (max-width: 900px) {
+            .workspace-stats-row { grid-template-columns: repeat(3, 1fr); }
+            .workspace-tools-cols { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
@@ -300,7 +225,7 @@
             </div>
             <select class="page-title-select" id="pageNavSelect">
                 <option value="index.html">Home</option>
-                <option value="my-workspace.html">My Workspace</option>
+                <option value="my-workspace.html" selected>My Workspace</option>
                 <option value="workshop-planner.html">Workshop Layout Planner</option>
                 <option value="dust-collection.html">Dust Collection</option>
                 <option value="project-designer.html">Project Designer</option>
@@ -318,7 +243,7 @@
                 <div class="jigs-dropdown-menu">
                     <a href="shop-jigs-fraction-converter.html">Fraction Converter</a>
                     <a href="shop-jigs-add-fractions.html">Add Fractions</a>
-                    <a href="shop-jigs-board-feet.html" class="current">Board Foot Calculator</a>
+                    <a href="shop-jigs-board-feet.html">Board Foot Calculator</a>
                     <a href="shop-jigs-angle-chart.html">Polygon Angle Chart</a>
                     <a href="shop-jigs-wood-movement.html">Wood Movement Calculator</a>
                     <a href="shop-jigs-speeds-feeds.html">Speeds &amp; Feeds</a>
@@ -392,7 +317,7 @@
                         <option value="premier">Premier</option>
                     </select>
                 </div>
-                <div class="account-plan-upsell" id="accountPlanUpsell" style="display:none;">Free includes 1 saved shop layout; custom shop shapes and unlimited saves unlock on Pro.</div>
+                <div class="account-plan-upsell" id="accountPlanUpsell" style="display:none;">See the full <a href="pricing.html" style="color:#92400e; font-weight:700;">plan comparison</a> to find out what unlocks on Pro.</div>
             </div>
 
             <div class="header-field" style="display:flex; flex-direction:column; gap:4px; margin-top:10px;">
@@ -434,52 +359,94 @@
 
     <div class="upgrade-nudge" id="upgradeNudge"></div>
 
-    <div class="jig-page-layout">
-        <div class="jig-breadcrumb"><a href="shop-jigs.html">Shop Jigs</a> / Board Foot Calculator</div>
-        <div class="help-eyebrow">Shop Jig</div>
-        <div class="help-title">Board Foot Calculator</div>
-        <div class="help-subtitle">One board foot is 144 cubic inches — a board 1" thick, 12" wide, and 12" long. Enter your stock's real dimensions to get board feet per board, total board feet, and total cost.</div>
+    <div class="workspace-layout">
+        <div class="workspace-hero-title">My Workspace</div>
+        <div class="workspace-hero-sub" id="workspaceHeroSub">Everything you're building in Kerph, in one place.</div>
 
-        <div class="help-article">
-            <div class="jig-input-row">
-                <div class="jig-field">
-                    <label for="bfThickness">Thickness (in)</label>
-                    <input type="number" id="bfThickness" value="1" step="0.125" min="0">
+        <div id="workspaceSignedOut" class="workspace-signed-out" style="display:none;">
+            <div class="workspace-signed-out-icon">&#128736;&#65039;</div>
+            <div>Sign in (top right) to see your shop, tools, projects, quotes, and portfolio all in one place.</div>
+        </div>
+
+        <div id="workspaceSignedIn" style="display:none;">
+            <div class="workspace-stats-row" id="workspaceStatsRow"></div>
+
+            <div class="workspace-section">
+                <div class="workspace-section-head">
+                    <div class="workspace-section-title"><span class="emoji">&#127959;&#65039;</span> My Shop</div>
+                    <a class="workspace-section-viewall" href="workshop-planner.html">Open Workshop Planner &rarr;</a>
                 </div>
-                <div class="jig-field">
-                    <label for="bfWidth">Width (in)</label>
-                    <input type="number" id="bfWidth" value="6" step="0.125" min="0">
-                </div>
-                <div class="jig-field">
-                    <label for="bfLength">Length</label>
-                    <input type="number" id="bfLength" value="8" step="0.5" min="0">
-                </div>
-                <div class="jig-field">
-                    <label for="bfLengthUnit">Length unit</label>
-                    <select id="bfLengthUnit">
-                        <option value="ft" selected>Feet</option>
-                        <option value="in">Inches</option>
-                    </select>
-                </div>
-                <div class="jig-field">
-                    <label for="bfQty">Quantity</label>
-                    <input type="number" id="bfQty" value="1" step="1" min="1" class="narrow">
-                </div>
-                <div class="jig-field">
-                    <label for="bfPrice">$ / board foot</label>
-                    <input type="number" id="bfPrice" value="" step="0.01" min="0" placeholder="optional">
-                </div>
-            </div>
-            <div class="bf-quickpicks" id="bfQuickpicks">
-                <span class="bf-quickpick" data-thickness="0.75">4/4 S2S (&frac34;")</span>
-                <span class="bf-quickpick" data-thickness="1">4/4 (1")</span>
-                <span class="bf-quickpick" data-thickness="1.25">5/4 (1&frac14;")</span>
-                <span class="bf-quickpick" data-thickness="1.5">6/4 (1&frac12;")</span>
-                <span class="bf-quickpick" data-thickness="2">8/4 (2")</span>
-                <span class="bf-quickpick" data-thickness="3">12/4 (3")</span>
+                <div id="workspaceCurrentShop"></div>
+                <div id="workspaceLayoutsGrid" class="workspace-card-grid"></div>
             </div>
 
-            <div class="jig-results-grid" id="bfResults" style="margin-top:16px;"></div>
+            <div class="workspace-section">
+                <div class="workspace-section-head">
+                    <div class="workspace-section-title"><span class="emoji">&#128295;</span> My Tools</div>
+                    <a class="workspace-section-viewall" href="workshop-planner.html">Manage in Workshop Planner &rarr;</a>
+                </div>
+                <div class="workspace-tools-cols">
+                    <div class="workspace-tools-panel">
+                        <div class="workspace-tools-panel-title">Owned</div>
+                        <div class="workspace-tools-list" id="workspaceOwnedToolsList"></div>
+                    </div>
+                    <div class="workspace-tools-panel">
+                        <div class="workspace-tools-panel-title">Wishlist</div>
+                        <div class="workspace-tools-list" id="workspaceWishlistToolsList"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="workspace-section">
+                <div class="workspace-section-head">
+                    <div class="workspace-section-title"><span class="emoji">&#128209;</span> My Projects</div>
+                    <span class="workspace-section-count" id="workspaceProjectsCount"></span>
+                </div>
+                <div id="workspaceProjectsGrid" class="workspace-card-grid"></div>
+            </div>
+
+            <div class="workspace-section">
+                <div class="workspace-section-head">
+                    <div class="workspace-section-title"><span class="emoji">&#129309;</span> My Quotes</div>
+                    <a class="workspace-section-viewall" href="quote-builder.html">Open Quote Builder &rarr;</a>
+                </div>
+                <div id="workspaceQuotesGrid" class="workspace-card-grid"></div>
+            </div>
+
+            <div class="workspace-section">
+                <div class="workspace-section-head">
+                    <div class="workspace-section-title"><span class="emoji">&#128188;</span> My Portfolio</div>
+                    <a class="workspace-section-viewall" href="portfolio.html">Manage Portfolio &rarr;</a>
+                </div>
+                <div id="workspacePortfolioGrid" class="workspace-card-grid"></div>
+            </div>
+
+            <div class="workspace-section">
+                <div class="workspace-section-head">
+                    <div class="workspace-section-title"><span class="emoji">&#127775;</span> My Community Activity</div>
+                </div>
+                <div class="workspace-tools-cols" style="grid-template-columns: 1fr 1fr 1fr;">
+                    <div class="workspace-tools-panel">
+                        <div class="workspace-tools-panel-title">Shop Showcase Posts</div>
+                        <div class="workspace-tools-list" id="workspaceMyShowcaseList"></div>
+                        <a class="workspace-section-viewall" href="shop-showcase.html" style="display:inline-block; margin-top:8px;">Open Shop Showcase &rarr;</a>
+                    </div>
+                    <div class="workspace-tools-panel">
+                        <div class="workspace-tools-panel-title">Tool Reviews</div>
+                        <div class="workspace-tools-list" id="workspaceMyReviewsList"></div>
+                        <a class="workspace-section-viewall" href="tool-reviews.html" style="display:inline-block; margin-top:8px;">Open Tool Reviews &rarr;</a>
+                    </div>
+                    <div class="workspace-tools-panel">
+                        <div class="workspace-tools-panel-title">Shared Print Plans</div>
+                        <div class="workspace-tools-list" id="workspaceMyPrintPlansList"></div>
+                        <a class="workspace-section-viewall" href="print-library.html" style="display:inline-block; margin-top:8px;">Open Print Library &rarr;</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="workspace-future-note">
+                <strong>Coming later:</strong> a history of past Cut List Optimizer runs, and a log of contractors you've reached out to via Find a Builder. Both need some backend work we haven't built yet — for now, Cut List Optimizer keeps only your current working list, and Find a Builder doesn't save outreach history.
+            </div>
         </div>
     </div>
 
@@ -500,6 +467,10 @@
             const div = document.createElement('div');
             div.textContent = str == null ? '' : String(str);
             return div.innerHTML;
+        }
+        function fmtDate(iso) {
+            if (!iso) return '';
+            return new Date(iso).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
         }
 
         function getPlan() { return localStorage.getItem(PLAN_KEY) || 'free'; }
@@ -532,6 +503,7 @@
         function loadToolStatuses() { return cachedToolStatuses; }
         let cachedSavedLayouts = [];
         function loadLayouts() { return cachedSavedLayouts; }
+        const LAYOUT_TYPE_LABELS = { workshop: 'Workshop', 'dust-collection': 'Dust Collection', lighting: 'Lighting' };
 
         function renderAccountStats() {
             const row = document.getElementById('accountStatsRow');
@@ -560,7 +532,6 @@
             select.value = plan;
             upsell.style.display = plan === 'free' ? 'block' : 'none';
         }
-        const LAYOUT_TYPE_LABELS = { workshop: 'Workshop', 'dust-collection': 'Dust Collection', lighting: 'Lighting' };
         function renderAccountLayoutsList() {
             const list = document.getElementById('accountLayoutsList');
             if (!list) return;
@@ -772,9 +743,6 @@
 
         document.getElementById('pageNavSelect').addEventListener('change', (e) => { window.location.href = e.target.value; });
 
-        // Standalone header dropdown (not folded into pageNavSelect) so Shop Jigs' four
-        // tools are one click away from every page instead of being buried as just another
-        // option in a 9-item combobox.
         function initJigsDropdown() {
             const dropdown = document.getElementById('jigsDropdown');
             const btn = document.getElementById('jigsDropdownBtn');
@@ -793,62 +761,182 @@
         kerphOnAuthChange(() => {
             updateHeaderSignInState();
             renderAccountBadge();
-            kerphLoadToolStatus().then(({ data }) => { cachedToolStatuses = data || {}; });
-            kerphLoadSavedLayouts().then(({ data }) => { cachedSavedLayouts = data || []; });
-        });
-
-        kerphAuthReady.then(() => {
-            initHeaderSignIn();
-            initAccountPanel();
+            if (isSignedIn()) loadWorkspaceData(); else showSignedOut();
         });
 
         /* =====================================================================
-           BOARD FOOT CALCULATOR
-           BF = thickness(in) x width(in) x length(in) / 144, per board.
+           MY WORKSPACE — aggregates everything already built elsewhere in Kerph.
+           Read-only rollup: every card deep-links out to the real editor for that
+           item (workshop-planner.html?loadLayout=, project-designer.html?loadProject=,
+           quote-builder.html?loadQuote=) rather than duplicating any editing UI here.
            ===================================================================== */
 
-        function fmtNum(n, places) {
-            const s = n.toFixed(places);
-            return s.replace(/(\.\d*?)0+$/, '$1').replace(/\.$/, '');
+        function showSignedOut() {
+            document.getElementById('workspaceSignedOut').style.display = 'block';
+            document.getElementById('workspaceSignedIn').style.display = 'none';
+            document.getElementById('workspaceHeroSub').textContent = 'Everything you\'re building in Kerph, in one place.';
         }
 
-        function runBoardFeet() {
-            const thickness = parseFloat(document.getElementById('bfThickness').value) || 0;
-            const width = parseFloat(document.getElementById('bfWidth').value) || 0;
-            let length = parseFloat(document.getElementById('bfLength').value) || 0;
-            const lengthUnit = document.getElementById('bfLengthUnit').value;
-            const qty = Math.max(1, parseInt(document.getElementById('bfQty').value, 10) || 1);
-            const price = parseFloat(document.getElementById('bfPrice').value);
-
-            const lengthIn = lengthUnit === 'ft' ? length * 12 : length;
-            const bfPerBoard = (thickness * width * lengthIn) / 144;
-            const totalBf = bfPerBoard * qty;
-            const totalCost = !isNaN(price) && price > 0 ? totalBf * price : null;
-
-            document.getElementById('bfResults').innerHTML = `
-                <div class="jig-result"><div class="jig-result-label">Board feet / board</div><div class="jig-result-value">${fmtNum(bfPerBoard, 3)} bf</div></div>
-                <div class="jig-result"><div class="jig-result-label">Total board feet</div><div class="jig-result-value big">${fmtNum(totalBf, 3)} bf</div><div class="jig-result-sub">${qty} board${qty === 1 ? '' : 's'}</div></div>
-                ${totalCost != null ? `<div class="jig-result"><div class="jig-result-label">Total cost</div><div class="jig-result-value">$${fmtNum(totalCost, 2)}</div></div>` : ''}
+        function cardLink(href, title, sub, badge) {
+            return `
+                <a class="workspace-card" href="${href}">
+                    <div class="workspace-card-title" title="${escapeHtml(title)}">${escapeHtml(title)}</div>
+                    ${sub ? `<div class="workspace-card-sub">${escapeHtml(sub)}</div>` : ''}
+                    ${badge ? `<span class="workspace-card-badge">${escapeHtml(badge)}</span>` : ''}
+                </a>
             `;
         }
-        ['bfThickness', 'bfWidth', 'bfLength', 'bfLengthUnit', 'bfQty', 'bfPrice'].forEach(id => {
-            document.getElementById(id).addEventListener('input', () => { runBoardFeet(); syncQuickpickHighlight(); });
-        });
-        function syncQuickpickHighlight() {
-            const t = parseFloat(document.getElementById('bfThickness').value);
-            document.querySelectorAll('.bf-quickpick').forEach(chip => {
-                chip.classList.toggle('active', Math.abs(parseFloat(chip.dataset.thickness) - t) < 0.001);
-            });
+        function emptyBlock(message) {
+            return `<div class="workspace-empty">${escapeHtml(message)}</div>`;
         }
-        document.querySelectorAll('.bf-quickpick').forEach(chip => {
-            chip.addEventListener('click', () => {
-                document.getElementById('bfThickness').value = chip.dataset.thickness;
-                runBoardFeet();
-                syncQuickpickHighlight();
+
+        async function loadWorkspaceData() {
+            const acc = loadAccount();
+            document.getElementById('workspaceHeroSub').textContent = `Everything ${acc.username ? acc.username + ' is' : 'you\'re'} building in Kerph, in one place.`;
+            document.getElementById('workspaceSignedOut').style.display = 'none';
+            document.getElementById('workspaceSignedIn').style.display = 'block';
+
+            const [
+                toolStatusRes, layoutsRes, currentLayoutRes, projectsRes, quotesRes,
+                portfolioRes, showcaseRes, reviewsRes, printPlansRes
+            ] = await Promise.all([
+                kerphLoadToolStatus(),
+                kerphLoadSavedLayouts(),
+                kerphLoadCurrentLayout(),
+                kerphLoadSavedProjects(),
+                kerphLoadQuotes(),
+                kerphLoadMyPortfolioProjects(),
+                kerphLoadShowcasePosts(),
+                kerphLoadToolReviews(),
+                kerphLoadPrintPlans()
+            ]);
+
+            cachedToolStatuses = toolStatusRes.data || {};
+            cachedSavedLayouts = layoutsRes.data || [];
+
+            const me = kerphGetCachedUser();
+            const myShowcasePosts = (showcaseRes.data || []).filter((p) => p.user_id === me.id);
+            const myReviews = (reviewsRes.data || []).filter((r) => r.user_id === me.id);
+            const myPrintPlans = (printPlansRes.data || []).filter((p) => p.user_id === me.id);
+            const projects = projectsRes.data || [];
+            const quotes = quotesRes.data || [];
+            const portfolioProjects = portfolioRes.data || [];
+
+            renderStats(cachedToolStatuses, cachedSavedLayouts, projects, portfolioProjects, quotes);
+            renderCurrentShop(currentLayoutRes.data);
+            renderLayouts(cachedSavedLayouts);
+            renderTools(cachedToolStatuses);
+            renderProjects(projects);
+            renderQuotes(quotes);
+            renderPortfolio(portfolioProjects);
+            renderCommunity(myShowcasePosts, myReviews, myPrintPlans);
+        }
+
+        function renderStats(toolStatuses, layouts, projects, portfolioProjects, quotes) {
+            let owned = 0, wishlist = 0;
+            Object.values(toolStatuses).forEach((s) => {
+                if (s.status === 'owned') owned++;
+                else if (s.status === 'wishlist') wishlist++;
             });
+            const row = document.getElementById('workspaceStatsRow');
+            const tiles = [
+                ['Owned Tools', owned],
+                ['Wishlist', wishlist],
+                ['Saved Layouts', layouts.length],
+                ['Projects', projects.length],
+                ['Portfolio Pieces', portfolioProjects.length],
+                ['Quotes', quotes.length]
+            ];
+            row.innerHTML = tiles.map(([label, value]) => `
+                <div class="workspace-stat"><div class="workspace-stat-value">${value}</div><div class="workspace-stat-label">${escapeHtml(label)}</div></div>
+            `).join('');
+        }
+
+        function renderCurrentShop(layout) {
+            const wrap = document.getElementById('workspaceCurrentShop');
+            if (!layout || (!layout.widthFeet && !layout.tools)) { wrap.innerHTML = ''; return; }
+            const toolCount = Array.isArray(layout.tools) ? layout.tools.length : 0;
+            const dims = (layout.widthFeet && layout.lengthFeet) ? `${layout.widthFeet}&prime; &times; ${layout.lengthFeet}&prime;` : 'Shop in progress';
+            wrap.innerHTML = `
+                <div class="workspace-shop-card">
+                    <div class="workspace-shop-card-meta"><strong>Current shop:</strong> ${dims} &mdash; ${toolCount} item${toolCount === 1 ? '' : 's'} placed</div>
+                    <a class="mini-btn primary" style="flex:none; text-decoration:none; display:inline-flex; align-items:center; padding:8px 16px;" href="workshop-planner.html">Continue &rarr;</a>
+                </div>
+            `;
+        }
+
+        function renderLayouts(layouts) {
+            const grid = document.getElementById('workspaceLayoutsGrid');
+            if (!layouts.length) { grid.innerHTML = emptyBlock('No saved layouts yet — build one in the Workshop Layout Planner.'); return; }
+            grid.innerHTML = layouts.slice().reverse().slice(0, 6).map((l) => {
+                const dims = (l.widthFeet && l.lengthFeet) ? `${l.widthFeet}&prime; &times; ${l.lengthFeet}&prime;` : fmtDate(l.savedAt);
+                return cardLink(`workshop-planner.html?loadLayout=${encodeURIComponent(l.id)}`, l.name || 'Untitled Layout', dims, LAYOUT_TYPE_LABELS[l.layoutType] || 'Workshop');
+            }).join('');
+        }
+
+        function toolLabel(key, entry) {
+            return (entry && entry.nickname) ? entry.nickname : key;
+        }
+        function renderTools(toolStatuses) {
+            const owned = [], wishlist = [];
+            Object.entries(toolStatuses).forEach(([key, entry]) => {
+                if (entry && entry.status === 'owned') owned.push(toolLabel(key, entry));
+                else if (entry && entry.status === 'wishlist') wishlist.push(toolLabel(key, entry));
+            });
+            const ownedEl = document.getElementById('workspaceOwnedToolsList');
+            const wishlistEl = document.getElementById('workspaceWishlistToolsList');
+            ownedEl.innerHTML = owned.length ? owned.map((t) => `<div>${escapeHtml(t)}</div>`).join('') : '<div style="color:#9ca3af; font-style:italic;">None marked owned yet.</div>';
+            wishlistEl.innerHTML = wishlist.length ? wishlist.map((t) => `<div>${escapeHtml(t)}</div>`).join('') : '<div style="color:#9ca3af; font-style:italic;">Nothing on your wishlist yet.</div>';
+        }
+
+        function renderProjects(projects) {
+            const grid = document.getElementById('workspaceProjectsGrid');
+            document.getElementById('workspaceProjectsCount').textContent = projects.length ? `${projects.length} saved` : '';
+            if (!projects.length) { grid.innerHTML = emptyBlock('No saved projects yet — build one in Project Designer.'); return; }
+            grid.innerHTML = projects.slice().reverse().slice(0, 6).map((p) => {
+                const panelCount = Array.isArray(p.panels) ? p.panels.length : 0;
+                return cardLink(`project-designer.html?loadProject=${encodeURIComponent(p.id)}`, p.name || 'Untitled Project', `${panelCount} panel${panelCount === 1 ? '' : 's'} &middot; ${fmtDate(p.savedAt)}`);
+            }).join('');
+        }
+
+        function renderQuotes(quotes) {
+            const grid = document.getElementById('workspaceQuotesGrid');
+            if (!quotes.length) { grid.innerHTML = emptyBlock('No saved quotes yet — build one in Quote Builder.'); return; }
+            grid.innerHTML = quotes.slice().reverse().slice(0, 6).map((q) => {
+                return cardLink(`quote-builder.html?loadQuote=${encodeURIComponent(q.id)}`, q.name || 'Untitled Quote', q.clientName ? `For ${q.clientName}` : fmtDate(q.savedAt));
+            }).join('');
+        }
+
+        function renderPortfolio(projects) {
+            const grid = document.getElementById('workspacePortfolioGrid');
+            if (!projects.length) { grid.innerHTML = emptyBlock('No portfolio pieces yet — add one from your Portfolio page.'); return; }
+            grid.innerHTML = projects.slice(0, 6).map((p) => {
+                return cardLink('portfolio.html', p.title || 'Untitled', p.materials || '', p.is_public ? 'Public' : 'Private');
+            }).join('');
+        }
+
+        function renderCommunity(showcasePosts, reviews, printPlans) {
+            const showcaseEl = document.getElementById('workspaceMyShowcaseList');
+            showcaseEl.innerHTML = showcasePosts.length
+                ? showcasePosts.slice(0, 5).map((p) => `<div>${escapeHtml(p.title || 'Untitled post')}</div>`).join('')
+                : '<div style="color:#9ca3af; font-style:italic;">No posts yet.</div>';
+
+            const reviewsEl = document.getElementById('workspaceMyReviewsList');
+            reviewsEl.innerHTML = reviews.length
+                ? reviews.slice(0, 5).map((r) => `<div>${escapeHtml(r.tool_name || 'Untitled tool')} &mdash; ${'&#9733;'.repeat(r.rating || 0)}</div>`).join('')
+                : '<div style="color:#9ca3af; font-style:italic;">No reviews yet.</div>';
+
+            const printPlansEl = document.getElementById('workspaceMyPrintPlansList');
+            printPlansEl.innerHTML = printPlans.length
+                ? printPlans.slice(0, 5).map((p) => `<div>${escapeHtml(p.title || 'Untitled plan')}</div>`).join('')
+                : '<div style="color:#9ca3af; font-style:italic;">Nothing shared yet.</div>';
+        }
+
+        kerphAuthReady.then(async () => {
+            initHeaderSignIn();
+            initAccountPanel();
+            if (isSignedIn()) { await loadWorkspaceData(); } else { showSignedOut(); }
         });
-        runBoardFeet();
-        syncQuickpickHighlight();
     </script>
 </body>
 </html>

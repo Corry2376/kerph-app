@@ -778,6 +778,7 @@
             </div>
             <select class="page-title-select" id="pageNavSelect">
                 <option value="index.html">Home</option>
+                <option value="my-workspace.html">My Workspace</option>
                 <option value="workshop-planner.html">Workshop Layout Planner</option>
                 <option value="dust-collection.html">Dust Collection</option>
                 <option value="project-designer.html" selected>Project Designer</option>
@@ -2728,6 +2729,16 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
             cachedSavedProjects = (await kerphLoadSavedProjects()).data || [];
             renderAll();
             renderSavedProjectsPicker();
+
+            // Deep-link from My Workspace — a fresh page load, so no unsaved-work conflict
+            // to guard against the way the manual picker's loadSelectedProject() does.
+            const loadId = new URLSearchParams(window.location.search).get('loadProject');
+            const target = loadId ? cachedSavedProjects.find((p) => p.id === loadId) : null;
+            if (target) {
+                restoreProject(target);
+                renderSavedProjectsPicker();
+                showToast(`Loaded "${target.name}" from My Workspace.`);
+            }
         });
     </script>
 

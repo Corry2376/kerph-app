@@ -2164,6 +2164,7 @@
             </div>
             <select class="page-title-select" id="pageNavSelect">
                 <option value="index.html">Home</option>
+                <option value="my-workspace.html">My Workspace</option>
                 <option value="workshop-planner.html" selected>Workshop Layout Planner</option>
                 <option value="dust-collection.html">Dust Collection</option>
                 <option value="project-designer.html">Project Designer</option>
@@ -8932,6 +8933,7 @@
         // whenever auth state changes anywhere (sign in, sign up, sign out, profile save).
         // Replaces the applyPlanGating()/renderSavedLayoutsPicker() calls that used to be
         // hand-written into completeSignIn()/signOut() individually.
+        let workspaceDeepLinkApplied = false; // guards against re-applying on every auth-change re-fire
         kerphOnAuthChange(() => {
             updateHeaderSignInState();
             renderAccountBadge();
@@ -8940,6 +8942,15 @@
                 cachedSavedLayouts = data || [];
                 if (typeof renderSavedLayoutsPicker === 'function') renderSavedLayoutsPicker();
                 if (typeof renderAccountLayoutsList === 'function') renderAccountLayoutsList();
+                if (!workspaceDeepLinkApplied) {
+                    workspaceDeepLinkApplied = true;
+                    const loadId = new URLSearchParams(window.location.search).get('loadLayout');
+                    const target = loadId ? cachedSavedLayouts.find((l) => l.id === loadId) : null;
+                    if (target) {
+                        applyLayoutState(target);
+                        showToast(`Loaded "${target.name}" from My Workspace.`);
+                    }
+                }
             });
             kerphLoadToolStatus().then(({ data }) => {
                 cachedToolStatuses = data || {};
