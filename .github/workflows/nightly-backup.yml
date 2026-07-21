@@ -1,0 +1,41 @@
+name: nightly-backup
+
+on:
+  schedule:
+    - cron: '17 9 * * *'   # 9:17am UTC daily — off-peak
+  workflow_dispatch: {}     # lets you trigger a run manually from the Actions tab to test it
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install postgresql-client + rclone
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+          curl https://rclone.org/install.sh | sudo bash
+
+      - name: Dump Postgres
+        run: pg_dump "$SUPABASE_DB_URL" --no-owner --no-privileges | gzip > backup.sql.gz
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+
+      - name: Upload DB dump to B2
+        run: rclone copy backup.sql.gz "b2remote:${{ secrets.B2_BUCKET_NAME }}/db/$(date +%F)/"
+        env:
+          RCLONE_CONFIG_B2REMOTE_TYPE: b2
+          RCLONE_CONFIG_B2REMOTE_ACCOUNT: ${{ secrets.B2_KEY_ID }}
+          RCLONE_CONFIG_B2REMOTE_KEY: ${{ secrets.B2_APP_KEY }}
+
+      - name: Sync Supabase Storage buckets to B2
+        run: rclone sync supabasestorage: "b2remote:${{ secrets.B2_BUCKET_NAME }}/storage/" --checksum
+        env:
+          RCLONE_CONFIG_SUPABASESTORAGE_TYPE: s3
+          RCLONE_CONFIG_SUPABASESTORAGE_PROVIDER: Other
+          RCLONE_CONFIG_SUPABASESTORAGE_ACCESS_KEY_ID: ${{ secrets.SUPABASE_S3_ACCESS_KEY_ID }}
+          RCLONE_CONFIG_SUPABASESTORAGE_SECRET_ACCESS_KEY: ${{ secrets.SUPABASE_S3_SECRET_ACCESS_KEY }}
+          RCLONE_CONFIG_SUPABASESTORAGE_ENDPOINT: ${{ secrets.SUPABASE_S3_ENDPOINT }}
+          RCLONE_CONFIG_SUPABASESTORAGE_REGION: us-east-1
+          RCLONE_CONFIG_B2REMOTE_TYPE: b2
+          RCLONE_CONFIG_B2REMOTE_ACCOUNT: ${{ secrets.B2_KEY_ID }}
+          RCLONE_CONFIG_B2REMOTE_KEY: ${{ secrets.B2_APP_KEY }}
