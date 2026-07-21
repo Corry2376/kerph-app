@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <script>if (localStorage.getItem('kerphComingSoonBypass') !== 'true') { location.replace('coming-soon.html'); }</script>
+    <script>(function(){var r={free:0,pro:1,premier:2};if((r[localStorage.getItem('kerphPlan')||'free']||0)<r.pro){location.replace('pricing.html?locked=project-designer.html');}})();</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kerph - Project Designer</title>
@@ -715,7 +716,8 @@
         .selection-pos-labels-row span { width: 33%; text-align: center; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: #6b7280; }
         .selection-pos-row { display: flex; gap: 5px; margin-bottom: 8px; }
         .selection-pos-row .input-box { width: 33%; padding: 5px 4px; font-size: 11.5px; text-align: center; font-variant-numeric: tabular-nums; }
-            .header-quick-links { display: flex; align-items: center; gap: 6px; font-size: 11px; }
+            .header-quick-links { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; font-size: 11px; }
+            .header-quick-links-row { display: flex; align-items: center; gap: 6px; }
         .header-quick-links a { color: #6b7280; font-weight: 600; text-decoration: none; }
         .header-quick-links a:hover { color: #1e3a8a; text-decoration: underline; }
         .header-quick-links-sep { color: #cbd5e1; }
@@ -778,7 +780,6 @@
             </div>
             <select class="page-title-select" id="pageNavSelect">
                 <option value="index.html">Home</option>
-                <option value="my-workspace.html">My Workspace</option>
                 <option value="workshop-planner.html">Workshop Layout Planner</option>
                 <option value="dust-collection.html">Dust Collection</option>
                 <option value="project-designer.html" selected>Project Designer</option>
@@ -841,13 +842,14 @@
                 </span>
             </button>
             <div class="header-quick-links">
-                <a href="pricing.html">Plan Comparison</a>
-                <span class="header-quick-links-sep">&middot;</span>
+                <div class="header-quick-links-row">
+                    <a href="pricing.html">Plan Comparison</a>
+                    <span class="header-quick-links-sep">&middot;</span>
+                    <a href="follow.html">Follow Us</a>
+                    <span class="header-quick-links-sep">&middot;</span>
+                    <a href="terms.html">Terms</a>
+                </div>
                 <a href="help.html">Trouble with the Kerph</a>
-                <span class="header-quick-links-sep">&middot;</span>
-                <a href="follow.html">Follow Us</a>
-                <span class="header-quick-links-sep">&middot;</span>
-                <a href="terms.html">Terms</a>
             </div>
             <select class="plan-select" id="planSelector" style="display:none;">
                 <option value="free">Free</option>
@@ -947,6 +949,23 @@
                 <div class="header-field" style="flex:1;">
                     <label class="header-field-label" for="panelHeightInput">Height (in)</label>
                     <input type="number" class="input-box" id="panelHeightInput" min="0.1" step="0.0625">
+                </div>
+            </div>
+            <div style="display:flex; gap:8px; margin-top:10px;">
+                <div class="header-field" style="flex:1.3;">
+                    <label class="header-field-label" for="panelShapeSelect">Shape</label>
+                    <select class="select-box" id="panelShapeSelect">
+                        <option value="rectangle">Rectangle</option>
+                        <option value="arched-top">Arched Top</option>
+                        <option value="rounded-corners">Rounded Corners</option>
+                        <option value="half-round">Half-Round</option>
+                        <option value="quarter-round">Quarter-Round</option>
+                        <option value="ellipse">Ellipse / Oval</option>
+                    </select>
+                </div>
+                <div class="header-field" style="flex:1; display:none;" id="panelShapeParamField">
+                    <label class="header-field-label" id="panelShapeParamLabel" for="panelShapeParamInput">Arch Rise (in)</label>
+                    <input type="number" class="input-box" id="panelShapeParamInput" min="0.1" step="0.0625">
                 </div>
             </div>
             <div style="display:flex; gap:8px; margin-top:10px;">
@@ -1205,6 +1224,7 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
                 </thead>
                 <tbody id="cutListTableBody"></tbody>
             </table>
+            <div id="nonRectShapeNote" style="display:none; font-size:11.5px; color:#6b7280; line-height:1.5; margin-top:10px;">&#9432; Non-rectangular pieces are sized to their bounding rectangle above &mdash; actual material waste will run a bit higher than a straight rectangle nest.</div>
 
             <button type="button" id="openFullCutListBtn" class="new-layout-btn" style="margin-top:20px;">Open Full Cut List Optimizer &#8594;</button>
         </div>
@@ -2021,6 +2041,26 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
             document.getElementById('holeSizeBInput').value = '';
         }
 
+        // Non-rectangular panel presets — only these two need an extra numeric input (arch
+        // rise / corner radius); half-round, quarter-round, and ellipse are fully derived from
+        // the panel's own width/height, same bounding box every shape already uses for
+        // placement, holes, and cut-list grouping (see buildPanelGeometry).
+        const SHAPE_PARAM_CONFIG = {
+            'arched-top': { label: 'Arch Rise (in)', field: 'archRiseIn', default: 3 },
+            'rounded-corners': { label: 'Corner Radius (in)', field: 'cornerRadiusIn', default: 1 }
+        };
+        const SHAPE_LABELS = {
+            'arched-top': 'Arched Top', 'rounded-corners': 'Rounded Corners',
+            'half-round': 'Half-Round', 'quarter-round': 'Quarter-Round', 'ellipse': 'Ellipse'
+        };
+
+        function updateShapeParamFieldVisibility() {
+            const shapeType = document.getElementById('panelShapeSelect').value;
+            const config = SHAPE_PARAM_CONFIG[shapeType];
+            document.getElementById('panelShapeParamField').style.display = config ? '' : 'none';
+            if (config) document.getElementById('panelShapeParamLabel').textContent = config.label;
+        }
+
         function openPanelModal(panel) {
             editingPanelId = panel ? panel.id : null;
             editingHoles = (panel && panel.holes) ? JSON.parse(JSON.stringify(panel.holes)) : [];
@@ -2031,6 +2071,13 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
             document.getElementById('panelNameInput').value = panel ? panel.name : '';
             document.getElementById('panelWidthInput').value = panel ? panel.widthIn : '';
             document.getElementById('panelHeightInput').value = panel ? panel.heightIn : '';
+            const shapeType = (panel && panel.shapeType) || 'rectangle';
+            document.getElementById('panelShapeSelect').value = shapeType;
+            updateShapeParamFieldVisibility();
+            const shapeConfig = SHAPE_PARAM_CONFIG[shapeType];
+            document.getElementById('panelShapeParamInput').value = shapeConfig
+                ? ((panel && panel[shapeConfig.field] != null) ? panel[shapeConfig.field] : shapeConfig.default)
+                : '';
             const material = panel ? panel.material : 'plywood-34';
             document.getElementById('panelMaterialSelect').value = material;
             document.getElementById('panelThicknessInput').value = panel ? panel.thicknessIn : MATERIALS[material].thicknessIn;
@@ -2064,6 +2111,17 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
             const material = document.getElementById('panelMaterialSelect').value;
             const qty = Math.max(1, parseInt(document.getElementById('panelQtyInput').value, 10) || 1);
 
+            const shapeType = document.getElementById('panelShapeSelect').value;
+            const shapeConfig = SHAPE_PARAM_CONFIG[shapeType];
+            // Only the field this shape actually uses gets a value — switching a panel from
+            // Arched Top to Rounded Corners shouldn't leave a stale archRiseIn sitting around
+            // (harmless to buildPanelGeometry, which only ever reads the field matching the
+            // current shapeType, but no reason to keep dead data in the saved object either).
+            const archRiseIn = (shapeConfig && shapeConfig.field === 'archRiseIn')
+                ? (parseFloat(document.getElementById('panelShapeParamInput').value) || shapeConfig.default) : undefined;
+            const cornerRadiusIn = (shapeConfig && shapeConfig.field === 'cornerRadiusIn')
+                ? (parseFloat(document.getElementById('panelShapeParamInput').value) || shapeConfig.default) : undefined;
+
             // Blank position fields stay undefined (JSON.stringify drops them entirely), which
             // is exactly what marks a panel as "not yet placed" for the 3D view's auto-arrange.
             const xRaw = parseFloat(document.getElementById('panelXInput').value);
@@ -2082,11 +2140,11 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
             const holes = editingHoles;
             if (editingPanelId) {
                 const existing = panels.find(p => p.id === editingPanelId);
-                if (existing) Object.assign(existing, { name, widthIn, heightIn, thicknessIn, material, qty, xIn, yIn, zIn, rotXDeg, rotYDeg, rotZDeg, holes });
+                if (existing) Object.assign(existing, { name, widthIn, heightIn, thicknessIn, material, qty, xIn, yIn, zIn, rotXDeg, rotYDeg, rotZDeg, holes, shapeType, archRiseIn, cornerRadiusIn });
             } else {
                 panels.push({
                     id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
-                    name, widthIn, heightIn, thicknessIn, material, qty, xIn, yIn, zIn, rotXDeg, rotYDeg, rotZDeg, holes
+                    name, widthIn, heightIn, thicknessIn, material, qty, xIn, yIn, zIn, rotXDeg, rotYDeg, rotZDeg, holes, shapeType, archRiseIn, cornerRadiusIn
                 });
             }
             savePanels();
@@ -2129,9 +2187,10 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
                 const mat = MATERIALS[p.material] || MATERIALS.custom;
                 const item = document.createElement('div');
                 item.className = 'panel-item';
+                const shapeTag = (p.shapeType && p.shapeType !== 'rectangle') ? ` &middot; ${escapeHtml(SHAPE_LABELS[p.shapeType] || p.shapeType)}` : '';
                 item.innerHTML = `
                     <div class="panel-item-title">${escapeHtml(p.name)}${p.qty > 1 ? ` &times;${p.qty}` : ''}</div>
-                    <div class="panel-item-dims">${p.widthIn}" x ${p.heightIn}" x ${p.thicknessIn}" &mdash; ${escapeHtml(mat.label)}</div>
+                    <div class="panel-item-dims">${p.widthIn}" x ${p.heightIn}" x ${p.thicknessIn}" &mdash; ${escapeHtml(mat.label)}${shapeTag}</div>
                 `;
                 const actions = document.createElement('div');
                 actions.className = 'panel-item-actions';
@@ -2184,20 +2243,26 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
             let linearLengthFt = 0;
             let totalPanelCount = 0;
 
+            let hasNonRectShape = false;
             panels.forEach(p => {
                 const mat = MATERIALS[p.material] || MATERIALS.custom;
-                const key = [p.widthIn, p.heightIn, p.thicknessIn, p.material].join('|');
+                // Shape (and its param, when it has one) has to be part of the grouping key too —
+                // a rectangle and an arched-top panel that happen to share a bounding box need
+                // different blanks and can't be merged into one cut-list row.
+                const key = [p.widthIn, p.heightIn, p.thicknessIn, p.material, p.shapeType || 'rectangle', p.archRiseIn, p.cornerRadiusIn].join('|');
                 if (!groups[key]) groups[key] = { ...p, qty: 0, names: new Set() };
                 groups[key].qty += p.qty;
                 groups[key].names.add(p.name);
 
                 totalPanelCount += p.qty;
+                if (p.shapeType && p.shapeType !== 'rectangle') hasNonRectShape = true;
                 if (mat.type === 'sheet') {
                     sheetAreaSqFt += (p.widthIn * p.heightIn / 144) * p.qty;
                 } else {
                     linearLengthFt += (p.widthIn / 12) * p.qty;
                 }
             });
+            document.getElementById('nonRectShapeNote').style.display = hasNonRectShape ? 'block' : 'none';
 
             document.getElementById('summaryPanelCount').textContent = totalPanelCount;
             document.getElementById('summarySheetArea').textContent = sheetAreaSqFt.toFixed(1) + ' sq ft';
@@ -2207,10 +2272,11 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
             tbody.innerHTML = '';
             Object.values(groups).forEach(g => {
                 const mat = MATERIALS[g.material] || MATERIALS.custom;
+                const shapeTag = (g.shapeType && g.shapeType !== 'rectangle') ? ` (${escapeHtml(SHAPE_LABELS[g.shapeType] || g.shapeType)})` : '';
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td>${escapeHtml(Array.from(g.names).join(', '))}</td>
-                    <td>${g.widthIn}" x ${g.heightIn}" x ${g.thicknessIn}"</td>
+                    <td>${g.widthIn}" x ${g.heightIn}" x ${g.thicknessIn}"${shapeTag}</td>
                     <td>${escapeHtml(mat.label)}</td>
                     <td>${g.qty}</td>
                 `;
@@ -2237,6 +2303,11 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
         document.getElementById('addPanelBtn').addEventListener('click', () => openPanelModal(null));
         document.getElementById('panelCancelBtn').addEventListener('click', closePanelModal);
         document.getElementById('panelSaveBtn').addEventListener('click', savePanelFromModal);
+        document.getElementById('panelShapeSelect').addEventListener('change', () => {
+            updateShapeParamFieldVisibility();
+            const config = SHAPE_PARAM_CONFIG[document.getElementById('panelShapeSelect').value];
+            if (config) document.getElementById('panelShapeParamInput').value = config.default;
+        });
 
         /* ---------- Parametric Assembly Templates ----------
            Each typology generates a real, correctly-dimensioned panel list from a handful of
@@ -2755,6 +2826,7 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
         import * as THREE from 'three';
         import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
         import { TransformControls } from 'three/addons/controls/TransformControls.js';
+        import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
         // Sheet goods in tan/birch tones, solid lumber in browns — so material differences read
         // at a glance without needing to click each panel. Keyed identically to the classic
@@ -3034,6 +3106,79 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
             document.getElementById('preview3DSelectionPanel').style.display = 'none';
         }
 
+        // Builds a THREE.Shape for one non-rectangular panel preset, centered at local origin
+        // (X: -width/2..width/2, Y: -height/2..height/2) so it drops into the same coordinate
+        // convention BoxGeometry already uses — position/rotation, hole placement ("measured
+        // from the piece's center"), and the qty badge offset all assume a centered origin,
+        // and none of that changes just because the outline isn't a rectangle anymore.
+        function buildPanelShape(p) {
+            const w = p.widthIn, h = p.heightIn;
+            const hw = w / 2, hh = h / 2;
+            const shape = new THREE.Shape();
+            const type = p.shapeType;
+            if (type === 'arched-top') {
+                // Rise is how far the two top corners are pulled DOWN from the peak — the
+                // bounding box's full height is always reachable (at the arch's center), never
+                // exceeded, so the piece still nests in cut lists at exactly widthIn x heightIn.
+                const rise = Math.min(Math.max(p.archRiseIn || 3, 0.1), h - 0.1);
+                const sideY = hh - rise;
+                shape.moveTo(-hw, -hh);
+                shape.lineTo(hw, -hh);
+                shape.lineTo(hw, sideY);
+                shape.quadraticCurveTo(hw, hh, 0, hh);
+                shape.quadraticCurveTo(-hw, hh, -hw, sideY);
+                shape.closePath();
+            } else if (type === 'rounded-corners') {
+                const r = Math.min(Math.max(p.cornerRadiusIn || 1, 0), Math.min(w, h) / 2);
+                shape.moveTo(-hw + r, -hh);
+                shape.lineTo(hw - r, -hh);
+                shape.quadraticCurveTo(hw, -hh, hw, -hh + r);
+                shape.lineTo(hw, hh - r);
+                shape.quadraticCurveTo(hw, hh, hw - r, hh);
+                shape.lineTo(-hw + r, hh);
+                shape.quadraticCurveTo(-hw, hh, -hw, hh - r);
+                shape.lineTo(-hw, -hh + r);
+                shape.quadraticCurveTo(-hw, -hh, -hw + r, -hh);
+                shape.closePath();
+            } else if (type === 'half-round') {
+                // Flat edge along the bottom of the bounding box, arcing up to a peak at the
+                // top-center — a demilune, not necessarily a true semicircle if width != 2*height.
+                shape.moveTo(-hw, -hh);
+                shape.lineTo(hw, -hh);
+                shape.absellipse(0, -hh, hw, h, 0, Math.PI, false, 0);
+                shape.closePath();
+            } else if (type === 'quarter-round') {
+                // Right-angle corner at the bottom-left of the bounding box; the curve bulges
+                // from bottom-right around to top-left.
+                shape.moveTo(-hw, -hh);
+                shape.lineTo(hw, -hh);
+                shape.absellipse(-hw, -hh, w, h, 0, Math.PI / 2, false, 0);
+                shape.lineTo(-hw, -hh);
+            } else if (type === 'ellipse') {
+                shape.absellipse(0, 0, hw, hh, 0, Math.PI * 2, false, 0);
+            } else {
+                shape.moveTo(-hw, -hh);
+                shape.lineTo(hw, -hh);
+                shape.lineTo(hw, hh);
+                shape.lineTo(-hw, hh);
+                shape.closePath();
+            }
+            return shape;
+        }
+
+        // Rectangle stays plain BoxGeometry (cheaper, and visually identical to an extruded
+        // rectangle) — every curved preset goes through ExtrudeGeometry instead, translated so
+        // its thickness is centered on local Z like BoxGeometry's depth already is.
+        function buildPanelGeometry(p) {
+            if (!p.shapeType || p.shapeType === 'rectangle') {
+                return new THREE.BoxGeometry(p.widthIn, p.heightIn, p.thicknessIn);
+            }
+            const shape = buildPanelShape(p);
+            const geo = new THREE.ExtrudeGeometry(shape, { depth: p.thicknessIn, bevelEnabled: false, curveSegments: 24 });
+            geo.translate(0, 0, -p.thicknessIn / 2);
+            return geo;
+        }
+
         window.rebuild3DPreviewMeshes = function rebuild3DPreviewMeshes() {
             if (!sceneReady) return;
             // Fresh meshes have no assembledPosition to fall back to, so a rebuild while
@@ -3051,8 +3196,12 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
 
             panels.forEach(p => {
                 const color = MATERIAL_COLORS[p.material] != null ? MATERIAL_COLORS[p.material] : MATERIAL_COLORS.custom;
-                const geo = new THREE.BoxGeometry(p.widthIn, p.heightIn, p.thicknessIn);
-                const mat = new THREE.MeshStandardMaterial({ color });
+                const geo = buildPanelGeometry(p);
+                // Every material here is wood (or a generic gray placeholder) — a single
+                // semi-matte roughness/metalness profile reads as real material under the
+                // PMREM environment instead of the flat, plasticky look default values give,
+                // without needing a per-species lookup for what's still just tinted wood grain.
+                const mat = new THREE.MeshStandardMaterial({ color, roughness: 0.72, metalness: 0.02 });
                 const mesh = new THREE.Mesh(geo, mat);
                 mesh.position.set(p.xIn, p.yIn, p.zIn);
                 mesh.rotation.set(
@@ -3060,6 +3209,8 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
                     THREE.MathUtils.degToRad(p.rotYDeg || 0),
                     THREE.MathUtils.degToRad(p.rotZDeg || 0)
                 );
+                mesh.castShadow = true;
+                mesh.receiveShadow = true;
                 mesh.userData.panelId = p.id;
                 mesh.userData.name = p.name;
                 mesh.userData.type = 'panel';
@@ -4059,16 +4210,71 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
             camera.position.set(70, 60, 100);
             renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(wrap.clientWidth, wrap.clientHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+            // Same pipeline as the Workshop Layout Planner's 3D viewer (shop-3d-viewer.html) —
+            // soft shadows + filmic tone mapping are what separate "flat-lit CAD block" from
+            // "a real piece sitting on a bench"; everything else here (materials, light rig)
+            // is tuned assuming both are on.
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            renderer.toneMappingExposure = 1.05;
+            renderer.outputColorSpace = THREE.SRGBColorSpace;
             wrap.appendChild(renderer.domElement);
+
+            // Baked once and left on the scene for its whole lifetime — gives every
+            // MeshStandardMaterial a subtle, physically plausible reflection/ambient term
+            // instead of looking lit from one flat direction with pitch-black reflections.
+            const pmremGenerator = new THREE.PMREMGenerator(renderer);
+            scene.environment = pmremGenerator.fromScene(new RoomEnvironment(), 0.04).texture;
+            pmremGenerator.dispose();
 
             controls = new OrbitControls(camera, renderer.domElement);
             controls.target.set(0, 20, 0);
             controls.update();
 
-            scene.add(new THREE.AmbientLight(0xffffff, 0.6));
-            const dirLight = new THREE.DirectionalLight(0xffffff, 0.7);
-            dirLight.position.set(80, 120, 60);
+            // Sky/ground hemisphere instead of flat AmbientLight — upward-facing faces get a
+            // cool tint, downward-facing ones a warm bench-level bounce, rather than every
+            // surface receiving identical fill light regardless of orientation.
+            scene.add(new THREE.HemisphereLight(0xdbe6f2, 0x8a7d5c, 0.6));
+
+            // Key light: a real shadow-casting sun, frustum sized generously for any real
+            // furniture piece (a project's own footprint is read from panel data, not the
+            // fixed scene like the shop viewer, so this stays a comfortably large constant
+            // rather than being resized on every rebuild).
+            const dirLight = new THREE.DirectionalLight(0xfff3e0, 2.4);
+            dirLight.position.set(80, 150, 100);
+            dirLight.target.position.set(0, 0, 0);
+            scene.add(dirLight.target);
+            dirLight.castShadow = true;
+            dirLight.shadow.mapSize.set(2048, 2048);
+            const shadowHalfSize = 130;
+            dirLight.shadow.camera.left = -shadowHalfSize;
+            dirLight.shadow.camera.right = shadowHalfSize;
+            dirLight.shadow.camera.top = shadowHalfSize;
+            dirLight.shadow.camera.bottom = -shadowHalfSize;
+            dirLight.shadow.camera.near = 1;
+            dirLight.shadow.camera.far = 500;
+            dirLight.shadow.bias = -0.0015;
+            dirLight.shadow.normalBias = 0.02;
             scene.add(dirLight);
+
+            // Soft fill from the opposite side, no shadow of its own — without this the key
+            // light's shadow side reads as pure black-ish instead of gently shaded, since
+            // there's no bounce light in a synthetic scene to fill it in naturally.
+            const fillLight = new THREE.DirectionalLight(0xcfe0ff, 0.55);
+            fillLight.position.set(-90, 100, -70);
+            scene.add(fillLight);
+
+            // A soft shadow-catching bench surface under the grid — without it, shadows have
+            // nothing to land on even with shadowMap enabled, and the piece reads as floating.
+            const floorGeo = new THREE.PlaneGeometry(400, 400);
+            const floorMat = new THREE.ShadowMaterial({ opacity: 0.18 });
+            const floorMesh = new THREE.Mesh(floorGeo, floorMat);
+            floorMesh.rotation.x = -Math.PI / 2;
+            floorMesh.position.y = -0.05;
+            floorMesh.receiveShadow = true;
+            scene.add(floorMesh);
 
             const grid = new THREE.GridHelper(240, 24, 0xb8c0cc, 0xd6dce4);
             scene.add(grid);
