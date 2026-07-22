@@ -84,18 +84,18 @@
         }
 
         .page-title-select {
-            font-size: 15px;
+            font-size: 13px;
             font-weight: 700;
             color: #1e3a8a;
-            padding: 6px 6px 6px 16px;
-            border: none;
-            border-left: 1px solid #cbd5e1;
-            background-color: transparent;
+            background-color: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 8px 12px;
             cursor: pointer;
             white-space: nowrap;
         }
 
-        .page-title-select:hover { background-color: #eef2ff; border-radius: 4px; }
+        .page-title-select:hover { background-color: #eef2ff; border-color: #1e3a8a; }
 
         .header-field { display: flex; flex-direction: column; gap: 4px; }
 
@@ -415,6 +415,7 @@
             cursor: grab;
             user-select: none;
             margin-bottom: 8px;
+            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05), 0 4px 10px -4px rgba(15, 23, 42, 0.12);
         }
 
         .tool-box-item:hover {
@@ -711,6 +712,7 @@
         .wall-feature-node.wall-feature-switch, .wall-feature-node.wall-feature-outlet { border-radius: 50%; }
         .wall-feature-node.wall-feature-switch { background-color: #eab308; }
         .wall-feature-node.wall-feature-outlet { background-color: #dc2626; }
+        .wall-feature-node.wall-feature-outlet-220 { background-color: #22c55e; }
         .wall-feature-node.wall-feature-panel { background-color: #475569; }
         .wall-feature-node.wall-feature-minisplit { background-color: #0891b2; }
 
@@ -968,15 +970,15 @@
             gap: 6px;
             font-size: 13px;
             font-weight: 700;
-            color: #ffffff;
-            background-color: #1e3a8a;
-            padding: 9px 14px;
-            border: none;
-            border-radius: 999px;
+            color: #1e3a8a;
+            background-color: #ffffff;
+            padding: 8px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
             cursor: pointer;
             white-space: nowrap;
         }
-        .jigs-dropdown-btn:hover { background-color: #172d68; }
+        .jigs-dropdown-btn:hover { background-color: #eef2ff; border-color: #1e3a8a; }
         .jigs-dropdown-caret { font-size: 9px; transition: transform 0.15s ease; }
         .jigs-dropdown.open .jigs-dropdown-caret { transform: rotate(180deg); }
         .jigs-dropdown-menu {
@@ -2312,6 +2314,7 @@
                 const thickPx = f.thicknessFt * ppi;
                 const el = document.createElement('div');
                 el.className = `wall-feature-node wall-feature-${f.type}`;
+                if (f.type === 'outlet' && f.voltage === '220') el.classList.add('wall-feature-outlet-220');
                 if (f.color) el.style.backgroundColor = f.color;
                 el.style.width = lenPx + 'px';
                 el.style.height = thickPx + 'px';

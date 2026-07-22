@@ -91,20 +91,6 @@
             pointer-events: none;
         }
 
-        .page-title-select {
-            font-size: 15px;
-            font-weight: 700;
-            color: #1e3a8a;
-            padding: 6px 6px 6px 16px;
-            border: none;
-            border-left: 1px solid #cbd5e1;
-            background-color: transparent;
-            cursor: pointer;
-            white-space: nowrap;
-        }
-
-        .page-title-select:hover { background-color: #eef2ff; border-radius: 4px; }
-
         .plan-badge-group {
             display: flex;
             flex-direction: column;
@@ -489,6 +475,7 @@
             padding: 10px 12px;
             border-radius: 6px;
             margin-bottom: 8px;
+            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05), 0 4px 10px -4px rgba(15, 23, 42, 0.12);
         }
 
         .tool-box-item.is-owned {
@@ -800,7 +787,7 @@
         /* The Workshop Layout Planner unlocks every other tool (dust collection, 3D viewer,
            etc. all read the shop it produces), so it gets a wider, richer card instead of
            sitting flush in the grid as just one more equal-weight tile. */
-        .tool-card-featured {
+        .tool-card.tool-card-featured {
             grid-column: 1 / -1;
             display: flex;
             align-items: center;
@@ -907,6 +894,33 @@
             line-height: 1.5;
         }
 
+        /* Non-featured tiles: icon sits beside the title instead of stacked above it, so each
+           tile reads as one compact header row + description rather than three vertically
+           stacked blocks — shortens every tile and tightens the grid's overall vertical feel.
+           The featured tile is untouched (its own flex layout already puts icon beside title
+           +desc together). */
+        .tool-card:not(.tool-card-featured) {
+            display: grid;
+            grid-template-columns: 44px 1fr;
+            column-gap: 12px;
+            align-items: center;
+        }
+        .tool-card:not(.tool-card-featured) .tool-card-icon {
+            grid-column: 1;
+            grid-row: 1;
+            margin-bottom: 0;
+        }
+        .tool-card:not(.tool-card-featured) .tool-card-title {
+            grid-column: 2;
+            grid-row: 1;
+            margin-bottom: 0;
+        }
+        .tool-card:not(.tool-card-featured) .tool-card-desc {
+            grid-column: 1 / -1;
+            grid-row: 2;
+            margin-top: 10px;
+        }
+
         .badge-new {
             background-color: #16a34a;
             color: #ffffff;
@@ -987,15 +1001,15 @@
             gap: 6px;
             font-size: 13px;
             font-weight: 700;
-            color: #ffffff;
-            background-color: #1e3a8a;
-            padding: 9px 14px;
-            border: none;
-            border-radius: 999px;
+            color: #1e3a8a;
+            background-color: #ffffff;
+            padding: 8px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
             cursor: pointer;
             white-space: nowrap;
         }
-        .jigs-dropdown-btn:hover { background-color: #172d68; }
+        .jigs-dropdown-btn:hover { background-color: #eef2ff; border-color: #1e3a8a; }
         .jigs-dropdown-caret { font-size: 9px; transition: transform 0.15s ease; }
         .jigs-dropdown.open .jigs-dropdown-caret { transform: rotate(180deg); }
         .jigs-dropdown-menu {
@@ -1035,20 +1049,6 @@
                 </a>
                 <span class="logo-tm">&trade;</span>
             </div>
-            <select class="page-title-select" id="pageNavSelect">
-                <option value="index.html" selected>Home</option>
-                <option value="workshop-planner.html">Workshop Layout Planner</option>
-                <option value="dust-collection.html">Dust Collection</option>
-                <option value="project-designer.html">Project Designer</option>
-                <option value="cutlist-optimizer.html">Cut List Optimizer</option>
-                <option value="quote-builder.html">Quote Builder</option>
-                <option value="find-a-builder.html">Find a Builder</option>
-                <option value="shop-3d-viewer.html">3D Shop Viewer</option>
-                <option value="tool-reviews.html">Cool Tool Reviews</option>
-                <option value="shop-showcase.html">Shop Showcase</option>
-                <option value="portfolio.html">Portfolio</option>
-                <option value="print-library.html">3D Print Library</option>
-            </select>
             <div class="jigs-dropdown" id="jigsDropdown">
                 <button type="button" class="jigs-dropdown-btn" id="jigsDropdownBtn">Shop Jigs <span class="jigs-dropdown-caret">&#9662;</span></button>
                 <div class="jigs-dropdown-menu">
@@ -2629,8 +2629,6 @@
             applyTileOrder(resolveTileOrder(cached));
         })();
         initTileReorder();
-
-        document.getElementById('pageNavSelect').addEventListener('change', (e) => { window.location.href = e.target.value; });
 
         // Standalone header dropdown (not folded into pageNavSelect) so Shop Jigs' four
         // tools are one click away from every page instead of being buried as just another

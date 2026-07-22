@@ -90,18 +90,18 @@
         }
 
         .page-title-select {
-            font-size: 15px;
+            font-size: 13px;
             font-weight: 700;
             color: #1e3a8a;
-            padding: 6px 6px 6px 16px;
-            border: none;
-            border-left: 1px solid #cbd5e1;
-            background-color: transparent;
+            background-color: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 8px 12px;
             cursor: pointer;
             white-space: nowrap;
         }
 
-        .page-title-select:hover { background-color: #eef2ff; border-radius: 4px; }
+        .page-title-select:hover { background-color: #eef2ff; border-color: #1e3a8a; }
 
         .header-field { display: flex; flex-direction: column; gap: 4px; }
 
@@ -250,6 +250,31 @@
 
         .mini-btn:hover { background-color: #eef2ff; border-color: #2563eb; }
         .mini-btn.danger { color: #b91c1c; }
+
+        /* Top-of-content primary action button — same raised-card shadow language as the
+           home page tiles, so the "do the main thing on this page" button reads consistently
+           across pages rather than each page inventing its own button treatment. */
+        .page-action-btn {
+            display: inline-flex; align-items: center; gap: 7px;
+            padding: 10px 16px; border: 1px solid #cbd5e1; border-radius: 8px;
+            background-color: #ffffff; background-image: linear-gradient(180deg, #ffffff 0%, #f6f8fb 100%);
+            font-size: 13px; font-weight: 700; color: #1e3a8a; cursor: pointer;
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.9),
+                0 1px 2px rgba(15, 23, 42, 0.06),
+                0 6px 14px -6px rgba(15, 23, 42, 0.16),
+                0 16px 28px -16px rgba(15, 23, 42, 0.16);
+            transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+        }
+        .page-action-btn:hover {
+            border-color: #1e3a8a;
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.9),
+                0 2px 5px rgba(15, 23, 42, 0.07),
+                0 10px 20px -8px rgba(30, 58, 138, 0.22),
+                0 24px 38px -16px rgba(30, 58, 138, 0.32);
+            transform: translateY(-2px);
+        }
         .mini-btn.danger:hover { background-color: #fef2f2; border-color: #b91c1c; }
 
         .input-box { width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; font-weight: 600; }
@@ -347,6 +372,8 @@
             width: 300px;
             height: calc(100vh - 150px);
             background-color: #ffffff;
+            background-image: radial-gradient(circle at 1px 1px, rgba(15, 23, 42, 0.06) 1px, transparent 0);
+            background-size: 16px 16px;
             border-right: 1px solid #cbd5e1;
             padding: 20px;
             overflow-y: auto;
@@ -378,6 +405,7 @@
             border-radius: 6px;
             padding: 10px 12px;
             margin-bottom: 8px;
+            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05), 0 4px 10px -4px rgba(15, 23, 42, 0.12);
         }
 
         .panel-item-title { font-weight: 700; font-size: 13px; color: #0f172a; }
@@ -487,6 +515,7 @@
             border-radius: 10px;
             padding: 18px;
             text-align: center;
+            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05), 0 4px 10px -4px rgba(15, 23, 42, 0.12);
         }
 
         .summary-value { font-size: 22px; font-weight: 800; color: #1e3a8a; }
@@ -623,15 +652,15 @@
             gap: 6px;
             font-size: 13px;
             font-weight: 700;
-            color: #ffffff;
-            background-color: #1e3a8a;
-            padding: 9px 14px;
-            border: none;
-            border-radius: 999px;
+            color: #1e3a8a;
+            background-color: #ffffff;
+            padding: 8px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
             cursor: pointer;
             white-space: nowrap;
         }
-        .jigs-dropdown-btn:hover { background-color: #172d68; }
+        .jigs-dropdown-btn:hover { background-color: #eef2ff; border-color: #1e3a8a; }
         .jigs-dropdown-caret { font-size: 9px; transition: transform 0.15s ease; }
         .jigs-dropdown.open .jigs-dropdown-caret { transform: rotate(180deg); }
         .jigs-dropdown-menu {
@@ -2107,6 +2136,9 @@
             const totalPartCount = parts.reduce((sum, p) => sum + p.qty, 0);
 
             document.getElementById('resultsWrap').innerHTML = `
+                <div style="display:flex; justify-content:flex-end; margin-bottom:14px;">
+                    <button type="button" id="exportPdfBtn" class="page-action-btn">&#128196; Export PDF</button>
+                </div>
                 <div class="preview-summary-grid">
                     <div class="summary-card">
                         <div class="summary-value">${totalPartCount}</div>
@@ -2123,7 +2155,6 @@
                     ${totalCost > 0 ? `<div class="summary-card"><div class="summary-value">$${totalCost.toFixed(2)}</div><div class="summary-label">Est. Material Cost</div></div>` : ''}
                     ${totalOffcuts > 0 ? `<div class="summary-card"><div class="summary-value">${totalOffcuts}</div><div class="summary-label">Usable Offcuts</div></div>` : ''}
                 </div>
-                <button type="button" id="exportPdfBtn" class="mini-btn" style="display:block; margin: 12px auto 0;">&#128196; Export PDF</button>
                 ${cardsHtml}
             `;
             const exportBtn = document.getElementById('exportPdfBtn');

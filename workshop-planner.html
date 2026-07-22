@@ -566,19 +566,23 @@
             pointer-events: none;
         }
 
+        /* Page-nav select and the Shop Jigs dropdown are the header's two menu controls —
+           same outlined-chip treatment on both (was a bare underlined select next to a
+           solid-blue pill button; now a matched pair) so they read as one family instead
+           of two unrelated widgets. */
         .page-title-select {
-            font-size: 15px;
+            font-size: 13px;
             font-weight: 700;
             color: #1e3a8a;
-            padding: 6px 6px 6px 16px;
-            border: none;
-            border-left: 1px solid #cbd5e1;
-            background-color: transparent;
+            background-color: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 8px 12px;
             cursor: pointer;
             white-space: nowrap;
         }
 
-        .page-title-select:hover { background-color: #eef2ff; border-radius: 4px; }
+        .page-title-select:hover { background-color: #eef2ff; border-color: #1e3a8a; }
 
         /* FIXED STRUCTURE SIDEBAR */
         #sidebar-panel {
@@ -697,6 +701,7 @@
             cursor: grab;
             user-select: none;
             margin-bottom: 8px;
+            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05), 0 4px 10px -4px rgba(15, 23, 42, 0.12);
         }
 
         .nickname-input {
@@ -1249,6 +1254,15 @@
             display: none;
         }
 
+        /* No max-height set here on purpose — the panel can be stacked at any top
+           offset, so how much room its body actually has depends on where it landed.
+           clampPanelHeight() computes that per-panel and writes max-height inline;
+           this rule just makes sure a body that gets clamped scrolls instead of
+           clipping silently. */
+        .panel-body {
+            overflow-y: auto;
+        }
+
         .panel-toggle-chevron {
             font-size: 10px;
             color: #6b7280;
@@ -1619,6 +1633,12 @@
 
         .wall-feature-node.wall-feature-outlet {
             background-color: #dc2626;
+        }
+
+        /* 220V outlets get a distinct color from standard 110V ones — bright green vs. red,
+           as far apart as possible so they read as different at a glance. */
+        .wall-feature-node.wall-feature-outlet-220 {
+            background-color: #22c55e;
         }
 
         .wall-feature-node.wall-feature-panel {
@@ -2134,15 +2154,15 @@
             gap: 6px;
             font-size: 13px;
             font-weight: 700;
-            color: #ffffff;
-            background-color: #1e3a8a;
-            padding: 9px 14px;
-            border: none;
-            border-radius: 999px;
+            color: #1e3a8a;
+            background-color: #ffffff;
+            padding: 8px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
             cursor: pointer;
             white-space: nowrap;
         }
-        .jigs-dropdown-btn:hover { background-color: #172d68; }
+        .jigs-dropdown-btn:hover { background-color: #eef2ff; border-color: #1e3a8a; }
         .jigs-dropdown-caret { font-size: 9px; transition: transform 0.15s ease; }
         .jigs-dropdown.open .jigs-dropdown-caret { transform: rotate(180deg); }
         .jigs-dropdown-menu {
@@ -3547,7 +3567,7 @@
         <button type="button" id="undoBtn" class="measure-btn" title="Undo (Ctrl+Z)" disabled>&#8630; Undo</button>
         <button type="button" id="measureClearBtn" class="measure-btn" title="Clear all measurements" style="display:none;">Clear</button>
         <button type="button" id="zoomResetBtn" class="measure-btn" title="Reset zoom to 100%">Reset</button>
-        <button type="button" id="hideDcLabelsBtn" class="measure-btn" title="Hide the text labels on dust collection ducts/fittings so you can see the pure shapes">&#127991;&#65039; Hide Labels</button>
+        <button type="button" id="hideDcLabelsBtn" class="measure-btn" title="Hide the text labels on dust collection ducts/fittings so you can see the pure shapes">&#127991;&#65039; Hide Dust Collection Labels</button>
         <button type="button" id="view3dBtn" class="measure-btn" title="View this shop in 3D">&#129517; View in 3D</button>
         <button type="button" id="exportPdfBtn" class="measure-btn" title="Print or save this layout as a PDF">&#128196; Export PDF</button>
     </div>
@@ -4086,7 +4106,7 @@
                 const hidden = localStorage.getItem(KEY) === 'true';
                 document.body.classList.toggle('hide-dc-labels', hidden);
                 btn.classList.toggle('active', hidden);
-                btn.innerHTML = hidden ? '&#127991;&#65039; Show Labels' : '&#127991;&#65039; Hide Labels';
+                btn.innerHTML = hidden ? '&#127991;&#65039; Show Dust Collection Labels' : '&#127991;&#65039; Hide Dust Collection Labels';
             }
             btn.addEventListener('click', () => {
                 localStorage.setItem(KEY, (localStorage.getItem(KEY) !== 'true').toString());
@@ -4930,6 +4950,79 @@
 
         function overlapsProtectedItem(testRect, excludeCabinetEl, excludeWallFeatureId) {
             return getProtectedRects(excludeCabinetEl, excludeWallFeatureId).some(r => rectsOverlap(testRect, r));
+        }
+
+        // Mirrors shop-3d-viewer.html's WALL_FEATURE_DEFAULTS (kept in sync manually, same
+        // duplication pattern as CLEARANCE_CATEGORY_DEFAULTS elsewhere in this file) — gives
+        // every wall feature type a real vertical [bottom, top] range in inches off the floor,
+        // so an outlet can be checked against a genuine physical conflict (overlapping height
+        // ranges) instead of a blanket "anything already on this wall" block. Doors/windows are
+        // real holes through the wall, not surface-mounted devices — they stay hard X/Y blocks
+        // regardless of height, same as they've always been.
+        const WALL_FEATURE_HEIGHT_DEFAULTS = {
+            door: { bottomIn: 0, heightIn: 80 },
+            window: { bottomIn: 36, heightIn: 36 },
+            switch: { bottomIn: 48, heightIn: 4 },
+            outlet: { bottomIn: null, heightIn: 4 },
+            panel: { bottomIn: 60, heightIn: 14 },
+            minisplit: { bottomIn: 84, heightIn: 10 }
+        };
+
+        function getWallFeatureVerticalRangeIn(f) {
+            const def = WALL_FEATURE_HEIGHT_DEFAULTS[f.type];
+            if (!def) return null;
+            const bottomIn = f.mountHeightIn != null ? f.mountHeightIn : (def.bottomIn != null ? def.bottomIn : 18);
+            return [bottomIn, bottomIn + def.heightIn];
+        }
+
+        // Base cabinets sit on the floor; wall cabinets float at their own set mount height
+        // (see the wall-cabinet-mount-height feature) — either way this is the same [bottom,
+        // top] shape getWallFeatureVerticalRangeIn produces, so the two can be compared directly.
+        function getCabinetVerticalRangeIn(node) {
+            const heightIn = (parseFloat(node.dataset.height) || 0) * 12;
+            if (node.dataset.cabType === 'wall') {
+                const bottomIn = parseFloat(node.dataset.mountHeightIn) || 0;
+                return [bottomIn, bottomIn + heightIn];
+            }
+            return [0, heightIn];
+        }
+
+        function verticalRangesOverlap(a, b) {
+            return a[0] < b[1] && b[0] < a[1];
+        }
+
+        // Height-aware equivalent of getProtectedRects, scoped to outlets — a cabinet or
+        // another point wall feature (switch/outlet/panel/mini-split) only counts as a real
+        // conflict if its own height range overlaps the outlet's; doors/windows are always
+        // included, unconditionally, since they're openings through the wall itself.
+        function getOutletBlockedRects(mountHeightIn, excludeWallFeatureId) {
+            const outletRange = [mountHeightIn, mountHeightIn + 4];
+            const rects = [];
+            document.querySelectorAll('.placed-cabinet-node').forEach(n => {
+                if (!verticalRangesOverlap(outletRange, getCabinetVerticalRangeIn(n))) return;
+                const left = parseFloat(n.style.left) || 0;
+                const top = parseFloat(n.style.top) || 0;
+                const w = parseFloat(n.style.width) || 0;
+                const h = parseFloat(n.style.height) || 0;
+                const angle = parseFloat(n.dataset.rotation) || 0;
+                rects.push(rectFromCenter(left + w / 2, top + h / 2, w, h, angle));
+            });
+            wallFeatures.forEach(f => {
+                if (f.id === excludeWallFeatureId) return;
+                if (f.type === 'door' || f.type === 'window') {
+                    rects.push(rectFromCenter(f.x, f.y, f.lengthFt * ppi, f.thicknessFt * ppi, f.angle));
+                    return;
+                }
+                const range = getWallFeatureVerticalRangeIn(f);
+                if (range && verticalRangesOverlap(outletRange, range)) {
+                    rects.push(rectFromCenter(f.x, f.y, f.lengthFt * ppi, f.thicknessFt * ppi, f.angle));
+                }
+            });
+            return rects;
+        }
+
+        function outletBlockedAt(testRect, mountHeightIn, excludeWallFeatureId) {
+            return getOutletBlockedRects(mountHeightIn, excludeWallFeatureId).some(r => rectsOverlap(testRect, r));
         }
 
         // Searches outward in an expanding grid ring from a wanted (x,y) for the nearest
@@ -6762,8 +6855,15 @@
         let redoStack = [];
         let suppressUndoCapture = false;
 
+        // Measurements live outside serializeCurrentLayout() on purpose (they're an ephemeral
+        // on-screen annotation, not part of a saved layout) — bundled in here alongside the
+        // layout snapshot instead, so Ctrl+Z/undo covers them too without changing what
+        // actually gets saved/loaded from the account.
         function captureUndoSnapshot() {
-            return JSON.stringify(serializeCurrentLayout('__undo__'));
+            return JSON.stringify({
+                layout: serializeCurrentLayout('__undo__'),
+                measurements: JSON.parse(JSON.stringify(measurements))
+            });
         }
 
         function updateUndoRedoButtons() {
@@ -6787,7 +6887,11 @@
             const previousSnap = undoStack.pop();
             redoStack.push(currentSnap);
             suppressUndoCapture = true;
-            applyLayoutState(JSON.parse(previousSnap));
+            const { layout, measurements: prevMeasurements } = JSON.parse(previousSnap);
+            applyLayoutState(layout);
+            measurements = prevMeasurements || [];
+            renderMeasurements();
+            document.getElementById('measureClearBtn').style.display = measurements.length ? 'inline-block' : 'none';
             suppressUndoCapture = false;
             updateUndoRedoButtons();
         }
@@ -6799,7 +6903,11 @@
             const nextSnap = redoStack.pop();
             undoStack.push(currentSnap);
             suppressUndoCapture = true;
-            applyLayoutState(JSON.parse(nextSnap));
+            const { layout, measurements: nextMeasurements } = JSON.parse(nextSnap);
+            applyLayoutState(layout);
+            measurements = nextMeasurements || [];
+            renderMeasurements();
+            document.getElementById('measureClearBtn').style.display = measurements.length ? 'inline-block' : 'none';
             suppressUndoCapture = false;
             updateUndoRedoButtons();
         }
@@ -8013,6 +8121,7 @@
             });
 
             clearBtn.addEventListener('click', () => {
+                pushUndoSnapshot();
                 measurements = [];
                 renderMeasurements();
                 clearBtn.style.display = 'none';
@@ -8021,6 +8130,10 @@
             board.addEventListener('mousedown', (e) => {
                 if (!measureMode) return;
                 if (e.target.closest('.placed-tool-node') || e.target.closest('.resize-handle')) return;
+                // Snapshot taken here (before the measurement exists) rather than after it's
+                // added on mouseup, matching the "capture the state right before a change"
+                // convention every other undoable action in this file already follows.
+                pushUndoSnapshot();
                 activeMeasureStart = getBoardPoint(e);
                 e.preventDefault();
             });
@@ -8291,7 +8404,11 @@
         // Doors/windows autonomously slide to the nearest open spot along their wall
         // instead of just being rejected when the wanted position overlaps a cabinet or
         // another door/window — searches outward from the wanted position in both directions.
-        function resolveWallFeatureSpot(clamped, lengthPx, thicknessPx, excludeId) {
+        // isBlocked (optional) lets a caller substitute its own conflict test instead of the
+        // default plain X/Y overlapsProtectedItem check — outlet placement/dragging passes a
+        // height-aware one (see outletBlockedAt) so it only relocates for a genuine physical
+        // conflict, not just "something else happens to be on this wall too".
+        function resolveWallFeatureSpot(clamped, lengthPx, thicknessPx, excludeId, isBlocked) {
             const { segA, segB } = clamped;
             const segLen = Math.hypot(segB.x - segA.x, segB.y - segA.y);
             const dirX = (segB.x - segA.x) / segLen;
@@ -8300,11 +8417,12 @@
             const minT = half, maxT = segLen - half;
             if (minT > maxT) return null;
 
+            const blocked = isBlocked || ((rect) => overlapsProtectedItem(rect, null, excludeId));
             const testAtT = (t) => {
                 const x = segA.x + dirX * t;
                 const y = segA.y + dirY * t;
                 const rect = rectFromCenter(x, y, lengthPx, thicknessPx, clamped.angle);
-                return overlapsProtectedItem(rect, null, excludeId) ? null : { x, y };
+                return blocked(rect) ? null : { x, y };
             };
 
             const originalT = Math.max(minT, Math.min(maxT, (clamped.x - segA.x) * dirX + (clamped.y - segA.y) * dirY));
@@ -8340,6 +8458,9 @@
 
                 const el = document.createElement('div');
                 el.className = `wall-feature-node wall-feature-${f.type}`;
+                // 220V outlets get their own color (see .wall-feature-outlet-220) so a 110V
+                // and 220V outlet read as different at a glance, not just from their label text.
+                if (f.type === 'outlet' && f.voltage === '220') el.classList.add('wall-feature-outlet-220');
                 el.dataset.id = f.id;
                 if (f.color) el.style.backgroundColor = f.color;
                 el.style.width = lenPx + 'px';
@@ -8424,6 +8545,15 @@
                 if (f.type === 'door' || f.type === 'window') {
                     const spot = resolveWallFeatureSpot(clamped, f.lengthFt * ppi, f.thicknessFt * ppi, f.id);
                     if (!spot) return; // no open spot anywhere on this wall — hold position
+                    resolved = { x: spot.x, y: spot.y, angle: clamped.angle };
+                } else if (f.type === 'outlet') {
+                    // Same height-aware conflict test as initial placement — dragging an
+                    // outlet onto a cabinet/feature that's actually at a different height is
+                    // fine and shouldn't get nudged away from where the user is dropping it.
+                    const mountHeightIn = f.mountHeightIn != null ? f.mountHeightIn : 18;
+                    const spot = resolveWallFeatureSpot(clamped, f.lengthFt * ppi, f.thicknessFt * ppi, f.id,
+                        (rect) => outletBlockedAt(rect, mountHeightIn, f.id));
+                    if (!spot) return; // no open spot at this height anywhere on this wall — hold position
                     resolved = { x: spot.x, y: spot.y, angle: clamped.angle };
                 }
 
@@ -8666,7 +8796,27 @@
             document.getElementById('outletHeightConfirmBtn').addEventListener('click', () => {
                 if (!pendingOutletPlacement) { overlay.style.display = 'none'; return; }
                 const heightIn = parseFloat(input.value) || 18;
-                finalizeWallFeaturePlacement(pendingOutletPlacement, heightIn);
+                const p = pendingOutletPlacement;
+
+                // Height is known now, for the first time — a cabinet or another wall feature
+                // sharing this same X/Y spot is only a real conflict if its own height range
+                // overlaps this outlet's, so this checks (and, if needed, nudges along the wall
+                // to clear) only a genuine physical clash, not just "something else is here too".
+                const testRect = rectFromCenter(p.placeX, p.placeY, p.lengthFt * ppi, p.thicknessFt * ppi, p.angle);
+                if (outletBlockedAt(testRect, heightIn, null)) {
+                    const spot = resolveWallFeatureSpot(p, p.lengthFt * ppi, p.thicknessFt * ppi, null,
+                        (rect) => outletBlockedAt(rect, heightIn, null));
+                    if (!spot) {
+                        showToast('No open space at that height on this wall — try a different spot or height.');
+                        pendingOutletPlacement = null;
+                        overlay.style.display = 'none';
+                        return;
+                    }
+                    p.placeX = spot.x;
+                    p.placeY = spot.y;
+                }
+
+                finalizeWallFeaturePlacement(p, heightIn);
                 pendingOutletPlacement = null;
                 overlay.style.display = 'none';
             });
@@ -8800,6 +8950,7 @@
                 newTop = Math.max(0, Math.min(newTop, window.innerHeight - panel.offsetHeight));
                 panel.style.left = newLeft + 'px';
                 panel.style.top = newTop + 'px';
+                clampPanelHeight(panel);
             });
 
             document.addEventListener('mouseup', () => {
@@ -8815,12 +8966,34 @@
             };
         }
 
+        // The page itself never scrolls (body has overflow:hidden, by design — it's a
+        // fixed canvas workspace). That means a panel body taller than the room left
+        // between its top edge and the bottom of the window has no way to be reached —
+        // not by page scroll (doesn't exist) and not by the panel itself (no internal
+        // scroll) — its lower fields are just stuck off-screen. This caps the body's
+        // height to whatever room is actually left and lets it scroll internally instead.
+        // Uses body.scrollHeight (the content's true height, unaffected by an already-
+        // applied max-height/overflow) compared against currently available room, so the
+        // decision is stable however this panel was clamped last call — safe to call
+        // repeatedly without drifting.
+        function clampPanelHeight(panel) {
+            if (!panel || panel.classList.contains('collapsed')) return;
+            const body = panel.querySelector(':scope > .panel-body');
+            if (!body) return;
+            const bodyTop = body.getBoundingClientRect().top;
+            const available = Math.max(80, Math.floor(window.innerHeight - bodyTop - 16));
+            const newMaxHeight = body.scrollHeight > available ? available + 'px' : 'none';
+            if (body.style.maxHeight !== newMaxHeight) body.style.maxHeight = newMaxHeight;
+        }
+
         // Stacks the right-side panels snugly, one under the next, based on their actual
         // rendered height right now — so expanding a panel above pushes the ones below it
         // down instead of them sitting frozen at their original (collapsed) position and
         // overlapping. Re-run on every expand/collapse, not just at init. A panel the user
         // has manually dragged (dataset.userPositioned) is left alone and skipped — it's no
         // longer part of the auto-stack, so it doesn't consume vertical space in it either.
+        // Every panel (auto-stacked or dragged) still gets clampPanelHeight() run against
+        // it, since either kind can end up with too little room below it.
         function arrangeFloatingPanels() {
             const panels = [
                 document.getElementById('cabinetPanel'),
@@ -8839,6 +9012,7 @@
                 panel.style.left = 'auto';
                 currentTop += panel.offsetHeight + gap;
             });
+            panels.forEach(panel => clampPanelHeight(panel));
         }
 
         // Watches every stacked panel's actual box size and re-runs arrangeFloatingPanels()
@@ -9086,6 +9260,7 @@
         initGridPanning();
         document.getElementById('canvas-scroll-area').addEventListener('scroll', updateZoomControlBarPosition);
         window.addEventListener('resize', updateZoomControlBarPosition);
+        window.addEventListener('resize', () => arrangeFloatingPanels());
         updateZoomControlBarPosition();
         initResizeHandles();
         initToolStatusControls();

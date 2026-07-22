@@ -289,6 +289,23 @@
     const kerphUpdateQuote = quotesDomain.update;
     const kerphDeleteQuote = quotesDomain.del;
 
+    // Client-facing quote portal (quote-view.html) has no sign-in — a client shouldn't
+    // need a Kerph account just to look at a quote they were sent. Instead of opening the
+    // quotes table to public reads (which would leak every user's quotes to any anon
+    // query), both of these call security-definer Postgres functions that only ever
+    // touch the single row matching the random, unguessable share token — see the SQL
+    // delivered to the user (get_quote_by_share_token / respond_to_quote).
+    async function kerphGetQuoteByShareToken(token) {
+        const { data, error } = await kerphSupabase.rpc('get_quote_by_share_token', { p_token: token });
+        if (error) return { data: null, error };
+        const row = Array.isArray(data) ? data[0] : data;
+        return { data: row ? { ...row.data, id: row.id, name: row.name } : null, error: null };
+    }
+    async function kerphRespondToQuote(token, response, notes) {
+        const { error } = await kerphSupabase.rpc('respond_to_quote', { p_token: token, p_response: response, p_notes: notes || '' });
+        return { error };
+    }
+
     /* ---------- Shop Showcase: real multi-user content + Storage-backed photos ---------- */
 
     // Same downscale logic as kerphDownscaleImage but resolves a Blob (for direct Storage
@@ -643,7 +660,8 @@
         const select = document.getElementById('pageNavSelect');
         if (!select) return;
         const plan = localStorage.getItem('kerphPlan') || 'free';
-        Array.from(select.options).forEach((opt) => {
+        const options = Array.from(select.options);
+        options.forEach((opt) => {
             const tier = KERPH_TOOL_TIER_MAP[opt.value];
             if (!tier) return;
             const baseText = opt.textContent.replace(/^\u{1F512} /u, '').replace(/ — (Pro|Premier)$/, '');
@@ -655,6 +673,13 @@
                 opt.textContent = `\u{1F512} ${baseText} — ${KERPH_TIER_LABELS[tier]}`;
             }
         });
+        // Locked options sink to the bottom (stable within each group) so a Free-plan user
+        // isn't scanning past several disabled entries before reaching what they can open.
+        const selectedValue = select.value;
+        const unlocked = options.filter((o) => !o.disabled);
+        const locked = options.filter((o) => o.disabled);
+        unlocked.concat(locked).forEach((o) => select.appendChild(o));
+        select.value = selectedValue;
     }
 
     // Dims + badges any home-page tool-card tile whose href is a gated page the current
@@ -749,6 +774,8 @@
     window.kerphInsertQuote = kerphInsertQuote;
     window.kerphUpdateQuote = kerphUpdateQuote;
     window.kerphDeleteQuote = kerphDeleteQuote;
+    window.kerphGetQuoteByShareToken = kerphGetQuoteByShareToken;
+    window.kerphRespondToQuote = kerphRespondToQuote;
 
     window.kerphDownscaleImageToBlob = kerphDownscaleImageToBlob;
     window.kerphUploadShowcasePhoto = kerphUploadShowcasePhoto;

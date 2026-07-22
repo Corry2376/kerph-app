@@ -94,18 +94,18 @@
         }
 
         .page-title-select {
-            font-size: 15px;
+            font-size: 13px;
             font-weight: 700;
             color: #1e3a8a;
-            padding: 6px 6px 6px 16px;
-            border: none;
-            border-left: 1px solid #cbd5e1;
-            background-color: transparent;
+            background-color: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 8px 12px;
             cursor: pointer;
             white-space: nowrap;
         }
 
-        .page-title-select:hover { background-color: #eef2ff; border-radius: 4px; }
+        .page-title-select:hover { background-color: #eef2ff; border-color: #1e3a8a; }
 
         .header-field {
             display: flex;
@@ -398,6 +398,8 @@
             width: 300px;
             height: calc(100vh - 150px);
             background-color: #ffffff;
+            background-image: radial-gradient(circle at 1px 1px, rgba(15, 23, 42, 0.06) 1px, transparent 0);
+            background-size: 16px 16px;
             border-right: 1px solid #cbd5e1;
             padding: 20px;
             overflow-y: auto;
@@ -427,6 +429,7 @@
             border-radius: 6px;
             padding: 10px 12px;
             margin-bottom: 8px;
+            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05), 0 4px 10px -4px rgba(15, 23, 42, 0.12);
         }
 
         .panel-item-title { font-weight: 700; font-size: 13px; color: #0f172a; }
@@ -501,6 +504,7 @@
             border-radius: 10px;
             padding: 18px;
             text-align: center;
+            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05), 0 4px 10px -4px rgba(15, 23, 42, 0.12);
         }
 
         .summary-value { font-size: 22px; font-weight: 800; color: #1e3a8a; }
@@ -730,15 +734,15 @@
             gap: 6px;
             font-size: 13px;
             font-weight: 700;
-            color: #ffffff;
-            background-color: #1e3a8a;
-            padding: 9px 14px;
-            border: none;
-            border-radius: 999px;
+            color: #1e3a8a;
+            background-color: #ffffff;
+            padding: 8px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
             cursor: pointer;
             white-space: nowrap;
         }
-        .jigs-dropdown-btn:hover { background-color: #172d68; }
+        .jigs-dropdown-btn:hover { background-color: #eef2ff; border-color: #1e3a8a; }
         .jigs-dropdown-caret { font-size: 9px; transition: transform 0.15s ease; }
         .jigs-dropdown.open .jigs-dropdown-caret { transform: rotate(180deg); }
         .jigs-dropdown-menu {

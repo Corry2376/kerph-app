@@ -55,17 +55,17 @@
         .logo-tm { position: absolute; bottom: 6px; right: 22px; z-index: 2; font-size: 12px; font-weight: 800; color: #1e3a8a; line-height: 1; pointer-events: none; }
 
         .page-title-select {
-            font-size: 15px;
+            font-size: 13px;
             font-weight: 700;
             color: #1e3a8a;
-            padding: 6px 6px 6px 16px;
-            border: none;
-            border-left: 1px solid #cbd5e1;
-            background-color: transparent;
+            background-color: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 8px 12px;
             cursor: pointer;
             white-space: nowrap;
         }
-        .page-title-select:hover { background-color: #eef2ff; border-radius: 4px; }
+        .page-title-select:hover { background-color: #eef2ff; border-color: #1e3a8a; }
 
         .header-field-label {
             font-size: 10px;
@@ -202,10 +202,10 @@
         .jigs-dropdown { position: relative; }
         .jigs-dropdown-btn {
             display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700;
-            color: #ffffff; background-color: #1e3a8a; padding: 9px 14px; border: none;
-            border-radius: 999px; cursor: pointer; white-space: nowrap;
+            color: #1e3a8a; background-color: #ffffff; padding: 8px 12px;
+            border: 1px solid #cbd5e1; border-radius: 8px; cursor: pointer; white-space: nowrap;
         }
-        .jigs-dropdown-btn:hover { background-color: #172d68; }
+        .jigs-dropdown-btn:hover { background-color: #eef2ff; border-color: #1e3a8a; }
         .jigs-dropdown-caret { font-size: 9px; transition: transform 0.15s ease; }
         .jigs-dropdown.open .jigs-dropdown-caret { transform: rotate(180deg); }
         .jigs-dropdown-menu {
@@ -222,6 +222,8 @@
         #sidebar-panel {
             position: absolute; top: 150px; left: 0; width: 300px; height: calc(100vh - 150px);
             background-color: #ffffff; border-right: 1px solid #cbd5e1; padding: 20px; overflow-y: auto;
+            background-image: radial-gradient(circle at 1px 1px, rgba(15, 23, 42, 0.06) 1px, transparent 0);
+            background-size: 16px 16px;
         }
         .sidebar-title { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: #6b7280; font-weight: 700; margin-bottom: 10px; margin-top: 18px; }
         .sidebar-title:first-child { margin-top: 0; }
@@ -231,6 +233,7 @@
             background-color: #f9fafb; border: 1px solid #cbd5e1; border-left: 4px solid #1e3a8a;
             border-radius: 6px; padding: 10px 12px; margin-bottom: 8px;
             display: flex; align-items: center; justify-content: space-between; gap: 8px;
+            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05), 0 4px 10px -4px rgba(15, 23, 42, 0.12);
         }
         .panel-item-title { font-size: 13px; font-weight: 700; color: #1e293b; }
         .panel-item-dims { font-size: 11px; color: #6b7280; margin-top: 2px; }
@@ -275,6 +278,67 @@
         .variance-positive { color: #16a34a; }
         .variance-negative { color: #dc2626; }
 
+        /* Overhead/Margin field labels stay short ("Overhead %"); the fuller explanation
+           lives in this hover bubble instead of cluttering the sidebar with paragraph text
+           next to every field. */
+        .header-field-label-row { display: flex; align-items: center; gap: 5px; margin-bottom: 4px; }
+        .help-tip {
+            position: relative; display: inline-flex; align-items: center; justify-content: center;
+            width: 13px; height: 13px; border-radius: 50%; background-color: #cbd5e1; color: #475569;
+            font-size: 9px; font-weight: 800; cursor: help; flex-shrink: 0;
+        }
+        .help-tip:hover, .help-tip:focus { background-color: #1e3a8a; color: #ffffff; outline: none; }
+        .help-tip-bubble {
+            display: none; position: absolute; bottom: calc(100% + 7px); left: 50%; transform: translateX(-50%);
+            width: 200px; background-color: #0f172a; color: #ffffff; font-size: 11px; font-weight: 500;
+            line-height: 1.45; padding: 8px 10px; border-radius: 7px;
+            box-shadow: 0 12px 24px -8px rgba(15, 23, 42, 0.4); z-index: 20; text-transform: none; letter-spacing: normal;
+        }
+        .help-tip-bubble::after {
+            content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
+            border: 5px solid transparent; border-top-color: #0f172a;
+        }
+        .help-tip:hover .help-tip-bubble, .help-tip:focus .help-tip-bubble { display: block; }
+
+        /* Top-of-content primary action button — same raised-card shadow language as the
+           home page tiles, so the "do the main thing on this page" button reads consistently
+           across pages rather than each page inventing its own button treatment. */
+        .page-action-btn {
+            display: inline-flex; align-items: center; gap: 7px;
+            padding: 10px 16px; border: 1px solid #cbd5e1; border-radius: 8px;
+            background-color: #ffffff; background-image: linear-gradient(180deg, #ffffff 0%, #f6f8fb 100%);
+            font-size: 13px; font-weight: 700; color: #1e3a8a; cursor: pointer;
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.9),
+                0 1px 2px rgba(15, 23, 42, 0.06),
+                0 6px 14px -6px rgba(15, 23, 42, 0.16),
+                0 16px 28px -16px rgba(15, 23, 42, 0.16);
+            transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+        }
+        .page-action-btn:hover {
+            border-color: #1e3a8a;
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.9),
+                0 2px 5px rgba(15, 23, 42, 0.07),
+                0 10px 20px -8px rgba(30, 58, 138, 0.22),
+                0 24px 38px -16px rgba(30, 58, 138, 0.32);
+            transform: translateY(-2px);
+        }
+
+        .quotes-subgroup-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: #94a3b8; margin: 12px 0 6px; }
+        .quote-status-badge { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; border-radius: 4px; padding: 2px 5px; margin-left: 6px; }
+        .quote-status-draft { background-color: #f1f5f9; color: #64748b; }
+        .quote-status-sent { background-color: #dbeafe; color: #1e40af; }
+        .quote-status-accepted { background-color: #dcfce7; color: #15803d; }
+        .quote-status-rejected { background-color: #fee2e2; color: #b91c1c; }
+        .quote-status-completed { background-color: #ede9fe; color: #6d28d9; }
+
+        .client-response-card { border-left: 4px solid #1e3a8a; }
+        .client-response-card.is-rejected { border-left-color: #b91c1c; }
+        .client-response-title { font-size: 13px; font-weight: 800; color: #0f172a; margin-bottom: 4px; }
+        .client-response-meta { font-size: 11px; color: #6b7280; margin-bottom: 8px; }
+        .client-response-notes { font-size: 13px; color: #1e293b; line-height: 1.5; white-space: pre-wrap; }
+
         .placeholder-box { max-width: 420px; text-align: center; padding: 32px; margin: 60px auto 0; }
         .placeholder-icon { font-size: 40px; margin-bottom: 16px; }
         .placeholder-title { font-size: 18px; font-weight: 700; color: #0f172a; margin-bottom: 8px; }
@@ -286,7 +350,7 @@
         @media print {
             @page { size: portrait; margin: 0.6in; }
             body { background: #fff !important; overflow: visible !important; height: auto !important; }
-            header, #sidebar-panel, .upgrade-nudge, #exportQuotePdfBtn { display: none !important; }
+            header, #sidebar-panel, .upgrade-nudge, #exportQuotePdfBtn, #shareQuoteBtn, #clientResponseCard { display: none !important; }
             .print-only-header { display: block !important; margin-bottom: 18px; }
             .print-only-header .print-title { font-size: 22px; font-weight: 800; color: #0f172a; }
             .print-only-header .print-meta { font-size: 12px; color: #475569; margin-top: 2px; }
@@ -462,6 +526,21 @@
         </div>
     </div>
 
+    <div class="modal-overlay" id="shareQuoteModalOverlay" style="display:none;">
+        <div class="modal-box" style="width:380px;">
+            <div class="modal-title">Share With Client</div>
+            <div class="modal-warning" style="background-color:#eef2ff; border-color:#c7d2fe; color:#1e3a8a;">Anyone with this link can view the quote and accept or decline it — no Kerph account needed on their end. The response comes back into your quotes list automatically.</div>
+            <div class="header-field" style="width:100%;">
+                <label class="header-field-label" for="shareQuoteLinkInput">Client link</label>
+                <input type="text" class="input-box" id="shareQuoteLinkInput" readonly>
+            </div>
+            <div class="modal-actions">
+                <button type="button" id="shareQuoteCloseBtn" class="mini-btn">Close</button>
+                <button type="button" id="shareQuoteCopyBtn" class="mini-btn modal-primary-btn">Copy Link</button>
+            </div>
+        </div>
+    </div>
+
     <div class="upgrade-nudge" id="upgradeNudge"></div>
 
     <div id="sidebar-panel">
@@ -473,6 +552,10 @@
         <div class="settings-row">
             <label class="header-field-label" for="clientNameInput">Client Name</label>
             <input type="text" class="input-box" id="clientNameInput" placeholder="e.g. Jane Smith">
+        </div>
+        <div class="settings-row">
+            <label class="header-field-label" for="clientEmailInput">Client Email</label>
+            <input type="email" class="input-box" id="clientEmailInput" placeholder="e.g. jane@example.com">
         </div>
         <div class="settings-row">
             <label class="header-field-label" for="projectNameInput">Project</label>
@@ -524,11 +607,26 @@
             </div>
         </div>
 
-        <button type="button" id="saveQuoteBtn" class="new-layout-btn" style="width:100%; margin-top:16px;">Save Quote</button>
+        <div class="settings-row" style="margin-top:6px;">
+            <label class="header-field-label" for="quoteStatusSelect">Status</label>
+            <select class="select-box" id="quoteStatusSelect">
+                <option value="draft">Draft</option>
+                <option value="sent">Sent</option>
+                <option value="accepted">Accepted</option>
+                <option value="rejected">Rejected</option>
+                <option value="completed">Completed</option>
+            </select>
+        </div>
+
+        <button type="button" id="saveQuoteBtn" class="new-layout-btn" style="width:100%; margin-top:10px;">Save Quote</button>
 
         <div class="sidebar-title" style="margin-top:20px;">My Quotes</div>
-        <div class="empty-hint" id="quotesListEmptyHint">No saved quotes yet.</div>
-        <div id="quotesList"></div>
+        <div class="quotes-subgroup-title" style="margin-top:0;">Open</div>
+        <div class="empty-hint" id="openQuotesEmptyHint">No open quotes.</div>
+        <div id="openQuotesList"></div>
+        <div class="quotes-subgroup-title">Past</div>
+        <div class="empty-hint" id="pastQuotesEmptyHint">No past quotes yet.</div>
+        <div id="pastQuotesList"></div>
     </div>
 
     <div class="print-only-header" id="printOnlyHeader"></div>
@@ -536,14 +634,20 @@
 
     <div id="canvas-area">
         <div id="quoteWrap">
+            <div style="display:flex; justify-content:flex-end; gap:10px; margin-bottom:14px;">
+                <button type="button" id="shareQuoteBtn" class="page-action-btn">&#128279; Share With Client</button>
+                <button type="button" id="emailQuoteBtn" class="page-action-btn">&#128231; Email to Client</button>
+                <button type="button" id="exportQuotePdfBtn" class="page-action-btn">&#128196; Export Client PDF</button>
+            </div>
+
             <div class="quote-header-card">
                 <div class="quote-header-title" id="quoteDisplayTitle">New Quote</div>
                 <div class="quote-header-meta" id="quoteDisplayMeta"></div>
             </div>
 
-            <div class="quote-breakdown-card" id="quoteBreakdown"></div>
+            <div class="quote-breakdown-card" id="clientResponseCard" style="display:none;"></div>
 
-            <button type="button" id="exportQuotePdfBtn" class="mini-btn" style="display:block; margin: 0 auto 20px;">&#128196; Export Client PDF</button>
+            <div class="quote-breakdown-card" id="quoteBreakdown"></div>
 
             <div class="actual-card">
                 <div class="actual-card-title">Actual Costs (fill in after the job)</div>
@@ -568,6 +672,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.7/dist/umd/supabase.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
     <script src="supabase-client.js"></script>
     <script>
         const PLAN_KEY = 'kerphPlan';
@@ -909,10 +1014,11 @@
            ===================================================================== */
         function blankQuote() {
             return {
-                id: null, name: '', clientName: '', projectName: '',
+                id: null, name: '', clientName: '', clientEmail: '', projectName: '',
                 date: new Date().toISOString().slice(0, 10),
                 materials: [], laborHours: 0, laborRate: 0, consumables: 0,
-                overheadPct: 0, marginPct: 0,
+                overheadPct: 0, marginPct: 0, status: 'draft',
+                shareToken: null, clientNotes: null, clientRespondedAt: null,
                 actual: { materialsCost: null, laborHours: null, consumables: null }
             };
         }
@@ -946,7 +1052,9 @@
         function readQuoteFromForm() {
             quote.name = document.getElementById('quoteNameInput').value.trim();
             quote.clientName = document.getElementById('clientNameInput').value.trim();
+            quote.clientEmail = document.getElementById('clientEmailInput').value.trim();
             quote.projectName = document.getElementById('projectNameInput').value.trim();
+            quote.status = document.getElementById('quoteStatusSelect').value;
             quote.date = document.getElementById('quoteDateInput').value || quote.date;
             quote.laborHours = parseFloat(document.getElementById('laborHoursInput').value) || 0;
             quote.laborRate = parseFloat(document.getElementById('laborRateInput').value) || 0;
@@ -1027,7 +1135,25 @@
                 <div class="quote-line quote-line-total"><span class="quote-line-label">Total</span><span class="quote-line-value">${fmtMoney(t.clientTotal)}</span></div>
             `;
 
+            renderClientResponseCard();
             renderActual();
+        }
+
+        function renderClientResponseCard() {
+            const card = document.getElementById('clientResponseCard');
+            if (!quote.clientRespondedAt || (quote.status !== 'accepted' && quote.status !== 'rejected')) {
+                card.style.display = 'none';
+                return;
+            }
+            const isRejected = quote.status === 'rejected';
+            card.className = 'quote-breakdown-card client-response-card' + (isRejected ? ' is-rejected' : '');
+            const when = new Date(quote.clientRespondedAt).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+            card.innerHTML = `
+                <div class="client-response-title">${isRejected ? '❌ Declined' : '✅ Accepted'} by ${escapeHtml(quote.clientName || 'the client')}</div>
+                <div class="client-response-meta">${when}</div>
+                ${quote.clientNotes ? `<div class="client-response-notes">${escapeHtml(quote.clientNotes)}</div>` : ''}
+            `;
+            card.style.display = 'block';
         }
 
         function renderActual() {
@@ -1043,7 +1169,7 @@
             `;
         }
 
-        ['quoteNameInput', 'clientNameInput', 'projectNameInput', 'quoteDateInput', 'laborHoursInput', 'laborRateInput', 'consumablesInput', 'overheadPctInput', 'marginPctInput'].forEach(id => {
+        ['quoteNameInput', 'clientNameInput', 'clientEmailInput', 'projectNameInput', 'quoteDateInput', 'laborHoursInput', 'laborRateInput', 'consumablesInput', 'overheadPctInput', 'marginPctInput'].forEach(id => {
             document.getElementById(id).addEventListener('input', renderQuote);
         });
         ['actualMaterialsInput', 'actualLaborHoursInput', 'actualConsumablesInput'].forEach(id => {
@@ -1060,7 +1186,9 @@
             if (!quote.actual) quote.actual = { materialsCost: null, laborHours: null, consumables: null };
             document.getElementById('quoteNameInput').value = quote.name || '';
             document.getElementById('clientNameInput').value = quote.clientName || '';
+            document.getElementById('clientEmailInput').value = quote.clientEmail || '';
             document.getElementById('projectNameInput').value = quote.projectName || '';
+            document.getElementById('quoteStatusSelect').value = quote.status || 'draft';
             document.getElementById('quoteDateInput').value = quote.date || '';
             document.getElementById('laborHoursInput').value = quote.laborHours || 0;
             document.getElementById('laborRateInput').value = quote.laborRate || 0;
@@ -1074,22 +1202,27 @@
             renderQuote();
         }
 
-        function renderQuotesList() {
-            const list = document.getElementById('quotesList');
-            const hint = document.getElementById('quotesListEmptyHint');
-            hint.style.display = savedQuotes.length ? 'none' : 'block';
-            list.innerHTML = savedQuotes.slice().reverse().map(q => {
-                const total = computeQuoteTotals(q).clientTotal;
-                return `
-                    <div class="panel-item">
-                        <div><div class="panel-item-title">${escapeHtml(q.name || 'Untitled')}</div><div class="panel-item-dims">${escapeHtml(q.clientName || '')} &mdash; ${fmtMoney(total)}</div></div>
-                        <div class="panel-item-actions">
-                            <button type="button" class="mini-btn" data-load="${q.id}">Open</button>
-                            <button type="button" class="mini-btn danger" data-del="${q.id}">Del</button>
-                        </div>
+        const QUOTE_STATUS_LABELS = { draft: 'Draft', sent: 'Sent', accepted: 'Accepted', rejected: 'Rejected', completed: 'Completed' };
+        const OPEN_QUOTE_STATUSES = ['draft', 'sent'];
+
+        function quoteItemHtml(q) {
+            const total = computeQuoteTotals(q).clientTotal;
+            const status = q.status || 'draft';
+            return `
+                <div class="panel-item">
+                    <div>
+                        <div class="panel-item-title">${escapeHtml(q.name || 'Untitled')}<span class="quote-status-badge quote-status-${status}">${QUOTE_STATUS_LABELS[status] || 'Draft'}</span></div>
+                        <div class="panel-item-dims">${escapeHtml(q.clientName || '')} &mdash; ${fmtMoney(total)}</div>
                     </div>
-                `;
-            }).join('');
+                    <div class="panel-item-actions">
+                        <button type="button" class="mini-btn" data-load="${q.id}">Open</button>
+                        <button type="button" class="mini-btn danger" data-del="${q.id}">Del</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function wireQuoteListButtons(list) {
             list.querySelectorAll('[data-load]').forEach(btn => {
                 btn.addEventListener('click', () => {
                     const q = savedQuotes.find(x => x.id === btn.dataset.load);
@@ -1105,6 +1238,20 @@
                     showToast('Quote deleted.');
                 });
             });
+        }
+
+        function renderQuotesList() {
+            const openList = document.getElementById('openQuotesList');
+            const pastList = document.getElementById('pastQuotesList');
+            const sorted = savedQuotes.slice().reverse();
+            const open = sorted.filter(q => OPEN_QUOTE_STATUSES.includes(q.status || 'draft'));
+            const past = sorted.filter(q => !OPEN_QUOTE_STATUSES.includes(q.status || 'draft'));
+            document.getElementById('openQuotesEmptyHint').style.display = open.length ? 'none' : 'block';
+            document.getElementById('pastQuotesEmptyHint').style.display = past.length ? 'none' : 'block';
+            openList.innerHTML = open.map(quoteItemHtml).join('');
+            pastList.innerHTML = past.map(quoteItemHtml).join('');
+            wireQuoteListButtons(openList);
+            wireQuoteListButtons(pastList);
         }
 
         document.getElementById('saveQuoteBtn').addEventListener('click', async () => {
@@ -1123,6 +1270,123 @@
             if (idx >= 0) savedQuotes[idx] = quote; else savedQuotes.push(quote);
             renderQuotesList();
             showToast('Quote saved.');
+        });
+
+        // The share link is a random token, not the quote's own DB id — keeps the public
+        // credential separate from the row identity, so a leaked/no-longer-wanted link
+        // could in principle be rotated later without touching the quote itself.
+        // Shared by the Share and Email actions — both need the quote actually saved and
+        // carrying a share token before they can point anywhere. Returns the client-facing
+        // link, or null (after showing its own toast) if it couldn't get there.
+        async function ensureQuoteSavedAndShared() {
+            if (!isSignedIn()) { showToast('Sign in (top right) to share a quote.'); return null; }
+            readQuoteFromForm();
+            if (!quote.name) { showToast('Give this quote a name first.'); return null; }
+            if (!quote.shareToken) quote.shareToken = crypto.randomUUID();
+            let result;
+            if (quote.id) {
+                result = await kerphUpdateQuote(quote.id, quote);
+            } else {
+                result = await kerphInsertQuote(quote);
+            }
+            if (result.error) { showToast(result.error.message || 'Could not save quote.'); return null; }
+            quote = result.data;
+            const idx = savedQuotes.findIndex(q => q.id === quote.id);
+            if (idx >= 0) savedQuotes[idx] = quote; else savedQuotes.push(quote);
+            renderQuotesList();
+            return `${window.location.origin}/quote-view.html?token=${quote.shareToken}`;
+        }
+
+        document.getElementById('shareQuoteBtn').addEventListener('click', async () => {
+            const link = await ensureQuoteSavedAndShared();
+            if (!link) return;
+            const linkInput = document.getElementById('shareQuoteLinkInput');
+            linkInput.value = link;
+            document.getElementById('shareQuoteModalOverlay').style.display = 'flex';
+        });
+        document.getElementById('shareQuoteCloseBtn').addEventListener('click', () => {
+            document.getElementById('shareQuoteModalOverlay').style.display = 'none';
+        });
+        document.getElementById('shareQuoteCopyBtn').addEventListener('click', async () => {
+            const linkInput = document.getElementById('shareQuoteLinkInput');
+            linkInput.select();
+            try {
+                await navigator.clipboard.writeText(linkInput.value);
+                showToast('Link copied.');
+            } catch (e) {
+                showToast('Could not copy automatically — the link is selected, copy it manually.');
+            }
+        });
+
+        // Builds an offscreen, print-styled copy of the quote (title/meta + the already-
+        // rendered breakdown lines) for html2pdf to rasterize — reuses #quoteBreakdown's
+        // current innerHTML rather than recomputing the totals a second time.
+        function buildQuotePdfElement() {
+            const el = document.createElement('div');
+            el.style.cssText = 'font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 30px; width: 560px; color: #0f172a; position: fixed; top: -10000px; left: 0; background: #ffffff;';
+            const dateStr = new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+            el.innerHTML = `
+                <div style="font-size:22px; font-weight:800; margin-bottom:4px;">${escapeHtml(quote.name || 'Kerph Quote')}</div>
+                <div style="font-size:13px; color:#475569; margin-bottom:20px;">Prepared ${dateStr}${quote.clientName ? ` for ${escapeHtml(quote.clientName)}` : ''}</div>
+                ${document.getElementById('quoteBreakdown').innerHTML}
+            `;
+            return el;
+        }
+
+        document.getElementById('emailQuoteBtn').addEventListener('click', async () => {
+            readQuoteFromForm();
+            if (!quote.clientEmail) { showToast('Add a client email address first.'); return; }
+            const btn = document.getElementById('emailQuoteBtn');
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = 'Sending…';
+            try {
+                const link = await ensureQuoteSavedAndShared();
+                if (!link) return;
+
+                const pdfEl = buildQuotePdfElement();
+                document.body.appendChild(pdfEl);
+                let pdfDataUri;
+                try {
+                    pdfDataUri = await html2pdf().set({ margin: 0.4, filename: 'quote.pdf' }).from(pdfEl).outputPdf('datauristring');
+                } finally {
+                    pdfEl.remove();
+                }
+                const pdfBase64 = pdfDataUri.split(',')[1];
+
+                const { data: { session } } = await kerphSupabase.auth.getSession();
+                const resp = await fetch(`${kerphSupabase.supabaseUrl}/functions/v1/send-quote-email`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+                    body: JSON.stringify({
+                        to: quote.clientEmail,
+                        quoteName: quote.name,
+                        clientName: quote.clientName,
+                        shareLink: link,
+                        pdfBase64
+                    })
+                });
+                const result = await resp.json();
+                if (!resp.ok || result.error) { showToast(result.error || 'Could not send the email.'); return; }
+
+                if (quote.status === 'draft') {
+                    quote.status = 'sent';
+                    document.getElementById('quoteStatusSelect').value = 'sent';
+                    const saveResult = await kerphUpdateQuote(quote.id, quote);
+                    if (saveResult.data) {
+                        quote = saveResult.data;
+                        const idx = savedQuotes.findIndex(q => q.id === quote.id);
+                        if (idx >= 0) savedQuotes[idx] = quote;
+                        renderQuotesList();
+                    }
+                }
+                showToast(`Quote emailed to ${quote.clientEmail}.`);
+            } catch (e) {
+                showToast('Could not send the email — please try again.');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }
         });
 
         function exportQuotePdf() {

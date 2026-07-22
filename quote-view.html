@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kerph - Quote</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            background-color: #eef1f6;
+            color: #0f172a;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .qv-wrap { max-width: 560px; margin: 0 auto; }
+
+        .qv-brand { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 28px; }
+        .qv-brand img { height: 44px; }
+        .qv-brand-name { font-size: 15px; font-weight: 800; color: #1e3a8a; }
+
+        .qv-card {
+            background-color: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 12px;
+            padding: 28px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05), 0 4px 10px -4px rgba(15, 23, 42, 0.12);
+        }
+
+        .qv-title { font-size: 22px; font-weight: 800; color: #0f172a; }
+        .qv-meta { font-size: 13px; color: #6b7280; margin-top: 6px; line-height: 1.6; }
+
+        .qv-line { display: flex; justify-content: space-between; align-items: baseline; padding: 7px 0; font-size: 13.5px; color: #1e293b; }
+        .qv-line-label { color: #4b5563; }
+        .qv-line-value { font-weight: 700; font-variant-numeric: tabular-nums; }
+        .qv-line-sub { border-top: 1px dashed #e2e8f0; margin-top: 4px; padding-top: 10px; font-weight: 800; }
+        .qv-line-total { border-top: 2px solid #1e3a8a; margin-top: 10px; padding-top: 14px; font-size: 19px; font-weight: 800; color: #1e3a8a; }
+
+        .qv-actions { display: flex; gap: 12px; }
+        .qv-btn {
+            flex: 1;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            border: 1px solid #cbd5e1;
+        }
+        .qv-btn-accept { background-color: #16a34a; color: #ffffff; border-color: #16a34a; }
+        .qv-btn-accept:hover { background-color: #15803d; }
+        .qv-btn-decline { background-color: #ffffff; color: #b91c1c; border-color: #fecaca; }
+        .qv-btn-decline:hover { background-color: #fef2f2; }
+
+        .qv-respond-form { display: none; }
+        .qv-respond-form.active { display: block; }
+        .qv-respond-form textarea {
+            width: 100%;
+            min-height: 80px;
+            padding: 10px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 13px;
+            font-family: inherit;
+            resize: vertical;
+            margin-bottom: 12px;
+        }
+        .qv-respond-actions { display: flex; gap: 10px; }
+        .qv-respond-actions .qv-btn { flex: none; padding: 8px 16px; font-size: 13px; }
+        .qv-btn-cancel { background-color: #ffffff; color: #6b7280; border-color: #cbd5e1; }
+        .qv-btn-cancel:hover { background-color: #f8fafc; }
+
+        .qv-status-note { font-size: 12px; color: #6b7280; margin-bottom: 14px; }
+
+        .qv-result {
+            text-align: center;
+            padding: 8px 0;
+        }
+        .qv-result-icon { font-size: 36px; margin-bottom: 10px; }
+        .qv-result-title { font-size: 17px; font-weight: 800; color: #0f172a; margin-bottom: 6px; }
+        .qv-result-desc { font-size: 13px; color: #6b7280; line-height: 1.5; }
+
+        .qv-loading, .qv-error { text-align: center; padding: 60px 20px; color: #6b7280; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+    <div class="qv-wrap">
+        <div class="qv-brand">
+            <img src="logo.png" alt="Kerph">
+        </div>
+
+        <div id="qvLoading" class="qv-loading">Loading quote&hellip;</div>
+        <div id="qvError" class="qv-error" style="display:none;">This quote link isn't valid, or the quote it points to has been removed.</div>
+
+        <div id="qvContent" style="display:none;">
+            <div class="qv-card">
+                <div class="qv-title" id="qvTitle"></div>
+                <div class="qv-meta" id="qvMeta"></div>
+            </div>
+
+            <div class="qv-card" id="qvBreakdown"></div>
+
+            <div class="qv-card" id="qvActionCard">
+                <div id="qvRespondPrompt">
+                    <div class="qv-actions">
+                        <button type="button" class="qv-btn qv-btn-accept" id="qvAcceptBtn">Accept Quote</button>
+                        <button type="button" class="qv-btn qv-btn-decline" id="qvDeclineBtn">Decline Quote</button>
+                    </div>
+                </div>
+
+                <div class="qv-respond-form" id="qvRespondForm">
+                    <div class="qv-status-note" id="qvRespondNote"></div>
+                    <textarea id="qvRespondNotes" placeholder="Add a note for the shop (optional)"></textarea>
+                    <div class="qv-respond-actions">
+                        <button type="button" class="qv-btn" id="qvRespondSubmitBtn">Send Response</button>
+                        <button type="button" class="qv-btn qv-btn-cancel" id="qvRespondCancelBtn">Cancel</button>
+                    </div>
+                </div>
+
+                <div class="qv-result" id="qvResult" style="display:none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.7/dist/umd/supabase.js"></script>
+    <script src="supabase-client.js"></script>
+    <script>
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str == null ? '' : String(str);
+            return div.innerHTML;
+        }
+        function fmtMoney(n) {
+            const sign = n < 0 ? '-' : '';
+            return `${sign}$${Math.abs(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`;
+        }
+        // Mirrors quote-builder.html's computeQuoteTotals exactly — kept as a small
+        // duplicated pure function (same pattern as this app's other standalone pages)
+        // rather than sharing a module, since there's no build step to import from.
+        function computeQuoteTotals(q) {
+            const materialsCost = (q.materials || []).reduce((s, m) => s + (m.cost || 0), 0);
+            const laborCost = (q.laborHours || 0) * (q.laborRate || 0);
+            const consumables = q.consumables || 0;
+            const subtotal = materialsCost + laborCost + consumables;
+            const overheadAmt = subtotal * ((q.overheadPct || 0) / 100);
+            const costTotal = subtotal + overheadAmt;
+            const marginAmt = costTotal * ((q.marginPct || 0) / 100);
+            const clientTotal = costTotal + marginAmt;
+            return { materialsCost, laborCost, consumables, subtotal, overheadAmt, costTotal, marginAmt, clientTotal };
+        }
+
+        let currentQuote = null;
+        let currentToken = null;
+        let pendingResponse = null;
+
+        function renderQuote(q) {
+            document.getElementById('qvTitle').textContent = q.name || 'Quote';
+            const metaParts = [];
+            if (q.clientName) metaParts.push(`For ${escapeHtml(q.clientName)}`);
+            if (q.projectName) metaParts.push(escapeHtml(q.projectName));
+            if (q.date) metaParts.push(new Date(q.date + 'T00:00:00').toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }));
+            document.getElementById('qvMeta').innerHTML = metaParts.join(' &middot; ') || '';
+
+            const t = computeQuoteTotals(q);
+            document.getElementById('qvBreakdown').innerHTML = `
+                <div class="qv-line"><span class="qv-line-label">Materials${(q.materials || []).length ? ` (${q.materials.length} item${q.materials.length === 1 ? '' : 's'})` : ''}</span><span class="qv-line-value">${fmtMoney(t.materialsCost)}</span></div>
+                <div class="qv-line"><span class="qv-line-label">Labor (${q.laborHours || 0} hrs &times; ${fmtMoney(q.laborRate || 0)}/hr)</span><span class="qv-line-value">${fmtMoney(t.laborCost)}</span></div>
+                <div class="qv-line"><span class="qv-line-label">Consumables</span><span class="qv-line-value">${fmtMoney(t.consumables)}</span></div>
+                <div class="qv-line qv-line-sub"><span class="qv-line-label">Subtotal</span><span class="qv-line-value">${fmtMoney(t.subtotal)}</span></div>
+                <div class="qv-line"><span class="qv-line-label">Overhead (${q.overheadPct || 0}%)</span><span class="qv-line-value">${fmtMoney(t.overheadAmt)}</span></div>
+                <div class="qv-line"><span class="qv-line-label">Margin (${q.marginPct || 0}%)</span><span class="qv-line-value">${fmtMoney(t.marginAmt)}</span></div>
+                <div class="qv-line qv-line-total"><span class="qv-line-label">Total</span><span class="qv-line-value">${fmtMoney(t.clientTotal)}</span></div>
+            `;
+
+            if (q.status === 'accepted' || q.status === 'rejected') {
+                showAlreadyResponded(q);
+            }
+        }
+
+        function showAlreadyResponded(q) {
+            document.getElementById('qvRespondPrompt').style.display = 'none';
+            document.getElementById('qvRespondForm').classList.remove('active');
+            const result = document.getElementById('qvResult');
+            const accepted = q.status === 'accepted';
+            result.innerHTML = `
+                <div class="qv-result-icon">${accepted ? '✅' : '❌'}</div>
+                <div class="qv-result-title">${accepted ? 'You accepted this quote' : 'You declined this quote'}</div>
+                <div class="qv-result-desc">The shop has been notified. No further action is needed.</div>
+            `;
+            result.style.display = 'block';
+        }
+
+        function openRespondForm(response) {
+            pendingResponse = response;
+            document.getElementById('qvRespondPrompt').style.display = 'none';
+            document.getElementById('qvRespondNote').textContent = response === 'accepted'
+                ? 'Accepting this quote — add a note if you like, then send.'
+                : 'Declining this quote — let the shop know why if you like, then send.';
+            document.getElementById('qvRespondForm').classList.add('active');
+        }
+
+        document.getElementById('qvAcceptBtn').addEventListener('click', () => openRespondForm('accepted'));
+        document.getElementById('qvDeclineBtn').addEventListener('click', () => openRespondForm('rejected'));
+        document.getElementById('qvRespondCancelBtn').addEventListener('click', () => {
+            pendingResponse = null;
+            document.getElementById('qvRespondForm').classList.remove('active');
+            document.getElementById('qvRespondPrompt').style.display = 'block';
+        });
+        document.getElementById('qvRespondSubmitBtn').addEventListener('click', async () => {
+            if (!pendingResponse || !currentToken) return;
+            const btn = document.getElementById('qvRespondSubmitBtn');
+            btn.disabled = true;
+            btn.textContent = 'Sending…';
+            const notes = document.getElementById('qvRespondNotes').value.trim();
+            const { error } = await kerphRespondToQuote(currentToken, pendingResponse, notes);
+            btn.disabled = false;
+            btn.textContent = 'Send Response';
+            if (error) {
+                alert('Could not send your response — please try again.');
+                return;
+            }
+            document.getElementById('qvRespondForm').classList.remove('active');
+            showAlreadyResponded({ status: pendingResponse });
+        });
+
+        (async function init() {
+            const token = new URLSearchParams(window.location.search).get('token');
+            if (!token) {
+                document.getElementById('qvLoading').style.display = 'none';
+                document.getElementById('qvError').style.display = 'block';
+                return;
+            }
+            currentToken = token;
+            const { data, error } = await kerphGetQuoteByShareToken(token);
+            document.getElementById('qvLoading').style.display = 'none';
+            if (error || !data) {
+                document.getElementById('qvError').style.display = 'block';
+                return;
+            }
+            currentQuote = data;
+            document.getElementById('qvContent').style.display = 'block';
+            renderQuote(currentQuote);
+        })();
+    </script>
+</body>
+</html>
