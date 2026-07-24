@@ -355,7 +355,7 @@
         .header-quick-links-sep { color: #cbd5e1; }
 
         /* ---------- SHOP JIGS DROPDOWN ---------- */
-        .jigs-dropdown { position: relative; }
+        .jigs-dropdown { position: relative; margin-left: 30px; }
         .jigs-dropdown-btn {
             display: flex;
             align-items: center;
@@ -413,7 +413,6 @@
             <select class="page-title-select" id="pageNavSelect">
                 <option value="index.html">Home</option>
                 <option value="workshop-planner.html">Workshop Layout Planner</option>
-                <option value="dust-collection.html">Dust Collection</option>
                 <option value="project-designer.html">Project Designer</option>
                 <option value="cutlist-optimizer.html">Cut List Optimizer</option>
                 <option value="quote-builder.html">Quote Builder</option>
@@ -421,6 +420,7 @@
                 <option value="shop-3d-viewer.html" selected>3D Shop Viewer</option>
                 <option value="tool-reviews.html">Cool Tool Reviews</option>
                 <option value="shop-showcase.html">Shop Showcase</option>
+                <option value="garage-tips.html">Shop Tricks and How-To's</option>
                 <option value="portfolio.html">Portfolio</option>
                 <option value="print-library.html">3D Print Library</option>
             </select>
@@ -1180,7 +1180,11 @@
             if (len < 0.03 || h < 0.03) return;
             const midT = (tStart + tEnd) / 2;
             const geo = new THREE.BoxGeometry(len, h, thicknessFt);
-            const mat = new THREE.MeshStandardMaterial({ color, transparent: true, opacity: 0.65, roughness: 0.92, metalness: 0 });
+            // depthWrite: false keeps this transparent — overlapping wall boxes (they intentionally
+            // overlap at corners to avoid gaps) otherwise write to the depth buffer and occlude
+            // whatever's behind them before blending happens, which reads as solid instead of
+            // translucent no matter how low the opacity is.
+            const mat = new THREE.MeshStandardMaterial({ color, transparent: true, opacity: 0.65, roughness: 0.92, metalness: 0, depthWrite: false });
             const mesh = new THREE.Mesh(geo, mat);
             mesh.position.set(ax + dirX * midT, yBottom + h / 2, az + dirZ * midT);
             mesh.rotation.y = -Math.atan2(dirZ, dirX);

@@ -199,7 +199,7 @@
         .header-quick-links-sep { color: #cbd5e1; }
 
         /* ---------- SHOP JIGS DROPDOWN ---------- */
-        .jigs-dropdown { position: relative; }
+        .jigs-dropdown { position: relative; margin-left: 30px; }
         .jigs-dropdown-btn {
             display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700;
             color: #1e3a8a; background-color: #ffffff; padding: 8px 12px;
@@ -251,7 +251,24 @@
             position: absolute; top: 150px; left: 300px; width: calc(100vw - 300px); height: calc(100vh - 150px);
             overflow-y: auto; padding: 40px;
         }
-        #quoteWrap { max-width: 720px; margin: 0 auto; }
+        /* Quote preview sits left instead of dead-center now that the dashboard occupies the
+           right side — max-width caps prevents it from stretching too wide on its own. */
+        .quote-canvas-columns { display: flex; align-items: flex-start; gap: 32px; max-width: 1080px; margin: 0 auto; }
+        #quoteWrap { max-width: 680px; flex: 1 1 auto; min-width: 0; }
+
+        #quoteDashboardPanel {
+            width: 300px;
+            flex: none;
+            background-color: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 12px;
+            padding: 20px;
+            position: sticky;
+            top: 0;
+            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05), 0 4px 10px -4px rgba(15, 23, 42, 0.12);
+        }
+        .quote-dashboard-title { font-size: 15px; font-weight: 800; color: #0f172a; margin-bottom: 4px; }
+        .quote-dashboard-desc { font-size: 12px; color: #6b7280; line-height: 1.5; margin-bottom: 14px; }
 
         .quote-header-card {
             background-color: #ffffff; border: 1px solid #cbd5e1; border-radius: 12px; padding: 24px; margin-bottom: 20px;
@@ -350,7 +367,7 @@
         @media print {
             @page { size: portrait; margin: 0.6in; }
             body { background: #fff !important; overflow: visible !important; height: auto !important; }
-            header, #sidebar-panel, .upgrade-nudge, #exportQuotePdfBtn, #shareQuoteBtn, #clientResponseCard { display: none !important; }
+            header, #sidebar-panel, .upgrade-nudge, #exportQuotePdfBtn, #shareQuoteBtn, #clientResponseCard, #quoteDashboardPanel { display: none !important; }
             .print-only-header { display: block !important; margin-bottom: 18px; }
             .print-only-header .print-title { font-size: 22px; font-weight: 800; color: #0f172a; }
             .print-only-header .print-meta { font-size: 12px; color: #475569; margin-top: 2px; }
@@ -377,7 +394,6 @@
             <select class="page-title-select" id="pageNavSelect">
                 <option value="index.html">Home</option>
                 <option value="workshop-planner.html">Workshop Layout Planner</option>
-                <option value="dust-collection.html">Dust Collection</option>
                 <option value="project-designer.html">Project Designer</option>
                 <option value="cutlist-optimizer.html">Cut List Optimizer</option>
                 <option value="quote-builder.html" selected>Quote Builder</option>
@@ -385,6 +401,7 @@
                 <option value="shop-3d-viewer.html">3D Shop Viewer</option>
                 <option value="tool-reviews.html">Cool Tool Reviews</option>
                 <option value="shop-showcase.html">Shop Showcase</option>
+                <option value="garage-tips.html">Shop Tricks and How-To's</option>
                 <option value="portfolio.html">Portfolio</option>
                 <option value="print-library.html">3D Print Library</option>
             </select>
@@ -633,6 +650,7 @@
     <div class="print-watermark" id="printWatermark">KERPH &mdash; FREE PLAN</div>
 
     <div id="canvas-area">
+        <div class="quote-canvas-columns">
         <div id="quoteWrap">
             <div style="display:flex; justify-content:flex-end; gap:10px; margin-bottom:14px;">
                 <button type="button" id="shareQuoteBtn" class="page-action-btn">&#128279; Share With Client</button>
@@ -668,6 +686,18 @@
                 </div>
                 <div id="actualResults"></div>
             </div>
+        </div>
+
+        <div id="quoteDashboardPanel">
+            <div class="quote-dashboard-title">Your Quotes</div>
+            <div class="quote-dashboard-desc">Click any quote below to open it on the left.</div>
+            <div class="quotes-subgroup-title" style="margin-top:0;">Open</div>
+            <div class="empty-hint" id="dashboardOpenQuotesEmptyHint">No open quotes.</div>
+            <div id="dashboardOpenQuotesList"></div>
+            <div class="quotes-subgroup-title">Past</div>
+            <div class="empty-hint" id="dashboardPastQuotesEmptyHint">No past quotes yet.</div>
+            <div id="dashboardPastQuotesList"></div>
+        </div>
         </div>
     </div>
 
@@ -1240,18 +1270,26 @@
             });
         }
 
+        // Renders both the compact sidebar list (visible while actively editing) and the
+        // larger dashboard panel in the canvas area (the primary "browse and open a quote"
+        // surface) from the same data — they're two views onto the same open/past split, not
+        // two separate lists to keep in sync by hand.
         function renderQuotesList() {
-            const openList = document.getElementById('openQuotesList');
-            const pastList = document.getElementById('pastQuotesList');
             const sorted = savedQuotes.slice().reverse();
             const open = sorted.filter(q => OPEN_QUOTE_STATUSES.includes(q.status || 'draft'));
             const past = sorted.filter(q => !OPEN_QUOTE_STATUSES.includes(q.status || 'draft'));
-            document.getElementById('openQuotesEmptyHint').style.display = open.length ? 'none' : 'block';
-            document.getElementById('pastQuotesEmptyHint').style.display = past.length ? 'none' : 'block';
-            openList.innerHTML = open.map(quoteItemHtml).join('');
-            pastList.innerHTML = past.map(quoteItemHtml).join('');
-            wireQuoteListButtons(openList);
-            wireQuoteListButtons(pastList);
+
+            [
+                ['openQuotesList', 'openQuotesEmptyHint', open],
+                ['pastQuotesList', 'pastQuotesEmptyHint', past],
+                ['dashboardOpenQuotesList', 'dashboardOpenQuotesEmptyHint', open],
+                ['dashboardPastQuotesList', 'dashboardPastQuotesEmptyHint', past]
+            ].forEach(([listId, hintId, items]) => {
+                const list = document.getElementById(listId);
+                document.getElementById(hintId).style.display = items.length ? 'none' : 'block';
+                list.innerHTML = items.map(quoteItemHtml).join('');
+                wireQuoteListButtons(list);
+            });
         }
 
         document.getElementById('saveQuoteBtn').addEventListener('click', async () => {

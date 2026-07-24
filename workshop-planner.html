@@ -16,9 +16,9 @@
         body {
             background-color: #eef1f6;
             color: #0f172a;
-            height: 100vh;
+            min-height: 100vh;
             width: 100vw;
-            overflow: hidden;
+            overflow-x: hidden;
         }
 
         header {
@@ -1219,7 +1219,7 @@
         }
 
         .floating-panel {
-            position: fixed;
+            position: absolute;
             width: 260px;
             background-color: #ffffff;
             border: 1px solid #cbd5e1;
@@ -1252,15 +1252,6 @@
 
         .floating-panel.collapsed .panel-body {
             display: none;
-        }
-
-        /* No max-height set here on purpose — the panel can be stacked at any top
-           offset, so how much room its body actually has depends on where it landed.
-           clampPanelHeight() computes that per-panel and writes max-height inline;
-           this rule just makes sure a body that gets clamped scrolls instead of
-           clipping silently. */
-        .panel-body {
-            overflow-y: auto;
         }
 
         .panel-toggle-chevron {
@@ -1379,6 +1370,132 @@
         .cost-panel {
             top: 166px;
             right: 24px;
+        }
+
+        .calc-panel {
+            top: 166px;
+            right: 24px;
+        }
+
+        .calc-hint {
+            font-size: 11px;
+            color: #6b7280;
+            line-height: 1.5;
+            margin-bottom: 12px;
+        }
+
+        .calc-connections-result {
+            font-size: 11.5px;
+            font-weight: 700;
+            padding: 6px 9px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+        }
+        .calc-connections-result.ok { background: rgba(22, 163, 74, 0.1); color: #15803d; }
+        .calc-connections-result.warn { background: rgba(217, 119, 6, 0.1); color: #b45309; }
+
+        /* Small "?" badge with a hover tooltip — see help.html for the full write-up this
+           links back to conceptually; this is just the in-context nudge. */
+        .help-tip {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: #e0e7ff;
+            color: #1e3a8a;
+            font-size: 10px;
+            font-weight: 800;
+            cursor: help;
+            position: relative;
+            flex-shrink: 0;
+        }
+        .help-tip-bubble {
+            position: absolute;
+            bottom: calc(100% + 8px);
+            left: 50%;
+            transform: translateX(-50%);
+            width: 220px;
+            background: #0f172a;
+            color: #f1f5f9;
+            font-size: 11.5px;
+            font-weight: 500;
+            line-height: 1.5;
+            padding: 9px 11px;
+            border-radius: 8px;
+            box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.4);
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transition: opacity 0.15s ease;
+            z-index: 2500;
+            text-transform: none;
+            letter-spacing: normal;
+        }
+        .help-tip-bubble::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 5px solid transparent;
+            border-top-color: #0f172a;
+        }
+        .help-tip:hover .help-tip-bubble, .help-tip:focus .help-tip-bubble {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .calc-branch-row {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            background-color: #f9fafb;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            padding: 8px;
+            margin-bottom: 8px;
+        }
+        .calc-branch-row .dims-row { display: flex; gap: 6px; }
+        .calc-branch-row .dims-row > * { flex: 1; min-width: 0; }
+        .calc-branch-remove { align-self: flex-end; }
+
+        .calc-result-card {
+            background-color: #f0f9ff;
+            border: 1px solid #bae6fd;
+            border-radius: 6px;
+            padding: 10px;
+            margin-bottom: 8px;
+            font-size: 12px;
+        }
+        .calc-result-title { font-weight: 700; color: #0c4a6e; margin-bottom: 4px; }
+        .calc-result-line { color: #164e63; margin-top: 2px; }
+        .calc-result-card.warn { background-color: #fffbeb; border-color: #fde68a; }
+        .calc-result-card.warn .calc-result-title { color: #92400e; }
+        .calc-result-card.warn .calc-result-line { color: #92400e; }
+        .calc-result-card.danger { background-color: #fef2f2; border-color: #fecaca; }
+        .calc-result-card.danger .calc-result-title { color: #991b1b; }
+        .calc-result-card.danger .calc-result-line { color: #991b1b; }
+
+        /* Pulses at each unmatched duct port so an open end is easy to spot on the grid —
+           drawn by checkDuctConnections(). */
+        .open-port-marker {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            margin-left: -5px;
+            margin-top: -5px;
+            border-radius: 50%;
+            background: #dc2626;
+            box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.25);
+            z-index: 900;
+            pointer-events: none;
+            animation: openPortPulse 1s ease-in-out infinite;
+        }
+        @keyframes openPortPulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.3); }
         }
 
         /* Capped + independently scrollable so a long list (lots of placed items, or a
@@ -2147,7 +2264,7 @@
         .header-quick-links-sep { color: #cbd5e1; }
 
         /* ---------- SHOP JIGS DROPDOWN ---------- */
-        .jigs-dropdown { position: relative; }
+        .jigs-dropdown { position: relative; margin-left: 30px; }
         .jigs-dropdown-btn {
             display: flex;
             align-items: center;
@@ -2205,7 +2322,6 @@
             <select class="page-title-select" id="pageNavSelect">
                 <option value="index.html">Home</option>
                 <option value="workshop-planner.html" selected>Workshop Layout Planner</option>
-                <option value="dust-collection.html">Dust Collection</option>
                 <option value="project-designer.html">Project Designer</option>
                 <option value="cutlist-optimizer.html">Cut List Optimizer</option>
                 <option value="quote-builder.html">Quote Builder</option>
@@ -2213,6 +2329,7 @@
                 <option value="shop-3d-viewer.html">3D Shop Viewer</option>
                 <option value="tool-reviews.html">Cool Tool Reviews</option>
                 <option value="shop-showcase.html">Shop Showcase</option>
+                <option value="garage-tips.html">Shop Tricks and How-To's</option>
                 <option value="portfolio.html">Portfolio</option>
                 <option value="print-library.html">3D Print Library</option>
             </select>
@@ -3783,6 +3900,60 @@
         </div>
     </div>
 
+    <div class="floating-panel calc-panel collapsed" id="calcPanel">
+        <div class="floating-panel-title" id="calcPanelHandle">&#128168; Dust Collection Sizing Calculator <span class="panel-toggle-chevron">&#9656;</span></div>
+        <div class="panel-body">
+            <div class="calc-hint">Planning estimate, not an engineering guarantee — real static pressure depends on your exact hose/pipe, fittings, and collector's fan curve. Use it to sanity-check duct size and see roughly how much resistance a run adds.</div>
+
+            <div style="display:flex; align-items:center; gap:5px; font-size:11px; color:#6b7280; margin-bottom:8px; line-height:1.5;">
+                Ducts, elbows, joints, and blast gates snap together automatically when dragged close to each other.
+                <span class="help-tip" tabindex="0">?<span class="help-tip-bubble">Drag a piece near an existing one's open end and it snaps into place and rotates to match — no need to be pixel-exact. Only matching sizes (4in to 4in, 6in to 6in) snap together. Full tutorial on the Help page.</span></span>
+            </div>
+
+            <button type="button" id="calcAutoFillBtn" class="mini-btn" style="width:100%; margin-bottom:6px;">&#9889; Auto-Fill Branches from Layout</button>
+            <div style="display:flex; align-items:center; gap:6px; margin-bottom:10px;">
+                <button type="button" id="calcCheckConnectionsBtn" class="mini-btn" style="margin-bottom:0;">&#128269; Check Duct Connections</button>
+                <span class="help-tip" tabindex="0">?<span class="help-tip-bubble">Flags any duct end that isn't connected to another piece. A blast gate is only flagged if NEITHER side is hooked into the network — one side terminating at the tool it serves is normal and won't be flagged.</span></span>
+            </div>
+            <div id="calcConnectionsResult"></div>
+
+            <div id="calcBranchList"></div>
+            <button type="button" id="calcAddBranchBtn" class="mini-btn" style="width:100%; margin-top:4px;">+ Add Branch</button>
+
+            <div class="sidebar-title" style="margin-top:14px;">Main Trunk (collector to first branch)</div>
+            <div class="dims-row" style="display:flex; gap:6px;">
+                <div class="header-field" style="flex:1;">
+                    <label class="header-field-label" for="calcMainLen">Run (ft)</label>
+                    <input type="number" class="input-box" id="calcMainLen" value="8" min="0">
+                </div>
+                <div class="header-field" style="flex:1;">
+                    <label class="header-field-label" for="calcMainElbows">Elbows</label>
+                    <input type="number" class="input-box" id="calcMainElbows" value="1" min="0">
+                </div>
+            </div>
+
+            <div class="sidebar-title" style="margin-top:14px;">Collector</div>
+            <div class="header-field" style="width:100%;">
+                <label class="header-field-label" for="calcCollectorModel">Model</label>
+                <select class="select-box" id="calcCollectorModel"></select>
+            </div>
+            <div style="margin-top:8px; display:flex; gap:8px;">
+                <div class="header-field" style="flex:1;">
+                    <label class="header-field-label" for="calcCollectorCfm">Rated CFM</label>
+                    <input type="number" class="input-box" id="calcCollectorCfm" value="1100" min="1">
+                </div>
+                <div class="header-field" style="flex:1;">
+                    <label class="header-field-label" for="calcSystemLoss">System Loss Allowance (inWC)</label>
+                    <input type="number" class="input-box" id="calcSystemLoss" value="2.0" min="0" step="0.1">
+                </div>
+            </div>
+
+            <button type="button" id="calcRunBtn" class="mini-btn modal-primary-btn" style="width:100%; margin-top:10px;">Calculate</button>
+
+            <div id="calcResults" style="margin-top:12px;"></div>
+        </div>
+    </div>
+
     <div class="modal-overlay" id="outletHeightModalOverlay" style="display:none;">
         <div class="modal-box">
             <div class="modal-title">Outlet Height</div>
@@ -4098,7 +4269,7 @@
 
         // Toggles a body-level class that hides every dust-collection label at once (see the
         // .hide-dc-labels CSS), so the pure duct/fitting shapes are easy to inspect. Persisted
-        // so it stays put across reloads and matches whatever dust-collection.html has set.
+        // so it stays put across reloads.
         function initHideDcLabels() {
             const KEY = 'kerphHideDcLabels';
             const btn = document.getElementById('hideDcLabelsBtn');
@@ -4235,6 +4406,419 @@
                     angle: (p.angle + rotationDeg + 360) % 360
                 };
             });
+        }
+
+        /* ---------- DUST COLLECTION: NETWORK DERIVATION + SIZING CALCULATOR ---------- */
+
+        function getNodeBoxFt(node) {
+            const leftFt = parseFloat(node.style.left) / ppi;
+            const topFt = parseFloat(node.style.top) / ppi;
+            const wFt = parseFloat(node.style.width) / ppi;
+            const hFt = parseFloat(node.style.height) / ppi;
+            return { x1: leftFt, y1: topFt, x2: leftFt + wFt, y2: topFt + hFt, lengthFt: Math.max(wFt, hFt) };
+        }
+
+        function boxesNearlyTouch(a, b, tolFt) {
+            return !(a.x2 + tolFt < b.x1 || b.x2 + tolFt < a.x1 || a.y2 + tolFt < b.y1 || b.y2 + tolFt < a.y1);
+        }
+
+        // Builds the real duct connectivity graph from the magnetic ports (DUCT_PORTS /
+        // getWorldPorts / getPortSizeClasses) — two ports only count as connected if they
+        // land within a couple px of each other AND match size class port-for-port (not
+        // item-for-item), which is what correctly lets a reducer bridge a 4in run to a 6in
+        // run instead of being treated as uniformly one size or the other. Also returns
+        // every port that didn't find a match, for the open-ends check.
+        const NETWORK_PORT_TOL = 3;
+
+        function buildDuctPortGraph(nodes) {
+            const info = nodes.map(n => {
+                const type = getPortItemType(n.dataset.toolName);
+                if (!type) return null;
+                const left = parseFloat(n.style.left), top = parseFloat(n.style.top);
+                const w = parseFloat(n.style.width), h = parseFloat(n.style.height);
+                const rotation = parseFloat(n.dataset.rotation) || 0;
+                const sizeClasses = getPortSizeClasses(type, n.dataset.toolName);
+                const ports = getWorldPorts(type, left, top, w, h, rotation).map((p, i) => ({ x: p.x, y: p.y, sizeClass: sizeClasses[i] }));
+                return { node: n, ports };
+            }).filter(Boolean);
+
+            const adjacency = new Map(info.map(i => [i.node, []]));
+            const openPorts = [];
+
+            info.forEach((a, ai) => {
+                a.ports.forEach(ap => {
+                    let matched = false;
+                    info.forEach((b, bi) => {
+                        if (ai === bi) return;
+                        b.ports.forEach(bp => {
+                            if (ap.sizeClass !== bp.sizeClass) return;
+                            if (Math.hypot(ap.x - bp.x, ap.y - bp.y) < NETWORK_PORT_TOL) {
+                                matched = true;
+                                if (!adjacency.get(a.node).includes(b.node)) adjacency.get(a.node).push(b.node);
+                            }
+                        });
+                    });
+                    if (!matched) openPorts.push({ node: a.node, x: ap.x, y: ap.y });
+                });
+            });
+
+            return { adjacency, openPorts };
+        }
+
+        // Traces the connected dust-collection ductwork already placed on the grid, from the
+        // collector out to each blast gate, following the real port graph above. Not a
+        // substitute for measuring a real run, but a solid starting point for the calculator.
+        function traceDuctworkFromLayout() {
+            const nodes = Array.from(document.querySelectorAll('.placed-tool-node[data-layer="dust-collection"]'));
+            if (!nodes.length) return [];
+
+            const collectorNode = nodes.find(n => {
+                const name = n.dataset.toolName || '';
+                return name.includes('DC-1100VX') || name.includes('Dust Deputy');
+            });
+            if (!collectorNode) return [];
+
+            const blastGates = nodes.filter(n => n.dataset.toolName === 'Blast Gate' || n.dataset.toolName === '6in Blast Gate');
+            if (!blastGates.length) return [];
+
+            const { adjacency } = buildDuctPortGraph(nodes);
+            // The collector has no formal port (it's not a flow-through fitting shape), so
+            // bridge it into the graph with a box-proximity check just for this one
+            // connection — everything downstream of it uses the exact port graph.
+            const collectorBox = getNodeBoxFt(collectorNode);
+            if (!adjacency.has(collectorNode)) adjacency.set(collectorNode, []);
+            nodes.forEach(n => {
+                if (n === collectorNode || !adjacency.has(n)) return;
+                if (boxesNearlyTouch(collectorBox, getNodeBoxFt(n), 0.5)) {
+                    adjacency.get(collectorNode).push(n);
+                    adjacency.get(n).push(collectorNode);
+                }
+            });
+
+            const results = [];
+            blastGates.forEach(gate => {
+                const visited = new Set([gate]);
+                const queue = [{ node: gate, path: [] }];
+                let found = null;
+                while (queue.length) {
+                    const { node, path } = queue.shift();
+                    if (node === collectorNode) { found = path; break; }
+                    (adjacency.get(node) || []).forEach(n => {
+                        if (!visited.has(n)) {
+                            visited.add(n);
+                            queue.push({ node: n, path: [...path, n] });
+                        }
+                    });
+                }
+                if (!found) return;
+
+                let lengthFt = 0, elbows = 0;
+                found.forEach(n => {
+                    if (n === collectorNode) return;
+                    const name = n.dataset.toolName || '';
+                    // A drop counts toward friction loss the same as an elbow — it's the
+                    // same "flow changes direction" penalty, just changing elevation instead
+                    // of XY heading.
+                    if (name.includes('Elbow') || name.includes('Y-Joint') || name.includes('T-Joint') || name.includes('Duct Drop')) elbows += 1;
+                    else if (name.includes('Dust Duct')) lengthFt += getNodeBoxFt(n).lengthFt;
+                });
+
+                results.push({ lengthFt: Math.round(lengthFt * 10) / 10, elbows });
+            });
+
+            return results;
+        }
+
+        // Marks every unmatched port on the grid with a pulsing dot and reports a count — the
+        // port graph already knows exactly which connections are real, so this is exact, not
+        // a guess.
+        function checkDuctConnections() {
+            document.querySelectorAll('.open-port-marker').forEach(m => m.remove());
+            const nodes = Array.from(document.querySelectorAll('.placed-tool-node[data-layer="dust-collection"]'));
+            const resultEl = document.getElementById('calcConnectionsResult');
+            if (!nodes.length) {
+                resultEl.innerHTML = '';
+                return;
+            }
+            const { adjacency, openPorts } = buildDuctPortGraph(nodes);
+            // The collector isn't a port-based shape, so a port that lands right at a
+            // collector's intake would otherwise be flagged "open" even though it's actually
+            // connected — exclude anything within a few inches of a collector's box.
+            const collectorBoxesFt = nodes
+                .filter(n => (n.dataset.toolName || '').match(/DC-1100VX|Dust Deputy/))
+                .map(n => getNodeBoxFt(n));
+            const genuinelyOpen = openPorts.filter(p => {
+                const pxFt = p.x / ppi, pyFt = p.y / ppi;
+                const nearCollector = collectorBoxesFt.some(b => pxFt > b.x1 - 0.5 && pxFt < b.x2 + 0.5 && pyFt > b.y1 - 0.5 && pyFt < b.y2 + 0.5);
+                if (nearCollector) return false;
+                // A blast gate's downstream side normally terminates right at the tool it
+                // serves — tools aren't port-based shapes, so that side never finds a match
+                // and would always look "open" even when the gate is correctly installed.
+                // Only flag a blast gate if it isn't hooked into the duct network on EITHER
+                // side (a genuinely stranded gate, not just one terminating at its tool).
+                if (getPortItemType(p.node.dataset.toolName) === 'blastgate' && (adjacency.get(p.node) || []).length > 0) return false;
+                return true;
+            });
+            genuinelyOpen.forEach(p => {
+                const marker = document.createElement('div');
+                marker.className = 'open-port-marker';
+                marker.style.left = p.x + 'px';
+                marker.style.top = p.y + 'px';
+                board.appendChild(marker);
+            });
+            if (!genuinelyOpen.length) {
+                resultEl.innerHTML = '<div class="calc-connections-result ok">&#10003; Every duct port is connected.</div>';
+            } else {
+                resultEl.innerHTML = `<div class="calc-connections-result warn">&#9888; ${genuinelyOpen.length} open duct end${genuinelyOpen.length === 1 ? '' : 's'} — marked in red on the grid.</div>`;
+            }
+        }
+
+        function autoFillBranchesFromLayout() {
+            const traced = traceDuctworkFromLayout();
+            if (!traced.length) {
+                showToast('No connected duct run found — place a dust collector, ducts, and at least one blast gate on the grid, with the ducts touching end-to-end.');
+                return;
+            }
+            document.getElementById('calcBranchList').innerHTML = '';
+            traced.forEach(t => {
+                addCalcBranchRow('Custom');
+                const rows = document.querySelectorAll('.calc-branch-row');
+                const row = rows[rows.length - 1];
+                row.querySelector('.calc-len-input').value = t.lengthFt;
+                row.querySelector('.calc-elbow-input').value = t.elbows;
+            });
+            showToast(`Traced ${traced.length} branch${traced.length === 1 ? '' : 'es'} from the layout — pick the right tool for each, then Calculate.`);
+        }
+
+        /* Rule-of-thumb planning math (~4000 FPM target conveying velocity, simplified
+           per-foot and per-elbow static pressure loss factors). Not a substitute for a real
+           system design — real losses depend on your exact hose/pipe and the collector's fan
+           curve, which this tool doesn't have data for. */
+        const TOOL_CFM_PRESETS = {
+            'Table Saw': 350, 'Bandsaw': 400, 'Jointer': 400, 'Planer': 600,
+            'Router Table': 350, 'Miter/Crosscut Saw': 350, 'Disc/Belt Sander': 400,
+            'Drum Sander': 800, 'CNC Router': 400, 'Lathe': 350, 'Custom': 350
+        };
+
+        function addCalcBranchRow(preset) {
+            const list = document.getElementById('calcBranchList');
+            const row = document.createElement('div');
+            row.className = 'calc-branch-row';
+
+            const toolSelect = document.createElement('select');
+            toolSelect.className = 'select-box calc-tool-select';
+            Object.keys(TOOL_CFM_PRESETS).forEach(name => {
+                const opt = document.createElement('option');
+                opt.value = name;
+                opt.textContent = name;
+                toolSelect.appendChild(opt);
+            });
+            toolSelect.value = preset || 'Table Saw';
+
+            const dimsRow = document.createElement('div');
+            dimsRow.className = 'dims-row';
+
+            const cfmWrap = document.createElement('div');
+            cfmWrap.innerHTML = '<label class="header-field-label">CFM</label>';
+            const cfmInput = document.createElement('input');
+            cfmInput.type = 'number';
+            cfmInput.className = 'input-box calc-cfm-input';
+            cfmInput.value = TOOL_CFM_PRESETS[toolSelect.value];
+            cfmWrap.appendChild(cfmInput);
+
+            const lenWrap = document.createElement('div');
+            lenWrap.innerHTML = '<label class="header-field-label">Run (ft)</label>';
+            const lenInput = document.createElement('input');
+            lenInput.type = 'number';
+            lenInput.className = 'input-box calc-len-input';
+            lenInput.value = 10;
+            lenWrap.appendChild(lenInput);
+
+            const elbowWrap = document.createElement('div');
+            elbowWrap.innerHTML = '<label class="header-field-label">Elbows</label>';
+            const elbowInput = document.createElement('input');
+            elbowInput.type = 'number';
+            elbowInput.className = 'input-box calc-elbow-input';
+            elbowInput.value = 2;
+            elbowInput.min = 0;
+            elbowWrap.appendChild(elbowInput);
+
+            dimsRow.appendChild(cfmWrap);
+            dimsRow.appendChild(lenWrap);
+            dimsRow.appendChild(elbowWrap);
+
+            toolSelect.addEventListener('change', () => { cfmInput.value = TOOL_CFM_PRESETS[toolSelect.value]; });
+
+            const removeBtn = document.createElement('button');
+            removeBtn.type = 'button';
+            removeBtn.className = 'mini-btn danger calc-branch-remove';
+            removeBtn.textContent = 'Remove';
+            removeBtn.style.padding = '4px 8px';
+            removeBtn.style.fontSize = '10px';
+            removeBtn.addEventListener('click', () => row.remove());
+
+            row.appendChild(toolSelect);
+            row.appendChild(dimsRow);
+            row.appendChild(removeBtn);
+            list.appendChild(row);
+        }
+
+        function recommendDiameter(cfm) {
+            // ~4000 FPM target conveying velocity for chip collection.
+            const areaSqFt = cfm / 4000;
+            const diameterIn = Math.sqrt(areaSqFt * 4 / Math.PI) * 12;
+            return diameterIn <= 4.5 ? 4 : 6;
+        }
+
+        function estimateDuctLoss(diameterIn, lengthFt, elbows) {
+            const lossPerFt = diameterIn === 4 ? 0.02 : 0.01;
+            const elbowEquivFt = diameterIn === 4 ? 6 : 9;
+            return (lengthFt + elbows * elbowEquivFt) * lossPerFt;
+        }
+
+        // Rough planning-only material cost, not a real quote — no tax, hardware, hangers,
+        // flex-vs-rigid pricing differences, or labor.
+        const DUCT_COST_PER_FT = { 4: 3.5, 6: 5.5 };
+        const ELBOW_COST = { 4: 12, 6: 18 };
+
+        // Approximate CFM-vs-static-pressure curves (CFM at inWC), read off commonly-cited
+        // hobbyist figures for these models — not manufacturer-verified data. "Custom" skips
+        // the curve entirely and just uses the flat rated CFM number.
+        const COLLECTOR_PRESETS = {
+            custom: { label: 'Custom (enter CFM manually)', rated: 1100, curve: null },
+            'jet-dc1100vx': { label: 'JET DC-1100VX (1.5HP)', rated: 1100, curve: [[0, 1100], [2, 850], [4, 650], [6, 450], [8, 250]] },
+            'grizzly-g0548z': { label: 'Grizzly G0548Z (2HP)', rated: 1180, curve: [[0, 1180], [2, 950], [4, 720], [6, 500], [8, 300]] },
+            'oneida-v-system-3hp': { label: 'Oneida V-System 3HP', rated: 1750, curve: [[0, 1750], [2, 1500], [4, 1250], [6, 1000], [8, 750]] },
+            'harbor-freight-2hp': { label: 'Harbor Freight 2HP', rated: 1550, curve: [[0, 1550], [2, 1150], [4, 800], [6, 500], [8, 250]] }
+        };
+
+        function interpolateCollectorCfm(curve, sp) {
+            if (!curve || !curve.length) return null;
+            if (sp <= curve[0][0]) return curve[0][1];
+            if (sp >= curve[curve.length - 1][0]) return curve[curve.length - 1][1];
+            for (let i = 0; i < curve.length - 1; i++) {
+                const [sp1, cfm1] = curve[i];
+                const [sp2, cfm2] = curve[i + 1];
+                if (sp >= sp1 && sp <= sp2) {
+                    const t = (sp - sp1) / (sp2 - sp1);
+                    return cfm1 + t * (cfm2 - cfm1);
+                }
+            }
+            return curve[curve.length - 1][1];
+        }
+
+        function initCollectorPresets() {
+            const select = document.getElementById('calcCollectorModel');
+            Object.keys(COLLECTOR_PRESETS).forEach(key => {
+                const opt = document.createElement('option');
+                opt.value = key;
+                opt.textContent = COLLECTOR_PRESETS[key].label;
+                select.appendChild(opt);
+            });
+            select.value = 'jet-dc1100vx';
+
+            const cfmInput = document.getElementById('calcCollectorCfm');
+            function applyPreset() {
+                const preset = COLLECTOR_PRESETS[select.value];
+                cfmInput.value = preset.rated;
+                cfmInput.disabled = select.value !== 'custom';
+            }
+            select.addEventListener('change', applyPreset);
+            applyPreset();
+        }
+
+        function runCalculator() {
+            const rows = document.querySelectorAll('.calc-branch-row');
+            if (!rows.length) { showToast('Add at least one branch to calculate.'); return; }
+
+            const systemLoss = parseFloat(document.getElementById('calcSystemLoss').value) || 0;
+            const collectorCfm = parseFloat(document.getElementById('calcCollectorCfm').value) || 0;
+            const collectorPreset = COLLECTOR_PRESETS[document.getElementById('calcCollectorModel').value];
+            const mainLenFt = parseFloat(document.getElementById('calcMainLen').value) || 0;
+            const mainElbows = parseFloat(document.getElementById('calcMainElbows').value) || 0;
+
+            const resultsEl = document.getElementById('calcResults');
+            resultsEl.innerHTML = '';
+
+            const branchData = Array.from(rows).map(row => ({
+                toolName: row.querySelector('.calc-tool-select').value,
+                cfm: parseFloat(row.querySelector('.calc-cfm-input').value) || 0,
+                lengthFt: parseFloat(row.querySelector('.calc-len-input').value) || 0,
+                elbows: parseFloat(row.querySelector('.calc-elbow-input').value) || 0
+            }));
+
+            // The main trunk carries whichever single branch is open at a time (blast gates
+            // isolate branches in a typical single-stage hobby-shop system), so it needs to be
+            // sized for the LARGEST branch's CFM, not the sum of every branch.
+            const maxBranchCfm = Math.max(...branchData.map(b => b.cfm));
+            const mainDiameter = recommendDiameter(maxBranchCfm);
+            const mainLoss = estimateDuctLoss(mainDiameter, mainLenFt, mainElbows);
+
+            let totalCost = mainLenFt * DUCT_COST_PER_FT[mainDiameter] + mainElbows * ELBOW_COST[mainDiameter];
+            let worstSp = 0;
+            let worstDeliveredCfm = Infinity;
+            let anyDelivered = false;
+
+            branchData.forEach(b => {
+                const diameter = recommendDiameter(b.cfm);
+                const ductLoss = estimateDuctLoss(diameter, b.lengthFt, b.elbows);
+                const totalSp = ductLoss + mainLoss + systemLoss;
+                worstSp = Math.max(worstSp, totalSp);
+                totalCost += b.lengthFt * DUCT_COST_PER_FT[diameter] + b.elbows * ELBOW_COST[diameter];
+
+                const deliveredCfm = collectorPreset && collectorPreset.curve
+                    ? interpolateCollectorCfm(collectorPreset.curve, totalSp)
+                    : null;
+
+                let cls = '', verdict;
+                if (deliveredCfm !== null) {
+                    anyDelivered = true;
+                    worstDeliveredCfm = Math.min(worstDeliveredCfm, deliveredCfm);
+                    const pct = (deliveredCfm / b.cfm) * 100;
+                    if (deliveredCfm < b.cfm * 0.7) { cls = 'danger'; verdict = `At this resistance, the ${collectorPreset.label} delivers only ~${Math.round(deliveredCfm)} CFM (~${Math.round(pct)}% of the ${b.cfm} CFM this tool needs) — undersized for this run.`; }
+                    else if (deliveredCfm < b.cfm) { cls = 'warn'; verdict = `Delivers ~${Math.round(deliveredCfm)} CFM (~${Math.round(pct)}% of the ${b.cfm} CFM needed) — workable but tight.`; }
+                    else { verdict = `Delivers ~${Math.round(deliveredCfm)} CFM, comfortably above the ${b.cfm} CFM this tool needs.`; }
+                } else {
+                    if (totalSp > 7) { cls = 'danger'; verdict = 'High resistance — a single-stage collector will likely struggle. Shorten the run, cut elbows, or upsize to 6" duct.'; }
+                    else if (totalSp > 4) { cls = 'warn'; verdict = 'Moderate resistance — expect somewhat reduced CFM from rated.'; }
+                    else { verdict = 'Should perform close to rated CFM.'; }
+                }
+
+                let mainWarning = '';
+                if (diameter > mainDiameter) {
+                    mainWarning = `<div class="calc-result-line" style="color:#b91c1c; font-weight:700;">&#9888; This branch alone needs ${diameter}" duct, larger than the ${mainDiameter}" main trunk below — upsize the main.</div>`;
+                }
+
+                const card = document.createElement('div');
+                card.className = 'calc-result-card ' + cls;
+                card.innerHTML = `
+                    <div class="calc-result-title">${b.toolName} — recommend ${diameter}" duct</div>
+                    <div class="calc-result-line">${b.cfm} CFM at ~4000 FPM needs about ${diameter}" diameter.</div>
+                    <div class="calc-result-line">Estimated static pressure: ~${totalSp.toFixed(1)}" WC (${ductLoss.toFixed(1)}" branch + ${mainLoss.toFixed(1)}" main + ${systemLoss.toFixed(1)}" system).</div>
+                    <div class="calc-result-line">${verdict}</div>
+                    ${mainWarning}
+                `;
+                resultsEl.appendChild(card);
+            });
+
+            const summary = document.createElement('div');
+            summary.className = 'calc-result-card' + (worstSp > 7 ? ' danger' : worstSp > 4 ? ' warn' : '');
+            summary.innerHTML = `
+                <div class="calc-result-title">System summary</div>
+                <div class="calc-result-line">Main trunk: recommend ${mainDiameter}" duct (sized for the largest branch, ${maxBranchCfm} CFM).</div>
+                <div class="calc-result-line">Worst-case branch static pressure ~${worstSp.toFixed(1)}" WC against a ${collectorCfm} CFM rated collector.${anyDelivered ? ` Estimated worst-case delivered CFM: ~${Math.round(worstDeliveredCfm)}.` : ' Real delivered CFM will be lower than rated once static pressure rises — pick a collector model above for a fan-curve estimate instead of just the flat rating.'}</div>
+                <div class="calc-result-line">Estimated material cost: ~$${Math.round(totalCost)} (duct + elbows for the main trunk and all branches — blast gates, the collector itself, and labor aren't included).</div>
+            `;
+            resultsEl.appendChild(summary);
+        }
+
+        function initCalculator() {
+            document.getElementById('calcAddBranchBtn').addEventListener('click', () => addCalcBranchRow());
+            document.getElementById('calcRunBtn').addEventListener('click', runCalculator);
+            document.getElementById('calcAutoFillBtn').addEventListener('click', autoFillBranchesFromLayout);
+            document.getElementById('calcCheckConnectionsBtn').addEventListener('click', checkDuctConnections);
+            initCollectorPresets();
+            addCalcBranchRow('Table Saw');
         }
 
         const PORT_SNAP_PX = 18;
@@ -8917,6 +9501,11 @@
             let dragging = false;
             let moved = false;
             let startX = 0, startY = 0, startLeft = 0, startTop = 0;
+            // .floating-panel is position:absolute (document-relative), but the measure
+            // toolbar shares this same function while staying position:fixed (viewport-
+            // relative) — getBoundingClientRect() is always viewport-relative either way,
+            // so a fixed panel needs no scroll adjustment while an absolute one does.
+            const isFixed = getComputedStyle(panel).position === 'fixed';
 
             handle.addEventListener('mousedown', (e) => {
                 dragging = true;
@@ -8924,8 +9513,8 @@
                 const rect = panel.getBoundingClientRect();
                 startX = e.clientX;
                 startY = e.clientY;
-                startLeft = rect.left;
-                startTop = rect.top;
+                startLeft = rect.left + (isFixed ? 0 : window.scrollX);
+                startTop = rect.top + (isFixed ? 0 : window.scrollY);
                 e.preventDefault();
             });
 
@@ -8946,11 +9535,12 @@
                 }
                 let newLeft = startLeft + dx;
                 let newTop = startTop + dy;
-                newLeft = Math.max(0, Math.min(newLeft, window.innerWidth - panel.offsetWidth));
-                newTop = Math.max(0, Math.min(newTop, window.innerHeight - panel.offsetHeight));
+                const scrollX = isFixed ? 0 : window.scrollX;
+                const scrollY = isFixed ? 0 : window.scrollY;
+                newLeft = Math.max(scrollX, Math.min(newLeft, scrollX + window.innerWidth - panel.offsetWidth));
+                newTop = Math.max(scrollY, Math.min(newTop, scrollY + window.innerHeight - panel.offsetHeight));
                 panel.style.left = newLeft + 'px';
                 panel.style.top = newTop + 'px';
-                clampPanelHeight(panel);
             });
 
             document.addEventListener('mouseup', () => {
@@ -8966,34 +9556,16 @@
             };
         }
 
-        // The page itself never scrolls (body has overflow:hidden, by design — it's a
-        // fixed canvas workspace). That means a panel body taller than the room left
-        // between its top edge and the bottom of the window has no way to be reached —
-        // not by page scroll (doesn't exist) and not by the panel itself (no internal
-        // scroll) — its lower fields are just stuck off-screen. This caps the body's
-        // height to whatever room is actually left and lets it scroll internally instead.
-        // Uses body.scrollHeight (the content's true height, unaffected by an already-
-        // applied max-height/overflow) compared against currently available room, so the
-        // decision is stable however this panel was clamped last call — safe to call
-        // repeatedly without drifting.
-        function clampPanelHeight(panel) {
-            if (!panel || panel.classList.contains('collapsed')) return;
-            const body = panel.querySelector(':scope > .panel-body');
-            if (!body) return;
-            const bodyTop = body.getBoundingClientRect().top;
-            const available = Math.max(80, Math.floor(window.innerHeight - bodyTop - 16));
-            const newMaxHeight = body.scrollHeight > available ? available + 'px' : 'none';
-            if (body.style.maxHeight !== newMaxHeight) body.style.maxHeight = newMaxHeight;
-        }
-
         // Stacks the right-side panels snugly, one under the next, based on their actual
         // rendered height right now — so expanding a panel above pushes the ones below it
         // down instead of them sitting frozen at their original (collapsed) position and
         // overlapping. Re-run on every expand/collapse, not just at init. A panel the user
         // has manually dragged (dataset.userPositioned) is left alone and skipped — it's no
         // longer part of the auto-stack, so it doesn't consume vertical space in it either.
-        // Every panel (auto-stacked or dragged) still gets clampPanelHeight() run against
-        // it, since either kind can end up with too little room below it.
+        // Panels are position:absolute (not fixed), so if the stack runs taller than the
+        // window, the page itself just scrolls down to reach the rest — same as any other
+        // page on the site — instead of needing internal per-panel clamping/scrolling or a
+        // second column that ends up sitting on top of the grid.
         function arrangeFloatingPanels() {
             const panels = [
                 document.getElementById('cabinetPanel'),
@@ -9001,7 +9573,8 @@
                 document.getElementById('layersPanel'),
                 document.getElementById('electricalPanel'),
                 document.getElementById('clearancePanel'),
-                document.getElementById('costPanel')
+                document.getElementById('costPanel'),
+                document.getElementById('calcPanel')
             ];
             const gap = 10;
             let currentTop = 166;
@@ -9012,7 +9585,28 @@
                 panel.style.left = 'auto';
                 currentTop += panel.offsetHeight + gap;
             });
-            panels.forEach(panel => clampPanelHeight(panel));
+            updateCanvasBackgroundHeight();
+        }
+
+        // Grows the blue grid background to reach however far down the page actually scrolls,
+        // instead of stopping dead at the original viewport height — otherwise, once the panel
+        // stack above pushes the page taller than the window, the area below the old viewport
+        // edge falls back to bare page background instead of grid. Never shrinks below a full
+        // viewport, and covers a manually-dragged panel too since it reads every floating
+        // panel's actual rendered bottom edge, not just the auto-stacked ones.
+        function updateCanvasBackgroundHeight() {
+            const el = document.getElementById('canvas-view-space');
+            if (!el) return;
+            const topOffset = el.offsetTop;
+            let maxPanelBottom = 0;
+            document.querySelectorAll('.floating-panel').forEach(panel => {
+                if (getComputedStyle(panel).display === 'none') return;
+                const bottom = panel.offsetTop + panel.offsetHeight;
+                if (bottom > maxPanelBottom) maxPanelBottom = bottom;
+            });
+            const viewportFitHeight = window.innerHeight - topOffset;
+            const neededHeight = Math.max(viewportFitHeight, maxPanelBottom - topOffset + 40);
+            el.style.height = neededHeight + 'px';
         }
 
         // Watches every stacked panel's actual box size and re-runs arrangeFloatingPanels()
@@ -9025,7 +9619,7 @@
         // feedback loops: arrangeFloatingPanels only ever writes top/left/right, never a size
         // property, so it can't itself trigger another resize.
         function initPanelAutoStack() {
-            const panels = ['cabinetPanel', 'wallFeaturePanel', 'layersPanel', 'electricalPanel', 'clearancePanel', 'costPanel']
+            const panels = ['cabinetPanel', 'wallFeaturePanel', 'layersPanel', 'electricalPanel', 'clearancePanel', 'costPanel', 'calcPanel']
                 .map(id => document.getElementById(id))
                 .filter(Boolean);
             // No rAF debounce needed: ResizeObserver already batches every observed change
@@ -9067,6 +9661,13 @@
                 if (!costPanel.classList.contains('collapsed')) renderCostPanel();
                 arrangeFloatingPanels();
             });
+
+            const calcPanel = document.getElementById('calcPanel');
+            makeDraggable(calcPanel, document.getElementById('calcPanelHandle'), () => {
+                calcPanel.classList.toggle('collapsed');
+                arrangeFloatingPanels();
+            });
+            initCalculator();
 
             arrangeFloatingPanels();
         }
@@ -9361,11 +9962,9 @@
         /* ---------- CURRENT LAYOUT AUTOSAVE (cross-page sync) ----------
            The live, unsaved board state is continuously mirrored into localStorage under
            kerphCurrentLayout — separate from the named kerphSavedLayouts (Pro) system — so
-           other pages that work against the same shop (e.g. the Dust Collection page) can
-           read and write the same layout without a real backend. On load, this restores
-           whatever was last on the board instead of always starting from a blank rectangle,
-           which is also what makes edits made on another page (dust collection items placed
-           there) show up here on next visit. */
+           other pages that work against the same shop (e.g. the 3D Shop Viewer) can read
+           it without a real backend. On load, this restores whatever was last on the board
+           instead of always starting from a blank rectangle. */
         // serializeCurrentLayout() stamps a fresh random id + savedAt on every call, so a
         // naive JSON-string comparison would never dedupe two calls with identical board
         // content — comparing only the meaningful fields is what lets autosaveCurrentLayout

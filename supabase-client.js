@@ -107,8 +107,13 @@
             memberSince: state.profile.created_at || null,
             unitSystem: state.profile.unit_system || 'imperial',
             maintenanceRemindersEnabled: state.profile.maintenance_reminders_enabled !== false,
-            homeTileOrder: state.profile.home_tile_order || null
+            homeTileOrder: state.profile.home_tile_order || null,
+            isAdmin: state.profile.is_admin === true
         };
+    }
+
+    function kerphIsAdmin() {
+        return kerphGetCachedProfile().isAdmin === true;
     }
 
     // upsert (not update) so a missing profile row — trigger failure, edge case, whatever —
@@ -306,6 +311,16 @@
         return { error };
     }
 
+    // Single extension point for "auto-post this to social media" — insert one row here from
+    // wherever content gets published (Garage Tips, Portfolio, and any future content type),
+    // and a Database Webhook + Edge Function (post-to-social) take it from there. Callers
+    // should only call this on the transition into published/public, not on every re-save.
+    async function kerphQueueSocialPost({ source, sourceId, title, excerpt, url, imageUrl }) {
+        if (!state.user) return { error: { message: 'Not signed in.' } };
+        return kerphSupabase.from('social_posts')
+            .insert({ user_id: state.user.id, source, source_id: sourceId, title, excerpt, url, image_url: imageUrl || null });
+    }
+
     /* ---------- Shop Showcase: real multi-user content + Storage-backed photos ---------- */
 
     // Same downscale logic as kerphDownscaleImage but resolves a Blob (for direct Storage
@@ -395,6 +410,52 @@
         }
         const { error } = await kerphSupabase.from('showcase_likes').insert({ post_id: postId, user_id: state.user.id });
         return { error };
+    }
+
+    // Garage Tips & How-To's — admin-authored articles (RLS enforces the write restriction
+    // server-side; kerphIsAdmin() above is only for deciding what UI to show, not security).
+    async function kerphLoadGarageTips() {
+        const { data, error } = await kerphSupabase.from('garage_tips').select('*').order('created_at', { ascending: false });
+        return { data: data || [], error };
+    }
+
+    async function kerphInsertGarageTip({ title, excerpt, bodyHtml, coverImagePath, videoUrl, category, tags, published, author }) {
+        if (!state.user) return { data: null, error: { message: 'Not signed in.' } };
+        return kerphSupabase.from('garage_tips')
+            .insert({
+                user_id: state.user.id, title, excerpt, body_html: bodyHtml, cover_image_path: coverImagePath,
+                video_url: videoUrl, category, tags, published, author
+            })
+            .select().single();
+    }
+
+    async function kerphUpdateGarageTip(id, { title, excerpt, bodyHtml, coverImagePath, videoUrl, category, tags, published }) {
+        return kerphSupabase.from('garage_tips')
+            .update({
+                title, excerpt, body_html: bodyHtml, cover_image_path: coverImagePath, video_url: videoUrl,
+                category, tags, published, updated_at: new Date().toISOString()
+            })
+            .eq('id', id).select().single();
+    }
+
+    async function kerphDeleteGarageTip(id, coverImagePath) {
+        if (coverImagePath) await kerphSupabase.storage.from('garage-tips-images').remove([coverImagePath]);
+        const { error } = await kerphSupabase.from('garage_tips').delete().eq('id', id);
+        return { error };
+    }
+
+    async function kerphUploadGarageTipImage(file) {
+        if (!state.user) return { data: null, error: { message: 'Not signed in.' } };
+        const blob = await kerphDownscaleImageToBlob(file, 1200, 0.85);
+        const path = `${state.user.id}/${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}.jpg`;
+        const { error } = await kerphSupabase.storage.from('garage-tips-images').upload(path, blob, { contentType: 'image/jpeg' });
+        if (error) return { data: null, error };
+        return { data: { path }, error: null };
+    }
+
+    function kerphGarageTipImageUrl(path) {
+        if (!path) return null;
+        return kerphSupabase.storage.from('garage-tips-images').getPublicUrl(path).data.publicUrl;
     }
 
     /* ---------- Portfolio: permanent per-project pages, tied into Shop Showcase ---------- */
@@ -776,6 +837,7 @@
     window.kerphDeleteQuote = kerphDeleteQuote;
     window.kerphGetQuoteByShareToken = kerphGetQuoteByShareToken;
     window.kerphRespondToQuote = kerphRespondToQuote;
+    window.kerphQueueSocialPost = kerphQueueSocialPost;
 
     window.kerphDownscaleImageToBlob = kerphDownscaleImageToBlob;
     window.kerphUploadShowcasePhoto = kerphUploadShowcasePhoto;
@@ -786,6 +848,14 @@
     window.kerphAddShowcaseComment = kerphAddShowcaseComment;
     window.kerphLoadMyShowcaseLikes = kerphLoadMyShowcaseLikes;
     window.kerphToggleShowcaseLike = kerphToggleShowcaseLike;
+
+    window.kerphIsAdmin = kerphIsAdmin;
+    window.kerphLoadGarageTips = kerphLoadGarageTips;
+    window.kerphInsertGarageTip = kerphInsertGarageTip;
+    window.kerphUpdateGarageTip = kerphUpdateGarageTip;
+    window.kerphDeleteGarageTip = kerphDeleteGarageTip;
+    window.kerphUploadGarageTipImage = kerphUploadGarageTipImage;
+    window.kerphGarageTipImageUrl = kerphGarageTipImageUrl;
 
     window.kerphUploadPortfolioPhoto = kerphUploadPortfolioPhoto;
     window.kerphPortfolioImageUrl = kerphPortfolioImageUrl;

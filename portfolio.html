@@ -143,7 +143,7 @@
         .header-quick-links a:hover { color: #1e3a8a; text-decoration: underline; }
         .header-quick-links-sep { color: #cbd5e1; }
 
-        .jigs-dropdown { position: relative; }
+        .jigs-dropdown { position: relative; margin-left: 30px; }
         .jigs-dropdown-btn {
             display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; color: #1e3a8a;
             background-color: #ffffff; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; cursor: pointer; white-space: nowrap;
@@ -220,7 +220,6 @@
             <select class="page-title-select" id="pageNavSelect">
                 <option value="index.html">Home</option>
                 <option value="workshop-planner.html">Workshop Layout Planner</option>
-                <option value="dust-collection.html">Dust Collection</option>
                 <option value="project-designer.html">Project Designer</option>
                 <option value="cutlist-optimizer.html">Cut List Optimizer</option>
                 <option value="quote-builder.html">Quote Builder</option>
@@ -228,6 +227,7 @@
                 <option value="shop-3d-viewer.html">3D Shop Viewer</option>
                 <option value="tool-reviews.html">Cool Tool Reviews</option>
                 <option value="shop-showcase.html">Shop Showcase</option>
+                <option value="garage-tips.html">Shop Tricks and How-To's</option>
                 <option value="portfolio.html" selected>Portfolio</option>
                 <option value="print-library.html">3D Print Library</option>
             </select>
@@ -748,6 +748,9 @@
         let portfolioInitialized = false;
         let projects = [];
         let editingProjectId = null;
+        // Captured at modal-open time so the save handler can tell "just made public" (queue a
+        // social post) apart from "already public, just re-saved" (don't re-post it).
+        let editingProjectWasPublic = false;
         let pendingCoverPath = null;
         let pendingGalleryPaths = [];
 
@@ -857,6 +860,7 @@
 
         function openProjectModal(p) {
             editingProjectId = p ? p.id : null;
+            editingProjectWasPublic = p ? !!p.is_public : false;
             pendingCoverPath = p ? p.cover_path : null;
             pendingGalleryPaths = p ? (p.gallery_paths || []).slice() : [];
             document.getElementById('projectModalTitle').textContent = p ? 'Edit Project' : 'Add Project';
@@ -913,6 +917,18 @@
                 result = await kerphCreatePortfolioProject(project);
             }
             if (result.error) { showToast(result.error.message || 'Could not save project.'); return; }
+            // Only the transition into public fires a social post — re-saving an already-public
+            // project (swapping a photo, say) must not re-post it.
+            if (project.isPublic && !editingProjectWasPublic) {
+                kerphQueueSocialPost({
+                    source: 'portfolio',
+                    sourceId: result.data.id,
+                    title: result.data.title,
+                    excerpt: result.data.description,
+                    url: `https://kerphplans.com/portfolio.html?user=${result.data.user_id}&project=${result.data.id}`,
+                    imageUrl: result.data.cover_path ? kerphPortfolioImageUrl(result.data.cover_path) : null
+                }).catch(() => {});
+            }
             const idx = projects.findIndex(p => p.id === result.data.id);
             if (idx >= 0) projects[idx] = result.data; else projects.unshift(result.data);
             renderPortfolioGrid();
@@ -944,6 +960,12 @@
             renderToolbar();
             renderPortfolioGrid();
             portfolioInitialized = true;
+
+            const projectId = new URLSearchParams(window.location.search).get('project');
+            if (projectId) {
+                const match = projects.find(p => p.id === projectId);
+                if (match) openProjectView(match);
+            }
         }
 
         kerphAuthReady.then(async () => {

@@ -589,26 +589,6 @@
             font-weight: 600;
             text-transform: uppercase;
         }
-        .insurance-report-btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            width: 100%;
-            padding: 7px 10px;
-            margin-bottom: 10px;
-            border: 1px solid #ca8a04;
-            border-radius: 6px;
-            background-color: #fffbeb;
-            color: #92400e;
-            font-size: 11px;
-            font-weight: 700;
-            cursor: pointer;
-        }
-        .insurance-report-btn:hover { background-color: #fef3c7; }
-        .insurance-report-btn.locked { opacity: 0.7; }
-        .insurance-report-btn.locked::after { content: ' \1F512'; }
-
         #insuranceReportPrintArea { display: none; }
         @media print {
             body.printing-insurance-report > *:not(#insuranceReportPrintArea) { display: none !important; }
@@ -791,8 +771,8 @@
             grid-column: 1 / -1;
             display: flex;
             align-items: center;
-            gap: 24px;
-            padding: 28px 32px;
+            gap: 14px;
+            padding: 16px 22px;
             background-image: linear-gradient(120deg, #eef2ff 0%, #ffffff 65%);
         }
 
@@ -810,7 +790,7 @@
         .tool-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
+            gap: 10px;
         }
 
         /* ---- Drag-to-reorder (see initTileReorder) ---- */
@@ -838,7 +818,7 @@
             background-image: linear-gradient(180deg, #ffffff 0%, #f6f8fb 100%);
             border: 1px solid #cbd5e1;
             border-radius: 14px;
-            padding: 24px;
+            padding: 14px;
             text-decoration: none;
             color: inherit;
             /* Resting state needs to read as a raised card on its own, not just on hover — an
@@ -891,7 +871,7 @@
         .tool-card-desc {
             font-size: 13px;
             color: #6b7280;
-            line-height: 1.5;
+            line-height: 1.4;
         }
 
         /* Non-featured tiles: icon sits beside the title instead of stacked above it, so each
@@ -918,18 +898,7 @@
         .tool-card:not(.tool-card-featured) .tool-card-desc {
             grid-column: 1 / -1;
             grid-row: 2;
-            margin-top: 10px;
-        }
-
-        .badge-new {
-            background-color: #16a34a;
-            color: #ffffff;
-            font-size: 9px;
-            font-weight: 700;
-            padding: 2px 7px;
-            border-radius: 999px;
-            letter-spacing: 0.03em;
-            vertical-align: middle;
+            margin-top: 4px;
         }
 
         /* Gated tools (see kerphApplyToolCardTierLocks in supabase-client.js) stay clickable
@@ -994,7 +963,7 @@
         .header-quick-links-sep { color: #cbd5e1; }
 
         /* ---------- SHOP JIGS DROPDOWN ---------- */
-        .jigs-dropdown { position: relative; }
+        .jigs-dropdown { position: relative; margin-left: 30px; }
         .jigs-dropdown-btn {
             display: flex;
             align-items: center;
@@ -1190,7 +1159,6 @@
                 <span class="category-chevron">&#9656;</span>
             </summary>
             <div class="category-items">
-                <button type="button" id="insuranceReportBtn" class="insurance-report-btn" title="Premier — generate a printable inventory of your owned tools, with estimated replacement values, for insurance documentation">&#128737;&#65039; Insurance Inventory Report</button>
                 <div class="empty-hint" id="myToolsEmptyHint">No owned tools yet. Mark tools as owned in the Workshop Layout Planner (or search Small Power Tools below) and they'll show up here.</div>
                 <div id="myToolsList"></div>
             </div>
@@ -1257,63 +1225,63 @@
                         </div>
                     </a>
 
-                    <a href="dust-collection.html" class="tool-card">
-                        <div class="tool-card-icon">&#128168;</div>
-                        <div class="tool-card-title">Dust collection <span class="badge-new">New</span></div>
-                        <div class="tool-card-desc">Lay out dust collection gear on the same shop grid as your Workshop Layout Planner, plus a duct sizing calculator.</div>
-                    </a>
-
                     <a href="project-designer.html" class="tool-card">
                         <div class="tool-card-icon">&#128208;</div>
-                        <div class="tool-card-title">Project designer <span class="badge-new">New</span></div>
+                        <div class="tool-card-title">Project designer</div>
                         <div class="tool-card-desc">Design a piece from individual panels and boards, and get an automatically generated cut list.</div>
                     </a>
 
                     <a href="cutlist-optimizer.html" class="tool-card">
                         <div class="tool-card-icon">&#9986;&#65039;</div>
-                        <div class="tool-card-title">Cut list optimizer <span class="badge-new">New</span></div>
+                        <div class="tool-card-title">Cut list optimizer</div>
                         <div class="tool-card-desc">Turn a parts list into an optimized cutting layout across sheets and boards, with diagrams and waste estimates.</div>
                     </a>
 
                     <a href="find-a-builder.html" class="tool-card">
                         <div class="tool-card-icon">&#127959;&#65039;</div>
-                        <div class="tool-card-title">Find a builder <span class="badge-new">New</span></div>
+                        <div class="tool-card-title">Find a builder</div>
                         <div class="tool-card-desc">Designed your shop — now find a pole barn or post-frame contractor near you to build it, with real Google reviews.</div>
                     </a>
 
                     <a href="shop-3d-viewer.html" class="tool-card">
                         <div class="tool-card-icon">&#129482;</div>
-                        <div class="tool-card-title">3D shop viewer <span class="badge-new">New</span></div>
+                        <div class="tool-card-title">3D shop viewer</div>
                         <div class="tool-card-desc">See the shop you built in the Workshop Layout Planner assembled in 3D — orbit, pan, and zoom around it.</div>
                     </a>
 
                     <a href="tool-reviews.html" class="tool-card">
                         <div class="tool-card-icon">&#11088;</div>
-                        <div class="tool-card-title">Cool tool reviews <span class="badge-new">New</span></div>
+                        <div class="tool-card-title">Cool tool reviews</div>
                         <div class="tool-card-desc">Real feedback from real shops — browse tool reviews by category and star rating, or write your own.</div>
                     </a>
 
                     <a href="shop-showcase.html" class="tool-card">
                         <div class="tool-card-icon">&#128247;</div>
-                        <div class="tool-card-title">Shop showcase <span class="badge-new">New</span></div>
+                        <div class="tool-card-title">Shop showcase</div>
                         <div class="tool-card-desc">Share photos of your shop layout and browse everyone else's for inspiration.</div>
+                    </a>
+
+                    <a href="garage-tips.html" class="tool-card">
+                        <div class="tool-card-icon">&#128221;</div>
+                        <div class="tool-card-title">Shop tricks and how-to's</div>
+                        <div class="tool-card-desc">Articles and videos on shop technique, tool care, and jigs &mdash; tips and how-to's for the garage.</div>
                     </a>
 
                     <a href="portfolio.html" class="tool-card">
                         <div class="tool-card-icon">&#128188;</div>
-                        <div class="tool-card-title">Portfolio <span class="badge-new">New</span></div>
+                        <div class="tool-card-title">Portfolio</div>
                         <div class="tool-card-desc">A permanent, shareable page for everything you've built — pull from Project Designer or upload photos and plans from anywhere.</div>
                     </a>
 
                     <a href="quote-builder.html" class="tool-card">
                         <div class="tool-card-icon">&#129309;</div>
-                        <div class="tool-card-title">Quote builder <span class="badge-new">New</span></div>
+                        <div class="tool-card-title">Quote builder</div>
                         <div class="tool-card-desc">Turn a cut list into a real client quote — materials, labor, overhead, and margin, exported as a PDF.</div>
                     </a>
 
                     <a href="print-library.html" class="tool-card">
                         <div class="tool-card-icon">&#128230;</div>
-                        <div class="tool-card-title">3D print library <span class="badge-new">New</span></div>
+                        <div class="tool-card-title">3D print library</div>
                         <div class="tool-card-desc">Browse printable jigs and fixtures with an in-browser 3D preview, or share your own designs.</div>
                     </a>
                 </div>
@@ -1481,11 +1449,9 @@
         function isPremium() { return getPlan() === 'premier'; }
 
         function applyPlanGating() {
-            // Only the Insurance Inventory Report is gated on this page so far — value entry
-            // itself stays open to every plan (see the "Est. value" input in buildToolCard).
-            if (typeof applyInsuranceGating === 'function') applyInsuranceGating();
-            // Also refreshes the snapshot panel's Premier-perk callout so switching plans
-            // shows/hides it immediately, not just after a reload.
+            // The Insurance Inventory Report lives only in the My Workspace snapshot panel
+            // now, gated by simply not rendering unless isPremium() — so switching plans just
+            // needs the snapshot re-rendered, nothing else to toggle here.
             if (typeof renderHomeSnapshot === 'function') renderHomeSnapshot();
         }
 
@@ -2461,21 +2427,8 @@
             setTimeout(() => document.body.classList.remove('printing-insurance-report'), 500);
         }
 
-        function applyInsuranceGating() {
-            const btn = document.getElementById('insuranceReportBtn');
-            if (btn) btn.classList.toggle('locked', !isPremium());
-        }
-
         function initInsuranceReport() {
-            const btn = document.getElementById('insuranceReportBtn');
-            if (btn) {
-                btn.addEventListener('click', () => {
-                    if (!requirePremierAccess('Insurance inventory reports are a Premier feature.')) return;
-                    generateInsuranceReport();
-                });
-            }
-
-            // The snapshot-panel copy of this button is re-created on every renderHomeSnapshot()
+            // The snapshot-panel button is re-created on every renderHomeSnapshot()
             // call (its parent's innerHTML gets replaced), so a listener attached once here
             // would be lost on the next render — delegate to the panel itself instead, which
             // is never replaced.
@@ -2487,7 +2440,6 @@
             }
 
             window.addEventListener('afterprint', () => document.body.classList.remove('printing-insurance-report'));
-            applyInsuranceGating();
         }
 
         // Tool status/saved layouts/current layout are all real, Supabase-backed data now —

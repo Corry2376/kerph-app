@@ -4,7 +4,7 @@
     <script>if (localStorage.getItem('kerphComingSoonBypass') !== 'true') { location.replace('coming-soon.html'); }</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kerph - Board Foot Calculator</title>
+    <title>Kerph - Shop Tricks and How-To's</title>
     <style>
         * {
             box-sizing: border-box;
@@ -135,11 +135,15 @@
         .mini-btn:hover { background-color: #eef2ff; border-color: #2563eb; }
         .mini-btn.danger { color: #b91c1c; }
         .mini-btn.danger:hover { background-color: #fef2f2; border-color: #b91c1c; }
+        .mini-btn.primary { background-color: #1e3a8a; color: #ffffff; border-color: #1e3a8a; }
+        .mini-btn.primary:hover { background-color: #1e40af; }
 
         .input-box { width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; font-weight: 600; }
         .select-box { width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; font-weight: 600; background: #f8fafc; }
+        textarea.input-box { resize: vertical; min-height: 80px; font-family: inherit; font-weight: 400; }
+        textarea.code-input { font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; font-size: 12px; min-height: 200px; }
 
-        .modal-overlay { position: fixed; inset: 0; background-color: rgba(15, 23, 42, 0.5); z-index: 3000; display: flex; align-items: center; justify-content: center; padding: 24px; }
+        .modal-overlay { position: fixed; inset: 0; background-color: rgba(15, 23, 42, 0.5); z-index: 3000; display: flex; align-items: center; justify-content: center; padding: 24px; overflow-y: auto; }
         .modal-box { background-color: #ffffff; border-radius: 12px; padding: 24px; width: 320px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4); }
         .account-modal-box { width: 380px; max-height: 88vh; overflow-y: auto; }
         .account-member-since { font-size: 10.5px; color: #94a3b8; font-weight: 600; margin-top: 6px; }
@@ -190,8 +194,137 @@
         }
         .upgrade-nudge.visible { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
 
-        .header-quick-links { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; font-size: 11px; }
-        .header-quick-links-row { display: flex; align-items: center; gap: 6px; }
+        /* ---------- PAGE CONTENT ---------- */
+        main {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 24px 80px;
+        }
+
+        .tips-eyebrow {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #b23b3b;
+            margin-bottom: 8px;
+        }
+        .tips-title { font-size: 28px; font-weight: 800; color: #0f172a; margin-bottom: 10px; }
+        .tips-subtitle { font-size: 14.5px; color: #4b5563; line-height: 1.6; margin-bottom: 28px; max-width: 70ch; }
+
+        .tips-toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 24px;
+            background-color: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 12px;
+            padding: 14px;
+        }
+        .tips-toolbar .input-box, .tips-toolbar .select-box { width: auto; }
+        #tipSearchInput { flex: 1; min-width: 160px; }
+        #tipCategoryFilter { min-width: 170px; }
+        #newTipBtn { flex: none; margin-left: auto; padding: 10px 18px; }
+
+        .tips-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+        }
+
+        .tip-card {
+            background-color: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px -12px rgba(15, 23, 42, 0.15);
+            cursor: pointer;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+            display: flex;
+            flex-direction: column;
+        }
+        .tip-card:hover { transform: translateY(-2px); box-shadow: 0 16px 32px -12px rgba(15, 23, 42, 0.25); }
+
+        .tip-card-image { width: 100%; aspect-ratio: 4 / 3; display: block; object-fit: cover; background-color: #e2e8f0; }
+        .tip-card-placeholder {
+            width: 100%;
+            aspect-ratio: 4 / 3;
+            background: linear-gradient(135deg, #e0e7ff 0%, #eef2ff 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            color: #a5b4fc;
+        }
+        .tip-card-video-badge {
+            position: relative;
+            margin-top: -32px;
+            margin-left: 10px;
+            width: 26px; height: 26px;
+            background: rgba(15, 23, 42, 0.75);
+            color: #ffffff;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 11px;
+        }
+
+        .tip-card-body { padding: 14px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
+        .tip-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+        .tip-card-title { font-size: 14.5px; font-weight: 800; color: #0f172a; }
+        .tip-category-tag { font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; color: #1e3a8a; background-color: #e0e7ff; padding: 3px 8px; border-radius: 999px; white-space: nowrap; flex-shrink: 0; }
+        .tip-draft-tag { font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; color: #92400e; background-color: #fef3c7; padding: 3px 8px; border-radius: 999px; white-space: nowrap; flex-shrink: 0; }
+        .tip-card-desc { font-size: 12px; color: #4b5563; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+        .tip-card-footer { margin-top: auto; padding-top: 10px; border-top: 1px solid #f1f5f9; font-size: 11px; color: #6b7280; }
+
+        .tips-empty {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6b7280;
+            background-color: #ffffff;
+            border: 1px dashed #cbd5e1;
+            border-radius: 12px;
+        }
+        .tips-empty-icon { font-size: 40px; margin-bottom: 10px; }
+        .tips-empty-title { font-size: 15px; font-weight: 700; color: #1e293b; margin-bottom: 6px; }
+        .tips-empty-desc { font-size: 12.5px; max-width: 40ch; margin: 0 auto; line-height: 1.6; }
+
+        .header-field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; width: 100%; }
+        .header-field-checkbox { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+        .header-field-checkbox input { width: auto; }
+
+        .image-upload-zone {
+            border: 2px dashed #cbd5e1;
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+            cursor: pointer;
+            font-size: 12px;
+            color: #6b7280;
+        }
+        .image-upload-zone:hover { background-color: #f8fafc; border-color: #2563eb; }
+        .image-upload-preview { width: 100%; max-height: 160px; object-fit: cover; border-radius: 8px; margin-top: 8px; display: none; }
+
+        /* ---------- ARTICLE DETAIL MODAL ---------- */
+        .detail-modal-box { width: 720px; max-width: 100%; max-height: 88vh; overflow-y: auto; padding: 0; }
+        .detail-image { width: 100%; max-height: 380px; object-fit: cover; display: block; }
+        .detail-placeholder { width: 100%; aspect-ratio: 16/9; background: linear-gradient(135deg, #e0e7ff 0%, #eef2ff 100%); display: flex; align-items: center; justify-content: center; font-size: 56px; color: #a5b4fc; }
+        .detail-video-wrap { position: relative; width: 100%; padding-top: 56.25%; background: #000; }
+        .detail-video-wrap iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+        .detail-body { padding: 22px; }
+        .detail-title { font-size: 20px; font-weight: 800; color: #0f172a; margin-bottom: 6px; }
+        .detail-meta { font-size: 12px; color: #6b7280; margin-bottom: 14px; }
+        .detail-desc { font-size: 13.5px; color: #374151; line-height: 1.7; margin-bottom: 14px; }
+        .detail-desc h2, .detail-desc h3 { margin: 18px 0 8px; color: #0f172a; }
+        .detail-desc p { margin-bottom: 10px; }
+        .detail-desc ul, .detail-desc ol { margin: 0 0 10px 22px; }
+        .detail-desc img { max-width: 100%; border-radius: 8px; margin: 10px 0; }
+        .detail-actions { display: flex; gap: 10px; align-items: center; padding-top: 16px; margin-top: 16px; border-top: 1px solid #f1f5f9; }
+        .tip-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px; }
+        .tip-tag { font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; color: #1e3a8a; background-color: #e0e7ff; padding: 2px 7px; border-radius: 999px; }
+            .header-quick-links { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; font-size: 11px; }
+            .header-quick-links-row { display: flex; align-items: center; gap: 6px; }
         .header-quick-links a { color: #6b7280; font-weight: 600; text-decoration: none; }
         .header-quick-links a:hover { color: #1e3a8a; text-decoration: underline; }
         .header-quick-links-sep { color: #cbd5e1; }
@@ -239,54 +372,7 @@
             text-decoration: none;
         }
         .jigs-dropdown-menu a:hover { background-color: #eef2ff; color: #1e3a8a; }
-        .jigs-dropdown-menu a.current { background-color: #eef2ff; color: #1e3a8a; }
         .jigs-dropdown-menu-sep { height: 1px; background-color: #e2e8f0; margin: 5px 2px; }
-
-        /* ---------- SINGLE-JIG PAGE LAYOUT ---------- */
-        .jig-page-layout {
-            max-width: 760px;
-            margin: 0 auto;
-            padding: 40px 24px 100px;
-        }
-        .jig-breadcrumb { font-size: 12.5px; font-weight: 600; margin-bottom: 14px; }
-        .jig-breadcrumb a { color: #6b7280; text-decoration: none; }
-        .jig-breadcrumb a:hover { color: #1e3a8a; text-decoration: underline; }
-        .help-eyebrow {
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            color: #b23b3b;
-            margin-bottom: 8px;
-        }
-        .help-title { font-size: 28px; font-weight: 800; color: #0f172a; margin-bottom: 10px; }
-        .help-subtitle { font-size: 14.5px; color: #4b5563; line-height: 1.6; margin-bottom: 24px; max-width: 65ch; }
-        .help-article {
-            background-color: #ffffff;
-            border: 1px solid #cbd5e1;
-            border-radius: 14px;
-            padding: 32px;
-            box-shadow: 0 12px 30px -12px rgba(15, 23, 42, 0.15);
-        }
-
-        /* ---------- SHOP JIGS TOOL WIDGETS ---------- */
-        .jig-input-row { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; margin-bottom: 14px; }
-        .jig-field { display: flex; flex-direction: column; gap: 4px; }
-        .jig-field label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: #6b7280; }
-        .jig-field input, .jig-field select { padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; font-weight: 600; width: 108px; background: #ffffff; }
-        .jig-field input.narrow { width: 64px; }
-
-        .jig-results-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-top: 4px; }
-        .jig-result { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px; }
-        .jig-result-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: #6b7280; }
-        .jig-result-value { font-size: 18px; font-weight: 800; color: #1e3a8a; margin-top: 2px; font-variant-numeric: tabular-nums; }
-        .jig-result-value.big { font-size: 22px; }
-        .jig-result-sub { font-size: 11px; color: #6b7280; margin-top: 2px; }
-
-        .bf-quickpicks { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
-        .bf-quickpick { font-size: 11px; font-weight: 700; color: #1e3a8a; background: #eef2ff; border: 1px solid #c7d2fe; border-radius: 999px; padding: 3px 10px; cursor: pointer; }
-        .bf-quickpick:hover { background: #e0e7ff; }
-        .bf-quickpick.active { background: #1e3a8a; color: #fff; border-color: #1e3a8a; }
     </style>
 </head>
 <body>
@@ -309,7 +395,7 @@
                 <option value="shop-3d-viewer.html">3D Shop Viewer</option>
                 <option value="tool-reviews.html">Cool Tool Reviews</option>
                 <option value="shop-showcase.html">Shop Showcase</option>
-                <option value="garage-tips.html">Shop Tricks and How-To's</option>
+                <option value="garage-tips.html" selected>Shop Tricks and How-To's</option>
                 <option value="portfolio.html">Portfolio</option>
                 <option value="print-library.html">3D Print Library</option>
             </select>
@@ -318,7 +404,7 @@
                 <div class="jigs-dropdown-menu">
                     <a href="shop-jigs-fraction-converter.html">Fraction Converter</a>
                     <a href="shop-jigs-add-fractions.html">Add Fractions</a>
-                    <a href="shop-jigs-board-feet.html" class="current">Board Foot Calculator</a>
+                    <a href="shop-jigs-board-feet.html">Board Foot Calculator</a>
                     <a href="shop-jigs-angle-chart.html">Polygon Angle Chart</a>
                     <a href="shop-jigs-wood-movement.html">Wood Movement Calculator</a>
                     <a href="shop-jigs-speeds-feeds.html">Speeds &amp; Feeds</a>
@@ -337,7 +423,7 @@
                 </div>
                 <a href="#" class="header-sign-in-mode-toggle" id="headerSignInModeToggle">New here? Create an account</a>
             </div>
-            <button type="button" id="accountBtn" class="account-btn plan-free" title="Account &amp; Plan Settings" style="display:none;">
+            <button type="button" id="accountBtn" class="account-btn plan-free" title="Account &amp; Plan Settings — border color shows your plan level" style="display:none;">
                 <span class="account-avatar" id="accountAvatarPreview">&#128100;</span>
                 <span class="account-btn-text">
                     <span class="account-btn-name" id="accountBtnLabel">Account</span>
@@ -367,14 +453,14 @@
             <div class="modal-title">Account Settings</div>
             <div class="modal-warning">Your account (username, avatar, sign-in) is real and synced via Kerph. Saved layouts, projects, tools, Showcase posts, and reviews are synced too — available on any device you sign into.</div>
 
-            <div class="header-field" style="align-items:center; display:flex; flex-direction:column; gap:4px;">
+            <div class="header-field" style="align-items:center;">
                 <div class="account-avatar-large" id="accountAvatarLarge">&#128100;</div>
                 <input type="file" id="accountAvatarInput" accept="image/*" style="display:none;">
                 <button type="button" id="accountAvatarBtn" class="mini-btn" style="margin-top:10px; flex:none;">Upload Photo</button>
                 <div class="account-member-since" id="accountMemberSince"></div>
             </div>
 
-            <div class="header-field" style="display:flex; flex-direction:column; gap:4px; margin-top:12px;">
+            <div class="header-field">
                 <label class="header-field-label" for="accountUsernameInput">Username</label>
                 <input type="text" class="input-box" id="accountUsernameInput" placeholder="Choose a username">
             </div>
@@ -396,7 +482,7 @@
                 <div class="account-plan-upsell" id="accountPlanUpsell" style="display:none;">Free includes 1 saved shop layout; custom shop shapes and unlimited saves unlock on Pro.</div>
             </div>
 
-            <div class="header-field" style="display:flex; flex-direction:column; gap:4px; margin-top:10px;">
+            <div class="header-field" style="margin-top:10px;">
                 <label class="header-field-label" for="accountUnitsSelect">Preferred Units</label>
                 <select class="select-box" id="accountUnitsSelect">
                     <option value="imperial">Imperial (ft / in)</option>
@@ -404,7 +490,7 @@
                 </select>
             </div>
 
-            <div class="header-field" style="display:flex; flex-direction:column; gap:4px; margin-top:14px;">
+            <div class="header-field" style="margin-top:14px;">
                 <label class="header-field-label">Saved Layouts</label>
                 <div id="accountLayoutsList" class="account-layouts-list"></div>
             </div>
@@ -433,61 +519,89 @@
         </div>
     </div>
 
-    <div class="upgrade-nudge" id="upgradeNudge"></div>
+    <div class="modal-overlay" id="tipModalOverlay" style="display:none;">
+        <div class="modal-box" style="width:520px;">
+            <div class="modal-title" id="tipModalTitle">New Article</div>
 
-    <div class="jig-page-layout">
-        <div class="jig-breadcrumb"><a href="shop-jigs.html">Shop Jigs</a> / Board Foot Calculator</div>
-        <div class="help-eyebrow">Shop Jig</div>
-        <div class="help-title">Board Foot Calculator</div>
-        <div class="help-subtitle">One board foot is 144 cubic inches — a board 1" thick, 12" wide, and 12" long. Enter your stock's real dimensions to get board feet per board, total board feet, and total cost.</div>
-
-        <div class="help-article">
-            <div class="jig-input-row">
-                <div class="jig-field">
-                    <label for="bfThickness">Thickness (in)</label>
-                    <input type="number" id="bfThickness" value="1" step="0.125" min="0">
-                </div>
-                <div class="jig-field">
-                    <label for="bfWidth">Width (in)</label>
-                    <input type="number" id="bfWidth" value="6" step="0.125" min="0">
-                </div>
-                <div class="jig-field">
-                    <label for="bfLength">Length</label>
-                    <input type="number" id="bfLength" value="8" step="0.5" min="0">
-                </div>
-                <div class="jig-field">
-                    <label for="bfLengthUnit">Length unit</label>
-                    <select id="bfLengthUnit">
-                        <option value="ft" selected>Feet</option>
-                        <option value="in">Inches</option>
-                    </select>
-                </div>
-                <div class="jig-field">
-                    <label for="bfQty">Quantity</label>
-                    <input type="number" id="bfQty" value="1" step="1" min="1" class="narrow">
-                </div>
-                <div class="jig-field">
-                    <label for="bfPrice">$ / board foot</label>
-                    <input type="number" id="bfPrice" value="" step="0.01" min="0" placeholder="optional">
-                </div>
-            </div>
-            <div class="bf-quickpicks" id="bfQuickpicks">
-                <span class="bf-quickpick" data-thickness="0.75">4/4 S2S (&frac34;")</span>
-                <span class="bf-quickpick" data-thickness="1">4/4 (1")</span>
-                <span class="bf-quickpick" data-thickness="1.25">5/4 (1&frac14;")</span>
-                <span class="bf-quickpick" data-thickness="1.5">6/4 (1&frac12;")</span>
-                <span class="bf-quickpick" data-thickness="2">8/4 (2")</span>
-                <span class="bf-quickpick" data-thickness="3">12/4 (3")</span>
+            <div class="header-field">
+                <label class="header-field-label">Cover Image (optional)</label>
+                <div class="image-upload-zone" id="tipImageZone">&#128247; Click to choose a cover image</div>
+                <input type="file" id="tipImageInput" accept="image/*" style="display:none;">
+                <img id="tipImagePreview" class="image-upload-preview">
             </div>
 
-            <div class="jig-results-grid" id="bfResults" style="margin-top:16px;"></div>
+            <div class="header-field">
+                <label class="header-field-label" for="tipTitleInput">Title</label>
+                <input type="text" class="input-box" id="tipTitleInput" placeholder="e.g. Getting Clean Miters Every Time">
+            </div>
+
+            <div class="header-field">
+                <label class="header-field-label" for="tipExcerptInput">Excerpt (short teaser shown on the card)</label>
+                <textarea class="input-box" id="tipExcerptInput" style="min-height:50px;" placeholder="One or two sentences that make someone want to click"></textarea>
+            </div>
+
+            <div class="header-field">
+                <label class="header-field-label" for="tipCategorySelect">Category</label>
+                <select class="select-box" id="tipCategorySelect"></select>
+            </div>
+
+            <div class="header-field">
+                <label class="header-field-label" for="tipTagsInput">Tags (comma separated)</label>
+                <input type="text" class="input-box" id="tipTagsInput" placeholder="e.g. Table Saw, Beginner, Safety">
+            </div>
+
+            <div class="header-field">
+                <label class="header-field-label" for="tipVideoInput">Video URL (optional — YouTube or Vimeo link)</label>
+                <input type="text" class="input-box" id="tipVideoInput" placeholder="https://www.youtube.com/watch?v=...">
+            </div>
+
+            <div class="header-field">
+                <label class="header-field-label" for="tipBodyInput">Article Body (HTML — headings, paragraphs, lists, images all work)</label>
+                <textarea class="input-box code-input" id="tipBodyInput" placeholder="&lt;p&gt;Start writing here...&lt;/p&gt;"></textarea>
+            </div>
+
+            <div class="header-field-checkbox">
+                <input type="checkbox" id="tipPublishedInput">
+                <label class="header-field-label" for="tipPublishedInput" style="text-transform:none; letter-spacing:normal; font-size:12px;">Published (unchecked = only you can see this draft)</label>
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" id="tipCancelBtn" class="mini-btn">Cancel</button>
+                <button type="button" id="tipSubmitBtn" class="mini-btn modal-primary-btn">Save</button>
+            </div>
         </div>
     </div>
+
+    <div class="modal-overlay" id="tipDetailOverlay" style="display:none;">
+        <div class="modal-box detail-modal-box" id="tipDetailBox"></div>
+    </div>
+
+    <div class="upgrade-nudge" id="upgradeNudge"></div>
+
+    <main>
+        <div class="tips-eyebrow">Shop Tricks</div>
+        <div class="tips-title">Tips, Tricks &amp; How-To's</div>
+        <div class="tips-subtitle">Articles and videos on getting more out of your shop — technique, tool care, jigs, and the small stuff nobody tells you until you've already made the mistake.</div>
+
+        <div class="tips-toolbar">
+            <input type="text" class="input-box" id="tipSearchInput" placeholder="&#128269; Search titles &amp; tags&hellip;">
+            <select class="select-box" id="tipCategoryFilter"></select>
+            <button type="button" id="newTipBtn" class="mini-btn primary" style="display:none;">+ New Article</button>
+        </div>
+
+        <div id="tipsContent"></div>
+    </main>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.7/dist/umd/supabase.js"></script>
     <script src="supabase-client.js"></script>
     <script>
         const PLAN_KEY = 'kerphPlan';
+        const LAYOUT_TYPE_LABELS = { workshop: 'Workshop', 'dust-collection': 'Dust Collection', lighting: 'Lighting' };
+
+        const TIP_CATEGORIES = [
+            'Dust Collection', 'Finishing', 'Tool Maintenance', 'Shop Organization',
+            'Jigs & Fixtures', 'Safety', 'Sharpening', 'Wood Selection', 'Beginner Basics', 'Other'
+        ];
 
         function showToast(message) {
             const nudge = document.getElementById('upgradeNudge');
@@ -533,7 +647,6 @@
         function loadToolStatuses() { return cachedToolStatuses; }
         let cachedSavedLayouts = [];
         function loadLayouts() { return cachedSavedLayouts; }
-
         function renderAccountStats() {
             const row = document.getElementById('accountStatsRow');
             if (!row) return;
@@ -561,7 +674,6 @@
             select.value = plan;
             upsell.style.display = plan === 'free' ? 'block' : 'none';
         }
-        const LAYOUT_TYPE_LABELS = { workshop: 'Workshop', 'dust-collection': 'Dust Collection', lighting: 'Lighting' };
         function renderAccountLayoutsList() {
             const list = document.getElementById('accountLayoutsList');
             if (!list) return;
@@ -771,11 +883,291 @@
             updateHeaderSignInState();
         }
 
+        /* ---------- GARAGE TIPS ----------
+           Public-read content (RLS: published=true is visible to everyone, drafts only to an
+           admin) — see supabase-garage-tips.sql. Reading needs no sign-in at all; only the
+           "+ New Article" compose flow is admin-gated, checked both for showing the button and
+           again server-side via RLS on insert/update/delete. cachedTips refreshes on every
+           renderTips() call since an admin editing in one tab should show up if this page is
+           reloaded elsewhere. */
+        let cachedTips = [];
+        let editingTipId = null;
+        // Captured at modal-open time so the save handler can tell "just published" (queue a
+        // social post) apart from "already published, just re-saved" (don't re-post it).
+        let editingTipWasPublished = false;
+
+        function populateCategorySelects() {
+            const filterSel = document.getElementById('tipCategoryFilter');
+            const formSel = document.getElementById('tipCategorySelect');
+            filterSel.innerHTML = '<option value="">All Categories</option>' + TIP_CATEGORIES.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+            formSel.innerHTML = TIP_CATEGORIES.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+        }
+
+        // Converts a normal YouTube/Vimeo watch URL into its embeddable iframe-src form.
+        // Returns null for anything else so callers can fall back gracefully.
+        function toEmbedUrl(url) {
+            if (!url) return null;
+            let u;
+            try { u = new URL(url); } catch (e) { return null; }
+            if (u.hostname.includes('youtube.com')) {
+                const id = u.searchParams.get('v');
+                if (id) return `https://www.youtube.com/embed/${id}`;
+                const parts = u.pathname.split('/').filter(Boolean);
+                if (parts[0] === 'embed' && parts[1]) return `https://www.youtube.com/embed/${parts[1]}`;
+            }
+            if (u.hostname === 'youtu.be') {
+                const id = u.pathname.slice(1);
+                if (id) return `https://www.youtube.com/embed/${id}`;
+            }
+            if (u.hostname.includes('vimeo.com')) {
+                const id = u.pathname.split('/').filter(Boolean).pop();
+                if (id) return `https://player.vimeo.com/video/${id}`;
+            }
+            return null;
+        }
+
+        function cardMediaHtml(tip) {
+            const url = kerphGarageTipImageUrl(tip.cover_image_path);
+            const img = url
+                ? `<img class="tip-card-image" src="${url}" alt="">`
+                : `<div class="tip-card-placeholder">&#128221;</div>`;
+            const videoBadge = tip.video_url ? '<div class="tip-card-video-badge">&#9654;</div>' : '';
+            return img + videoBadge;
+        }
+
+        async function renderTips() {
+            const content = document.getElementById('tipsContent');
+            const query = document.getElementById('tipSearchInput').value.trim().toLowerCase();
+            const category = document.getElementById('tipCategoryFilter').value;
+            const admin = kerphIsAdmin();
+
+            const { data } = await kerphLoadGarageTips();
+            cachedTips = data;
+
+            let tips = cachedTips;
+            if (category) tips = tips.filter(t => t.category === category);
+            if (query) {
+                tips = tips.filter(t =>
+                    t.title.toLowerCase().includes(query) ||
+                    (t.tags || []).some(tag => tag.toLowerCase().includes(query))
+                );
+            }
+            tips = tips.slice().sort((a, b) => b.created_at.localeCompare(a.created_at));
+
+            if (!tips.length) {
+                const hasAny = cachedTips.length > 0;
+                content.innerHTML = `
+                    <div class="tips-empty">
+                        <div class="tips-empty-icon">${hasAny ? '&#128269;' : '&#128221;'}</div>
+                        <div class="tips-empty-title">${hasAny ? 'No articles match your search' : 'No articles yet'}</div>
+                        <div class="tips-empty-desc">${hasAny ? 'Try a different search term or category.' : (admin ? 'Click "+ New Article" above to write the first one.' : 'Check back soon.')}</div>
+                    </div>
+                `;
+                return;
+            }
+
+            content.innerHTML = `<div class="tips-grid">${tips.map(t => {
+                const dateStr = new Date(t.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+                return `
+                    <div class="tip-card" data-id="${t.id}">
+                        ${cardMediaHtml(t)}
+                        <div class="tip-card-body">
+                            <div class="tip-card-top">
+                                <div class="tip-card-title">${escapeHtml(t.title)}</div>
+                                ${t.category ? `<span class="tip-category-tag">${escapeHtml(t.category)}</span>` : ''}
+                            </div>
+                            ${!t.published ? '<span class="tip-draft-tag" style="align-self:flex-start;">Draft</span>' : ''}
+                            ${t.excerpt ? `<div class="tip-card-desc">${escapeHtml(t.excerpt)}</div>` : ''}
+                            <div class="tip-card-footer">${dateStr}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('')}</div>`;
+
+            content.querySelectorAll('.tip-card').forEach(card => {
+                card.addEventListener('click', () => openTipDetail(card.getAttribute('data-id')));
+            });
+        }
+
+        function openTipDetail(id) {
+            const overlay = document.getElementById('tipDetailOverlay');
+            const box = document.getElementById('tipDetailBox');
+            const tip = cachedTips.find(t => t.id === id);
+            if (!tip) return;
+
+            const history = window.location.search.includes('article=') ? null : `?article=${encodeURIComponent(id)}`;
+            if (history) window.history.replaceState(null, '', history);
+
+            const dateStr = new Date(tip.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+            const imageUrl = kerphGarageTipImageUrl(tip.cover_image_path);
+            const embedUrl = toEmbedUrl(tip.video_url);
+            const tagsHtml = (tip.tags || []).map(t => `<span class="tip-tag">${escapeHtml(t)}</span>`).join('');
+            const admin = kerphIsAdmin();
+
+            let mediaHtml = '';
+            if (embedUrl) mediaHtml = `<div class="detail-video-wrap"><iframe src="${embedUrl}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>`;
+            else if (imageUrl) mediaHtml = `<img class="detail-image" src="${imageUrl}" alt="">`;
+            else mediaHtml = `<div class="detail-placeholder">&#128221;</div>`;
+
+            box.innerHTML = `
+                ${mediaHtml}
+                <div class="detail-body">
+                    <div class="detail-title">${escapeHtml(tip.title)}</div>
+                    <div class="detail-meta">${escapeHtml(tip.category || '')} &middot; ${dateStr}${tip.author ? ` &middot; ${escapeHtml(tip.author)}` : ''}${!tip.published ? ' &middot; <b style="color:#92400e;">DRAFT</b>' : ''}</div>
+                    ${tagsHtml ? `<div class="tip-tags">${tagsHtml}</div>` : ''}
+                    <div class="detail-desc">${tip.body_html}</div>
+                    ${admin ? `
+                        <div class="detail-actions">
+                            <button type="button" class="mini-btn" id="detailEditBtn" style="flex:none;">Edit</button>
+                            <button type="button" class="mini-btn danger" id="detailDeleteBtn" style="flex:none;">Delete</button>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+
+            if (admin) {
+                document.getElementById('detailEditBtn').addEventListener('click', () => {
+                    overlay.style.display = 'none';
+                    openTipModal(tip);
+                });
+                document.getElementById('detailDeleteBtn').addEventListener('click', async () => {
+                    if (!confirm('Delete this article? This cannot be undone.')) return;
+                    await kerphDeleteGarageTip(id, tip.cover_image_path);
+                    overlay.style.display = 'none';
+                    renderTips();
+                    showToast('Article deleted.');
+                });
+            }
+
+            overlay.style.display = 'flex';
+        }
+
+        function initTipDetailOverlay() {
+            document.getElementById('tipDetailOverlay').addEventListener('click', (e) => {
+                if (e.target.id === 'tipDetailOverlay') {
+                    e.target.style.display = 'none';
+                    const url = new URL(window.location);
+                    url.searchParams.delete('article');
+                    window.history.replaceState(null, '', url.pathname + url.search);
+                }
+            });
+        }
+
+        function initTipModal() {
+            const overlay = document.getElementById('tipModalOverlay');
+            const openBtn = document.getElementById('newTipBtn');
+            const cancelBtn = document.getElementById('tipCancelBtn');
+            const submitBtn = document.getElementById('tipSubmitBtn');
+            const titleEl = document.getElementById('tipModalTitle');
+            const titleInput = document.getElementById('tipTitleInput');
+            const excerptInput = document.getElementById('tipExcerptInput');
+            const categorySelect = document.getElementById('tipCategorySelect');
+            const tagsInput = document.getElementById('tipTagsInput');
+            const videoInput = document.getElementById('tipVideoInput');
+            const bodyInput = document.getElementById('tipBodyInput');
+            const publishedInput = document.getElementById('tipPublishedInput');
+            const imageZone = document.getElementById('tipImageZone');
+            const imageInput = document.getElementById('tipImageInput');
+            const imagePreview = document.getElementById('tipImagePreview');
+            let pendingImage = null;
+            let pendingImageUrl = null;
+            let existingImagePath = null;
+
+            imageZone.addEventListener('click', () => imageInput.click());
+            imageInput.addEventListener('change', () => {
+                const file = imageInput.files[0];
+                if (!file) return;
+                pendingImage = file;
+                if (pendingImageUrl) URL.revokeObjectURL(pendingImageUrl);
+                pendingImageUrl = URL.createObjectURL(file);
+                imagePreview.src = pendingImageUrl;
+                imagePreview.style.display = 'block';
+            });
+
+            window.openTipModal = function (tip) {
+                if (!kerphIsAdmin()) { showToast('Sign in as an admin to write articles.'); return; }
+                editingTipId = tip ? tip.id : null;
+                editingTipWasPublished = tip ? !!tip.published : false;
+                titleEl.textContent = tip ? 'Edit Article' : 'New Article';
+                titleInput.value = tip ? tip.title : '';
+                excerptInput.value = tip ? (tip.excerpt || '') : '';
+                categorySelect.value = tip ? (tip.category || TIP_CATEGORIES[0]) : TIP_CATEGORIES[0];
+                tagsInput.value = tip ? (tip.tags || []).join(', ') : '';
+                videoInput.value = tip ? (tip.video_url || '') : '';
+                bodyInput.value = tip ? tip.body_html : '';
+                publishedInput.checked = tip ? !!tip.published : false;
+                pendingImage = null;
+                existingImagePath = tip ? (tip.cover_image_path || null) : null;
+                if (pendingImageUrl) { URL.revokeObjectURL(pendingImageUrl); pendingImageUrl = null; }
+                if (existingImagePath) {
+                    imagePreview.src = kerphGarageTipImageUrl(existingImagePath);
+                    imagePreview.style.display = 'block';
+                } else {
+                    imagePreview.src = '';
+                    imagePreview.style.display = 'none';
+                }
+                overlay.style.display = 'flex';
+                titleInput.focus();
+            };
+
+            openBtn.addEventListener('click', () => window.openTipModal(null));
+            cancelBtn.addEventListener('click', () => { overlay.style.display = 'none'; });
+
+            submitBtn.addEventListener('click', async () => {
+                if (!kerphIsAdmin()) { showToast('Sign in as an admin to write articles.'); return; }
+                const title = titleInput.value.trim();
+                const bodyHtml = bodyInput.value.trim();
+                if (!title) { showToast('Give the article a title.'); titleInput.focus(); return; }
+                if (!bodyHtml) { showToast('The article needs body content.'); bodyInput.focus(); return; }
+                const tags = tagsInput.value.split(',').map(t => t.trim()).filter(Boolean);
+
+                submitBtn.disabled = true;
+                try {
+                    let coverImagePath = existingImagePath;
+                    if (pendingImage) {
+                        const { data, error } = await kerphUploadGarageTipImage(pendingImage);
+                        if (error) { showToast('Could not upload that image.'); return; }
+                        coverImagePath = data.path;
+                    }
+                    const payload = {
+                        title, excerpt: excerptInput.value.trim(), bodyHtml, coverImagePath,
+                        videoUrl: videoInput.value.trim() || null, category: categorySelect.value,
+                        tags, published: publishedInput.checked
+                    };
+                    let error, data;
+                    if (editingTipId) {
+                        ({ data, error } = await kerphUpdateGarageTip(editingTipId, payload));
+                    } else {
+                        ({ data, error } = await kerphInsertGarageTip({ ...payload, author: loadAccount().username || 'Kerph' }));
+                    }
+                    if (error) { showToast('Could not save that article.'); return; }
+                    // Only the transition into published fires a social post — re-saving an
+                    // already-published article (fixing a typo, say) must not re-post it.
+                    if (payload.published && !editingTipWasPublished && data) {
+                        kerphQueueSocialPost({
+                            source: 'garage_tips',
+                            sourceId: data.id,
+                            title: data.title,
+                            excerpt: data.excerpt,
+                            url: `https://kerphplans.com/garage-tips.html?article=${data.id}`,
+                            imageUrl: data.cover_image_path ? kerphGarageTipImageUrl(data.cover_image_path) : null
+                        }).catch(() => {});
+                    }
+                    overlay.style.display = 'none';
+                    showToast(editingTipId ? 'Article updated.' : 'Article created.');
+                    renderTips();
+                } finally {
+                    submitBtn.disabled = false;
+                }
+            });
+        }
+
+        function updateNewTipButtonVisibility() {
+            document.getElementById('newTipBtn').style.display = kerphIsAdmin() ? 'inline-block' : 'none';
+        }
+
         document.getElementById('pageNavSelect').addEventListener('change', (e) => { window.location.href = e.target.value; });
 
-        // Standalone header dropdown (not folded into pageNavSelect) so Shop Jigs' four
-        // tools are one click away from every page instead of being buried as just another
-        // option in a 9-item combobox.
         function initJigsDropdown() {
             const dropdown = document.getElementById('jigsDropdown');
             const btn = document.getElementById('jigsDropdownBtn');
@@ -790,66 +1182,31 @@
         }
         initJigsDropdown();
         initPlanSelector();
+        populateCategorySelects();
 
         kerphOnAuthChange(() => {
             updateHeaderSignInState();
             renderAccountBadge();
+            updateNewTipButtonVisibility();
             kerphLoadToolStatus().then(({ data }) => { cachedToolStatuses = data || {}; });
             kerphLoadSavedLayouts().then(({ data }) => { cachedSavedLayouts = data || []; });
         });
 
-        kerphAuthReady.then(() => {
+        kerphAuthReady.then(async () => {
             initHeaderSignIn();
             initAccountPanel();
+            updateNewTipButtonVisibility();
+            // Public content — renders for signed-out visitors too.
+            await renderTips();
+
+            const articleId = new URLSearchParams(window.location.search).get('article');
+            if (articleId) openTipDetail(articleId);
         });
 
-        /* =====================================================================
-           BOARD FOOT CALCULATOR
-           BF = thickness(in) x width(in) x length(in) / 144, per board.
-           ===================================================================== */
-
-        function fmtNum(n, places) {
-            const s = n.toFixed(places);
-            return s.replace(/(\.\d*?)0+$/, '$1').replace(/\.$/, '');
-        }
-
-        function runBoardFeet() {
-            const thickness = parseFloat(document.getElementById('bfThickness').value) || 0;
-            const width = parseFloat(document.getElementById('bfWidth').value) || 0;
-            let length = parseFloat(document.getElementById('bfLength').value) || 0;
-            const lengthUnit = document.getElementById('bfLengthUnit').value;
-            const qty = Math.max(1, parseInt(document.getElementById('bfQty').value, 10) || 1);
-            const price = parseFloat(document.getElementById('bfPrice').value);
-
-            const lengthIn = lengthUnit === 'ft' ? length * 12 : length;
-            const bfPerBoard = (thickness * width * lengthIn) / 144;
-            const totalBf = bfPerBoard * qty;
-            const totalCost = !isNaN(price) && price > 0 ? totalBf * price : null;
-
-            document.getElementById('bfResults').innerHTML = `
-                <div class="jig-result"><div class="jig-result-label">Board feet / board</div><div class="jig-result-value">${fmtNum(bfPerBoard, 3)} bf</div></div>
-                <div class="jig-result"><div class="jig-result-label">Total board feet</div><div class="jig-result-value big">${fmtNum(totalBf, 3)} bf</div><div class="jig-result-sub">${qty} board${qty === 1 ? '' : 's'}</div></div>
-                ${totalCost != null ? `<div class="jig-result"><div class="jig-result-label">Total cost</div><div class="jig-result-value">$${fmtNum(totalCost, 2)}</div></div>` : ''}
-            `;
-        }
-        ['bfThickness', 'bfWidth', 'bfLength', 'bfLengthUnit', 'bfQty', 'bfPrice'].forEach(id => {
-            document.getElementById(id).addEventListener('input', () => { runBoardFeet(); syncQuickpickHighlight(); });
-        });
-        function syncQuickpickHighlight() {
-            const t = parseFloat(document.getElementById('bfThickness').value);
-            document.querySelectorAll('.bf-quickpick').forEach(chip => {
-                chip.classList.toggle('active', Math.abs(parseFloat(chip.dataset.thickness) - t) < 0.001);
-            });
-        }
-        document.querySelectorAll('.bf-quickpick').forEach(chip => {
-            chip.addEventListener('click', () => {
-                document.getElementById('bfThickness').value = chip.dataset.thickness;
-                runBoardFeet();
-                syncQuickpickHighlight();
-            });
-        });
-        runBoardFeet();
-        syncQuickpickHighlight();
+        initTipModal();
+        initTipDetailOverlay();
+        document.getElementById('tipSearchInput').addEventListener('input', renderTips);
+        document.getElementById('tipCategoryFilter').addEventListener('change', renderTips);
     </script>
 </body>
 </html>
