@@ -455,6 +455,9 @@
 
     function kerphGarageTipImageUrl(path) {
         if (!path) return null;
+        // Static site-bundled cover art (images/garage-tips/...) or a full URL is served as-is;
+        // everything else is a real Storage object path uploaded via the article editor.
+        if (/^(https?:)?\/\//i.test(path) || path.startsWith('images/')) return path;
         return kerphSupabase.storage.from('garage-tips-images').getPublicUrl(path).data.publicUrl;
     }
 

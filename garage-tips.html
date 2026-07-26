@@ -5,6 +5,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kerph - Shop Tricks and How-To's</title>
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Kerph">
+    <meta property="og:title" content="Kerph Shop Tricks &amp; How-To's">
+    <meta property="og:description" content="Articles on getting more out of your shop -- technique, tool care, jigs, and the small stuff nobody tells you until you've already made the mistake.">
+    <meta name="twitter:card" content="summary">
     <style>
         * {
             box-sizing: border-box;
@@ -321,6 +326,21 @@
         .detail-desc ul, .detail-desc ol { margin: 0 0 10px 22px; }
         .detail-desc img { max-width: 100%; border-radius: 8px; margin: 10px 0; }
         .detail-actions { display: flex; gap: 10px; align-items: center; padding-top: 16px; margin-top: 16px; border-top: 1px solid #f1f5f9; }
+        .detail-share { padding-top: 14px; margin-top: 14px; border-top: 1px solid #f1f5f9; }
+        .detail-share-label { display: block; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: #94a3b8; margin-bottom: 8px; }
+        .detail-share-row { display: flex; flex-wrap: wrap; gap: 8px; }
+        .share-btn { flex: none; min-width: 36px; height: 36px; padding: 0 10px; display: inline-flex; align-items: center; justify-content: center; gap: 5px; border: 1px solid #cbd5e1; border-radius: 8px; background-color: #ffffff; font-size: 15px; font-weight: 700; color: #1e3a8a; cursor: pointer; text-decoration: none; }
+        .share-btn:hover { background-color: #eef2ff; border-color: #2563eb; }
+        .share-btn-text { font-size: 11.5px; }
+        #printOnlyFooter { display: none; }
+        @media print {
+            body * { visibility: hidden; }
+            #tipDetailBox, #tipDetailBox * { visibility: visible; }
+            #tipDetailOverlay { position: static !important; background: none !important; padding: 0 !important; display: block !important; }
+            #tipDetailBox { position: static !important; width: 100% !important; max-height: none !important; overflow: visible !important; box-shadow: none !important; }
+            #tipDetailBox .detail-share, #tipDetailBox .detail-actions { display: none !important; }
+            #printOnlyFooter { display: block !important; margin-top: 18px; padding-top: 10px; border-top: 1px solid #cbd5e1; font-size: 10px; color: #64748b; }
+        }
         .tip-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px; }
         .tip-tag { font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; color: #1e3a8a; background-color: #e0e7ff; padding: 2px 7px; border-radius: 999px; }
             .header-quick-links { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; font-size: 11px; }
@@ -1003,6 +1023,7 @@
             const embedUrl = toEmbedUrl(tip.video_url);
             const tagsHtml = (tip.tags || []).map(t => `<span class="tip-tag">${escapeHtml(t)}</span>`).join('');
             const admin = kerphIsAdmin();
+            const shareUrl = `${window.location.origin}${window.location.pathname}?article=${encodeURIComponent(id)}`;
 
             let mediaHtml = '';
             if (embedUrl) mediaHtml = `<div class="detail-video-wrap"><iframe src="${embedUrl}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>`;
@@ -1016,14 +1037,52 @@
                     <div class="detail-meta">${escapeHtml(tip.category || '')} &middot; ${dateStr}${tip.author ? ` &middot; ${escapeHtml(tip.author)}` : ''}${!tip.published ? ' &middot; <b style="color:#92400e;">DRAFT</b>' : ''}</div>
                     ${tagsHtml ? `<div class="tip-tags">${tagsHtml}</div>` : ''}
                     <div class="detail-desc">${tip.body_html}</div>
+                    <div class="detail-share">
+                        <span class="detail-share-label">Share this article</span>
+                        <div class="detail-share-row">
+                            <button type="button" class="share-btn" id="detailShareNativeBtn" style="display:none;">&#128228; <span class="share-btn-text">Share</span></button>
+                            <button type="button" class="share-btn" id="detailShareCopyBtn" title="Copy link">&#128279;</button>
+                            <a class="share-btn" href="https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}" target="_blank" rel="noopener" title="Share on Facebook">f</a>
+                            <a class="share-btn" href="https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&amp;text=${encodeURIComponent(tip.title)}" target="_blank" rel="noopener" title="Share on X">&#120143;</a>
+                            ${imageUrl ? `<a class="share-btn" href="https://www.pinterest.com/pin/create/button/?url=${encodeURIComponent(shareUrl)}&amp;media=${encodeURIComponent(new URL(imageUrl, window.location.href).href)}&amp;description=${encodeURIComponent(tip.title)}" target="_blank" rel="noopener" title="Pin it">&#128204;</a>` : ''}
+                            <a class="share-btn" href="https://www.reddit.com/submit?url=${encodeURIComponent(shareUrl)}&amp;title=${encodeURIComponent(tip.title)}" target="_blank" rel="noopener" title="Share on Reddit"><span class="share-btn-text">Reddit</span></a>
+                            <a class="share-btn" href="mailto:?subject=${encodeURIComponent(tip.title)}&amp;body=${encodeURIComponent((tip.excerpt || '') + '\n\n' + shareUrl)}" title="Share by email">&#9993;&#65039;</a>
+                            <button type="button" class="share-btn" id="detailSharePrintBtn" title="Save as PDF">&#128424;&#65039; <span class="share-btn-text">Save PDF</span></button>
+                        </div>
+                    </div>
                     ${admin ? `
                         <div class="detail-actions">
                             <button type="button" class="mini-btn" id="detailEditBtn" style="flex:none;">Edit</button>
                             <button type="button" class="mini-btn danger" id="detailDeleteBtn" style="flex:none;">Delete</button>
                         </div>
                     ` : ''}
+                    <div id="printOnlyFooter"></div>
                 </div>
             `;
+
+            document.getElementById('detailShareCopyBtn').addEventListener('click', async () => {
+                try {
+                    await navigator.clipboard.writeText(shareUrl);
+                    showToast('Link copied.');
+                } catch (e) {
+                    showToast('Could not copy the link — copy it from the address bar instead.');
+                }
+            });
+
+            if (navigator.share) {
+                const nativeBtn = document.getElementById('detailShareNativeBtn');
+                nativeBtn.style.display = '';
+                nativeBtn.addEventListener('click', async () => {
+                    try {
+                        await navigator.share({ title: tip.title, text: tip.excerpt || '', url: shareUrl });
+                    } catch (e) { /* user cancelled the share sheet — nothing to do */ }
+                });
+            }
+
+            document.getElementById('detailSharePrintBtn').addEventListener('click', () => {
+                document.getElementById('printOnlyFooter').textContent = shareUrl;
+                window.print();
+            });
 
             if (admin) {
                 document.getElementById('detailEditBtn').addEventListener('click', () => {
