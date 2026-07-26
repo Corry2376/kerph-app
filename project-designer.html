@@ -1154,6 +1154,7 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
                 <button type="button" class="mini-btn" id="dimensionsToggleBtn" title="Show a size label next to every piece">&#128209; Dimensions</button>
                 <button type="button" class="mini-btn" id="explodeToggleBtn">&#128165; Exploded View</button>
                 <button type="button" class="mini-btn" id="preview3DUndoBtn" title="Undo (Ctrl+Z)" disabled>&#8617; Undo</button>
+                <button type="button" class="mini-btn" id="open3DCutListBtn" title="Send this project's panels to the Cut List Optimizer">&#9986;&#65039; Cut List Optimizer &#8594;</button>
                 <span class="preview3d-tool-hint" id="preview3dToolHint"></span>
             </div>
             <div class="preview3d-toolbar" id="explodeAmountRow" style="display:none; margin-top:-4px;">
@@ -2545,10 +2546,15 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
             document.getElementById('panelRotZInput').value = preset[2];
         });
 
-        document.getElementById('openFullCutListBtn').addEventListener('click', () => {
+        // Shared by the Cut List tab's "Open Full Cut List Optimizer" button and the 3D
+        // Preview toolbar's shortcut — both hand off the same panels the same way, so there's
+        // no reason to go find the Cut List tab first just to reach the full optimizer.
+        function sendToCutListOptimizer() {
             localStorage.setItem(CUTLIST_HANDOFF_KEY, JSON.stringify(panels));
             window.location.href = 'cutlist-optimizer.html';
-        });
+        }
+        document.getElementById('openFullCutListBtn').addEventListener('click', sendToCutListOptimizer);
+        document.getElementById('open3DCutListBtn').addEventListener('click', sendToCutListOptimizer);
 
         /* ---------- CUT LIST / 3D PREVIEW TAB SWITCH ---------- */
         let activeTab = 'cutlist';
