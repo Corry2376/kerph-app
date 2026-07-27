@@ -1027,6 +1027,27 @@
                 loadQuoteIntoForm(target);
                 showToast(`Loaded "${target.name}" from My Workspace.`);
             }
+
+            // One-shot handoff from Project Designer's "Send to Quote Builder" button — the
+            // seed lives in localStorage rather than the URL since a materials list can get
+            // long. Consumed (and the query param scrubbed) immediately so a page refresh
+            // doesn't silently re-seed a quote the user has since edited.
+            if (new URLSearchParams(window.location.search).get('seedFromProject')) {
+                const raw = localStorage.getItem('kerph_quote_seed');
+                localStorage.removeItem('kerph_quote_seed');
+                history.replaceState(null, '', 'quote-builder.html');
+                if (raw) {
+                    try {
+                        const seed = JSON.parse(raw);
+                        const seeded = blankQuote();
+                        seeded.name = seed.name || '';
+                        seeded.projectName = seed.projectName || '';
+                        seeded.materials = Array.isArray(seed.materials) ? seed.materials : [];
+                        loadQuoteIntoForm(seeded);
+                        showToast(`Pre-filled from "${seed.projectName}" — review and Save Quote.`);
+                    } catch (e) { /* malformed seed, ignore */ }
+                }
+            }
         });
 
         function fmtMoney(n) {

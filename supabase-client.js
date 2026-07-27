@@ -209,13 +209,13 @@
     const kerphLoadCutListParts = cutlistLivePartsDomain.load;
     const kerphSaveCutListParts = cutlistLivePartsDomain.save;
 
-    // Project Designer's live state is one row, five independently-autosaved columns —
-    // one loader, five column-scoped savers so each save touches only its own column.
-    const PROJECT_LIVE_DEFAULT = { panels: [], hardware: [], notes: '', labels: [], measurements: [] };
+    // Project Designer's live state is one row, six independently-autosaved columns —
+    // one loader, six column-scoped savers so each save touches only its own column.
+    const PROJECT_LIVE_DEFAULT = { panels: [], hardware: [], notes: '', labels: [], measurements: [], joints: [] };
     async function kerphLoadProjectLiveState() {
         if (!state.user) return { data: { ...PROJECT_LIVE_DEFAULT }, error: null };
         const { data, error } = await kerphSupabase.from('project_live_state')
-            .select('panels, hardware, notes, labels, measurements').eq('user_id', state.user.id).maybeSingle();
+            .select('panels, hardware, notes, labels, measurements, joints').eq('user_id', state.user.id).maybeSingle();
         return { data: data || { ...PROJECT_LIVE_DEFAULT }, error };
     }
     function kerphSaveProjectColumn(column) {
@@ -231,6 +231,7 @@
     const kerphSaveProjectNotes = kerphSaveProjectColumn('notes');
     const kerphSaveProjectLabels3D = kerphSaveProjectColumn('labels');
     const kerphSaveProjectMeasurements3D = kerphSaveProjectColumn('measurements');
+    const kerphSaveProjectJoints = kerphSaveProjectColumn('joints');
 
     /* ---------- Named-save domains: one row per item ---------- */
 
@@ -850,6 +851,7 @@
     window.kerphSaveProjectNotes = kerphSaveProjectNotes;
     window.kerphSaveProjectLabels3D = kerphSaveProjectLabels3D;
     window.kerphSaveProjectMeasurements3D = kerphSaveProjectMeasurements3D;
+    window.kerphSaveProjectJoints = kerphSaveProjectJoints;
 
     window.kerphLoadSavedLayouts = kerphLoadSavedLayouts;
     window.kerphInsertSavedLayout = kerphInsertSavedLayout;

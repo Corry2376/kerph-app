@@ -1176,6 +1176,53 @@
         </div>
     </div>
 
+    <div class="modal-overlay" id="projectDiffModalOverlay" style="display:none;">
+        <div class="modal-box" style="width:440px; max-height:80vh; overflow-y:auto;">
+            <div class="modal-title">What Changed Since This Version</div>
+            <p id="projectDiffWhenLabel" style="font-size:11.5px; color:#6b7280; line-height:1.5; margin:0 0 10px;"></p>
+            <div id="projectDiffList"></div>
+            <div class="empty-hint" id="projectDiffEmptyHint" style="display:none;">No differences &mdash; your current work matches this version.</div>
+            <div class="modal-actions">
+                <button type="button" id="projectDiffCloseBtn" class="mini-btn modal-primary-btn">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="sagCheckModalOverlay" style="display:none;">
+        <div class="modal-box" style="width:380px;">
+            <div class="modal-title">Shelf Sag Check</div>
+            <p style="font-size:11.5px; color:#6b7280; line-height:1.5; margin:0 0 10px;" id="sagCheckPanelLabel"></p>
+            <div class="form-row">
+                <label for="sagSpanInput">Unsupported span (in)</label>
+                <input type="number" class="input-box" id="sagSpanInput" step="0.25">
+            </div>
+            <div class="form-row">
+                <label for="sagDepthInput">Depth, front-to-back (in)</label>
+                <input type="number" class="input-box" id="sagDepthInput" step="0.25">
+            </div>
+            <div class="form-row">
+                <label for="sagThicknessInput">Thickness (in)</label>
+                <input type="number" class="input-box" id="sagThicknessInput" step="0.0625">
+            </div>
+            <div class="form-row">
+                <label for="sagLoadInput">Expected total load (lbs, spread evenly)</label>
+                <input type="number" class="input-box" id="sagLoadInput" value="40" step="5">
+            </div>
+            <div class="form-row">
+                <label for="sagSupportSelect">Support type</label>
+                <select class="select-box" id="sagSupportSelect">
+                    <option value="simple">Simply supported (resting on pins/cleats)</option>
+                    <option value="fixed">Fixed both ends (dadoed or rabbeted in)</option>
+                </select>
+            </div>
+            <div id="sagCheckResult" style="margin-top:10px;"></div>
+            <p style="font-size:10.5px; color:#9ca3af; line-height:1.4; margin:10px 0 0;">Estimate only, using published typical modulus-of-elasticity values per material — actual stiffness varies by individual board, grain, and finish. Not a substitute for engineering judgment on anything load-bearing or safety-critical.</p>
+            <div class="modal-actions">
+                <button type="button" id="sagCheckCloseBtn" class="mini-btn modal-primary-btn">Close</button>
+            </div>
+        </div>
+    </div>
+
     <div class="modal-overlay" id="materialPricesModalOverlay" style="display:none;">
         <div class="modal-box" style="width:380px; max-height:80vh; overflow-y:auto;">
             <div class="modal-title">Material Prices</div>
@@ -1231,6 +1278,34 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
         <div class="notes-preview" id="notesPreview" style="display:none;"></div>
     </div>
 
+    <div class="floating-panel" id="jointsPanel" style="display:none; width:300px;">
+        <div class="floating-panel-title" style="display:flex; align-items:center; justify-content:space-between;">Joints <button type="button" id="jointsPanelCloseBtn" class="mini-btn" style="font-weight:400;">&#10005;</button></div>
+        <p style="font-size:11px; color:#6b7280; line-height:1.4; margin:0 0 8px;">Connect two pieces with a real cut joint. Only works between axis-aligned pieces (rotation at 0&deg;/90&deg;/180&deg;/270&deg;) &mdash; anything else is skipped and shown as a plain butt joint.</p>
+        <div class="form-row">
+            <label for="jointPanelASelect">Piece A (receives the cut)</label>
+            <select class="select-box" id="jointPanelASelect"></select>
+        </div>
+        <div class="form-row">
+            <label for="jointPanelBSelect">Piece B (fits into it)</label>
+            <select class="select-box" id="jointPanelBSelect"></select>
+        </div>
+        <div class="form-row">
+            <label for="jointTypeSelect">Joint type <span id="jointSuggestedTag" style="font-weight:400; color:#4338ca;"></span></label>
+            <select class="select-box" id="jointTypeSelect">
+                <option value="butt">Butt (no cut, just touching)</option>
+                <option value="rabbet">Rabbet (step cut at an edge)</option>
+                <option value="dado">Dado (slot cut, receiving piece spans past it)</option>
+            </select>
+        </div>
+        <div class="form-row" id="jointDepthRow">
+            <label for="jointDepthInput">Cut depth (in)</label>
+            <input type="number" class="input-box" id="jointDepthInput" value="0.375" step="0.0625">
+        </div>
+        <button type="button" class="mini-btn modal-primary-btn" id="addJointBtn" style="width:100%; margin-top:4px;">Add Joint</button>
+        <div id="jointsList" style="margin-top:10px;"></div>
+        <div class="empty-hint" id="jointsEmptyHint">No joints yet &mdash; pieces just touch as plain boxes.</div>
+    </div>
+
     <div id="canvas-area">
         <div class="view-tabs" id="viewTabs">
             <button type="button" class="new-layout-btn" id="cutListTabBtn">Cut List</button>
@@ -1247,6 +1322,7 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
             <div class="preview3d-toolbar">
                 <button type="button" class="mini-btn" id="addPieceToolBtn">&#10133; New Piece</button>
                 <button type="button" class="mini-btn" id="addLabelToolBtn">&#127991;&#65039; Add Label</button>
+                <button type="button" class="mini-btn" id="jointsToolBtn" title="Cut real rabbet/dado joints between two pieces">&#128295; Joints</button>
                 <button type="button" class="mini-btn" id="measureToolBtn">&#128207; Measure</button>
                 <button type="button" class="mini-btn" id="dimensionsToggleBtn" title="Show a size label next to every piece">&#128209; Dimensions</button>
                 <button type="button" class="mini-btn" id="explodeToggleBtn">&#128165; Exploded View</button>
@@ -1327,6 +1403,8 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
                 </div>
             </div>
             <div id="estCostCaveat" style="display:none; font-size:11px; color:#6b7280; margin-top:-10px; margin-bottom:14px;">Material cost is a rough estimate (whole sheets/linear feet rounded up, using the prices in your Material Prices editor) &mdash; it doesn't account for nesting waste. Hardware cost is added on top when tracked below.</div>
+            <button type="button" id="sendToQuoteBuilderBtn" class="mini-btn" style="margin:-8px 0 14px;" title="Open Quote Builder with a new quote pre-filled from this project's materials and hardware">Send to Quote Builder &rarr;</button>
+            <button type="button" id="exportDxfBtn" class="mini-btn" style="margin:-8px 0 14px 8px;" title="Export a DXF file with each piece's flat outline, for import into your own CAM software (Fusion 360, VCarve, Easel, etc.)">&#128190; Export DXF</button>
 
             <table class="cutlist-table">
                 <thead>
@@ -1787,6 +1865,120 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
             'custom': { label: 'Custom / Other', type: 'sheet', thicknessIn: 0.75, group: 'Other', priceEach: 0 }
         };
 
+        // Static bending modulus of elasticity (psi), typical published values in the range
+        // used across woodworking/engineering references (USDA Forest Products Laboratory Wood
+        // Handbook style figures for solid species; plywood/MDF from manufacturer span-table
+        // literature). Real stiffness varies by individual board, moisture content, and grade —
+        // see the caveat shown alongside the Sag Check result. Keyed to the same MATERIALS list
+        // above; anything not listed here falls back to a conservative generic-softwood estimate.
+        const MATERIAL_MOE_PSI = {
+            'plywood-34': 1500000, 'plywood-12': 1500000, 'plywood-14': 1500000,
+            'plywood-maple-34': 1700000, 'plywood-birch-34': 1650000, 'plywood-baltic-birch-34': 1750000,
+            'plywood-oak-34': 1650000, 'plywood-walnut-34': 1550000,
+            'mdf-34': 550000,
+            'pine-1x': 1240000, 'lumber-2x4': 1400000,
+            'hardwood': 1600000,
+            'hardwood-maple': 1830000, 'hardwood-walnut': 1680000, 'hardwood-red-oak': 1760000,
+            'hardwood-white-oak': 1780000, 'hardwood-cherry': 1490000, 'hardwood-ash': 1740000,
+            'hardwood-hickory': 2160000, 'hardwood-poplar': 1580000, 'hardwood-cedar': 1110000,
+            'hardwood-mahogany': 1100000,
+            'custom': 1400000
+        };
+
+        // Uniform-load beam deflection at midspan — the two support conditions that actually
+        // come up in casework: resting freely on pins/cleats (simply supported) vs. captured in
+        // a dado/rabbet on both ends (fixed), which is 5x stiffer for the same load and span.
+        // L/360 is the standard serviceability threshold borrowed from general construction
+        // (floor joists etc.) — a reasonable, conservative "imperceptible under normal load" bar
+        // for shelving too, not a code requirement for furniture.
+        function calcShelfDeflection({ spanIn, depthIn, thicknessIn, loadLbs, moePsi, fixed }) {
+            const I = (depthIn * Math.pow(thicknessIn, 3)) / 12; // in^4
+            const w = loadLbs / spanIn; // lbs/in, uniformly distributed
+            const deflectionIn = fixed
+                ? (w * Math.pow(spanIn, 4)) / (384 * moePsi * I)
+                : (5 * w * Math.pow(spanIn, 4)) / (384 * moePsi * I);
+            const limitIn = spanIn / 360;
+            return { deflectionIn, limitIn, ratio: deflectionIn / limitIn };
+        }
+
+        // Tangential shrinkage/expansion coefficients (%/1% moisture-content change), the same
+        // published USDA Forest Products Laboratory-style figures used by the standalone Wood
+        // Movement Calculator (shop-jigs-wood-movement.html) — kept numerically identical to
+        // that page's WM_SPECIES table so the two never disagree, just keyed to MATERIALS
+        // instead of that page's own species list. Sheet goods (plywood/MDF) are deliberately
+        // absent — cross-laminated construction makes them dimensionally stable, which is
+        // exactly the distinction worth surfacing here (solid wood moves, plywood doesn't).
+        const MATERIAL_WOOD_MOVEMENT_C = {
+            'hardwood': 0.0031, // generic solid wood — rough average across species, not a specific one
+            'hardwood-maple': 0.00353, 'hardwood-walnut': 0.00274, 'hardwood-red-oak': 0.00369,
+            'hardwood-white-oak': 0.00365, 'hardwood-cherry': 0.00248, 'hardwood-ash': 0.00274,
+            'hardwood-hickory': 0.00390, 'hardwood-poplar': 0.00307, 'hardwood-cedar': 0.00186,
+            'hardwood-mahogany': 0.00206,
+            'pine-1x': 0.00224,
+            'lumber-2x4': 0.00298 // approximated as douglas fir — actual framing lumber species varies
+        };
+        // Typical indoor seasonal relative-humidity swing (same 30%→70% default as the standalone
+        // calculator) converted to moisture content via the same Forest Products Lab EMC table:
+        // 12.9% MC at 70% RH minus 6.3% MC at 30% RH.
+        const WOOD_MOVEMENT_MC_DELTA = 12.9 - 6.3;
+
+        // Movement magnitude applies to whichever dimension runs across the grain — only
+        // meaningful when the panel's grain direction is actually known, which is exactly what
+        // Grain Locked already means elsewhere in this app (nesting won't rotate it because the
+        // grain has to stay parallel to a specific edge). Convention: Width runs across the grain.
+        function calcPanelWoodMovement(panel) {
+            const c = MATERIAL_WOOD_MOVEMENT_C[panel.material];
+            if (c == null || !panel.grainLocked) return null;
+            const deltaIn = panel.widthIn * c * WOOD_MOVEMENT_MC_DELTA;
+            return { deltaIn, pctOfWidth: panel.widthIn > 0 ? (deltaIn / panel.widthIn) * 100 : 0 };
+        }
+
+        let sagCheckPanel = null;
+        function openSagCheckModal(panel) {
+            sagCheckPanel = panel;
+            const mat = MATERIALS[panel.material] || MATERIALS.custom;
+            document.getElementById('sagCheckPanelLabel').textContent =
+                `${panel.name} (${escapeHtml(mat.label)}) — fields below start from this piece's own dimensions; edit span if it's actually supported partway across.`;
+            document.getElementById('sagSpanInput').value = panel.widthIn;
+            document.getElementById('sagDepthInput').value = panel.heightIn;
+            document.getElementById('sagThicknessInput').value = panel.thicknessIn;
+            runSagCheck();
+            document.getElementById('sagCheckModalOverlay').style.display = 'flex';
+        }
+        function runSagCheck() {
+            if (!sagCheckPanel) return;
+            const spanIn = parseFloat(document.getElementById('sagSpanInput').value) || 0;
+            const depthIn = parseFloat(document.getElementById('sagDepthInput').value) || 0;
+            const thicknessIn = parseFloat(document.getElementById('sagThicknessInput').value) || 0;
+            const loadLbs = parseFloat(document.getElementById('sagLoadInput').value) || 0;
+            const fixed = document.getElementById('sagSupportSelect').value === 'fixed';
+            const moePsi = MATERIAL_MOE_PSI[sagCheckPanel.material] != null ? MATERIAL_MOE_PSI[sagCheckPanel.material] : MATERIAL_MOE_PSI.custom;
+            const result = document.getElementById('sagCheckResult');
+            if (!spanIn || !depthIn || !thicknessIn) {
+                result.innerHTML = '<div style="font-size:12px; color:#6b7280;">Fill in span, depth, and thickness to check.</div>';
+                return;
+            }
+            const { deflectionIn, limitIn, ratio } = calcShelfDeflection({ spanIn, depthIn, thicknessIn, loadLbs, moePsi, fixed });
+            const pct = Math.round(ratio * 100);
+            let color, verdict;
+            if (ratio <= 0.6) { color = '#16a34a'; verdict = 'Comfortably stiff'; }
+            else if (ratio <= 1.0) { color = '#d97706'; verdict = 'Borderline — noticeable under load'; }
+            else { color = '#dc2626'; verdict = 'Likely to sag visibly — add support or go thicker'; }
+            result.innerHTML = `
+                <div style="padding:10px; border-radius:6px; background:${color}14; border-left:3px solid ${color};">
+                    <div style="font-size:13px; font-weight:700; color:${color};">${verdict}</div>
+                    <div style="font-size:12px; color:#374151; margin-top:4px;">Predicted sag: <strong>${deflectionIn.toFixed(3)}&quot;</strong> at midspan (${pct}% of the ${limitIn.toFixed(3)}&quot; L/360 comfort limit for a ${spanIn}&quot; span)</div>
+                </div>
+            `;
+        }
+        ['sagSpanInput', 'sagDepthInput', 'sagThicknessInput', 'sagLoadInput'].forEach(id => {
+            document.getElementById(id).addEventListener('input', runSagCheck);
+        });
+        document.getElementById('sagSupportSelect').addEventListener('change', runSagCheck);
+        document.getElementById('sagCheckCloseBtn').addEventListener('click', () => {
+            document.getElementById('sagCheckModalOverlay').style.display = 'none';
+        });
+
         // Per-material $ overrides, keyed the same as MATERIALS — local to this browser (like
         // the other "Local Device Settings" prefs) since real prices are supplier/region-specific,
         // not something to sync across devices or bake into the shared MATERIALS table above.
@@ -1919,6 +2111,16 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
             trackSave(kerphSaveProjectHardware(hardware).catch(() => {}));
         }
 
+        // {id, panelAId, panelBId, type ('butt'|'rabbet'|'dado'), depthIn} — panelA is the
+        // piece that gets material cut out of it; panelB is the piece that fits into the cut.
+        // Geometry is computed live at render time from the two panels' current positions
+        // (see computeJointCutterBox), never stored — so editing a panel's size/position after
+        // adding a joint just re-cuts correctly instead of leaving a stale notch behind.
+        let joints = [];
+        function saveJoints() {
+            trackSave(kerphSaveProjectJoints(joints).catch(() => {}));
+        }
+
         /* ---------- SAVED PROJECTS ----------
            panels/hardware/notes/labels/measurements (above and in the 3D module) are always
            the "live" working project — autosaved continuously under their own keys exactly as
@@ -1992,6 +2194,7 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
                 savedAt: new Date().toISOString(),
                 panels: JSON.parse(JSON.stringify(panels)),
                 hardware: JSON.parse(JSON.stringify(hardware)),
+                joints: JSON.parse(JSON.stringify(joints)),
                 notes: document.getElementById('projectNotesInput').value || '',
                 labels: typeof window.getLabels === 'function' ? JSON.parse(JSON.stringify(window.getLabels())) : [],
                 measurements: typeof window.getMeasurements === 'function' ? JSON.parse(JSON.stringify(window.getMeasurements())) : [],
@@ -2007,6 +2210,8 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
             savePanels();
             hardware = Array.isArray(project.hardware) ? project.hardware : [];
             saveHardware();
+            joints = Array.isArray(project.joints) ? project.joints : [];
+            saveJoints();
             const notesInput = document.getElementById('projectNotesInput');
             notesInput.value = project.notes || '';
             trackSave(kerphSaveProjectNotes(notesInput.value).catch(() => {}));
@@ -2071,6 +2276,7 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
                     savedAt: prev.savedAt,
                     panels: prev.panels || [],
                     hardware: prev.hardware || [],
+                    joints: prev.joints || [],
                     notes: prev.notes || '',
                     labels: prev.labels || [],
                     measurements: prev.measurements || []
@@ -2131,16 +2337,105 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
                 const when = snap.savedAt ? new Date(snap.savedAt).toLocaleString() : 'Unknown time';
                 const panelCount = (snap.panels || []).reduce((sum, p) => sum + (p.qty || 1), 0);
                 info.innerHTML = `<div style="font-size:12.5px; font-weight:700; color:#1e293b;">${escapeHtml(when)}</div><div style="font-size:11px; color:#6b7280;">${panelCount} panel${panelCount === 1 ? '' : 's'}</div>`;
+                const btnGroup = document.createElement('div');
+                btnGroup.style.cssText = 'display:flex; gap:6px;';
+                const compareBtn = document.createElement('button');
+                compareBtn.type = 'button';
+                compareBtn.className = 'mini-btn';
+                compareBtn.textContent = 'Compare';
+                compareBtn.title = "See what's changed between this version and your current work";
+                compareBtn.addEventListener('click', () => renderProjectDiffModal(realIdx));
                 const restoreBtn = document.createElement('button');
                 restoreBtn.type = 'button';
                 restoreBtn.className = 'mini-btn';
                 restoreBtn.textContent = 'Restore';
                 restoreBtn.addEventListener('click', () => restoreProjectHistoryEntry(realIdx));
+                btnGroup.appendChild(compareBtn);
+                btnGroup.appendChild(restoreBtn);
                 row.appendChild(info);
-                row.appendChild(restoreBtn);
+                row.appendChild(btnGroup);
                 container.appendChild(row);
             });
         }
+
+        // Field-level diff for panels that still exist in both versions (matched by id, which
+        // is stable across saves/edits — only a delete+recreate changes it). Position changes
+        // are reported as one combined "moved" line rather than three separate X/Y/Z deltas,
+        // since nobody cares about the individual axes, just that it moved.
+        const DIFF_PANEL_FIELDS = [
+            { key: 'name', label: 'Name' },
+            { key: 'widthIn', label: 'Width', suffix: '"' },
+            { key: 'heightIn', label: 'Height', suffix: '"' },
+            { key: 'thicknessIn', label: 'Thickness', suffix: '"' },
+            { key: 'material', label: 'Material' },
+            { key: 'qty', label: 'Qty' },
+            { key: 'groupName', label: 'Group' }
+        ];
+        function diffPanelLists(oldPanels, newPanels) {
+            const oldById = new Map((oldPanels || []).map(p => [p.id, p]));
+            const newById = new Map((newPanels || []).map(p => [p.id, p]));
+            const added = [], removed = [], changed = [];
+            newById.forEach((p, id) => { if (!oldById.has(id)) added.push(p); });
+            oldById.forEach((p, id) => { if (!newById.has(id)) removed.push(p); });
+            oldById.forEach((oldP, id) => {
+                const newP = newById.get(id);
+                if (!newP) return;
+                const fieldChanges = [];
+                DIFF_PANEL_FIELDS.forEach(f => {
+                    const ov = oldP[f.key], nv = newP[f.key];
+                    if ((ov == null ? '' : ov) !== (nv == null ? '' : nv)) {
+                        fieldChanges.push(`${f.label}: ${ov != null ? ov : '—'}${f.suffix || ''} → ${nv != null ? nv : '—'}${f.suffix || ''}`);
+                    }
+                });
+                if (typeof oldP.xIn === 'number' && typeof newP.xIn === 'number') {
+                    const moved = Math.abs(oldP.xIn - newP.xIn) > 0.01 ||
+                        Math.abs((oldP.yIn || 0) - (newP.yIn || 0)) > 0.01 ||
+                        Math.abs((oldP.zIn || 0) - (newP.zIn || 0)) > 0.01;
+                    if (moved) fieldChanges.push('Position moved');
+                }
+                if (fieldChanges.length) changed.push({ id, name: newP.name, changes: fieldChanges });
+            });
+            return { added, removed, changed };
+        }
+
+        function renderProjectDiffModal(historyIdx) {
+            const current = currentProjectId ? getSavedProjects().find(p => p.id === currentProjectId) : null;
+            if (!current || !Array.isArray(current.history) || !current.history[historyIdx]) return;
+            const snap = current.history[historyIdx];
+            const diff = diffPanelLists(snap.panels, panels);
+
+            const whenLabel = document.getElementById('projectDiffWhenLabel');
+            const when = snap.savedAt ? new Date(snap.savedAt).toLocaleString() : 'an earlier version';
+            whenLabel.textContent = `Comparing your current work against the version saved ${when}.`;
+
+            const list = document.getElementById('projectDiffList');
+            const hint = document.getElementById('projectDiffEmptyHint');
+            list.innerHTML = '';
+            const totalChanges = diff.added.length + diff.removed.length + diff.changed.length;
+            hint.style.display = totalChanges ? 'none' : 'block';
+
+            function section(title, color, items, renderItem) {
+                if (!items.length) return;
+                const heading = document.createElement('div');
+                heading.style.cssText = `font-size:11px; font-weight:700; color:${color}; text-transform:uppercase; letter-spacing:0.03em; margin:10px 0 4px;`;
+                heading.textContent = `${title} (${items.length})`;
+                list.appendChild(heading);
+                items.forEach(item => {
+                    const row = document.createElement('div');
+                    row.style.cssText = `font-size:12px; color:#374151; padding:4px 8px; margin-bottom:3px; border-radius:4px; background:${color}14; border-left:3px solid ${color};`;
+                    row.innerHTML = renderItem(item);
+                    list.appendChild(row);
+                });
+            }
+            section('Added', '#16a34a', diff.added, p => `<strong>${escapeHtml(p.name || 'Panel')}</strong> &mdash; ${p.widthIn}&quot; &times; ${p.heightIn}&quot;`);
+            section('Removed', '#dc2626', diff.removed, p => `<strong>${escapeHtml(p.name || 'Panel')}</strong> &mdash; ${p.widthIn}&quot; &times; ${p.heightIn}&quot;`);
+            section('Changed', '#d97706', diff.changed, c => `<strong>${escapeHtml(c.name || 'Panel')}</strong><br>${c.changes.map(escapeHtml).join('<br>')}`);
+
+            document.getElementById('projectDiffModalOverlay').style.display = 'flex';
+        }
+        document.getElementById('projectDiffCloseBtn').addEventListener('click', () => {
+            document.getElementById('projectDiffModalOverlay').style.display = 'none';
+        });
 
         async function restoreProjectHistoryEntry(idx) {
             const current = currentProjectId ? getSavedProjects().find(p => p.id === currentProjectId) : null;
@@ -2149,7 +2444,7 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
             const snap = current.history[idx];
             restoreProject({
                 id: current.id, name: current.name,
-                panels: snap.panels, hardware: snap.hardware, notes: snap.notes,
+                panels: snap.panels, hardware: snap.hardware, joints: snap.joints, notes: snap.notes,
                 labels: snap.labels, measurements: snap.measurements
             });
             document.getElementById('projectHistoryModalOverlay').style.display = 'none';
@@ -2593,8 +2888,12 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
                 item.className = 'panel-item';
                 const shapeTag = (p.shapeType && p.shapeType !== 'rectangle') ? ` &middot; ${escapeHtml(SHAPE_LABELS[p.shapeType] || p.shapeType)}` : '';
                 const grainTag = p.grainLocked ? ' <span class="grain-badge" title="Grain locked — will not be rotated when nesting">&#8593; grain</span>' : '';
+                const movement = calcPanelWoodMovement(p);
+                const movementTag = movement
+                    ? ` <span class="grain-badge" style="background:#eef2ff; color:#4338ca;" title="Predicted width change across a typical indoor 30%-70% relative humidity swing, using published movement coefficients for this species. Solid wood only &mdash; sheet goods are dimensionally stable.">&#8596; &plusmn;${movement.deltaIn.toFixed(3)}&quot; seasonal</span>`
+                    : '';
                 item.innerHTML = `
-                    <div class="panel-item-title">${escapeHtml(p.name)}${p.qty > 1 ? ` &times;${p.qty}` : ''}${grainTag}</div>
+                    <div class="panel-item-title">${escapeHtml(p.name)}${p.qty > 1 ? ` &times;${p.qty}` : ''}${grainTag}${movementTag}</div>
                     <div class="panel-item-dims">${p.widthIn}" x ${p.heightIn}" x ${p.thicknessIn}" &mdash; ${escapeHtml(mat.label)}${shapeTag}</div>
                 `;
                 const actions = document.createElement('div');
@@ -2613,6 +2912,13 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
                 copyBtn.title = 'Duplicate this piece';
                 copyBtn.addEventListener('click', () => duplicatePanel(p.id));
 
+                const sagBtn = document.createElement('button');
+                sagBtn.type = 'button';
+                sagBtn.className = 'mini-btn';
+                sagBtn.textContent = 'Sag';
+                sagBtn.title = 'Check this piece for shelf deflection under load';
+                sagBtn.addEventListener('click', () => openSagCheckModal(p));
+
                 const removeBtn = document.createElement('button');
                 removeBtn.type = 'button';
                 removeBtn.className = 'mini-btn danger';
@@ -2621,6 +2927,7 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
 
                 actions.appendChild(editBtn);
                 actions.appendChild(copyBtn);
+                actions.appendChild(sagBtn);
                 actions.appendChild(removeBtn);
                 item.appendChild(actions);
                 parent.appendChild(item);
@@ -2761,6 +3068,141 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
                 tbody.appendChild(tr);
             });
         }
+
+        // One quote material line per distinct material key (sheets/linear feet rounded up
+        // exactly like the Cost Summary above), plus one line per tracked hardware item — the
+        // same numbers the user already sees on this page, never a second, divergent estimate.
+        function buildQuoteMaterialLinesFromProject() {
+            const sheetAreaByMaterial = {};
+            const linearFeetByMaterial = {};
+            panels.forEach(p => {
+                const mat = MATERIALS[p.material] || MATERIALS.custom;
+                if (mat.type === 'sheet') {
+                    sheetAreaByMaterial[p.material] = (sheetAreaByMaterial[p.material] || 0) + (p.widthIn * p.heightIn / 144) * p.qty;
+                } else {
+                    linearFeetByMaterial[p.material] = (linearFeetByMaterial[p.material] || 0) + (p.widthIn / 12) * p.qty;
+                }
+            });
+            const SHEET_SQFT = 32;
+            const lines = [];
+            Object.keys(sheetAreaByMaterial).forEach(matKey => {
+                const mat = MATERIALS[matKey] || MATERIALS.custom;
+                const sheetsNeeded = Math.ceil(sheetAreaByMaterial[matKey] / SHEET_SQFT);
+                if (sheetsNeeded <= 0) return;
+                lines.push({
+                    id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+                    name: `${mat.label} — ${sheetsNeeded} sheet${sheetsNeeded === 1 ? '' : 's'}`,
+                    cost: sheetsNeeded * getMaterialPrice(matKey)
+                });
+            });
+            Object.keys(linearFeetByMaterial).forEach(matKey => {
+                const mat = MATERIALS[matKey] || MATERIALS.custom;
+                const feetNeeded = Math.ceil(linearFeetByMaterial[matKey]);
+                if (feetNeeded <= 0) return;
+                lines.push({
+                    id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+                    name: `${mat.label} — ${feetNeeded} ft`,
+                    cost: feetNeeded * getMaterialPrice(matKey)
+                });
+            });
+            hardware.forEach(h => {
+                const cost = (h.unitCost || 0) * h.qty;
+                if (cost <= 0 && !h.qty) return;
+                lines.push({
+                    id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+                    name: `${h.name} x${h.qty}`,
+                    cost
+                });
+            });
+            return lines;
+        }
+
+        // Minimal, hand-written R12-era ASCII DXF — LINE and TEXT entities only, since those
+        // are supported by literally every DXF reader ever written (unlike LWPOLYLINE, which
+        // needs DXF R14+ declared in the header). One flat outline per unique panel shape
+        // (grouped the same way the Cut List table already groups them, so counts match what's
+        // on screen), laid out in a simple left-to-right/wrapping grid — this is a hand-off of
+        // accurate geometry, not an optimized nest; the user's own CAM software does nesting
+        // and toolpath generation with real knowledge of their machine, bit, and material.
+        // Non-rectangular panels (arched top, rounded corners) export their bounding rectangle
+        // with a note in the label rather than an approximated curve, since a silently-wrong
+        // curve is worse than an honest flag to hand-adjust.
+        function buildDxfForProject() {
+            const groups = {};
+            panels.forEach(p => {
+                const key = [p.widthIn, p.heightIn, p.thicknessIn, p.material, p.shapeType || 'rectangle'].join('|');
+                if (!groups[key]) groups[key] = { ...p, qty: 0, names: new Set() };
+                groups[key].qty += p.qty;
+                groups[key].names.add(p.name);
+            });
+            const items = Object.values(groups);
+
+            const lines = [];
+            function addLine(x1, y1, x2, y2, layer) {
+                lines.push('0', 'LINE', '8', layer, '10', x1.toFixed(4), '20', y1.toFixed(4), '30', '0', '11', x2.toFixed(4), '21', y2.toFixed(4), '31', '0');
+            }
+            function addText(x, y, height, str, layer) {
+                lines.push('0', 'TEXT', '8', layer, '10', x.toFixed(4), '20', y.toFixed(4), '30', '0', '40', height.toFixed(3), '1', str.replace(/[\r\n]/g, ' '));
+            }
+
+            const GAP = 2; // inches between parts in the layout grid
+            const MAX_ROW_WIDTH = 96; // wrap roughly at a 4x8 sheet's long edge, just for a sane default layout
+            let cursorX = 0, cursorY = 0, rowHeight = 0;
+            items.forEach(item => {
+                const w = item.widthIn, h = item.heightIn;
+                if (cursorX > 0 && cursorX + w > MAX_ROW_WIDTH) {
+                    cursorX = 0;
+                    cursorY += rowHeight + GAP;
+                    rowHeight = 0;
+                }
+                const x0 = cursorX, y0 = cursorY, x1 = cursorX + w, y1 = cursorY + h;
+                const layer = 'PANEL-' + (MATERIALS[item.material] ? item.material : 'custom').toUpperCase();
+                addLine(x0, y0, x1, y0, layer);
+                addLine(x1, y0, x1, y1, layer);
+                addLine(x1, y1, x0, y1, layer);
+                addLine(x0, y1, x0, y0, layer);
+                const shapeNote = (item.shapeType && item.shapeType !== 'rectangle') ? ' (bounding box — see 3D for true outline)' : '';
+                const label = `${Array.from(item.names).join(',')} x${item.qty} ${w}x${h}x${item.thicknessIn}${shapeNote}`;
+                addText(x0, y1 + 0.3, Math.min(1, h * 0.08), label, layer);
+                cursorX += w + GAP;
+                rowHeight = Math.max(rowHeight, h);
+            });
+
+            return [
+                '0', 'SECTION', '2', 'HEADER', '9', '$ACADVER', '1', 'AC1009', '0', 'ENDSEC',
+                '0', 'SECTION', '2', 'ENTITIES',
+                ...lines,
+                '0', 'ENDSEC',
+                '0', 'EOF', ''
+            ].join('\n');
+        }
+        document.getElementById('exportDxfBtn').addEventListener('click', () => {
+            if (!panels.length) { showToast('Add some panels first — nothing to export.'); return; }
+            const dxf = buildDxfForProject();
+            const blob = new Blob([dxf], { type: 'application/dxf' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            const projectName = document.getElementById('projectNameInput').value.trim() || 'project';
+            a.href = url;
+            a.download = `${projectName.replace(/[^a-z0-9]+/gi, '-')}-cutlist.dxf`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast('DXF exported — import it into your CAM software to generate toolpaths.');
+        });
+
+        document.getElementById('sendToQuoteBuilderBtn').addEventListener('click', () => {
+            if (!panels.length) { showToast('Add some panels first — nothing to quote yet.'); return; }
+            const projectName = document.getElementById('projectNameInput').value.trim() || 'Untitled Project';
+            const seed = {
+                name: `Quote — ${projectName}`,
+                projectName,
+                materials: buildQuoteMaterialLinesFromProject()
+            };
+            localStorage.setItem('kerph_quote_seed', JSON.stringify(seed));
+            window.location.href = 'quote-builder.html?seedFromProject=1';
+        });
 
         function renderAll() {
             renderPanelList();
@@ -3423,7 +3865,107 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
            current value of the variable it closes over. */
         window.getPanels = () => panels;
         window.savePanels = savePanels;
+        window.getJoints = () => joints;
         window.MATERIALS = MATERIALS;
+
+        // Heuristic, not a geometric proof — real position-aware cut geometry is computed at
+        // render time from the panels' actual placement (see computeJointCutterBox in the 3D
+        // module). This just picks a sensible starting suggestion from the two pieces' own
+        // dimensions: a piece whose longest side is close to the receiving piece's own size
+        // reads as "spans across it" (dado — e.g. a shelf captured between two sides); a
+        // clearly smaller piece reads as "sits in a step at the edge" (rabbet — e.g. a back
+        // panel let into the rear of a case).
+        function suggestJointType(panelA, panelB) {
+            if (!panelA || !panelB) return 'butt';
+            const bMax = Math.max(panelB.widthIn, panelB.heightIn);
+            const aMax = Math.max(panelA.widthIn, panelA.heightIn);
+            if (aMax > 0 && bMax / aMax > 0.6) return 'dado';
+            return 'rabbet';
+        }
+
+        function populateJointPanelSelects() {
+            const selA = document.getElementById('jointPanelASelect');
+            const selB = document.getElementById('jointPanelBSelect');
+            const prevA = selA.value, prevB = selB.value;
+            [selA, selB].forEach(sel => { sel.innerHTML = ''; });
+            panels.forEach(p => {
+                const label = `${p.name} (${p.widthIn}" x ${p.heightIn}" x ${p.thicknessIn}")`;
+                const optA = document.createElement('option'); optA.value = p.id; optA.textContent = label;
+                const optB = document.createElement('option'); optB.value = p.id; optB.textContent = label;
+                selA.appendChild(optA); selB.appendChild(optB);
+            });
+            if (panels.some(p => p.id === prevA)) selA.value = prevA;
+            // Default B to the SECOND piece rather than letting both selects land on the same
+            // first option — comparing a piece to itself is a meaningless suggestion and an
+            // invalid joint (caught on Add, but no reason to show a confusing default first).
+            if (panels.some(p => p.id === prevB) && prevB !== selA.value) {
+                selB.value = prevB;
+            } else if (panels.length > 1) {
+                selB.selectedIndex = selB.value === selA.value ? 1 : selB.selectedIndex;
+            }
+            updateJointSuggestion();
+        }
+        function updateJointSuggestion() {
+            const panelA = panels.find(p => p.id === document.getElementById('jointPanelASelect').value);
+            const panelB = panels.find(p => p.id === document.getElementById('jointPanelBSelect').value);
+            const suggested = suggestJointType(panelA, panelB);
+            document.getElementById('jointTypeSelect').value = suggested;
+            document.getElementById('jointSuggestedTag').textContent = panelA && panelB ? `(suggested: ${suggested})` : '';
+            document.getElementById('jointDepthRow').style.display = suggested === 'butt' ? 'none' : 'flex';
+        }
+        document.getElementById('jointsToolBtn').addEventListener('click', () => {
+            if (panels.length < 2) { showToast('Add at least two pieces first.'); return; }
+            populateJointPanelSelects();
+            renderJointsList();
+            document.getElementById('jointsPanel').style.display = 'block';
+        });
+        document.getElementById('jointsPanelCloseBtn').addEventListener('click', () => {
+            document.getElementById('jointsPanel').style.display = 'none';
+        });
+        document.getElementById('jointPanelASelect').addEventListener('change', updateJointSuggestion);
+        document.getElementById('jointPanelBSelect').addEventListener('change', updateJointSuggestion);
+        document.getElementById('jointTypeSelect').addEventListener('change', () => {
+            document.getElementById('jointDepthRow').style.display = document.getElementById('jointTypeSelect').value === 'butt' ? 'none' : 'flex';
+        });
+        document.getElementById('addJointBtn').addEventListener('click', () => {
+            const panelAId = document.getElementById('jointPanelASelect').value;
+            const panelBId = document.getElementById('jointPanelBSelect').value;
+            if (!panelAId || !panelBId || panelAId === panelBId) { showToast('Pick two different pieces.'); return; }
+            const type = document.getElementById('jointTypeSelect').value;
+            const depthIn = parseFloat(document.getElementById('jointDepthInput').value) || 0.375;
+            joints.push({ id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), panelAId, panelBId, type, depthIn });
+            saveJoints();
+            renderJointsList();
+            if (typeof window.rebuild3DPreviewMeshes === 'function') window.rebuild3DPreviewMeshes();
+            showToast('Joint added.');
+        });
+        function renderJointsList() {
+            const list = document.getElementById('jointsList');
+            const hint = document.getElementById('jointsEmptyHint');
+            list.innerHTML = '';
+            hint.style.display = joints.length ? 'none' : 'block';
+            joints.forEach(j => {
+                const panelA = panels.find(p => p.id === j.panelAId);
+                const panelB = panels.find(p => p.id === j.panelBId);
+                const row = document.createElement('div');
+                row.style.cssText = 'display:flex; align-items:center; justify-content:space-between; gap:8px; padding:6px 0; border-bottom:1px solid #f1f5f9; font-size:11.5px;';
+                const label = document.createElement('div');
+                label.innerHTML = `<strong>${escapeHtml(j.type)}</strong>: ${escapeHtml(panelB ? panelB.name : '?')} &rarr; ${escapeHtml(panelA ? panelA.name : '?')}`;
+                const removeBtn = document.createElement('button');
+                removeBtn.type = 'button';
+                removeBtn.className = 'mini-btn danger';
+                removeBtn.textContent = 'Remove';
+                removeBtn.addEventListener('click', () => {
+                    joints = joints.filter(x => x.id !== j.id);
+                    saveJoints();
+                    renderJointsList();
+                    if (typeof window.rebuild3DPreviewMeshes === 'function') window.rebuild3DPreviewMeshes();
+                });
+                row.appendChild(label);
+                row.appendChild(removeBtn);
+                list.appendChild(row);
+            });
+        }
         window.escapeHtml = escapeHtml;
         window.renderAll = renderAll;
 
@@ -3441,6 +3983,7 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
             const { data: liveState } = await kerphLoadProjectLiveState();
             panels = liveState.panels || [];
             hardware = liveState.hardware || [];
+            joints = liveState.joints || [];
             initProjectNotes(liveState.notes);
             cachedSavedProjects = (await kerphLoadSavedProjects()).data || [];
             renderAll();
@@ -3462,7 +4005,9 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
     {
         "imports": {
             "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-            "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+            "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/",
+            "three-mesh-bvh": "https://unpkg.com/three-mesh-bvh@0.6.8/src/index.js",
+            "three-bvh-csg": "https://unpkg.com/three-bvh-csg@0.0.15/src/index.js"
         }
     }
     </script>
@@ -3473,6 +4018,7 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
         import { TransformControls } from 'three/addons/controls/TransformControls.js';
         import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
         import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
+        import { Brush, Evaluator, SUBTRACTION } from 'three-bvh-csg';
 
         // Sheet goods in tan/birch tones, solid lumber in browns — so material differences read
         // at a glance without needing to click each panel. Keyed identically to the classic
@@ -4053,6 +4599,144 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
             });
         };
 
+        // World-space axis-aligned bounding box for a panel, or null if it can't be computed
+        // cleanly — either it hasn't been placed yet, or its rotation isn't a multiple of 90°
+        // (a tilted panel has no single "world AABB" that means anything for cutting purposes).
+        // Box3.applyMatrix4 transforms all 8 local corners and re-derives min/max, so this
+        // handles any combination of 90°/180°/270° rotations correctly without hand-rolled
+        // per-axis swap logic.
+        function panelWorldAABB(panel) {
+            if (typeof panel.xIn !== 'number') return null;
+            const rx = ((panel.rotXDeg || 0) % 360 + 360) % 360;
+            const ry = ((panel.rotYDeg || 0) % 360 + 360) % 360;
+            const rz = ((panel.rotZDeg || 0) % 360 + 360) % 360;
+            if (rx % 90 !== 0 || ry % 90 !== 0 || rz % 90 !== 0) return null;
+            const obj = new THREE.Object3D();
+            obj.position.set(panel.xIn, panel.yIn, panel.zIn);
+            obj.rotation.set(THREE.MathUtils.degToRad(rx), THREE.MathUtils.degToRad(ry), THREE.MathUtils.degToRad(rz));
+            obj.updateMatrixWorld(true);
+            const box = new THREE.Box3(
+                new THREE.Vector3(-panel.widthIn / 2, -panel.heightIn / 2, -panel.thicknessIn / 2),
+                new THREE.Vector3(panel.widthIn / 2, panel.heightIn / 2, panel.thicknessIn / 2)
+            );
+            box.applyMatrix4(obj.matrixWorld);
+            return box;
+        }
+
+        // Same formula produces both a corner notch (rabbet, when B only partially overlaps A
+        // on the two non-adjacency axes) and a full slot (dado, when B spans A's whole extent
+        // on those axes) — the rabbet/dado label is just a UI description of the two cases,
+        // not two different algorithms. Returns null when A and B aren't cleanly adjacent along
+        // exactly one axis (overlapping on more than one axis, or too far apart to be a real
+        // joint) rather than guessing at a cut that might be wrong.
+        function computeJointCutterBox(boxA, boxB, depthIn) {
+            const axes = ['x', 'y', 'z'];
+            let bestAxis = null, bestGap = Infinity;
+            axes.forEach(axis => {
+                const aMin = boxA.min[axis], aMax = boxA.max[axis];
+                const bMin = boxB.min[axis], bMax = boxB.max[axis];
+                let gap;
+                if (bMin >= aMax) gap = bMin - aMax;
+                else if (aMin >= bMax) gap = aMin - bMax;
+                else gap = -1;
+                if (gap >= 0 && gap < bestGap) { bestGap = gap; bestAxis = axis; }
+            });
+            if (bestAxis == null || bestGap > 2) return null; // 2" tolerance for "meaningfully touching"
+
+            const cutMin = {}, cutMax = {};
+            let degenerate = false;
+            axes.forEach(axis => {
+                if (axis === bestAxis) {
+                    const aMin = boxA.min[axis], aMax = boxA.max[axis];
+                    const bMin = boxB.min[axis], bMax = boxB.max[axis];
+                    if (bMin >= aMax) {
+                        cutMax[axis] = bMax;
+                        cutMin[axis] = Math.max(aMax - depthIn, aMin);
+                    } else {
+                        cutMin[axis] = bMin;
+                        cutMax[axis] = Math.min(aMin + depthIn, aMax);
+                    }
+                } else {
+                    // Clip to the overlap of A and B on this axis — keeps the cut within A's
+                    // own footprint and is what naturally produces a corner notch vs. a full
+                    // slot depending on how much of A's face B actually covers.
+                    cutMin[axis] = Math.max(boxA.min[axis], boxB.min[axis]);
+                    cutMax[axis] = Math.min(boxA.max[axis], boxB.max[axis]);
+                }
+                if (cutMax[axis] <= cutMin[axis]) degenerate = true;
+            });
+            if (degenerate) return null;
+            return { min: cutMin, max: cutMax };
+        }
+
+        const csgEvaluator = new Evaluator();
+        // Cuts every joint where `panel` is the receiving side (panelAId) into `geo`, returning
+        // either { geometry, worldSpace: true } if at least one cut succeeded (see the coordinate-
+        // space note below) or null if no cuts applied — callers fall back to the normal
+        // position-via-mesh.position path in that case, so a panel with no valid joints behaves
+        // exactly as it did before this feature existed.
+        //
+        // three-bvh-csg's Evaluator.evaluate() bakes both input brushes' world transforms into
+        // the OUTPUT geometry's vertex positions and returns a brush with an identity transform
+        // of its own (verified empirically before writing this, not assumed) — so the resulting
+        // mesh must be added at position (0,0,0) with no rotation, not positioned via p.xIn/etc.
+        // the way every other panel mesh is.
+        function applyJointCuts(panel, geo, allPanelsById, allJoints) {
+            const myJoints = allJoints.filter(j => j.panelAId === panel.id && j.type !== 'butt');
+            if (!myJoints.length) return null;
+            const boxA = panelWorldAABB(panel);
+            if (!boxA) return null;
+
+            let currentGeo = geo.clone();
+            let cutApplied = false;
+            for (const j of myJoints) {
+                const otherPanel = allPanelsById.get(j.panelBId);
+                if (!otherPanel) continue;
+                const boxB = panelWorldAABB(otherPanel);
+                if (!boxB) continue;
+                const cutter = computeJointCutterBox(boxA, boxB, j.depthIn || 0.375);
+                if (!cutter) continue;
+
+                const brushA = new Brush(currentGeo);
+                brushA.position.set(panel.xIn, panel.yIn, panel.zIn);
+                brushA.rotation.set(
+                    THREE.MathUtils.degToRad(panel.rotXDeg || 0),
+                    THREE.MathUtils.degToRad(panel.rotYDeg || 0),
+                    THREE.MathUtils.degToRad(panel.rotZDeg || 0)
+                );
+                brushA.updateMatrixWorld(true);
+
+                const cutSize = {
+                    x: cutter.max.x - cutter.min.x,
+                    y: cutter.max.y - cutter.min.y,
+                    z: cutter.max.z - cutter.min.z
+                };
+                const cutCenter = {
+                    x: (cutter.max.x + cutter.min.x) / 2,
+                    y: (cutter.max.y + cutter.min.y) / 2,
+                    z: (cutter.max.z + cutter.min.z) / 2
+                };
+                // The cutter box is already expressed in world space and axis-aligned (both
+                // inputs were axis-aligned, so their overlap/adjacency region is too) — no
+                // rotation needed on the cutter brush itself, just position it at the box center.
+                const cutterGeo = new THREE.BoxGeometry(Math.max(cutSize.x, 0.001), Math.max(cutSize.y, 0.001), Math.max(cutSize.z, 0.001));
+                const brushB = new Brush(cutterGeo);
+                brushB.position.set(cutCenter.x, cutCenter.y, cutCenter.z);
+                brushB.updateMatrixWorld(true);
+
+                const result = csgEvaluator.evaluate(brushA, brushB, SUBTRACTION);
+                currentGeo.dispose();
+                currentGeo = result.geometry;
+                cutterGeo.dispose();
+                cutApplied = true;
+                // Every subsequent cut on this panel also has to operate in world space, so
+                // wrap the already-cut (already-world-space) geometry at identity transform
+                // rather than re-applying the panel's transform a second time.
+                brushA.geometry = currentGeo;
+            }
+            return cutApplied ? currentGeo : null;
+        }
+
         window.rebuild3DPreviewMeshes = function rebuild3DPreviewMeshes() {
             if (!sceneReady) return;
             // Fresh meshes have no assembledPosition to fall back to, so a rebuild while
@@ -4068,16 +4752,32 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
             clearPanelMeshes();
             document.getElementById('preview3DEmptyHint').style.display = panels.length ? 'none' : 'block';
 
+            const panelsById = new Map(panels.map(p => [p.id, p]));
+            const currentJoints = window.getJoints ? window.getJoints() : [];
+
             panels.forEach(p => {
                 const color = MATERIAL_COLORS[p.material] != null ? MATERIAL_COLORS[p.material] : MATERIAL_COLORS.custom;
-                const geo = buildPanelGeometry(p);
+                let geo = buildPanelGeometry(p);
+
+                // Real rabbet/dado cut geometry when this piece has joints cutting into it — see
+                // applyJointCuts above. The resulting geometry already has the panel's world
+                // position/rotation baked into its vertices (confirmed empirically: three-bvh-csg
+                // returns an identity-transform brush), so a cut panel's mesh gets added at the
+                // origin with no rotation instead of the usual p.xIn/p.yIn/p.zIn positioning —
+                // doing both would double-apply the transform and scatter the geometry.
+                const cutGeo = currentJoints.length ? applyJointCuts(p, geo, panelsById, currentJoints) : null;
+                const isCut = !!cutGeo;
+                if (isCut) { geo.dispose(); geo = cutGeo; }
+
                 // Every material here is wood (or a generic gray placeholder) — a single
                 // semi-matte roughness/metalness profile reads as real material under the
                 // PMREM environment instead of the flat, plasticky look default values give.
                 // Real species get a procedural grain texture layered on top of the tint
                 // (see WOOD_GRAIN_MATERIALS above); MDF/custom stay flat since they have no
-                // visible grain in real life.
-                const hasGrainTexture = WOOD_GRAIN_MATERIALS.has(p.material);
+                // visible grain in real life. A cut panel also stays flat-tinted rather than
+                // textured — the CSG output geometry doesn't carry the clean box-mapped UVs the
+                // grain texture assumes, so mapping it on would likely look stretched/broken.
+                const hasGrainTexture = WOOD_GRAIN_MATERIALS.has(p.material) && !isCut;
                 // The grain texture already bakes in the species' tint (see getWoodGrainTexture),
                 // so the material's own .color has to stay white when a map is present — leaving
                 // it at the flat tint too would double-multiply and come out too dark/saturated.
@@ -4085,19 +4785,24 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
                 if (hasGrainTexture) matOpts.map = makeWoodTextureForPanel(p.material, p.widthIn, p.heightIn);
                 const mat = new THREE.MeshStandardMaterial(matOpts);
                 const mesh = new THREE.Mesh(geo, mat);
-                mesh.position.set(p.xIn, p.yIn, p.zIn);
-                mesh.rotation.set(
-                    THREE.MathUtils.degToRad(p.rotXDeg || 0),
-                    THREE.MathUtils.degToRad(p.rotYDeg || 0),
-                    THREE.MathUtils.degToRad(p.rotZDeg || 0)
-                );
+                if (isCut) {
+                    mesh.position.set(0, 0, 0);
+                    mesh.rotation.set(0, 0, 0);
+                } else {
+                    mesh.position.set(p.xIn, p.yIn, p.zIn);
+                    mesh.rotation.set(
+                        THREE.MathUtils.degToRad(p.rotXDeg || 0),
+                        THREE.MathUtils.degToRad(p.rotYDeg || 0),
+                        THREE.MathUtils.degToRad(p.rotZDeg || 0)
+                    );
+                }
                 mesh.castShadow = true;
                 mesh.receiveShadow = true;
                 mesh.userData.panelId = p.id;
                 mesh.userData.name = p.name;
                 mesh.userData.type = 'panel';
                 scene.add(mesh);
-                addHoleMeshes(mesh, p.holes, p.thicknessIn);
+                if (!isCut) addHoleMeshes(mesh, p.holes, p.thicknessIn);
                 addGrainIndicator(mesh, p);
 
                 if (p.qty > 1) {
