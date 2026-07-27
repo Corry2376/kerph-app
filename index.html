@@ -491,6 +491,18 @@
         .tool-title { font-weight: 700; font-size: 13px; color: #0f172a; }
         .tool-dims { font-size: 11px; color: #6b7280; margin-top: 1px; }
 
+        /* ---------- Per-card collapse/expand (My Tools / My Wishlist) ---------- */
+        .tool-card-header { display: flex; align-items: center; gap: 6px; cursor: pointer; min-width: 0; }
+        .tool-card-chevron { font-size: 9px; color: #6b7280; transition: transform 0.15s ease; flex-shrink: 0; }
+        .tool-box-item.is-expanded .tool-card-chevron { transform: rotate(90deg); }
+        .tool-card-details { display: none; flex: 1 0 100%; }
+        .tool-box-item.is-expanded .tool-card-details { display: block; }
+        .section-toggle-all {
+            font-size: 10.5px; font-weight: 700; color: #1e3a8a; background: none; border: none;
+            cursor: pointer; text-decoration: underline; padding: 0; margin-left: 8px;
+        }
+        .section-toggle-all:hover { color: #1e40af; }
+
         .tool-search-category-heading {
             font-size: 10px;
             font-weight: 700;
@@ -1155,7 +1167,9 @@
     <div id="sidebar-panel">
         <details class="tool-category" id="myToolsCategory" open>
             <summary class="category-header">
-                <span class="category-header-left">My Tools <span class="category-count" id="myToolsCount">0</span></span>
+                <span class="category-header-left">My Tools <span class="category-count" id="myToolsCount">0</span>
+                    <button type="button" class="section-toggle-all" id="myToolsToggleAllBtn">Expand All</button>
+                </span>
                 <span class="category-chevron">&#9656;</span>
             </summary>
             <div class="category-items">
@@ -1166,7 +1180,9 @@
 
         <details class="tool-category" id="wishlistCategory" open>
             <summary class="category-header">
-                <span class="category-header-left">My Wishlist <span class="category-count" id="wishlistCount">0</span></span>
+                <span class="category-header-left">My Wishlist <span class="category-count" id="wishlistCount">0</span>
+                    <button type="button" class="section-toggle-all" id="wishlistToggleAllBtn">Expand All</button>
+                </span>
                 <span class="category-chevron">&#9656;</span>
             </summary>
             <div class="category-items">
@@ -2063,15 +2079,35 @@
             return wrap;
         }
 
+        // Cards default to collapsed (name/model only) so a long My Tools/Wishlist doesn't
+        // turn into a wall of inputs — this set just tracks which ones the user has expanded,
+        // keyed by tool name (a tool is only ever owned OR wishlisted at once, per
+        // setToolStatus, so names never collide between the two lists).
+        const expandedToolCards = new Set();
+
         function buildToolCard(name, entry) {
             const card = document.createElement('div');
-            card.className = 'tool-box-item ' + (entry.status === 'owned' ? 'is-owned' : 'is-wishlist');
+            card.className = 'tool-box-item ' + (entry.status === 'owned' ? 'is-owned' : 'is-wishlist')
+                + (expandedToolCards.has(name) ? ' is-expanded' : '');
 
-            const info = document.createElement('div');
+            const header = document.createElement('div');
+            header.className = 'tool-card-header';
+            const chevron = document.createElement('span');
+            chevron.className = 'tool-card-chevron';
+            chevron.textContent = '▶';
+            header.appendChild(chevron);
             const title = document.createElement('div');
             title.className = 'tool-title';
             title.textContent = entry.nickname ? `${name} (${entry.nickname})` : name;
-            info.appendChild(title);
+            header.appendChild(title);
+            header.addEventListener('click', () => {
+                if (expandedToolCards.has(name)) expandedToolCards.delete(name); else expandedToolCards.add(name);
+                renderToolLists();
+            });
+            card.appendChild(header);
+
+            const details = document.createElement('div');
+            details.className = 'tool-card-details';
 
             const dims = document.createElement('div');
             dims.className = 'tool-dims';
@@ -2080,12 +2116,10 @@
                 ? `${entry.widthFt}′ × ${entry.lengthFt}′${entry.heightFt ? ' × ' + entry.heightFt + '′' : ''}`
                 : 'Dimensions unavailable';
             dims.textContent = [entry.category, dimText].filter(Boolean).join(' — ');
-            info.appendChild(dims);
-
-            card.appendChild(info);
+            details.appendChild(dims);
 
             if (entry.status === 'owned' && maintenanceRemindersEnabled()) {
-                card.appendChild(buildMaintenanceSection(name, entry));
+                details.appendChild(buildMaintenanceSection(name, entry));
             }
 
             if (entry.status === 'owned') {
@@ -2103,7 +2137,7 @@
                 valueInput.addEventListener('change', () => updateToolValue(name, valueInput.value));
                 valueLabel.appendChild(valueInput);
                 valueRow.appendChild(valueLabel);
-                card.appendChild(valueRow);
+                details.appendChild(valueRow);
 
                 const serialRow = document.createElement('div');
                 serialRow.className = 'tool-serial-row';
@@ -2117,8 +2151,10 @@
                 serialInput.addEventListener('change', () => updateToolSerial(name, serialInput.value));
                 serialLabel.appendChild(serialInput);
                 serialRow.appendChild(serialLabel);
-                card.appendChild(serialRow);
+                details.appendChild(serialRow);
             }
+
+            card.appendChild(details);
 
             const removeBtn = document.createElement('button');
             removeBtn.type = 'button';
@@ -2129,11 +2165,29 @@
                 const current = loadToolStatuses();
                 delete current[name];
                 saveToolStatuses(current);
+                expandedToolCards.delete(name);
                 renderToolLists();
             });
             card.appendChild(removeBtn);
 
             return card;
+        }
+
+        // Reflects whether every currently-listed name in this section is expanded, and wires
+        // the button to flip all of them the other way — reused by both My Tools and Wishlist
+        // rather than two near-identical copies.
+        function wireSectionToggleAll(btnId, names) {
+            const btn = document.getElementById(btnId);
+            const allExpanded = names.length > 0 && names.every(n => expandedToolCards.has(n));
+            btn.textContent = allExpanded ? 'Collapse All' : 'Expand All';
+            btn.style.display = names.length ? 'inline' : 'none';
+            btn.onclick = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (allExpanded) names.forEach(n => expandedToolCards.delete(n));
+                else names.forEach(n => expandedToolCards.add(n));
+                renderToolLists();
+            };
         }
 
         function renderToolLists() {
@@ -2154,6 +2208,8 @@
             document.getElementById('wishlistEmptyHint').style.display = wishlist.length ? 'none' : 'block';
             document.getElementById('myToolsCount').textContent = owned.length;
             document.getElementById('wishlistCount').textContent = wishlist.length;
+            wireSectionToggleAll('myToolsToggleAllBtn', owned.map(([name]) => name));
+            wireSectionToggleAll('wishlistToggleAllBtn', wishlist.map(([name]) => name));
 
             // Search-result cards for small power tools and floor tools show live Owned/Wishlist
             // state on their own buttons — keep them in sync whenever the underlying status store
