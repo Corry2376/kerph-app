@@ -509,6 +509,27 @@
 
         .summary-value { font-size: 22px; font-weight: 800; color: #1e3a8a; }
         .summary-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; color: #6b7280; margin-top: 4px; font-weight: 700; }
+        .summary-label a { color: #6b7280; text-decoration: underline; text-transform: none; letter-spacing: normal; }
+
+        /* ---------- Technical drawing print export ---------- */
+        #techDrawingPrintArea { display: none; }
+        .tech-drawing-views { display: flex; gap: 16px; margin: 16px 0 20px; }
+        .tech-drawing-view { flex: 1; text-align: center; border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px; }
+        .tech-drawing-view img { width: 100%; height: auto; display: block; }
+        .tech-drawing-view-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: #6b7280; margin-top: 6px; }
+        @media print {
+            @page { size: landscape; margin: 0.4in; }
+            body { background: #fff !important; }
+            body > *:not(#techDrawingPrintArea) { display: none !important; }
+            #techDrawingPrintArea { display: block !important; }
+            .print-only-header .print-title { font-size: 20px; font-weight: 800; color: #0f172a; }
+            .print-only-header .print-meta { font-size: 12px; color: #475569; margin-top: 2px; margin-bottom: 14px; }
+        }
+
+        /* ---------- Grain direction (part modal + badges) ---------- */
+        .grain-radio-group { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
+        .grain-radio-group label { display: flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 600; color: #1e293b; cursor: pointer; }
+        .grain-badge { display: inline-flex; align-items: center; gap: 3px; font-size: 9.5px; font-weight: 700; color: #92400e; background: #fffbeb; border: 1px solid #fde68a; border-radius: 4px; padding: 1px 5px; margin-left: 6px; vertical-align: middle; }
 
         .cutlist-table {
             width: 100%;
@@ -824,6 +845,7 @@
                 <div class="header-compound-row">
                     <select class="select-box" id="savedProjectsSelect"></select>
                     <button type="button" id="loadProjectBtn" class="mini-btn">Load</button>
+                    <button type="button" id="projectHistoryBtn" class="mini-btn" title="View and restore earlier saved versions of this project">History</button>
                     <button type="button" id="newProjectBtn" class="mini-btn" title="Start a new blank project">+ New</button>
                     <button type="button" id="deleteProjectBtn" class="mini-btn danger" title="Delete this project">&#10005;</button>
                 </div>
@@ -937,6 +959,15 @@
 
     <div class="upgrade-nudge" id="upgradeNudge"></div>
 
+    <div id="techDrawingPrintArea">
+        <div class="print-only-header" id="techDrawingHeader"></div>
+        <div class="tech-drawing-views" id="techDrawingImages"></div>
+        <table class="cutlist-table" id="techDrawingTable">
+            <thead><tr><th>Part</th><th>Dimensions</th><th>Material</th><th>Qty</th></tr></thead>
+            <tbody id="techDrawingTableBody"></tbody>
+        </table>
+    </div>
+
     <div class="modal-overlay" id="panelModalOverlay" style="display:none;">
         <div class="modal-box">
             <div class="modal-title" id="panelModalTitle">Add Panel</div>
@@ -982,9 +1013,19 @@
                     <input type="number" class="input-box" id="panelThicknessInput" min="0.1" step="0.0625">
                 </div>
             </div>
-            <div class="header-field" style="width:100%; margin-top:10px;">
-                <label class="header-field-label" for="panelQtyInput">Quantity</label>
-                <input type="number" class="input-box" id="panelQtyInput" min="1" step="1" value="1">
+            <div style="display:flex; gap:8px; margin-top:10px;">
+                <div class="header-field" style="flex:1;">
+                    <label class="header-field-label" for="panelQtyInput">Quantity</label>
+                    <input type="number" class="input-box" id="panelQtyInput" min="1" step="1" value="1">
+                </div>
+                <div class="header-field" style="flex:1.5;">
+                    <label class="header-field-label" for="panelGroupInput" title="Tag panels that belong to the same sub-assembly (e.g. all 4 panels of one drawer) so you can duplicate the whole group at once">Group (optional)</label>
+                    <input type="text" class="input-box" id="panelGroupInput" placeholder="e.g. Drawer 1">
+                </div>
+            </div>
+            <div class="grain-radio-group">
+                <label><input type="radio" name="panelGrain" value="free" checked> Grain can run either way</label>
+                <label><input type="radio" name="panelGrain" value="locked"> Grain locked &mdash; don't rotate when nesting (Width above must stay along the grain)</label>
             </div>
 
             <div class="header-field" style="width:100%; margin-top:10px;">
@@ -1062,6 +1103,8 @@
                     <option value="drawer">Drawer Box</option>
                     <option value="slab-table">Slab Table</option>
                     <option value="frame-panel">Frame &amp; Panel (door)</option>
+                    <option value="shelving">Shelving / Bookcase</option>
+                    <option value="mitered-frame">Mitered Frame</option>
                 </select>
             </div>
             <div class="header-field" style="width:100%; margin-top:10px;">
@@ -1087,6 +1130,30 @@
             <div class="modal-actions">
                 <button type="button" id="confirmModalCancelBtn" class="mini-btn">Cancel</button>
                 <button type="button" id="confirmModalOkBtn" class="mini-btn modal-primary-btn">Continue</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="projectHistoryModalOverlay" style="display:none;">
+        <div class="modal-box" style="width:380px; max-height:80vh; overflow-y:auto;">
+            <div class="modal-title">Version History</div>
+            <p style="font-size:11.5px; color:#6b7280; line-height:1.5; margin:0 0 10px;">A snapshot is kept automatically each time you save over this project, up to the last 10. Restoring loads that snapshot into your current work &mdash; it doesn't delete anything.</p>
+            <div id="projectHistoryList"></div>
+            <div class="empty-hint" id="projectHistoryEmptyHint" style="display:none;">No earlier versions yet &mdash; save over this project again to start building history.</div>
+            <div class="modal-actions">
+                <button type="button" id="projectHistoryCloseBtn" class="mini-btn modal-primary-btn">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="materialPricesModalOverlay" style="display:none;">
+        <div class="modal-box" style="width:380px; max-height:80vh; overflow-y:auto;">
+            <div class="modal-title">Material Prices</div>
+            <p style="font-size:11.5px; color:#6b7280; line-height:1.5; margin:0 0 10px;">Starting-point estimates &mdash; $/sheet (4x8) for sheet goods, $/linear ft for solid wood. Edit to match your actual supplier; saved to this browser only.</p>
+            <div id="materialPricesList"></div>
+            <div class="modal-actions">
+                <button type="button" id="materialPricesResetBtn" class="mini-btn">Reset to Defaults</button>
+                <button type="button" id="materialPricesCloseBtn" class="mini-btn modal-primary-btn">Done</button>
             </div>
         </div>
     </div>
@@ -1154,6 +1221,7 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
                 <button type="button" class="mini-btn" id="dimensionsToggleBtn" title="Show a size label next to every piece">&#128209; Dimensions</button>
                 <button type="button" class="mini-btn" id="explodeToggleBtn">&#128165; Exploded View</button>
                 <button type="button" class="mini-btn" id="preview3DUndoBtn" title="Undo (Ctrl+Z)" disabled>&#8617; Undo</button>
+                <button type="button" class="mini-btn" id="printDrawingsBtn" title="Print or save a PDF with front/side/top views and the parts list">&#128424;&#65039; Print Drawings</button>
                 <button type="button" class="mini-btn" id="open3DCutListBtn" title="Send this project's panels to the Cut List Optimizer">&#9986;&#65039; Cut List Optimizer &#8594;</button>
                 <span class="preview3d-tool-hint" id="preview3dToolHint"></span>
             </div>
@@ -1221,7 +1289,12 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
                     <div class="summary-value" id="summaryLinearLength">0 ft</div>
                     <div class="summary-label">Linear Material</div>
                 </div>
+                <div class="summary-card">
+                    <div class="summary-value" id="summaryEstCost">$0</div>
+                    <div class="summary-label">Est. Cost <a href="#" id="editMaterialPricesLink" style="font-weight:400;">(edit prices)</a></div>
+                </div>
             </div>
+            <div id="estCostCaveat" style="display:none; font-size:11px; color:#6b7280; margin-top:-10px; margin-bottom:14px;">Material cost is a rough estimate (whole sheets/linear feet rounded up, using the prices in your Material Prices editor) &mdash; it doesn't account for nesting waste. Hardware cost is added on top when tracked below.</div>
 
             <table class="cutlist-table">
                 <thead>
@@ -1238,9 +1311,11 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
             <div class="sidebar-title" style="margin-top:0;">Hardware &amp; Consumables</div>
             <div class="empty-hint" id="hardwareListEmptyHint">No hardware tracked yet. Add screws, hinges, glue, edge banding &mdash; anything this project needs beyond the cut panels.</div>
             <div id="hardwareList"></div>
+            <div id="hardwareTotalRow" style="display:none; font-size:12px; font-weight:700; color:#1e293b; text-align:right; margin-bottom:8px;"></div>
             <div class="hardware-add-row">
                 <input type="text" class="input-box" id="hardwareNameInput" placeholder="e.g. 1.25in Pocket Screws">
                 <input type="number" class="input-box" id="hardwareQtyInput" placeholder="Qty" min="1" step="1" value="1">
+                <input type="number" class="input-box" id="hardwareCostInput" placeholder="$ each" min="0" step="0.01" style="max-width:80px;">
                 <button type="button" class="mini-btn" id="addHardwareBtn">+ Add</button>
             </div>
         </div>
@@ -1645,31 +1720,103 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
         // "plywood" category — e.g. a maple-ply carcase with a walnut face frame — still get
         // distinct 3D colors (see MATERIAL_COLORS) instead of looking identical. `group` just
         // drives the Material dropdown's <optgroup> sections, nothing functional.
+        //
+        // priceEach is a starting-point retail estimate ($/4x8 sheet for 'sheet' materials,
+        // $/linear ft for 'linear' ones) — not a live quote. Meant to be overridden per-user
+        // via the Material Prices editor (see MATERIAL_PRICE_OVERRIDES_KEY) since real prices
+        // vary by supplier and region; the cost rollup always prefers an override when one exists.
         const MATERIALS = {
-            'plywood-34': { label: '3/4" Plywood (Generic)', type: 'sheet', thicknessIn: 0.75, group: 'Sheet Goods' },
-            'plywood-12': { label: '1/2" Plywood (Generic)', type: 'sheet', thicknessIn: 0.5, group: 'Sheet Goods' },
-            'plywood-14': { label: '1/4" Plywood (Generic)', type: 'sheet', thicknessIn: 0.25, group: 'Sheet Goods' },
-            'plywood-maple-34': { label: 'Maple Plywood (3/4")', type: 'sheet', thicknessIn: 0.75, group: 'Sheet Goods' },
-            'plywood-birch-34': { label: 'Birch Plywood (3/4")', type: 'sheet', thicknessIn: 0.75, group: 'Sheet Goods' },
-            'plywood-baltic-birch-34': { label: 'Baltic Birch Plywood (3/4")', type: 'sheet', thicknessIn: 0.75, group: 'Sheet Goods' },
-            'plywood-oak-34': { label: 'Red Oak Plywood (3/4")', type: 'sheet', thicknessIn: 0.75, group: 'Sheet Goods' },
-            'plywood-walnut-34': { label: 'Walnut Plywood (3/4")', type: 'sheet', thicknessIn: 0.75, group: 'Sheet Goods' },
-            'mdf-34': { label: '3/4" MDF', type: 'sheet', thicknessIn: 0.75, group: 'Sheet Goods' },
-            'pine-1x': { label: '1x Pine (Nominal)', type: 'linear', thicknessIn: 0.75, group: 'Solid Wood' },
-            'lumber-2x4': { label: '2x4 (Nominal)', type: 'linear', thicknessIn: 1.5, group: 'Solid Wood' },
-            'hardwood': { label: 'Hardwood Board (Generic)', type: 'linear', thicknessIn: 0.75, group: 'Solid Wood' },
-            'hardwood-maple': { label: 'Maple', type: 'linear', thicknessIn: 0.75, group: 'Solid Wood' },
-            'hardwood-walnut': { label: 'Black Walnut', type: 'linear', thicknessIn: 0.75, group: 'Solid Wood' },
-            'hardwood-red-oak': { label: 'Red Oak', type: 'linear', thicknessIn: 0.75, group: 'Solid Wood' },
-            'hardwood-white-oak': { label: 'White Oak', type: 'linear', thicknessIn: 0.75, group: 'Solid Wood' },
-            'hardwood-cherry': { label: 'Cherry', type: 'linear', thicknessIn: 0.75, group: 'Solid Wood' },
-            'hardwood-ash': { label: 'Ash', type: 'linear', thicknessIn: 0.75, group: 'Solid Wood' },
-            'hardwood-hickory': { label: 'Hickory', type: 'linear', thicknessIn: 0.75, group: 'Solid Wood' },
-            'hardwood-poplar': { label: 'Poplar', type: 'linear', thicknessIn: 0.75, group: 'Solid Wood' },
-            'hardwood-cedar': { label: 'Cedar', type: 'linear', thicknessIn: 0.75, group: 'Solid Wood' },
-            'hardwood-mahogany': { label: 'Mahogany', type: 'linear', thicknessIn: 0.75, group: 'Solid Wood' },
-            'custom': { label: 'Custom / Other', type: 'sheet', thicknessIn: 0.75, group: 'Other' }
+            'plywood-34': { label: '3/4" Plywood (Generic)', type: 'sheet', thicknessIn: 0.75, group: 'Sheet Goods', priceEach: 65 },
+            'plywood-12': { label: '1/2" Plywood (Generic)', type: 'sheet', thicknessIn: 0.5, group: 'Sheet Goods', priceEach: 50 },
+            'plywood-14': { label: '1/4" Plywood (Generic)', type: 'sheet', thicknessIn: 0.25, group: 'Sheet Goods', priceEach: 38 },
+            'plywood-maple-34': { label: 'Maple Plywood (3/4")', type: 'sheet', thicknessIn: 0.75, group: 'Sheet Goods', priceEach: 95 },
+            'plywood-birch-34': { label: 'Birch Plywood (3/4")', type: 'sheet', thicknessIn: 0.75, group: 'Sheet Goods', priceEach: 85 },
+            'plywood-baltic-birch-34': { label: 'Baltic Birch Plywood (3/4")', type: 'sheet', thicknessIn: 0.75, group: 'Sheet Goods', priceEach: 110 },
+            'plywood-oak-34': { label: 'Red Oak Plywood (3/4")', type: 'sheet', thicknessIn: 0.75, group: 'Sheet Goods', priceEach: 100 },
+            'plywood-walnut-34': { label: 'Walnut Plywood (3/4")', type: 'sheet', thicknessIn: 0.75, group: 'Sheet Goods', priceEach: 160 },
+            'mdf-34': { label: '3/4" MDF', type: 'sheet', thicknessIn: 0.75, group: 'Sheet Goods', priceEach: 55 },
+            'pine-1x': { label: '1x Pine (Nominal)', type: 'linear', thicknessIn: 0.75, group: 'Solid Wood', priceEach: 3.5 },
+            'lumber-2x4': { label: '2x4 (Nominal)', type: 'linear', thicknessIn: 1.5, group: 'Solid Wood', priceEach: 0.6 },
+            'hardwood': { label: 'Hardwood Board (Generic)', type: 'linear', thicknessIn: 0.75, group: 'Solid Wood', priceEach: 6 },
+            'hardwood-maple': { label: 'Maple', type: 'linear', thicknessIn: 0.75, group: 'Solid Wood', priceEach: 7 },
+            'hardwood-walnut': { label: 'Black Walnut', type: 'linear', thicknessIn: 0.75, group: 'Solid Wood', priceEach: 14 },
+            'hardwood-red-oak': { label: 'Red Oak', type: 'linear', thicknessIn: 0.75, group: 'Solid Wood', priceEach: 7.5 },
+            'hardwood-white-oak': { label: 'White Oak', type: 'linear', thicknessIn: 0.75, group: 'Solid Wood', priceEach: 9 },
+            'hardwood-cherry': { label: 'Cherry', type: 'linear', thicknessIn: 0.75, group: 'Solid Wood', priceEach: 9 },
+            'hardwood-ash': { label: 'Ash', type: 'linear', thicknessIn: 0.75, group: 'Solid Wood', priceEach: 6.5 },
+            'hardwood-hickory': { label: 'Hickory', type: 'linear', thicknessIn: 0.75, group: 'Solid Wood', priceEach: 7 },
+            'hardwood-poplar': { label: 'Poplar', type: 'linear', thicknessIn: 0.75, group: 'Solid Wood', priceEach: 4.5 },
+            'hardwood-cedar': { label: 'Cedar', type: 'linear', thicknessIn: 0.75, group: 'Solid Wood', priceEach: 6 },
+            'hardwood-mahogany': { label: 'Mahogany', type: 'linear', thicknessIn: 0.75, group: 'Solid Wood', priceEach: 12 },
+            'custom': { label: 'Custom / Other', type: 'sheet', thicknessIn: 0.75, group: 'Other', priceEach: 0 }
         };
+
+        // Per-material $ overrides, keyed the same as MATERIALS — local to this browser (like
+        // the other "Local Device Settings" prefs) since real prices are supplier/region-specific,
+        // not something to sync across devices or bake into the shared MATERIALS table above.
+        const MATERIAL_PRICE_OVERRIDES_KEY = 'kerphMaterialPriceOverrides';
+        function getMaterialPriceOverrides() {
+            try { return JSON.parse(localStorage.getItem(MATERIAL_PRICE_OVERRIDES_KEY) || '{}'); }
+            catch { return {}; }
+        }
+        function getMaterialPrice(materialKey) {
+            const overrides = getMaterialPriceOverrides();
+            const mat = MATERIALS[materialKey] || MATERIALS.custom;
+            return (overrides[materialKey] != null) ? overrides[materialKey] : mat.priceEach;
+        }
+
+        function renderMaterialPricesModal() {
+            const container = document.getElementById('materialPricesList');
+            container.innerHTML = '';
+            const groups = {};
+            Object.keys(MATERIALS).forEach(key => {
+                const groupName = MATERIALS[key].group || 'Other';
+                (groups[groupName] = groups[groupName] || []).push(key);
+            });
+            Object.keys(groups).forEach(groupName => {
+                const heading = document.createElement('div');
+                heading.style.cssText = 'font-size:11px; font-weight:700; color:#6b7280; text-transform:uppercase; margin:12px 0 4px;';
+                heading.textContent = groupName;
+                container.appendChild(heading);
+                groups[groupName].forEach(key => {
+                    const mat = MATERIALS[key];
+                    const row = document.createElement('div');
+                    row.style.cssText = 'display:flex; align-items:center; gap:8px; margin-bottom:6px;';
+                    const label = document.createElement('span');
+                    label.style.cssText = 'flex:1; font-size:12.5px; color:#1e293b;';
+                    label.textContent = mat.label + (mat.type === 'sheet' ? ' ($/sheet)' : ' ($/ft)');
+                    const input = document.createElement('input');
+                    input.type = 'number';
+                    input.className = 'input-box';
+                    input.min = '0';
+                    input.step = '0.01';
+                    input.style.width = '80px';
+                    input.value = getMaterialPrice(key);
+                    input.addEventListener('change', () => {
+                        const overrides = getMaterialPriceOverrides();
+                        overrides[key] = Math.max(0, parseFloat(input.value) || 0);
+                        localStorage.setItem(MATERIAL_PRICE_OVERRIDES_KEY, JSON.stringify(overrides));
+                        renderCutListPreview();
+                    });
+                    row.appendChild(label);
+                    row.appendChild(input);
+                    container.appendChild(row);
+                });
+            });
+        }
+        document.getElementById('editMaterialPricesLink').addEventListener('click', (e) => {
+            e.preventDefault();
+            renderMaterialPricesModal();
+            document.getElementById('materialPricesModalOverlay').style.display = 'flex';
+        });
+        document.getElementById('materialPricesCloseBtn').addEventListener('click', () => {
+            document.getElementById('materialPricesModalOverlay').style.display = 'none';
+        });
+        document.getElementById('materialPricesResetBtn').addEventListener('click', () => {
+            localStorage.removeItem(MATERIAL_PRICE_OVERRIDES_KEY);
+            renderMaterialPricesModal();
+            renderCutListPreview();
+        });
 
         function escapeHtml(str) {
             const div = document.createElement('div');
@@ -1772,7 +1919,7 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
             return !hasContent || (await showConfirmModal(message));
         }
 
-        function serializeCurrentProject(name) {
+        function serializeCurrentProject(name, history) {
             return {
                 id: currentProjectId || (Date.now().toString(36) + Math.random().toString(36).slice(2, 6)),
                 name,
@@ -1781,7 +1928,11 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
                 hardware: JSON.parse(JSON.stringify(hardware)),
                 notes: document.getElementById('projectNotesInput').value || '',
                 labels: typeof window.getLabels === 'function' ? JSON.parse(JSON.stringify(window.getLabels())) : [],
-                measurements: typeof window.getMeasurements === 'function' ? JSON.parse(JSON.stringify(window.getMeasurements())) : []
+                measurements: typeof window.getMeasurements === 'function' ? JSON.parse(JSON.stringify(window.getMeasurements())) : [],
+                // Capped ladder of prior full snapshots — see saveCurrentProject, which is the
+                // only place that ever appends to this. Stored inside the same jsonb `data`
+                // blob as everything else above, so no separate table/schema was needed.
+                history: history || []
             };
         }
 
@@ -1843,7 +1994,25 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
                 }
             }
 
-            const snapshot = serializeCurrentProject(name);
+            // Each save-over-an-existing-project pushes that project's PRIOR full snapshot onto
+            // its own history ladder (capped at 10, oldest dropped first) before overwriting —
+            // a brand-new save-as starts with empty history since there's nothing prior yet.
+            let history = [];
+            if (existingIdx !== -1) {
+                const prev = list[existingIdx];
+                history = Array.isArray(prev.history) ? prev.history.slice() : [];
+                history.push({
+                    savedAt: prev.savedAt,
+                    panels: prev.panels || [],
+                    hardware: prev.hardware || [],
+                    notes: prev.notes || '',
+                    labels: prev.labels || [],
+                    measurements: prev.measurements || []
+                });
+                if (history.length > 10) history = history.slice(history.length - 10);
+            }
+
+            const snapshot = serializeCurrentProject(name, history);
             if (existingIdx === -1) {
                 const { data, error } = await kerphInsertSavedProject(snapshot);
                 if (error) { showToast('Could not save that project.'); return; }
@@ -1880,6 +2049,56 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
             showToast('Project deleted.');
         }
 
+        function renderProjectHistoryModal() {
+            const container = document.getElementById('projectHistoryList');
+            const hint = document.getElementById('projectHistoryEmptyHint');
+            container.innerHTML = '';
+            const current = currentProjectId ? getSavedProjects().find(p => p.id === currentProjectId) : null;
+            const history = (current && Array.isArray(current.history)) ? current.history : [];
+            hint.style.display = history.length ? 'none' : 'block';
+
+            history.slice().reverse().forEach((snap, idxFromEnd) => {
+                const realIdx = history.length - 1 - idxFromEnd;
+                const row = document.createElement('div');
+                row.style.cssText = 'display:flex; align-items:center; justify-content:space-between; gap:8px; padding:8px 0; border-bottom:1px solid #f1f5f9;';
+                const info = document.createElement('div');
+                const when = snap.savedAt ? new Date(snap.savedAt).toLocaleString() : 'Unknown time';
+                const panelCount = (snap.panels || []).reduce((sum, p) => sum + (p.qty || 1), 0);
+                info.innerHTML = `<div style="font-size:12.5px; font-weight:700; color:#1e293b;">${escapeHtml(when)}</div><div style="font-size:11px; color:#6b7280;">${panelCount} panel${panelCount === 1 ? '' : 's'}</div>`;
+                const restoreBtn = document.createElement('button');
+                restoreBtn.type = 'button';
+                restoreBtn.className = 'mini-btn';
+                restoreBtn.textContent = 'Restore';
+                restoreBtn.addEventListener('click', () => restoreProjectHistoryEntry(realIdx));
+                row.appendChild(info);
+                row.appendChild(restoreBtn);
+                container.appendChild(row);
+            });
+        }
+
+        async function restoreProjectHistoryEntry(idx) {
+            const current = currentProjectId ? getSavedProjects().find(p => p.id === currentProjectId) : null;
+            if (!current || !Array.isArray(current.history) || !current.history[idx]) return;
+            if (!(await confirmDiscardIfNeeded('Restoring this version will replace your current unsaved work. Continue?'))) return;
+            const snap = current.history[idx];
+            restoreProject({
+                id: current.id, name: current.name,
+                panels: snap.panels, hardware: snap.hardware, notes: snap.notes,
+                labels: snap.labels, measurements: snap.measurements
+            });
+            document.getElementById('projectHistoryModalOverlay').style.display = 'none';
+            showToast('Restored an earlier version — remember to Save if you want to keep it.');
+        }
+
+        document.getElementById('projectHistoryBtn').addEventListener('click', () => {
+            if (!currentProjectId) { showToast('Load a saved project first to see its version history.'); return; }
+            renderProjectHistoryModal();
+            document.getElementById('projectHistoryModalOverlay').style.display = 'flex';
+        });
+        document.getElementById('projectHistoryCloseBtn').addEventListener('click', () => {
+            document.getElementById('projectHistoryModalOverlay').style.display = 'none';
+        });
+
         async function startNewProject() {
             if (!(await confirmDiscardIfNeeded('Starting a new project will clear your current unsaved work. Continue?'))) return;
             panels = [];
@@ -1900,17 +2119,21 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
         function addHardwareItem() {
             const nameInput = document.getElementById('hardwareNameInput');
             const qtyInput = document.getElementById('hardwareQtyInput');
+            const costInput = document.getElementById('hardwareCostInput');
             const name = nameInput.value.trim();
             if (!name) return;
             const qty = Math.max(1, parseInt(qtyInput.value, 10) || 1);
+            const unitCost = Math.max(0, parseFloat(costInput.value) || 0);
             hardware.push({
                 id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
-                name, qty, have: false
+                name, qty, have: false, unitCost
             });
             saveHardware();
             renderHardwareList();
+            renderCutListPreview();
             nameInput.value = '';
             qtyInput.value = '1';
+            costInput.value = '';
             nameInput.focus();
         }
 
@@ -1926,6 +2149,11 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
             hardware = hardware.filter(h => h.id !== id);
             saveHardware();
             renderHardwareList();
+            renderCutListPreview();
+        }
+
+        function getHardwareTotalCost() {
+            return hardware.reduce((sum, h) => sum + (h.unitCost || 0) * h.qty, 0);
         }
 
         function renderHardwareList() {
@@ -1962,9 +2190,23 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
                 item.appendChild(checkbox);
                 item.appendChild(name);
                 item.appendChild(qty);
+                if (h.unitCost) {
+                    const cost = document.createElement('span');
+                    cost.className = 'hardware-item-qty';
+                    cost.style.color = '#6b7280';
+                    cost.textContent = '$' + (h.unitCost * h.qty).toFixed(2);
+                    item.appendChild(cost);
+                }
                 item.appendChild(removeBtn);
                 container.appendChild(item);
             });
+
+            const totalRow = document.getElementById('hardwareTotalRow');
+            if (totalRow) {
+                const total = getHardwareTotalCost();
+                totalRow.style.display = total > 0 ? 'block' : 'none';
+                totalRow.textContent = 'Hardware total: $' + total.toFixed(2);
+            }
         }
 
         function populateMaterialSelect(select) {
@@ -2087,6 +2329,8 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
             document.getElementById('panelMaterialSelect').value = material;
             document.getElementById('panelThicknessInput').value = panel ? panel.thicknessIn : MATERIALS[material].thicknessIn;
             document.getElementById('panelQtyInput').value = panel ? panel.qty : 1;
+            document.getElementById('panelGroupInput').value = (panel && panel.groupName) || '';
+            document.querySelector(`input[name="panelGrain"][value="${panel && panel.grainLocked ? 'locked' : 'free'}"]`).checked = true;
             // Position stays blank for a brand-new panel (auto-placed the first time the 3D
             // tab opens — see rebuild3DPreviewMeshes) unless editing one that already has it.
             document.getElementById('panelXInput').value = (panel && panel.xIn != null) ? panel.xIn : '';
@@ -2115,6 +2359,8 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
             const thicknessIn = parseFloat(document.getElementById('panelThicknessInput').value);
             const material = document.getElementById('panelMaterialSelect').value;
             const qty = Math.max(1, parseInt(document.getElementById('panelQtyInput').value, 10) || 1);
+            const groupName = document.getElementById('panelGroupInput').value.trim() || undefined;
+            const grainLocked = document.querySelector('input[name="panelGrain"]:checked').value === 'locked';
 
             const shapeType = document.getElementById('panelShapeSelect').value;
             const shapeConfig = SHAPE_PARAM_CONFIG[shapeType];
@@ -2145,11 +2391,14 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
             const holes = editingHoles;
             if (editingPanelId) {
                 const existing = panels.find(p => p.id === editingPanelId);
-                if (existing) Object.assign(existing, { name, widthIn, heightIn, thicknessIn, material, qty, xIn, yIn, zIn, rotXDeg, rotYDeg, rotZDeg, holes, shapeType, archRiseIn, cornerRadiusIn });
+                if (existing) {
+                    Object.assign(existing, { name, widthIn, heightIn, thicknessIn, material, qty, xIn, yIn, zIn, rotXDeg, rotYDeg, rotZDeg, holes, shapeType, archRiseIn, cornerRadiusIn, grainLocked });
+                    if (groupName) existing.groupName = groupName; else delete existing.groupName;
+                }
             } else {
                 panels.push({
                     id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
-                    name, widthIn, heightIn, thicknessIn, material, qty, xIn, yIn, zIn, rotXDeg, rotYDeg, rotZDeg, holes, shapeType, archRiseIn, cornerRadiusIn
+                    name, widthIn, heightIn, thicknessIn, material, qty, xIn, yIn, zIn, rotXDeg, rotYDeg, rotZDeg, holes, shapeType, archRiseIn, cornerRadiusIn, groupName, grainLocked
                 });
             }
             savePanels();
@@ -2182,19 +2431,41 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
             renderAll();
         }
 
+        // Deep-clones every panel sharing a groupName under fresh ids, in one shot — the
+        // group equivalent of duplicatePanel, for sub-assemblies (e.g. "Drawer 1") that are
+        // several panels acting as one repeatable unit rather than a single panel with a qty.
+        function duplicateGroup(groupName) {
+            if (typeof window.push3DUndoSnapshot === 'function') window.push3DUndoSnapshot();
+            const members = panels.filter(p => p.groupName === groupName);
+            if (!members.length) return;
+            const suffix = ' (Copy)';
+            const newGroupName = groupName + suffix;
+            members.forEach(original => {
+                const copy = JSON.parse(JSON.stringify(original));
+                copy.id = Date.now().toString(36) + Math.random().toString(36).slice(2, 6) + Math.random().toString(36).slice(2, 4);
+                copy.groupName = newGroupName;
+                if (typeof copy.xIn === 'number') copy.xIn += 4;
+                if (typeof copy.zIn === 'number') copy.zIn += 4;
+                panels.push(copy);
+            });
+            savePanels();
+            renderAll();
+        }
+
         function renderPanelList() {
             const container = document.getElementById('panelList');
             const hint = document.getElementById('panelListEmptyHint');
             container.innerHTML = '';
             hint.style.display = panels.length ? 'none' : 'block';
 
-            panels.forEach(p => {
+            function renderOnePanel(p, parent) {
                 const mat = MATERIALS[p.material] || MATERIALS.custom;
                 const item = document.createElement('div');
                 item.className = 'panel-item';
                 const shapeTag = (p.shapeType && p.shapeType !== 'rectangle') ? ` &middot; ${escapeHtml(SHAPE_LABELS[p.shapeType] || p.shapeType)}` : '';
+                const grainTag = p.grainLocked ? ' <span class="grain-badge" title="Grain locked — will not be rotated when nesting">&#8593; grain</span>' : '';
                 item.innerHTML = `
-                    <div class="panel-item-title">${escapeHtml(p.name)}${p.qty > 1 ? ` &times;${p.qty}` : ''}</div>
+                    <div class="panel-item-title">${escapeHtml(p.name)}${p.qty > 1 ? ` &times;${p.qty}` : ''}${grainTag}</div>
                     <div class="panel-item-dims">${p.widthIn}" x ${p.heightIn}" x ${p.thicknessIn}" &mdash; ${escapeHtml(mat.label)}${shapeTag}</div>
                 `;
                 const actions = document.createElement('div');
@@ -2223,8 +2494,49 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
                 actions.appendChild(copyBtn);
                 actions.appendChild(removeBtn);
                 item.appendChild(actions);
-                container.appendChild(item);
-            });
+                parent.appendChild(item);
+            }
+
+            // Consecutive panels sharing a groupName render as one visual block with a shared
+            // header and a "Copy Group" action that duplicates the whole sub-assembly at once —
+            // panels without a group (or a group that isn't contiguous) just render individually,
+            // same as before this existed.
+            let i = 0;
+            while (i < panels.length) {
+                const p = panels[i];
+                if (p.groupName) {
+                    const groupName = p.groupName;
+                    let j = i;
+                    while (j < panels.length && panels[j].groupName === groupName) j++;
+                    const members = panels.slice(i, j);
+
+                    const groupBlock = document.createElement('div');
+                    groupBlock.className = 'panel-group-block';
+                    groupBlock.style.cssText = 'border:1px solid #e5e7eb; border-radius:8px; padding:6px; margin-bottom:8px; background:#f8fafc;';
+
+                    const groupHeader = document.createElement('div');
+                    groupHeader.style.cssText = 'display:flex; align-items:center; justify-content:space-between; padding:2px 4px 6px;';
+                    const groupTitle = document.createElement('span');
+                    groupTitle.style.cssText = 'font-size:11px; font-weight:700; color:#1e3a8a; text-transform:uppercase; letter-spacing:0.03em;';
+                    groupTitle.textContent = '\u{1F4E6} ' + groupName;
+                    const copyGroupBtn = document.createElement('button');
+                    copyGroupBtn.type = 'button';
+                    copyGroupBtn.className = 'mini-btn';
+                    copyGroupBtn.textContent = 'Copy Group';
+                    copyGroupBtn.title = 'Duplicate every panel in this group at once';
+                    copyGroupBtn.addEventListener('click', () => duplicateGroup(groupName));
+                    groupHeader.appendChild(groupTitle);
+                    groupHeader.appendChild(copyGroupBtn);
+                    groupBlock.appendChild(groupHeader);
+
+                    members.forEach(p => renderOnePanel(p, groupBlock));
+                    container.appendChild(groupBlock);
+                    i = j;
+                } else {
+                    renderOnePanel(p, container);
+                    i++;
+                }
+            }
         }
 
         // Groups panels by identical width/height/thickness/material — the same aggregation
@@ -2248,13 +2560,19 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
             let linearLengthFt = 0;
             let totalPanelCount = 0;
 
+            // Sheet-good area needed per material key, so cost rounds up to whole sheets per
+            // material (mixing a maple-ply sheet's leftover area with a walnut-ply need would
+            // understate cost — each material buys its own sheets).
+            const sheetAreaByMaterial = {};
+            const linearFeetByMaterial = {};
+
             let hasNonRectShape = false;
             panels.forEach(p => {
                 const mat = MATERIALS[p.material] || MATERIALS.custom;
                 // Shape (and its param, when it has one) has to be part of the grouping key too —
                 // a rectangle and an arched-top panel that happen to share a bounding box need
                 // different blanks and can't be merged into one cut-list row.
-                const key = [p.widthIn, p.heightIn, p.thicknessIn, p.material, p.shapeType || 'rectangle', p.archRiseIn, p.cornerRadiusIn].join('|');
+                const key = [p.widthIn, p.heightIn, p.thicknessIn, p.material, p.shapeType || 'rectangle', p.archRiseIn, p.cornerRadiusIn, !!p.grainLocked].join('|');
                 if (!groups[key]) groups[key] = { ...p, qty: 0, names: new Set() };
                 groups[key].qty += p.qty;
                 groups[key].names.add(p.name);
@@ -2262,9 +2580,13 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
                 totalPanelCount += p.qty;
                 if (p.shapeType && p.shapeType !== 'rectangle') hasNonRectShape = true;
                 if (mat.type === 'sheet') {
-                    sheetAreaSqFt += (p.widthIn * p.heightIn / 144) * p.qty;
+                    const area = (p.widthIn * p.heightIn / 144) * p.qty;
+                    sheetAreaSqFt += area;
+                    sheetAreaByMaterial[p.material] = (sheetAreaByMaterial[p.material] || 0) + area;
                 } else {
-                    linearLengthFt += (p.widthIn / 12) * p.qty;
+                    const len = (p.widthIn / 12) * p.qty;
+                    linearLengthFt += len;
+                    linearFeetByMaterial[p.material] = (linearFeetByMaterial[p.material] || 0) + len;
                 }
             });
             document.getElementById('nonRectShapeNote').style.display = hasNonRectShape ? 'block' : 'none';
@@ -2273,14 +2595,32 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
             document.getElementById('summarySheetArea').textContent = sheetAreaSqFt.toFixed(1) + ' sq ft';
             document.getElementById('summaryLinearLength').textContent = linearLengthFt.toFixed(1) + ' ft';
 
+            // Rough estimate, not an optimized nest: whole 4x8 (32 sq ft) sheets rounded up per
+            // material, plus linear feet at their per-foot rate, plus hardware. Real material
+            // waste from nesting is always a bit higher — see estCostCaveat below the summary.
+            const SHEET_SQFT = 32;
+            let materialCost = 0;
+            Object.keys(sheetAreaByMaterial).forEach(matKey => {
+                const sheetsNeeded = Math.ceil(sheetAreaByMaterial[matKey] / SHEET_SQFT);
+                materialCost += sheetsNeeded * getMaterialPrice(matKey);
+            });
+            Object.keys(linearFeetByMaterial).forEach(matKey => {
+                materialCost += Math.ceil(linearFeetByMaterial[matKey]) * getMaterialPrice(matKey);
+            });
+            const hardwareCost = getHardwareTotalCost();
+            const totalCost = materialCost + hardwareCost;
+            document.getElementById('summaryEstCost').textContent = '$' + totalCost.toFixed(0);
+            document.getElementById('estCostCaveat').style.display = totalCost > 0 ? 'block' : 'none';
+
             const tbody = document.getElementById('cutListTableBody');
             tbody.innerHTML = '';
             Object.values(groups).forEach(g => {
                 const mat = MATERIALS[g.material] || MATERIALS.custom;
                 const shapeTag = (g.shapeType && g.shapeType !== 'rectangle') ? ` (${escapeHtml(SHAPE_LABELS[g.shapeType] || g.shapeType)})` : '';
+                const grainTag = g.grainLocked ? ' <span class="grain-badge" title="Grain locked — will not be rotated when nesting">&#8593; grain</span>' : '';
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td>${escapeHtml(Array.from(g.names).join(', '))}</td>
+                    <td>${escapeHtml(Array.from(g.names).join(', '))}${grainTag}</td>
                     <td>${g.widthIn}" x ${g.heightIn}" x ${g.thicknessIn}"${shapeTag}</td>
                     <td>${escapeHtml(mat.label)}</td>
                     <td>${g.qty}</td>
@@ -2352,15 +2692,26 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
                     { key: 'backThickness', label: 'Back Panel Thickness (in)', default: 0.25 }
                 ],
                 checks: [
-                    { key: 'hasFaceFrame', label: 'Include face frame (2 stiles + 2 rails, 3/4" hardwood)', default: false }
+                    { key: 'hasFaceFrame', label: 'Include face frame (2 stiles + 2 rails, 3/4" hardwood)', default: false },
+                    { key: 'rabbetedBack', label: 'Rabbet the back in (instead of fastening it flat to the rear)', default: false }
                 ],
-                note: 'Sides run full height; top/bottom are captured between the sides; the back is a thin panel fastened flat to the rear, sized to the full outer width x height (add a reveal manually if you want it inset in a rabbet). Face frame stock is assumed 3/4" x 1.5" regardless of carcass material.',
+                note: 'Sides run full height; top/bottom are captured between the sides. With "Rabbet the back in" off, the back is a thin panel fastened flat to the rear, sized to the full outer width x height. Switched on, a 3/8"-deep rabbet is assumed cut into the rear inside edge of the sides/top/bottom (not separately modeled as removed material on those parts) and the back is sized to fit that rabbet instead. Face frame stock is assumed 3/4" x 1.5" regardless of carcass material.',
                 generate(p, t) {
                     const parts = [
                         { name: 'Side (Left/Right)', widthIn: p.height, heightIn: p.depth, thicknessIn: t, qty: 2 },
-                        { name: 'Top/Bottom', widthIn: p.width - 2 * t, heightIn: p.depth, thicknessIn: t, qty: 2 },
-                        { name: 'Back Panel', widthIn: p.width, heightIn: p.height, thicknessIn: p.backThickness, qty: 1 }
+                        { name: 'Top/Bottom', widthIn: p.width - 2 * t, heightIn: p.depth, thicknessIn: t, qty: 2 }
                     ];
+                    if (p.rabbetedBack) {
+                        const rabbetDepthIn = 0.375;
+                        parts.push({
+                            name: 'Back Panel (rabbeted)',
+                            widthIn: (p.width - 2 * t) + 2 * rabbetDepthIn,
+                            heightIn: (p.height - 2 * t) + 2 * rabbetDepthIn,
+                            thicknessIn: p.backThickness, qty: 1
+                        });
+                    } else {
+                        parts.push({ name: 'Back Panel', widthIn: p.width, heightIn: p.height, thicknessIn: p.backThickness, qty: 1 });
+                    }
                     if (p.hasFaceFrame) {
                         parts.push({ name: 'Face Frame Stile', widthIn: p.height, heightIn: 1.5, thicknessIn: 0.75, qty: 2 });
                         parts.push({ name: 'Face Frame Rail', widthIn: p.width - 2 * 1.5, heightIn: 1.5, thicknessIn: 0.75, qty: 2 });
@@ -2439,6 +2790,65 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
                         { name: 'Rail', widthIn: railLength, heightIn: p.stileWidth, thicknessIn: t, qty: 2 },
                         { name: 'Center Panel', widthIn: panelWidth, heightIn: panelHeight, thicknessIn: p.panelThickness, qty: 1 }
                     ];
+                }
+            },
+            shelving: {
+                label: 'Shelving / Bookcase',
+                fields: [
+                    { key: 'width', label: 'Outer Width (in)', default: 30 },
+                    { key: 'height', label: 'Outer Height (in)', default: 72 },
+                    { key: 'depth', label: 'Outer Depth (in)', default: 12 },
+                    { key: 'shelfCount', label: 'Interior Shelves (not counting top/bottom)', default: 3 },
+                    { key: 'dadoDepth', label: 'Shelf Dado Depth (in)', default: 0.25 }
+                ],
+                checks: [
+                    { key: 'hasBack', label: 'Include back panel (1/4", fastened flat to the rear)', default: true }
+                ],
+                note: 'Sides run full height; top/bottom are captured between the sides, same as the Cabinet template. Interior shelves sit in stopped dados cut into the sides\' inner faces, so each shelf\'s length is the clear interior width PLUS twice the dado depth (the amount it plunges into each side) &mdash; cut the dados before assembly. Shelves are evenly spaced for reference only; move them once placed if you want uneven spacing.',
+                generate(p, t) {
+                    const shelfCount = Math.max(0, Math.round(p.shelfCount));
+                    const interiorWidth = p.width - 2 * t;
+                    const parts = [
+                        { name: 'Side (Left/Right)', widthIn: p.height, heightIn: p.depth, thicknessIn: t, qty: 2 },
+                        { name: 'Top/Bottom', widthIn: interiorWidth, heightIn: p.depth, thicknessIn: t, qty: 2 }
+                    ];
+                    if (shelfCount > 0) {
+                        parts.push({ name: 'Shelf (dado-fit)', widthIn: interiorWidth + 2 * p.dadoDepth, heightIn: p.depth, thicknessIn: t, qty: shelfCount });
+                    }
+                    if (p.hasBack) {
+                        parts.push({ name: 'Back Panel', widthIn: p.width, heightIn: p.height, thicknessIn: 0.25, qty: 1 });
+                    }
+                    return parts;
+                }
+            },
+            'mitered-frame': {
+                label: 'Mitered Frame',
+                fields: [
+                    { key: 'openingWidth', label: 'Opening Width (in)', default: 8 },
+                    { key: 'openingHeight', label: 'Opening Height (in)', default: 10 },
+                    { key: 'frameWidth', label: 'Frame Width (visible face, in)', default: 2 },
+                    { key: 'rabbetDepth', label: 'Backing Rabbet Depth (in)', default: 0.375 }
+                ],
+                checks: [
+                    { key: 'hasBacking', label: 'Include backing panel (1/8", sits in the rabbet)', default: true }
+                ],
+                note: 'Each piece\'s Width above is its OUTER (long-point-to-long-point) length before mitering &mdash; cut all 4 pieces to length with a 45&deg; miter at both ends; the visible opening comes out to your Opening Width/Height once assembled. A rabbet cut into the back inside edge (not separately modeled as removed material) holds glass/art/backing recessed from the front.',
+                generate(p, t) {
+                    const outerW = p.openingWidth + 2 * p.frameWidth;
+                    const outerH = p.openingHeight + 2 * p.frameWidth;
+                    const parts = [
+                        { name: 'Top/Bottom Rail (mitered)', widthIn: outerW, heightIn: p.frameWidth, thicknessIn: t, qty: 2 },
+                        { name: 'Side Stile (mitered)', widthIn: outerH, heightIn: p.frameWidth, thicknessIn: t, qty: 2 }
+                    ];
+                    if (p.hasBacking) {
+                        parts.push({
+                            name: 'Backing Panel',
+                            widthIn: p.openingWidth + 2 * p.rabbetDepth,
+                            heightIn: p.openingHeight + 2 * p.rabbetDepth,
+                            thicknessIn: 0.125, qty: 1
+                        });
+                    }
+                    return parts;
                 }
             }
         };
@@ -2555,6 +2965,36 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
         }
         document.getElementById('openFullCutListBtn').addEventListener('click', sendToCutListOptimizer);
         document.getElementById('open3DCutListBtn').addEventListener('click', sendToCutListOptimizer);
+
+        // No PDF library — fills in a print-only header/images/table and calls window.print(),
+        // same approach as workshop-planner.html's layout export. The three images come from
+        // captureTechnicalDrawingImages() in the 3D module (see there for how they're framed);
+        // this only exists as a toolbar button on the 3D Preview tab so the scene is guaranteed
+        // to already be initialized and correctly sized when it's clicked.
+        function printTechnicalDrawings() {
+            if (!panels.length) { showToast('Add some panels first.'); return; }
+            const images = (typeof window.captureTechnicalDrawingImages === 'function') ? window.captureTechnicalDrawingImages() : null;
+            if (!images) { showToast('Could not capture the 3D view — try again in a moment.'); return; }
+
+            const projectName = document.getElementById('projectNameInput').value.trim() || 'Untitled Project';
+            const dateStr = new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+
+            document.getElementById('techDrawingHeader').innerHTML = `
+                <div class="print-title">${escapeHtml(projectName)}</div>
+                <div class="print-meta">Kerph Project Designer &mdash; printed ${dateStr}</div>
+            `;
+            document.getElementById('techDrawingImages').innerHTML = `
+                <div class="tech-drawing-view"><img src="${images.front}" alt="Front view"><div class="tech-drawing-view-label">Front</div></div>
+                <div class="tech-drawing-view"><img src="${images.side}" alt="Side view"><div class="tech-drawing-view-label">Side</div></div>
+                <div class="tech-drawing-view"><img src="${images.top}" alt="Top view"><div class="tech-drawing-view-label">Top</div></div>
+            `;
+            // Cut list rows are kept up to date by renderCutListPreview() regardless of which
+            // tab is active, so this table body is always current even when printing from 3D.
+            document.getElementById('techDrawingTableBody').innerHTML = document.getElementById('cutListTableBody').innerHTML;
+
+            window.print();
+        }
+        document.getElementById('printDrawingsBtn').addEventListener('click', printTechnicalDrawings);
 
         /* ---------- CUT LIST / 3D PREVIEW TAB SWITCH ---------- */
         let activeTab = 'cutlist';
@@ -3074,6 +3514,24 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
         // this file always calls intersectObjects(..., false) (non-recursive), these children are
         // also automatically invisible to click-selection, so they can't interfere with picking
         // the panel itself.
+        // Three short parallel lines across the front face, along local X (the panel's own
+        // "width" axis) — a lightweight visual echo of the grainLocked flag set in the panel
+        // modal, not a real texture/material change. Added as a child of mesh (like hole
+        // markers) so it's freed automatically when clearPanelMeshes removes the parent.
+        function addGrainIndicator(mesh, p) {
+            if (!p.grainLocked) return;
+            const halfW = p.widthIn / 2 - Math.min(1.5, p.widthIn * 0.1);
+            const z = p.thicknessIn / 2 + 0.05;
+            const rows = [-p.heightIn * 0.22, 0, p.heightIn * 0.22];
+            const positions = [];
+            rows.forEach(y => positions.push(-halfW, y, z, halfW, y, z));
+            const geo = new THREE.BufferGeometry();
+            geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+            const mat = new THREE.LineBasicMaterial({ color: 0x92400e, transparent: true, opacity: 0.55 });
+            const lines = new THREE.LineSegments(geo, mat);
+            mesh.add(lines);
+        }
+
         function addHoleMeshes(mesh, holes, thicknessIn) {
             if (!holes || !holes.length) return;
             const holeMat = new THREE.MeshBasicMaterial({ color: 0x1f2430 });
@@ -3189,6 +3647,48 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
             return geo;
         }
 
+        // Three clean orthographic snapshots (front/side/top) of everything currently in the
+        // scene, framed to fit with a little padding, matching the live canvas's own aspect
+        // ratio so nothing looks stretched. Doesn't touch renderer size/camera/controls — just
+        // swaps in a throwaway OrthographicCamera for one synchronous render() + toDataURL()
+        // per view; the running animate() loop resumes painting from the real `camera` on its
+        // very next frame regardless, so there's nothing to restore afterward.
+        window.captureTechnicalDrawingImages = function captureTechnicalDrawingImages() {
+            if (!sceneReady || !renderer || !panelMeshes.length) return null;
+            const box = new THREE.Box3();
+            panelMeshes.forEach(({ mesh }) => box.expandByObject(mesh));
+            if (box.isEmpty()) return null;
+            const size = box.getSize(new THREE.Vector3());
+            const center = box.getCenter(new THREE.Vector3());
+            const maxDim = Math.max(size.x, size.y, size.z, 1);
+            const canvasAspect = renderer.domElement.width / Math.max(renderer.domElement.height, 1);
+
+            function fitFrustum(contentW, contentH) {
+                const w = contentW * 1.3, h = contentH * 1.3; // 30% padding so pieces don't touch the frame edge
+                let halfW, halfH;
+                if (w / Math.max(h, 0.01) > canvasAspect) { halfW = w / 2; halfH = halfW / canvasAspect; }
+                else { halfH = h / 2; halfW = halfH * canvasAspect; }
+                return { halfW, halfH };
+            }
+
+            function captureOrtho(eyeDir, up, contentW, contentH) {
+                const { halfW, halfH } = fitFrustum(contentW, contentH);
+                const cam = new THREE.OrthographicCamera(-halfW, halfW, halfH, -halfH, 0.1, maxDim * 20);
+                cam.position.copy(center).addScaledVector(eyeDir, maxDim * 8);
+                cam.up.copy(up);
+                cam.lookAt(center);
+                cam.updateProjectionMatrix();
+                renderer.render(scene, cam);
+                return renderer.domElement.toDataURL('image/png');
+            }
+
+            return {
+                front: captureOrtho(new THREE.Vector3(0, 0, 1), new THREE.Vector3(0, 1, 0), size.x, size.y),
+                side: captureOrtho(new THREE.Vector3(1, 0, 0), new THREE.Vector3(0, 1, 0), size.z, size.y),
+                top: captureOrtho(new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, 0, -1), size.x, size.z)
+            };
+        };
+
         window.rebuild3DPreviewMeshes = function rebuild3DPreviewMeshes() {
             if (!sceneReady) return;
             // Fresh meshes have no assembledPosition to fall back to, so a rebuild while
@@ -3226,6 +3726,7 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
                 mesh.userData.type = 'panel';
                 scene.add(mesh);
                 addHoleMeshes(mesh, p.holes, p.thicknessIn);
+                addGrainIndicator(mesh, p);
 
                 if (p.qty > 1) {
                     const badgeOffsetY = p.heightIn / 2 + 4;

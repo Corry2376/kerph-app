@@ -1368,30 +1368,33 @@
         // these material keys, and an unrecognized key just falls back to MATERIALS.custom
         // (see the `|| MATERIALS.custom` lookups below) rather than breaking, but that loses the
         // species-specific label/thickness, so the two lists should match.
+        // priceEach ($/4x8 sheet or $/linear ft) kept in sync with project-designer.html's copy —
+        // see that file's MATERIALS comment for the override mechanism. Not used for nesting here,
+        // only present so a project handed off from Project Designer keeps consistent material data.
         const MATERIALS = {
-            'plywood-34': { label: '3/4" Plywood (Generic)', type: 'sheet', thicknessIn: 0.75, group: 'Sheet Goods' },
-            'plywood-12': { label: '1/2" Plywood (Generic)', type: 'sheet', thicknessIn: 0.5, group: 'Sheet Goods' },
-            'plywood-14': { label: '1/4" Plywood (Generic)', type: 'sheet', thicknessIn: 0.25, group: 'Sheet Goods' },
-            'plywood-maple-34': { label: 'Maple Plywood (3/4")', type: 'sheet', thicknessIn: 0.75, group: 'Sheet Goods' },
-            'plywood-birch-34': { label: 'Birch Plywood (3/4")', type: 'sheet', thicknessIn: 0.75, group: 'Sheet Goods' },
-            'plywood-baltic-birch-34': { label: 'Baltic Birch Plywood (3/4")', type: 'sheet', thicknessIn: 0.75, group: 'Sheet Goods' },
-            'plywood-oak-34': { label: 'Red Oak Plywood (3/4")', type: 'sheet', thicknessIn: 0.75, group: 'Sheet Goods' },
-            'plywood-walnut-34': { label: 'Walnut Plywood (3/4")', type: 'sheet', thicknessIn: 0.75, group: 'Sheet Goods' },
-            'mdf-34': { label: '3/4" MDF', type: 'sheet', thicknessIn: 0.75, group: 'Sheet Goods' },
-            'pine-1x': { label: '1x Pine (Nominal)', type: 'linear', thicknessIn: 0.75, group: 'Solid Wood' },
-            'lumber-2x4': { label: '2x4 (Nominal)', type: 'linear', thicknessIn: 1.5, group: 'Solid Wood' },
-            'hardwood': { label: 'Hardwood Board (Generic)', type: 'linear', thicknessIn: 0.75, group: 'Solid Wood' },
-            'hardwood-maple': { label: 'Maple', type: 'linear', thicknessIn: 0.75, group: 'Solid Wood' },
-            'hardwood-walnut': { label: 'Black Walnut', type: 'linear', thicknessIn: 0.75, group: 'Solid Wood' },
-            'hardwood-red-oak': { label: 'Red Oak', type: 'linear', thicknessIn: 0.75, group: 'Solid Wood' },
-            'hardwood-white-oak': { label: 'White Oak', type: 'linear', thicknessIn: 0.75, group: 'Solid Wood' },
-            'hardwood-cherry': { label: 'Cherry', type: 'linear', thicknessIn: 0.75, group: 'Solid Wood' },
-            'hardwood-ash': { label: 'Ash', type: 'linear', thicknessIn: 0.75, group: 'Solid Wood' },
-            'hardwood-hickory': { label: 'Hickory', type: 'linear', thicknessIn: 0.75, group: 'Solid Wood' },
-            'hardwood-poplar': { label: 'Poplar', type: 'linear', thicknessIn: 0.75, group: 'Solid Wood' },
-            'hardwood-cedar': { label: 'Cedar', type: 'linear', thicknessIn: 0.75, group: 'Solid Wood' },
-            'hardwood-mahogany': { label: 'Mahogany', type: 'linear', thicknessIn: 0.75, group: 'Solid Wood' },
-            'custom': { label: 'Custom / Other', type: 'sheet', thicknessIn: 0.75, group: 'Other' }
+            'plywood-34': { label: '3/4" Plywood (Generic)', type: 'sheet', thicknessIn: 0.75, group: 'Sheet Goods', priceEach: 65 },
+            'plywood-12': { label: '1/2" Plywood (Generic)', type: 'sheet', thicknessIn: 0.5, group: 'Sheet Goods', priceEach: 50 },
+            'plywood-14': { label: '1/4" Plywood (Generic)', type: 'sheet', thicknessIn: 0.25, group: 'Sheet Goods', priceEach: 38 },
+            'plywood-maple-34': { label: 'Maple Plywood (3/4")', type: 'sheet', thicknessIn: 0.75, group: 'Sheet Goods', priceEach: 95 },
+            'plywood-birch-34': { label: 'Birch Plywood (3/4")', type: 'sheet', thicknessIn: 0.75, group: 'Sheet Goods', priceEach: 85 },
+            'plywood-baltic-birch-34': { label: 'Baltic Birch Plywood (3/4")', type: 'sheet', thicknessIn: 0.75, group: 'Sheet Goods', priceEach: 110 },
+            'plywood-oak-34': { label: 'Red Oak Plywood (3/4")', type: 'sheet', thicknessIn: 0.75, group: 'Sheet Goods', priceEach: 100 },
+            'plywood-walnut-34': { label: 'Walnut Plywood (3/4")', type: 'sheet', thicknessIn: 0.75, group: 'Sheet Goods', priceEach: 160 },
+            'mdf-34': { label: '3/4" MDF', type: 'sheet', thicknessIn: 0.75, group: 'Sheet Goods', priceEach: 55 },
+            'pine-1x': { label: '1x Pine (Nominal)', type: 'linear', thicknessIn: 0.75, group: 'Solid Wood', priceEach: 3.5 },
+            'lumber-2x4': { label: '2x4 (Nominal)', type: 'linear', thicknessIn: 1.5, group: 'Solid Wood', priceEach: 0.6 },
+            'hardwood': { label: 'Hardwood Board (Generic)', type: 'linear', thicknessIn: 0.75, group: 'Solid Wood', priceEach: 6 },
+            'hardwood-maple': { label: 'Maple', type: 'linear', thicknessIn: 0.75, group: 'Solid Wood', priceEach: 7 },
+            'hardwood-walnut': { label: 'Black Walnut', type: 'linear', thicknessIn: 0.75, group: 'Solid Wood', priceEach: 14 },
+            'hardwood-red-oak': { label: 'Red Oak', type: 'linear', thicknessIn: 0.75, group: 'Solid Wood', priceEach: 7.5 },
+            'hardwood-white-oak': { label: 'White Oak', type: 'linear', thicknessIn: 0.75, group: 'Solid Wood', priceEach: 9 },
+            'hardwood-cherry': { label: 'Cherry', type: 'linear', thicknessIn: 0.75, group: 'Solid Wood', priceEach: 9 },
+            'hardwood-ash': { label: 'Ash', type: 'linear', thicknessIn: 0.75, group: 'Solid Wood', priceEach: 6.5 },
+            'hardwood-hickory': { label: 'Hickory', type: 'linear', thicknessIn: 0.75, group: 'Solid Wood', priceEach: 7 },
+            'hardwood-poplar': { label: 'Poplar', type: 'linear', thicknessIn: 0.75, group: 'Solid Wood', priceEach: 4.5 },
+            'hardwood-cedar': { label: 'Cedar', type: 'linear', thicknessIn: 0.75, group: 'Solid Wood', priceEach: 6 },
+            'hardwood-mahogany': { label: 'Mahogany', type: 'linear', thicknessIn: 0.75, group: 'Solid Wood', priceEach: 12 },
+            'custom': { label: 'Custom / Other', type: 'sheet', thicknessIn: 0.75, group: 'Other', priceEach: 0 }
         };
 
         function escapeHtml(str) {
