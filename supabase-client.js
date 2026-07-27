@@ -273,15 +273,41 @@
     const kerphDeleteSavedLayout = savedLayoutsDomain.del;
 
     function rowToSavedProject(row) {
-        return { ...row.data, id: row.id, name: row.name, savedAt: row.updated_at };
+        return { ...row.data, id: row.id, name: row.name, savedAt: row.updated_at, shareToken: row.share_token || null };
     }
     const savedProjectsDomain = makeNamedSaveDomain('saved_projects', rowToSavedProject, (project) => ({
-        name: project.name, data: project
+        name: project.name, data: project, share_token: project.shareToken || null
     }));
     const kerphLoadSavedProjects = savedProjectsDomain.load;
     const kerphInsertSavedProject = savedProjectsDomain.insert;
     const kerphUpdateSavedProject = savedProjectsDomain.update;
     const kerphDeleteSavedProject = savedProjectsDomain.del;
+
+    // Client-facing read-only 3D view (project-view.html) has no sign-in — same reasoning and
+    // same security-definer-RPC pattern as get_quote_by_share_token below: the function bypasses
+    // RLS but only ever returns the single row matching an exact, unguessable token.
+    async function kerphGetProjectByShareToken(token) {
+        const { data, error } = await kerphSupabase.rpc('get_project_by_share_token', { p_token: token });
+        if (error) return { data: null, error };
+        const row = Array.isArray(data) ? data[0] : data;
+        return { data: row ? { ...row.data, id: row.id, name: row.name } : null, error: null };
+    }
+
+    // Thumbnail is already a rendered canvas capture (see captureTechnicalDrawingImages-style
+    // helpers in project-designer.html), not a user-picked File, so this skips the
+    // FileReader/Image downscale round-trip kerphDownscaleImageToBlob does and just uploads the
+    // blob directly.
+    async function kerphUploadProjectThumbnail(blob) {
+        if (!state.user) return { data: null, error: { message: 'Not signed in.' } };
+        const path = `${state.user.id}/${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}.jpg`;
+        const { error } = await kerphSupabase.storage.from('project-thumbnails').upload(path, blob, { contentType: 'image/jpeg' });
+        if (error) return { data: null, error };
+        return { data: { path }, error: null };
+    }
+    function kerphProjectThumbnailUrl(path) {
+        if (!path) return null;
+        return kerphSupabase.storage.from('project-thumbnails').getPublicUrl(path).data.publicUrl;
+    }
 
     function rowToQuote(row) {
         return { ...row.data, id: row.id, name: row.name, savedAt: row.updated_at };
@@ -833,6 +859,9 @@
     window.kerphInsertSavedProject = kerphInsertSavedProject;
     window.kerphUpdateSavedProject = kerphUpdateSavedProject;
     window.kerphDeleteSavedProject = kerphDeleteSavedProject;
+    window.kerphGetProjectByShareToken = kerphGetProjectByShareToken;
+    window.kerphUploadProjectThumbnail = kerphUploadProjectThumbnail;
+    window.kerphProjectThumbnailUrl = kerphProjectThumbnailUrl;
 
     window.kerphLoadQuotes = kerphLoadQuotes;
     window.kerphInsertQuote = kerphInsertQuote;

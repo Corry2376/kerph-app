@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kerph - Project</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            background-color: #eef1f6;
+            color: #0f172a;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .pv-wrap { max-width: 820px; margin: 0 auto; }
+
+        .pv-brand { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 28px; }
+        .pv-brand img { height: 44px; }
+
+        .pv-card {
+            background-color: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05), 0 4px 10px -4px rgba(15, 23, 42, 0.12);
+        }
+
+        .pv-title { font-size: 22px; font-weight: 800; color: #0f172a; }
+        .pv-meta { font-size: 13px; color: #6b7280; margin-top: 6px; }
+
+        .pv-viewer-toolbar { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+        .pv-btn {
+            padding: 7px 12px;
+            border-radius: 6px;
+            font-size: 12.5px;
+            font-weight: 700;
+            cursor: pointer;
+            border: 1px solid #cbd5e1;
+            background-color: #ffffff;
+            color: #1e293b;
+        }
+        .pv-btn:hover { background-color: #f8fafc; }
+        .pv-btn.active { background-color: #1e3a8a; color: #ffffff; border-color: #1e3a8a; }
+
+        #pvCanvasWrap {
+            width: 100%;
+            height: 420px;
+            background: #eef1f6;
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+        }
+        #pvCanvasWrap canvas { display: block; width: 100%; height: 100%; }
+        .pv-hint { font-size: 11px; color: #6b7280; margin-top: 8px; text-align: center; }
+
+        .pv-table { width: 100%; border-collapse: collapse; margin-top: 4px; }
+        .pv-table th, .pv-table td { text-align: left; padding: 8px 6px; border-bottom: 1px solid #e5e7eb; font-size: 12.5px; }
+        .pv-table th { color: #6b7280; text-transform: uppercase; font-size: 10.5px; letter-spacing: 0.04em; }
+
+        .pv-footer { text-align: center; font-size: 12.5px; color: #6b7280; margin-top: 8px; }
+        .pv-footer a { color: #1e3a8a; font-weight: 700; text-decoration: none; }
+        .pv-footer a:hover { text-decoration: underline; }
+
+        .pv-loading, .pv-error { text-align: center; padding: 60px 20px; color: #6b7280; font-size: 14px; }
+
+        .pv-ar-modal-overlay {
+            display: none;
+            position: fixed; inset: 0; background: rgba(15, 23, 42, 0.5);
+            align-items: center; justify-content: center; z-index: 100;
+        }
+        .pv-ar-modal-box { background: #fff; border-radius: 12px; padding: 20px; width: 420px; max-width: 92vw; }
+        .pv-ar-modal-box model-viewer { width: 100%; height: 320px; }
+    </style>
+</head>
+<body>
+
+    <div class="pv-wrap">
+        <div class="pv-brand">
+            <img src="logo.png" alt="Kerph">
+        </div>
+
+        <div id="pvLoading" class="pv-loading">Loading project&hellip;</div>
+        <div id="pvError" class="pv-error" style="display:none;">This link isn't valid, or the project it points to has been removed.</div>
+
+        <div id="pvContent" style="display:none;">
+            <div class="pv-card">
+                <div class="pv-title" id="pvTitle"></div>
+                <div class="pv-meta" id="pvMeta"></div>
+            </div>
+
+            <div class="pv-card">
+                <div class="pv-viewer-toolbar">
+                    <button type="button" class="pv-btn" id="pvAutoRotateBtn">&#128260; Auto-Rotate</button>
+                    <button type="button" class="pv-btn" id="pvArBtn">&#128241; View in Your Space</button>
+                </div>
+                <div id="pvCanvasWrap"></div>
+                <div class="pv-hint">Drag to rotate &middot; scroll or pinch to zoom</div>
+            </div>
+
+            <div class="pv-card">
+                <table class="pv-table">
+                    <thead><tr><th>Part</th><th>Dimensions</th><th>Material</th><th>Qty</th></tr></thead>
+                    <tbody id="pvTableBody"></tbody>
+                </table>
+            </div>
+
+            <div class="pv-footer">Built with <a href="index.html">Kerph</a> &mdash; plan and design your own shop projects free.</div>
+        </div>
+    </div>
+
+    <div class="pv-ar-modal-overlay" id="pvArModalOverlay">
+        <div class="pv-ar-modal-box">
+            <div style="font-weight:800; font-size:15px; margin-bottom:6px;">View in Your Space</div>
+            <p style="font-size:11.5px; color:#6b7280; line-height:1.5; margin-bottom:10px;">On an iPhone or Android phone, tap the AR icon in the viewer below to place this piece at true size with your camera. Desktop browsers only show the rotating 3D preview.</p>
+            <div id="pvArViewerWrap"></div>
+            <button type="button" class="pv-btn" id="pvArCloseBtn" style="width:100%; margin-top:10px;">Close</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.7/dist/umd/supabase.js"></script>
+    <script src="supabase-client.js"></script>
+    <script type="module" src="https://unpkg.com/@google/model-viewer@3.5.0/dist/model-viewer.min.js"></script>
+
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+            "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+        }
+    }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+        import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
+
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str == null ? '' : String(str);
+            return div.innerHTML;
+        }
+
+        // Minimal, read-only subset of project-designer.html's own MATERIALS/rendering code —
+        // duplicated rather than shared (this app has no build step to import a common module
+        // from, same reasoning as quote-view.html's duplicated computeQuoteTotals). Keep this
+        // in sync with project-designer.html's copies if either changes materially.
+        const MATERIAL_LABELS = {
+            'plywood-34': '3/4" Plywood (Generic)', 'plywood-12': '1/2" Plywood (Generic)', 'plywood-14': '1/4" Plywood (Generic)',
+            'plywood-maple-34': 'Maple Plywood (3/4")', 'plywood-birch-34': 'Birch Plywood (3/4")', 'plywood-baltic-birch-34': 'Baltic Birch Plywood (3/4")',
+            'plywood-oak-34': 'Red Oak Plywood (3/4")', 'plywood-walnut-34': 'Walnut Plywood (3/4")', 'mdf-34': '3/4" MDF',
+            'pine-1x': '1x Pine (Nominal)', 'lumber-2x4': '2x4 (Nominal)', 'hardwood': 'Hardwood Board (Generic)',
+            'hardwood-maple': 'Maple', 'hardwood-walnut': 'Black Walnut', 'hardwood-red-oak': 'Red Oak', 'hardwood-white-oak': 'White Oak',
+            'hardwood-cherry': 'Cherry', 'hardwood-ash': 'Ash', 'hardwood-hickory': 'Hickory', 'hardwood-poplar': 'Poplar',
+            'hardwood-cedar': 'Cedar', 'hardwood-mahogany': 'Mahogany', 'custom': 'Custom / Other'
+        };
+        const MATERIAL_COLORS = {
+            'plywood-34': 0xd8bd8a, 'plywood-12': 0xdfc79a, 'plywood-14': 0xe6d1ab, 'plywood-maple-34': 0xe8d9b0,
+            'plywood-birch-34': 0xe3cda0, 'plywood-baltic-birch-34': 0xefe0b8, 'plywood-oak-34': 0xc9976a, 'plywood-walnut-34': 0x5c4030,
+            'mdf-34': 0xc7bfae, 'pine-1x': 0xe8c48a, 'lumber-2x4': 0xdac39c, 'hardwood': 0x9c6b3f, 'hardwood-maple': 0xe6d2a8,
+            'hardwood-walnut': 0x4a2f22, 'hardwood-red-oak': 0xb97a4e, 'hardwood-white-oak': 0xc2a878, 'hardwood-cherry': 0x8b4a35,
+            'hardwood-ash': 0xdcc9a3, 'hardwood-hickory': 0xd4a25a, 'hardwood-poplar': 0xa8a172, 'hardwood-cedar': 0xb5603a,
+            'hardwood-mahogany': 0x6b3226, 'custom': 0xb8bcc4
+        };
+        const WOOD_GRAIN_MATERIALS = new Set(Object.keys(MATERIAL_COLORS).filter(k => k !== 'mdf-34' && k !== 'custom'));
+        const woodTextureCache = {};
+        function getWoodGrainTexture(materialKey) {
+            if (woodTextureCache[materialKey]) return woodTextureCache[materialKey];
+            const baseColor = MATERIAL_COLORS[materialKey] != null ? MATERIAL_COLORS[materialKey] : MATERIAL_COLORS.custom;
+            const r = (baseColor >> 16) & 255, g = (baseColor >> 8) & 255, b = baseColor & 255;
+            const size = 256;
+            const canvas = document.createElement('canvas');
+            canvas.width = size; canvas.height = size;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = `rgb(${r},${g},${b})`;
+            ctx.fillRect(0, 0, size, size);
+            let seed = 0;
+            for (let i = 0; i < materialKey.length; i++) seed = (seed * 31 + materialKey.charCodeAt(i)) >>> 0;
+            function rand() { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; }
+            for (let i = 0; i < 40; i++) {
+                const y0 = rand() * size, amp = 4 + rand() * 10, freq = 0.01 + rand() * 0.02, phase = rand() * Math.PI * 2;
+                const darken = 0.55 + rand() * 0.35;
+                ctx.strokeStyle = `rgba(${Math.round(r * darken)},${Math.round(g * darken)},${Math.round(b * darken)},${(0.08 + rand() * 0.18).toFixed(3)})`;
+                ctx.lineWidth = 0.6 + rand() * 1.8;
+                ctx.beginPath();
+                for (let x = 0; x <= size; x += 4) {
+                    const y = y0 + Math.sin(x * freq + phase) * amp;
+                    if (x === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+                }
+                ctx.stroke();
+            }
+            const imgData = ctx.getImageData(0, 0, size, size);
+            const px = imgData.data;
+            for (let i = 0; i < px.length; i += 4) {
+                const n = (rand() - 0.5) * 14;
+                px[i] = Math.max(0, Math.min(255, px[i] + n));
+                px[i + 1] = Math.max(0, Math.min(255, px[i + 1] + n));
+                px[i + 2] = Math.max(0, Math.min(255, px[i + 2] + n));
+            }
+            ctx.putImageData(imgData, 0, 0);
+            const texture = new THREE.CanvasTexture(canvas);
+            texture.wrapS = THREE.RepeatWrapping;
+            texture.wrapT = THREE.RepeatWrapping;
+            texture.colorSpace = THREE.SRGBColorSpace;
+            woodTextureCache[materialKey] = texture;
+            return texture;
+        }
+        function makeWoodTextureForPanel(materialKey, widthIn, heightIn) {
+            const tex = getWoodGrainTexture(materialKey).clone();
+            tex.needsUpdate = true;
+            tex.repeat.set(Math.max(1, widthIn / 6), Math.max(1, heightIn / 6));
+            return tex;
+        }
+
+        function buildPanelShape(p) {
+            const w = p.widthIn, h = p.heightIn, hw = w / 2, hh = h / 2;
+            const shape = new THREE.Shape();
+            const type = p.shapeType;
+            if (type === 'arched-top') {
+                const rise = Math.min(Math.max(p.archRiseIn || 3, 0.1), h - 0.1);
+                const sideY = hh - rise;
+                shape.moveTo(-hw, -hh); shape.lineTo(hw, -hh); shape.lineTo(hw, sideY);
+                shape.quadraticCurveTo(hw, hh, 0, hh); shape.quadraticCurveTo(-hw, hh, -hw, sideY); shape.closePath();
+            } else if (type === 'rounded-corners') {
+                const r = Math.min(Math.max(p.cornerRadiusIn || 1, 0), Math.min(w, h) / 2);
+                shape.moveTo(-hw + r, -hh); shape.lineTo(hw - r, -hh); shape.quadraticCurveTo(hw, -hh, hw, -hh + r);
+                shape.lineTo(hw, hh - r); shape.quadraticCurveTo(hw, hh, hw - r, hh); shape.lineTo(-hw + r, hh);
+                shape.quadraticCurveTo(-hw, hh, -hw, hh - r); shape.lineTo(-hw, -hh + r); shape.quadraticCurveTo(-hw, -hh, -hw + r, -hh);
+                shape.closePath();
+            } else if (type === 'half-round') {
+                shape.moveTo(-hw, -hh); shape.lineTo(hw, -hh); shape.absellipse(0, -hh, hw, h, 0, Math.PI, false, 0); shape.closePath();
+            } else if (type === 'quarter-round') {
+                shape.moveTo(-hw, -hh); shape.lineTo(hw, -hh); shape.absellipse(-hw, -hh, w, h, 0, Math.PI / 2, false, 0); shape.lineTo(-hw, -hh);
+            } else if (type === 'ellipse') {
+                shape.absellipse(0, 0, hw, hh, 0, Math.PI * 2, false, 0);
+            } else {
+                shape.moveTo(-hw, -hh); shape.lineTo(hw, -hh); shape.lineTo(hw, hh); shape.lineTo(-hw, hh); shape.closePath();
+            }
+            return shape;
+        }
+        function buildPanelGeometry(p) {
+            if (!p.shapeType || p.shapeType === 'rectangle') return new THREE.BoxGeometry(p.widthIn, p.heightIn, p.thicknessIn);
+            const shape = buildPanelShape(p);
+            const geo = new THREE.ExtrudeGeometry(shape, { depth: p.thicknessIn, bevelEnabled: false, curveSegments: 24 });
+            geo.translate(0, 0, -p.thicknessIn / 2);
+            return geo;
+        }
+        function addHoleMeshes(mesh, holes, thicknessIn) {
+            if (!holes || !holes.length) return;
+            const holeMat = new THREE.MeshBasicMaterial({ color: 0x1f2430 });
+            const depth = thicknessIn + 0.1;
+            holes.forEach(h => {
+                let holeMesh;
+                if (h.shape === 'circle') {
+                    holeMesh = new THREE.Mesh(new THREE.CylinderGeometry(h.dIn / 2, h.dIn / 2, depth, 20), holeMat);
+                    holeMesh.rotation.x = Math.PI / 2;
+                } else {
+                    holeMesh = new THREE.Mesh(new THREE.BoxGeometry(h.wIn, h.hIn, depth), holeMat);
+                }
+                holeMesh.position.set(h.xIn, h.yIn, 0);
+                mesh.add(holeMesh);
+            });
+        }
+
+        let scene, camera, renderer, controls;
+        let builtMeshes = [];
+
+        function initScene() {
+            const wrap = document.getElementById('pvCanvasWrap');
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0xeef1f6);
+            camera = new THREE.PerspectiveCamera(50, wrap.clientWidth / Math.max(wrap.clientHeight, 1), 0.1, 2000);
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(wrap.clientWidth, wrap.clientHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            renderer.toneMappingExposure = 1.05;
+            renderer.outputColorSpace = THREE.SRGBColorSpace;
+            wrap.appendChild(renderer.domElement);
+
+            const pmremGenerator = new THREE.PMREMGenerator(renderer);
+            scene.environment = pmremGenerator.fromScene(new RoomEnvironment(), 0.04).texture;
+            pmremGenerator.dispose();
+
+            controls = new OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+
+            scene.add(new THREE.HemisphereLight(0xdbe6f2, 0x8a7d5c, 0.6));
+            const dirLight = new THREE.DirectionalLight(0xfff3e0, 2.4);
+            dirLight.position.set(80, 150, 100);
+            dirLight.castShadow = true;
+            dirLight.shadow.mapSize.set(2048, 2048);
+            scene.add(dirLight);
+
+            const ground = new THREE.Mesh(new THREE.PlaneGeometry(2000, 2000), new THREE.ShadowMaterial({ opacity: 0.15 }));
+            ground.rotation.x = -Math.PI / 2;
+            ground.position.y = -0.01;
+            ground.receiveShadow = true;
+            scene.add(ground);
+
+            window.addEventListener('resize', () => {
+                camera.aspect = wrap.clientWidth / Math.max(wrap.clientHeight, 1);
+                camera.updateProjectionMatrix();
+                renderer.setSize(wrap.clientWidth, wrap.clientHeight);
+            });
+
+            (function animate() {
+                requestAnimationFrame(animate);
+                controls.update();
+                renderer.render(scene, camera);
+            })();
+        }
+
+        function buildMeshes(panels) {
+            builtMeshes = [];
+            panels.forEach(p => {
+                const color = MATERIAL_COLORS[p.material] != null ? MATERIAL_COLORS[p.material] : MATERIAL_COLORS.custom;
+                const hasGrainTexture = WOOD_GRAIN_MATERIALS.has(p.material);
+                const matOpts = { color: hasGrainTexture ? 0xffffff : color, roughness: 0.72, metalness: 0.02 };
+                if (hasGrainTexture) matOpts.map = makeWoodTextureForPanel(p.material, p.widthIn, p.heightIn);
+                const mesh = new THREE.Mesh(buildPanelGeometry(p), new THREE.MeshStandardMaterial(matOpts));
+                mesh.position.set(p.xIn || 0, p.yIn || 0, p.zIn || 0);
+                mesh.rotation.set(
+                    THREE.MathUtils.degToRad(p.rotXDeg || 0),
+                    THREE.MathUtils.degToRad(p.rotYDeg || 0),
+                    THREE.MathUtils.degToRad(p.rotZDeg || 0)
+                );
+                mesh.castShadow = true;
+                mesh.receiveShadow = true;
+                scene.add(mesh);
+                addHoleMeshes(mesh, p.holes, p.thicknessIn);
+                builtMeshes.push(mesh);
+            });
+        }
+
+        function frameCamera(panels) {
+            if (!panels.length) return;
+            const box = new THREE.Box3();
+            panels.forEach(p => {
+                const hw = (p.widthIn || 1) / 2, hh = (p.heightIn || 1) / 2, ht = (p.thicknessIn || 1) / 2;
+                box.expandByPoint(new THREE.Vector3((p.xIn || 0) - hw, (p.yIn || 0) - hh, (p.zIn || 0) - ht));
+                box.expandByPoint(new THREE.Vector3((p.xIn || 0) + hw, (p.yIn || 0) + hh, (p.zIn || 0) + ht));
+            });
+            const size = box.getSize(new THREE.Vector3());
+            const center = box.getCenter(new THREE.Vector3());
+            const maxDim = Math.max(size.x, size.y, size.z, 12);
+            camera.position.set(center.x + maxDim * 1.1, center.y + maxDim * 0.9, center.z + maxDim * 1.4);
+            controls.target.copy(center);
+            controls.update();
+        }
+
+        document.getElementById('pvAutoRotateBtn').addEventListener('click', (e) => {
+            controls.autoRotate = !controls.autoRotate;
+            controls.autoRotateSpeed = 2.5;
+            e.target.classList.toggle('active', controls.autoRotate);
+        });
+
+        let arObjectUrl = null;
+        document.getElementById('pvArBtn').addEventListener('click', () => {
+            if (!builtMeshes.length) return;
+            const group = new THREE.Group();
+            builtMeshes.forEach(m => group.add(m.clone()));
+            group.scale.setScalar(0.0254);
+            new GLTFExporter().parse(group, (glb) => {
+                if (arObjectUrl) URL.revokeObjectURL(arObjectUrl);
+                arObjectUrl = URL.createObjectURL(new Blob([glb], { type: 'model/gltf-binary' }));
+                const wrap = document.getElementById('pvArViewerWrap');
+                wrap.innerHTML = '';
+                const viewer = document.createElement('model-viewer');
+                viewer.setAttribute('src', arObjectUrl);
+                viewer.setAttribute('ar', '');
+                viewer.setAttribute('ar-modes', 'webxr scene-viewer quick-look');
+                viewer.setAttribute('camera-controls', '');
+                viewer.setAttribute('auto-rotate', '');
+                wrap.appendChild(viewer);
+                document.getElementById('pvArModalOverlay').style.display = 'flex';
+            }, (err) => console.error(err), { binary: true });
+        });
+        document.getElementById('pvArCloseBtn').addEventListener('click', () => {
+            document.getElementById('pvArModalOverlay').style.display = 'none';
+            document.getElementById('pvArViewerWrap').innerHTML = '';
+            if (arObjectUrl) { URL.revokeObjectURL(arObjectUrl); arObjectUrl = null; }
+        });
+
+        function renderPartsTable(panels) {
+            const groups = {};
+            panels.forEach(p => {
+                const key = [p.widthIn, p.heightIn, p.thicknessIn, p.material, p.shapeType || 'rectangle'].join('|');
+                if (!groups[key]) groups[key] = { ...p, qty: 0, names: new Set() };
+                groups[key].qty += p.qty || 1;
+                groups[key].names.add(p.name);
+            });
+            document.getElementById('pvTableBody').innerHTML = Object.values(groups).map(g => `
+                <tr>
+                    <td>${escapeHtml(Array.from(g.names).join(', '))}</td>
+                    <td>${g.widthIn}" x ${g.heightIn}" x ${g.thicknessIn}"</td>
+                    <td>${escapeHtml(MATERIAL_LABELS[g.material] || 'Custom / Other')}</td>
+                    <td>${g.qty}</td>
+                </tr>
+            `).join('');
+        }
+
+        (async function init() {
+            const token = new URLSearchParams(window.location.search).get('token');
+            if (!token) {
+                document.getElementById('pvLoading').style.display = 'none';
+                document.getElementById('pvError').style.display = 'block';
+                return;
+            }
+            const { data, error } = await kerphGetProjectByShareToken(token);
+            document.getElementById('pvLoading').style.display = 'none';
+            if (error || !data || !Array.isArray(data.panels) || !data.panels.length) {
+                document.getElementById('pvError').style.display = 'block';
+                return;
+            }
+            document.getElementById('pvContent').style.display = 'block';
+            document.getElementById('pvTitle').textContent = data.name || 'Untitled Project';
+            const panelCount = data.panels.reduce((s, p) => s + (p.qty || 1), 0);
+            document.getElementById('pvMeta').textContent = `${panelCount} panel${panelCount === 1 ? '' : 's'}`;
+
+            initScene();
+            buildMeshes(data.panels);
+            frameCamera(data.panels);
+            renderPartsTable(data.panels);
+        })();
+    </script>
+</body>
+</html>

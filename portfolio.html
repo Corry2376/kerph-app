@@ -972,6 +972,25 @@
             initHeaderSignIn();
             initAccountPanel();
             await initPortfolio();
+
+            // Deep link from Project Designer's Share modal ("Create Portfolio Entry from
+            // This") hands off a thumbnail URL + title rather than a storage path — the
+            // thumbnail lives in the project-thumbnails bucket, a different one than
+            // portfolio-photos, so it needs a real re-upload here to become an actual cover
+            // photo rather than a cross-bucket path that kerphPortfolioImageUrl can't resolve.
+            const params = new URLSearchParams(window.location.search);
+            const fromThumb = params.get('fromProjectThumb');
+            if (fromThumb) {
+                openProjectModal(null);
+                const fromTitle = params.get('fromProjectTitle');
+                if (fromTitle) document.getElementById('projTitleInput').value = fromTitle;
+                try {
+                    const resp = await fetch(fromThumb);
+                    const blob = await resp.blob();
+                    const { data, error } = await kerphUploadPortfolioPhoto(blob);
+                    if (!error && data) { pendingCoverPath = data.path; renderCoverThumb(); }
+                } catch { /* best-effort — the modal still opens with the title prefilled even if this fails */ }
+            }
         });
     </script>
 </body>
