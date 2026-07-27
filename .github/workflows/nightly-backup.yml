@@ -28,7 +28,8 @@ jobs:
           RCLONE_CONFIG_B2REMOTE_KEY: ${{ secrets.B2_APP_KEY }}
 
       - name: Sync Supabase Storage buckets to B2
-        run: rclone sync supabasestorage: "b2remote:${{ secrets.B2_BUCKET_NAME }}/storage/" --checksum
+        run: |
+          rclone sync supabasestorage: "b2remote:${{ secrets.B2_BUCKET_NAME }}/storage/" --checksum
         env:
           RCLONE_CONFIG_SUPABASESTORAGE_TYPE: s3
           RCLONE_CONFIG_SUPABASESTORAGE_PROVIDER: Other
