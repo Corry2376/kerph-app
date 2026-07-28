@@ -1,2 +1,9 @@
 # Local-only Claude Code settings (machine-specific permission allowlist)
 .claude/settings.local.json
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
+.env*
+!.env.example
