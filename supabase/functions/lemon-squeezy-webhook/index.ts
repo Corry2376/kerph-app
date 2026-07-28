@@ -98,6 +98,7 @@ Deno.serve(async (req) => {
         ls_variant_id: variantId,
         plan,
         status: attrs.status ?? 'active',
+        customer_portal_url: attrs.urls?.customer_portal ?? null,
         renews_at: attrs.renews_at ?? null,
         ends_at: attrs.ends_at ?? null,
         updated_at: new Date().toISOString(),

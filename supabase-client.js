@@ -818,6 +818,47 @@
         if (e.target.id === 'accountPlanSelect' || e.target.id === 'planSelector') setTimeout(kerphRefreshTierLocks, 0);
     });
 
+    // ---------- Real Lemon Squeezy subscription status ----------
+    // Nothing calls this yet — the plan/tier gating above is still the local-preview
+    // mechanism everywhere it's actually wired up. This exists so the moment real
+    // checkout is live, swapping the preview toggle for the real thing is a small,
+    // localized change instead of a from-scratch build. See sql/lemon-squeezy-
+    // subscriptions.sql and supabase/functions/lemon-squeezy-webhook for the rest of
+    // the pipeline this feeds from.
+    //
+    // Deliberately fails safe to 'free' on ANY error — not signed in, the
+    // subscriptions table/view not existing yet (pre-migration), a network hiccup,
+    // no row for this user (never subscribed) — rather than distinguishing those
+    // cases, since every one of them means the same thing here: this browser has no
+    // basis to claim paid access.
+    async function kerphGetMySubscription() {
+        const fallback = { plan: 'free', status: 'active', renewsAt: null, endsAt: null, customerPortalUrl: null };
+        if (!state.user) return { data: fallback, error: null };
+        const { data, error } = await kerphSupabase
+            .from('my_current_subscription')
+            .select('plan, status, renews_at, ends_at, customer_portal_url')
+            .eq('user_id', state.user.id)
+            .maybeSingle();
+        if (error || !data) return { data: fallback, error: null };
+        // Only these statuses count as currently entitled — cancelled/expired/unpaid/
+        // paused all report the real plan name (useful for "you were Premier" messaging
+        // later) but WITH status carried through, so callers that only check .plan
+        // without also checking .status would get this wrong — kerphPlanMeetsTier
+        // callers should gate on the pre-computed .plan below, not re-derive it.
+        const entitled = data.status === 'active' || data.status === 'on_trial' || data.status === 'past_due';
+        return {
+            data: {
+                plan: entitled ? data.plan : 'free',
+                status: data.status,
+                renewsAt: data.renews_at,
+                endsAt: data.ends_at,
+                customerPortalUrl: data.customer_portal_url || null
+            },
+            error: null
+        };
+    }
+    window.kerphGetMySubscription = kerphGetMySubscription;
+
     window.kerphPlanMeetsTier = kerphPlanMeetsTier;
     window.kerphRequiredTierFor = kerphRequiredTierFor;
     window.kerphRefreshTierLocks = kerphRefreshTierLocks;

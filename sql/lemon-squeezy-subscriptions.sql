@@ -11,6 +11,7 @@ create table public.subscriptions (
     ls_variant_id      text,
     plan               text not null default 'free',    -- 'pro' | 'premier'
     status             text not null default 'active',  -- Lemon Squeezy's own status strings: on_trial, active, paused, past_due, unpaid, cancelled, expired
+    customer_portal_url text,                           -- Lemon Squeezy's hosted "manage billing" link for this subscription
     renews_at          timestamptz,
     ends_at            timestamptz,
     created_at         timestamptz not null default now(),
