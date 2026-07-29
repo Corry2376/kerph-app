@@ -640,20 +640,30 @@
         // needed), Pro/Premier launch real checkout. checkout[custom][user_id] is what lets the
         // lemon-squeezy-webhook Edge Function attribute the resulting subscription back to a
         // specific Kerph account (see sql/lemon-squeezy-subscriptions.sql).
+        //
+        // The checkout URL's path segment is the PRODUCT's UUID, not the numeric variant ID —
+        // the variant is selected via the `enabled` query param instead. Confirmed by generating
+        // real links from each product's own Share panel in the LS dashboard (a manually
+        // constructed /checkout/buy/<numeric-variant-id> URL 404s; this is the only format that
+        // actually resolves).
         const LS_STORE_SLUG = 'kerphplans';
-        const LS_VARIANT_IDS = { pro: '1251465', premier: '1251466' };
+        const LS_CHECKOUT = {
+            pro: { productUuid: '0922ac82-41dc-4655-917b-5d54aae8f5b3', variantId: '1956245' },
+            premier: { productUuid: 'c7026ad4-b170-4cea-956c-9d25576adccd', variantId: '1956259' }
+        };
         function launchLemonSqueezyCheckout(tier) {
             const user = (typeof kerphGetCachedUser === 'function') ? kerphGetCachedUser() : null;
             if (!user) {
                 showToast('Sign in first, then click Upgrade again — a plan has to attach to an account.');
                 return;
             }
-            const variantId = LS_VARIANT_IDS[tier];
-            if (!variantId) { showToast('Checkout is not configured for this plan yet.'); return; }
+            const checkout = LS_CHECKOUT[tier];
+            if (!checkout) { showToast('Checkout is not configured for this plan yet.'); return; }
             const params = new URLSearchParams();
+            params.set('enabled', checkout.variantId);
             params.set('checkout[email]', user.email || '');
             params.set('checkout[custom][user_id]', user.id);
-            const checkoutUrl = `https://${LS_STORE_SLUG}.lemonsqueezy.com/checkout/buy/${variantId}?${params.toString()}`;
+            const checkoutUrl = `https://${LS_STORE_SLUG}.lemonsqueezy.com/checkout/buy/${checkout.productUuid}?${params.toString()}`;
             if (window.LemonSqueezy && window.LemonSqueezy.Url) {
                 window.LemonSqueezy.Url.Open(checkoutUrl);
             } else {
