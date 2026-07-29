@@ -4,7 +4,7 @@
     <script>if (localStorage.getItem('kerphComingSoonBypass') !== 'true') { location.replace('coming-soon.html'); }</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kerph - Fraction Converter</title>
+    <title>Kerph - Privacy Policy</title>
     <style>
         * {
             box-sizing: border-box;
@@ -190,6 +190,105 @@
         }
         .upgrade-nudge.visible { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
 
+        /* ---------- PAGE LAYOUT: sidebar TOC + article content (matches help.html / terms.html) ---------- */
+        .help-layout {
+            max-width: 1180px;
+            margin: 0 auto;
+            padding: 40px 24px 100px;
+            display: flex;
+            gap: 32px;
+            align-items: flex-start;
+        }
+
+        .help-toc {
+            width: 240px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 24px;
+            background-color: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 12px;
+            padding: 18px;
+        }
+        .help-toc-group { margin-bottom: 16px; }
+        .help-toc-group:last-child { margin-bottom: 0; }
+        .help-toc-group-title { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; margin-bottom: 6px; }
+        .help-toc a {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #1e293b;
+            text-decoration: none;
+            padding: 6px 8px;
+            border-radius: 6px;
+            margin-bottom: 1px;
+        }
+        .help-toc a:hover { background-color: #eef2ff; color: #1e3a8a; }
+
+        .help-main { flex: 1; min-width: 0; }
+
+        .help-eyebrow {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #b23b3b;
+            margin-bottom: 8px;
+        }
+        .help-title { font-size: 28px; font-weight: 800; color: #0f172a; margin-bottom: 10px; }
+        .help-subtitle { font-size: 14.5px; color: #4b5563; line-height: 1.6; margin-bottom: 24px; max-width: 70ch; }
+
+        .legal-notice {
+            background: rgba(217, 119, 6, 0.08);
+            border: 1px solid #fde68a;
+            border-left: 4px solid #d97706;
+            border-radius: 10px;
+            padding: 16px 18px;
+            margin-bottom: 28px;
+            font-size: 13px;
+            line-height: 1.65;
+            color: #78350f;
+        }
+        .legal-notice b { color: #92400e; }
+
+        .help-article {
+            background-color: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 14px;
+            padding: 32px;
+            box-shadow: 0 12px 30px -12px rgba(15, 23, 42, 0.15);
+            margin-bottom: 24px;
+            scroll-margin-top: 20px;
+        }
+        .help-article-eyebrow { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #6b7280; margin-bottom: 6px; }
+        .help-article h2 { font-size: 21px; font-weight: 800; color: #0f172a; margin-bottom: 12px; }
+        .help-article h3 { font-size: 15px; font-weight: 800; color: #1e3a8a; margin: 22px 0 10px; }
+        .help-article p { font-size: 13.5px; color: #374151; line-height: 1.7; margin-bottom: 12px; }
+        .help-article p:last-child { margin-bottom: 0; }
+        .help-article ol, .help-article ul { margin: 0 0 14px 20px; }
+        .help-article li { font-size: 13.5px; color: #374151; line-height: 1.7; margin-bottom: 6px; }
+        .help-article b { color: #0f172a; }
+
+        .help-callout {
+            border-radius: 10px;
+            padding: 14px 16px;
+            margin: 16px 0;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        .help-callout-note { background: rgba(217, 119, 6, 0.07); border: 1px solid #fde68a; border-left: 3px solid #d97706; color: #92400e; }
+        .help-callout-note b { color: #92400e; }
+
+        .fill-in {
+            background-color: #fef2f2;
+            border: 1px dashed #fca5a5;
+            border-radius: 4px;
+            padding: 0 5px;
+            color: #b91c1c;
+            font-weight: 700;
+            font-size: 12.5px;
+        }
+
         .header-quick-links { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; font-size: 11px; }
         .header-quick-links-row { display: flex; align-items: center; gap: 6px; }
         .header-quick-links a { color: #6b7280; font-weight: 600; text-decoration: none; }
@@ -239,51 +338,7 @@
             text-decoration: none;
         }
         .jigs-dropdown-menu a:hover { background-color: #eef2ff; color: #1e3a8a; }
-        .jigs-dropdown-menu a.current { background-color: #eef2ff; color: #1e3a8a; }
         .jigs-dropdown-menu-sep { height: 1px; background-color: #e2e8f0; margin: 5px 2px; }
-
-        /* ---------- SINGLE-JIG PAGE LAYOUT ---------- */
-        .jig-page-layout {
-            max-width: 760px;
-            margin: 0 auto;
-            padding: 40px 24px 100px;
-        }
-        .jig-breadcrumb { font-size: 12.5px; font-weight: 600; margin-bottom: 14px; }
-        .jig-breadcrumb a { color: #6b7280; text-decoration: none; }
-        .jig-breadcrumb a:hover { color: #1e3a8a; text-decoration: underline; }
-        .help-eyebrow {
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            color: #b23b3b;
-            margin-bottom: 8px;
-        }
-        .help-title { font-size: 28px; font-weight: 800; color: #0f172a; margin-bottom: 10px; }
-        .help-subtitle { font-size: 14.5px; color: #4b5563; line-height: 1.6; margin-bottom: 24px; max-width: 65ch; }
-        .help-article {
-            background-color: #ffffff;
-            border: 1px solid #cbd5e1;
-            border-radius: 14px;
-            padding: 32px;
-            box-shadow: 0 12px 30px -12px rgba(15, 23, 42, 0.15);
-        }
-
-        /* ---------- SHOP JIGS TOOL WIDGETS ---------- */
-        .jig-input-row { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; margin-bottom: 14px; }
-        .jig-field { display: flex; flex-direction: column; gap: 4px; }
-        .jig-field label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: #6b7280; }
-        .jig-field input, .jig-field select { padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; font-weight: 600; width: 108px; background: #ffffff; }
-        .jig-field input.narrow { width: 64px; }
-        .jig-radio-group { display: flex; gap: 16px; margin-bottom: 14px; flex-wrap: wrap; }
-        .jig-radio-group label { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: #1e293b; cursor: pointer; }
-
-        .jig-results-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-top: 4px; }
-        .jig-result { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px; }
-        .jig-result-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: #6b7280; }
-        .jig-result-value { font-size: 18px; font-weight: 800; color: #1e3a8a; margin-top: 2px; font-variant-numeric: tabular-nums; }
-        .jig-result-value.big { font-size: 22px; }
-        .jig-result-sub { font-size: 11px; color: #6b7280; margin-top: 2px; }
     </style>
 </head>
 <body>
@@ -313,7 +368,7 @@
             <div class="jigs-dropdown" id="jigsDropdown">
                 <button type="button" class="jigs-dropdown-btn" id="jigsDropdownBtn">Shop Jigs <span class="jigs-dropdown-caret">&#9662;</span></button>
                 <div class="jigs-dropdown-menu">
-                    <a href="shop-jigs-fraction-converter.html" class="current">Fraction Converter</a>
+                    <a href="shop-jigs-fraction-converter.html">Fraction Converter</a>
                     <a href="shop-jigs-add-fractions.html">Add Fractions</a>
                     <a href="shop-jigs-board-feet.html">Board Foot Calculator</a>
                     <a href="shop-jigs-angle-chart.html">Polygon Angle Chart</a>
@@ -436,35 +491,133 @@
 
     <div class="upgrade-nudge" id="upgradeNudge"></div>
 
-    <div class="jig-page-layout">
-        <div class="jig-breadcrumb"><a href="shop-jigs.html">Shop Jigs</a> / Fraction Converter</div>
-        <div class="help-eyebrow">Shop Jig</div>
-        <div class="help-title">Fraction Converter</div>
-        <div class="help-subtitle">Convert between millimeters, decimal inches, and real woodworking fractions — down to 1/64". Shows the nearest usable fraction at your chosen precision and how far off it actually is.</div>
+    <div class="help-layout">
+        <nav class="help-toc">
+            <div class="help-toc-group">
+                <div class="help-toc-group-title">Overview</div>
+                <a href="#scope">Scope of This Policy</a>
+                <a href="#what-we-collect">What We Collect</a>
+            </div>
+            <div class="help-toc-group">
+                <div class="help-toc-group-title">How It's Used</div>
+                <a href="#how-we-use">How We Use Your Data</a>
+                <a href="#sharing">Who We Share Data With</a>
+                <a href="#payments">Payment Data Specifically</a>
+                <a href="#cookies">Cookies &amp; Local Storage</a>
+            </div>
+            <div class="help-toc-group">
+                <div class="help-toc-group-title">Your Rights</div>
+                <a href="#your-rights">Access, Export &amp; Deletion</a>
+                <a href="#retention">Data Retention</a>
+                <a href="#security">Security</a>
+                <a href="#children">Children's Privacy</a>
+            </div>
+            <div class="help-toc-group">
+                <div class="help-toc-group-title">Legal</div>
+                <a href="#changes">Changes to This Policy</a>
+                <a href="#contact">Contact Us</a>
+            </div>
+        </nav>
 
-        <div class="help-article">
-            <div class="jig-radio-group">
-                <label><input type="radio" name="convMode" value="mm" checked> From millimeters</label>
-                <label><input type="radio" name="convMode" value="decimal"> From decimal inches</label>
-                <label><input type="radio" name="convMode" value="fraction"> From a fraction (in)</label>
+        <main class="help-main">
+            <div class="help-eyebrow">Legal</div>
+            <div class="help-title">Privacy Policy</div>
+            <div class="help-subtitle">Last updated: <span class="fill-in">[EFFECTIVE DATE]</span>. This Privacy Policy explains what data Kerph (the "Service"), operated by <span class="fill-in">[KERPH LEGAL ENTITY NAME, e.g. "Kerph LLC"]</span> ("Kerph," "we," "us," or "our"), collects, how we use it, and the choices you have. It should be read together with our <a href="terms.html">Terms of Service</a>.</div>
+
+            <div class="legal-notice">
+                <b>Before you publish this:</b> this is a solid, Kerph-specific starting draft describing what the app actually does today — it is not a substitute for review by a licensed attorney in your state, and it doesn't cover jurisdiction-specific frameworks (GDPR, CCPA, etc.) in the depth a real legal review would. It's written to be accurate about Kerph's real data flows as of this writing (Supabase for auth/data/storage, Lemon Squeezy for payments, Resend for transactional email) — if you add analytics, ads, or other processors later, this document needs a matching update, not just a date change. Anywhere you see a <span class="fill-in">highlighted bracket</span>, fill it in before this goes live.
             </div>
 
-            <div class="jig-input-row" id="convInputRow"></div>
+            <article class="help-article" id="scope">
+                <div class="help-article-eyebrow">Overview</div>
+                <h2>1. Scope of This Policy</h2>
+                <p>This policy covers personal data collected through Kerph's website and application at <span class="fill-in">kerphplans.com</span> — the Workshop Layout Planner, Project Designer, Cut List Optimizer, 3D Shop Viewer, Quote Builder, Portfolio, Shop Showcase, Cool Tool Reviews, Find a Builder, Shop Jigs, and Garage Tips. It does not cover the privacy practices of third-party sites we link to, including tool retailers or the third-party services listed in Section 4.</p>
+            </article>
 
-            <div class="jig-input-row">
-                <div class="jig-field">
-                    <label for="convPrecision">Nearest</label>
-                    <select id="convPrecision">
-                        <option value="8">1/8"</option>
-                        <option value="16" selected>1/16"</option>
-                        <option value="32">1/32"</option>
-                        <option value="64">1/64"</option>
-                    </select>
+            <article class="help-article" id="what-we-collect">
+                <h2>2. What We Collect</h2>
+                <h3>Account information</h3>
+                <p>When you create an account: your email address and password (your password is never stored by Kerph in readable form — authentication is handled by our backend provider, Supabase, using industry-standard hashing). Optionally: a username and profile photo you choose to add.</p>
+                <h3>Content you create</h3>
+                <p>Saved shop layouts, Project Designer projects and cut lists, Quote Builder quotes (including any client name/email you enter about your own customers — see the note in Section 4), Shop Showcase posts and photos, Portfolio pieces, Cool Tool Reviews you write, and tool ownership/wishlist status. This is the same content described as "Your Content" in our <a href="terms.html">Terms of Service</a>.</p>
+                <h3>Subscription &amp; billing status</h3>
+                <p>If you upgrade to a paid plan, our payment processor (Section 5) sends us your plan tier, subscription status, and renewal date so the app can grant you the right features. We do not receive or store your full card number — see Section 5.</p>
+                <h3>Technical data</h3>
+                <p>Standard web server logs (IP address, browser type, pages requested, timestamps) collected by our hosting provider as part of normal operation, and a session token used to keep you signed in (Section 6). As of this writing, Kerph does not run any analytics or advertising trackers — if that changes, this section will be updated first.</p>
+            </article>
+
+            <article class="help-article" id="how-we-use">
+                <div class="help-article-eyebrow">How It's Used</div>
+                <h2>3. How We Use Your Data</h2>
+                <ul>
+                    <li>To provide the Service — save and sync your layouts and projects across devices, authenticate you, and display content you've chosen to make public (Shop Showcase, Reviews, Portfolio).</li>
+                    <li>To process payments and manage your subscription, including granting or removing access to paid features based on your subscription status.</li>
+                    <li>To send you service-related email — for example, notifying you when a client responds to a quote you sent through Quote Builder.</li>
+                    <li>To maintain the security and integrity of the Service, including detecting abuse and enforcing our Terms of Service.</li>
+                    <li>To comply with legal obligations.</li>
+                </ul>
+                <p>We do not use your data to serve you third-party advertising, and we do not sell your personal data to anyone.</p>
+            </article>
+
+            <article class="help-article" id="sharing">
+                <h2>4. Who We Share Data With</h2>
+                <p>We share data only with service providers ("processors") who need it to help us run Kerph, under agreements that limit their use of it to providing that service:</p>
+                <ul>
+                    <li><b>Supabase</b> — hosts our database, file storage, and authentication. This is where your account and content actually live.</li>
+                    <li><b>Lemon Squeezy</b> — our payment processor and Merchant of Record. See Section 5 for specifics.</li>
+                    <li><b>Resend</b> — sends transactional email (for example, quote-response notifications) on our behalf.</li>
+                    <li><span class="fill-in">[CLOUDFLARE OR CURRENT HOSTING PROVIDER]</span> — serves the Kerph website and application.</li>
+                    <li><span class="fill-in">[BACKBLAZE B2, ONCE BACKUP AUTOMATION IS ACTIVATED]</span> — stores encrypted backup copies of the database and uploaded files, for disaster recovery only.</li>
+                </ul>
+                <p>We may also disclose data if required by law, subpoena, or other legal process, or to protect the rights, property, or safety of Kerph, our users, or the public.</p>
+                <div class="help-callout help-callout-note">
+                    <b>A note on Quote Builder specifically:</b> if you use Quote Builder to send a quote to your own client, the client name and email address you enter is data about a third party that you have provided to us on their behalf. You're responsible for having a lawful basis to share that information with us for this purpose — the same way any invoicing or CRM tool would require of its users.
                 </div>
-            </div>
+            </article>
 
-            <div class="jig-results-grid" id="convResults"></div>
-        </div>
+            <article class="help-article" id="payments">
+                <h2>5. Payment Data Specifically</h2>
+                <p>Kerph uses <b>Lemon Squeezy</b> as its payment processor and Merchant of Record. When you subscribe to a paid plan, you enter your card details directly into Lemon Squeezy's checkout — Kerph never receives, transmits, or stores your full card number, CVC, or other raw payment credentials. Lemon Squeezy sends us back only what we need to run your subscription: your plan tier, subscription status, and renewal/expiration dates, tied to your Kerph account. Lemon Squeezy's own handling of your payment data is governed by <a href="https://www.lemonsqueezy.com/privacy" target="_blank" rel="noopener">Lemon Squeezy's Privacy Policy</a>, which we encourage you to review.</p>
+            </article>
+
+            <article class="help-article" id="cookies">
+                <h2>6. Cookies &amp; Local Storage</h2>
+                <p>Kerph uses your browser's local storage and a session cookie/token to keep you signed in between visits — this is strictly functional and required for the Service to work; it is not used for advertising or cross-site tracking. Some display preferences (like your preferred measurement units and current plan-preview selection) are also cached locally in your browser. You can clear this at any time from Account Settings or your browser's own settings, though doing so will sign you out.</p>
+            </article>
+
+            <article class="help-article" id="your-rights">
+                <div class="help-article-eyebrow">Your Rights</div>
+                <h2>7. Access, Export &amp; Deletion</h2>
+                <p>You can review and update your account information (username, avatar, preferred units) at any time from Account Settings. Local display preferences can be exported or imported as a JSON file from the same panel.</p>
+                <p>To request a full export of your account data, or to request that your account and associated data be deleted, contact us at <span class="fill-in">[support@kerphplans.com]</span>. We'll verify your identity and fulfill deletion requests within a reasonable time, except where we're required or permitted to retain certain information (for example, transaction records needed for tax or accounting purposes).</p>
+            </article>
+
+            <article class="help-article" id="retention">
+                <h2>8. Data Retention</h2>
+                <p>We keep your account and content for as long as your account is active. If you request deletion under Section 7, we'll delete or anonymize your personal data within a reasonable time, except where retention is required by law or legitimate business need (such as billing records).</p>
+            </article>
+
+            <article class="help-article" id="security">
+                <h2>9. Security</h2>
+                <p>Kerph's database uses row-level security policies so that, technically, one user's private data (layouts, projects, quotes) cannot be read by another user's account — this isn't just a UI restriction, it's enforced at the database layer. Payment credentials are never handled by Kerph directly (Section 5). No method of transmission or storage is 100% secure, and we can't guarantee absolute security, but we take reasonable technical and organizational measures to protect your data.</p>
+            </article>
+
+            <article class="help-article" id="children">
+                <h2>10. Children's Privacy</h2>
+                <p>Kerph is not directed at children, and consistent with the eligibility requirement in our <a href="terms.html">Terms of Service</a>, you must be at least 18 (or the age of legal majority in your jurisdiction) to create an account. We do not knowingly collect personal data from children. If you believe a child has provided us with personal data, contact us at the address in Section 12 and we'll delete it.</p>
+            </article>
+
+            <article class="help-article" id="changes">
+                <div class="help-article-eyebrow">Legal</div>
+                <h2>11. Changes to This Policy</h2>
+                <p>We may update this Privacy Policy from time to time, most often to reflect new features or new service providers. If we make a material change — for example, adding analytics or advertising — we'll update the "Last updated" date above and, where appropriate, notify you through the Service or by email before the change takes effect.</p>
+            </article>
+
+            <article class="help-article" id="contact">
+                <h2>12. Contact Us</h2>
+                <p>Questions about this Privacy Policy, or a request under Section 7? Reach us at <span class="fill-in">[support@kerphplans.com]</span>.</p>
+            </article>
+        </main>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.7/dist/umd/supabase.js"></script>
@@ -785,111 +938,6 @@
             initHeaderSignIn();
             initAccountPanel();
         });
-
-        /* =====================================================================
-           FRACTION CONVERTER — mm / decimal-inch / fraction conversion math
-           ===================================================================== */
-
-        function gcd(a, b) { a = Math.abs(a); b = Math.abs(b); return b === 0 ? (a || 1) : gcd(b, a % b); }
-
-        // Nearest fraction of an inch at the given denominator (8/16/32/64).
-        // Returns the rounded value's own decimal (so callers can diff it against
-        // the true input to show a rounding error) plus ready-to-format parts.
-        function nearestFraction(decimalInches, denom) {
-            const sign = decimalInches < 0 ? -1 : 1;
-            const abs = Math.abs(decimalInches);
-            let whole = Math.floor(abs);
-            let num = Math.round((abs - whole) * denom);
-            let den = denom;
-            if (num === denom) { num = 0; whole += 1; }
-            if (num > 0) { const g = gcd(num, den); num /= g; den /= g; }
-            const roundedAbs = whole + (num > 0 ? num / den : 0);
-            const rounded = sign * roundedAbs;
-            return { sign, whole, num, den, rounded, errorIn: decimalInches - rounded };
-        }
-
-        function formatFraction(f) {
-            const signStr = f.sign < 0 && (f.whole > 0 || f.num > 0) ? '−' : '';
-            if (f.num === 0) return `${signStr}${f.whole}"`;
-            if (f.whole === 0) return `${signStr}${f.num}/${f.den}"`;
-            return `${signStr}${f.whole} ${f.num}/${f.den}"`;
-        }
-
-        function fmtNum(n, places) {
-            const s = n.toFixed(places);
-            return s.replace(/(\.\d*?)0+$/, '$1').replace(/\.$/, '');
-        }
-        function fmtSigned(n, places, suffix) {
-            const rounded = Math.abs(n) < Math.pow(10, -places) / 2 ? 0 : n;
-            const sign = rounded > 0 ? '+' : rounded < 0 ? '−' : '±';
-            return `${sign}${fmtNum(Math.abs(rounded), places)}${suffix}`;
-        }
-
-        const IN_PER_MM = 1 / 25.4;
-
-        function buildConvInputRow(mode) {
-            const row = document.getElementById('convInputRow');
-            if (mode === 'mm') {
-                row.innerHTML = `
-                    <div class="jig-field"><label for="convValMm">Millimeters</label><input type="number" id="convValMm" value="19" step="0.1"></div>
-                `;
-            } else if (mode === 'decimal') {
-                row.innerHTML = `
-                    <div class="jig-field"><label for="convValDec">Decimal inches</label><input type="number" id="convValDec" value="0.75" step="0.001"></div>
-                `;
-            } else {
-                row.innerHTML = `
-                    <div class="jig-field"><label for="convFracWhole">Whole (in)</label><input type="number" id="convFracWhole" value="0" min="0" class="narrow"></div>
-                    <div class="jig-field"><label>&nbsp;</label><span style="padding:8px 2px; font-weight:800; color:#6b7280;">+</span></div>
-                    <div class="jig-field"><label for="convFracNum">Numerator</label><input type="number" id="convFracNum" value="3" min="0" class="narrow"></div>
-                    <div class="jig-field"><label>&nbsp;</label><span style="padding:8px 2px; font-weight:800; color:#6b7280;">/</span></div>
-                    <div class="jig-field"><label for="convFracDen">Denominator</label>
-                        <select id="convFracDen">
-                            <option value="2">2</option><option value="4">4</option><option value="8">8</option>
-                            <option value="16" selected>16</option><option value="32">32</option><option value="64">64</option>
-                        </select>
-                    </div>
-                `;
-            }
-            row.querySelectorAll('input, select').forEach(el => el.addEventListener('input', runConverter));
-        }
-
-        function getConvMode() { return document.querySelector('input[name="convMode"]:checked').value; }
-
-        function readConvValueAsInches() {
-            const mode = getConvMode();
-            if (mode === 'mm') {
-                const mm = parseFloat(document.getElementById('convValMm').value) || 0;
-                return mm * IN_PER_MM;
-            }
-            if (mode === 'decimal') {
-                return parseFloat(document.getElementById('convValDec').value) || 0;
-            }
-            const whole = parseFloat(document.getElementById('convFracWhole').value) || 0;
-            const num = parseFloat(document.getElementById('convFracNum').value) || 0;
-            const den = parseFloat(document.getElementById('convFracDen').value) || 1;
-            return whole + num / den;
-        }
-
-        function runConverter() {
-            const inches = readConvValueAsInches();
-            const mm = inches / IN_PER_MM;
-            const denom = parseInt(document.getElementById('convPrecision').value, 10);
-            const nearest = nearestFraction(inches, denom);
-            const errMm = nearest.errorIn / IN_PER_MM;
-
-            document.getElementById('convResults').innerHTML = `
-                <div class="jig-result"><div class="jig-result-label">Millimeters</div><div class="jig-result-value">${fmtNum(mm, 2)} mm</div></div>
-                <div class="jig-result"><div class="jig-result-label">Centimeters</div><div class="jig-result-value">${fmtNum(mm / 10, 3)} cm</div></div>
-                <div class="jig-result"><div class="jig-result-label">Decimal inches</div><div class="jig-result-value">${fmtNum(inches, 4)}"</div></div>
-                <div class="jig-result"><div class="jig-result-label">Nearest fraction</div><div class="jig-result-value big">${formatFraction(nearest)}</div><div class="jig-result-sub">${fmtSigned(nearest.errorIn, 4, '"')} (${fmtSigned(errMm, 2, ' mm')})</div></div>
-            `;
-        }
-
-        document.querySelectorAll('input[name="convMode"]').forEach(r => r.addEventListener('change', () => { buildConvInputRow(r.value); runConverter(); }));
-        document.getElementById('convPrecision').addEventListener('change', runConverter);
-        buildConvInputRow('mm');
-        runConverter();
     </script>
 </body>
 </html>

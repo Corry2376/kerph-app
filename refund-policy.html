@@ -4,7 +4,7 @@
     <script>if (localStorage.getItem('kerphComingSoonBypass') !== 'true') { location.replace('coming-soon.html'); }</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kerph - Fraction Converter</title>
+    <title>Kerph - Refund Policy</title>
     <style>
         * {
             box-sizing: border-box;
@@ -190,6 +190,107 @@
         }
         .upgrade-nudge.visible { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
 
+        /* ---------- PAGE LAYOUT: sidebar TOC + article content (matches help.html / terms.html) ---------- */
+        .help-layout {
+            max-width: 1180px;
+            margin: 0 auto;
+            padding: 40px 24px 100px;
+            display: flex;
+            gap: 32px;
+            align-items: flex-start;
+        }
+
+        .help-toc {
+            width: 240px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 24px;
+            background-color: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 12px;
+            padding: 18px;
+        }
+        .help-toc-group { margin-bottom: 16px; }
+        .help-toc-group:last-child { margin-bottom: 0; }
+        .help-toc-group-title { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; margin-bottom: 6px; }
+        .help-toc a {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #1e293b;
+            text-decoration: none;
+            padding: 6px 8px;
+            border-radius: 6px;
+            margin-bottom: 1px;
+        }
+        .help-toc a:hover { background-color: #eef2ff; color: #1e3a8a; }
+
+        .help-main { flex: 1; min-width: 0; }
+
+        .help-eyebrow {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #b23b3b;
+            margin-bottom: 8px;
+        }
+        .help-title { font-size: 28px; font-weight: 800; color: #0f172a; margin-bottom: 10px; }
+        .help-subtitle { font-size: 14.5px; color: #4b5563; line-height: 1.6; margin-bottom: 24px; max-width: 70ch; }
+
+        .legal-notice {
+            background: rgba(217, 119, 6, 0.08);
+            border: 1px solid #fde68a;
+            border-left: 4px solid #d97706;
+            border-radius: 10px;
+            padding: 16px 18px;
+            margin-bottom: 28px;
+            font-size: 13px;
+            line-height: 1.65;
+            color: #78350f;
+        }
+        .legal-notice b { color: #92400e; }
+
+        .help-article {
+            background-color: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 14px;
+            padding: 32px;
+            box-shadow: 0 12px 30px -12px rgba(15, 23, 42, 0.15);
+            margin-bottom: 24px;
+            scroll-margin-top: 20px;
+        }
+        .help-article-eyebrow { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #6b7280; margin-bottom: 6px; }
+        .help-article h2 { font-size: 21px; font-weight: 800; color: #0f172a; margin-bottom: 12px; }
+        .help-article h3 { font-size: 15px; font-weight: 800; color: #1e3a8a; margin: 22px 0 10px; }
+        .help-article p { font-size: 13.5px; color: #374151; line-height: 1.7; margin-bottom: 12px; }
+        .help-article p:last-child { margin-bottom: 0; }
+        .help-article ol, .help-article ul { margin: 0 0 14px 20px; }
+        .help-article li { font-size: 13.5px; color: #374151; line-height: 1.7; margin-bottom: 6px; }
+        .help-article b { color: #0f172a; }
+
+        .help-callout {
+            border-radius: 10px;
+            padding: 14px 16px;
+            margin: 16px 0;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        .help-callout-note { background: rgba(217, 119, 6, 0.07); border: 1px solid #fde68a; border-left: 3px solid #d97706; color: #92400e; }
+        .help-callout-note b { color: #92400e; }
+        .help-callout-good { background: rgba(22, 163, 74, 0.07); border: 1px solid #bbf7d0; border-left: 3px solid #16a34a; color: #166534; }
+        .help-callout-good b { color: #166534; }
+
+        .fill-in {
+            background-color: #fef2f2;
+            border: 1px dashed #fca5a5;
+            border-radius: 4px;
+            padding: 0 5px;
+            color: #b91c1c;
+            font-weight: 700;
+            font-size: 12.5px;
+        }
+
         .header-quick-links { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; font-size: 11px; }
         .header-quick-links-row { display: flex; align-items: center; gap: 6px; }
         .header-quick-links a { color: #6b7280; font-weight: 600; text-decoration: none; }
@@ -239,51 +340,7 @@
             text-decoration: none;
         }
         .jigs-dropdown-menu a:hover { background-color: #eef2ff; color: #1e3a8a; }
-        .jigs-dropdown-menu a.current { background-color: #eef2ff; color: #1e3a8a; }
         .jigs-dropdown-menu-sep { height: 1px; background-color: #e2e8f0; margin: 5px 2px; }
-
-        /* ---------- SINGLE-JIG PAGE LAYOUT ---------- */
-        .jig-page-layout {
-            max-width: 760px;
-            margin: 0 auto;
-            padding: 40px 24px 100px;
-        }
-        .jig-breadcrumb { font-size: 12.5px; font-weight: 600; margin-bottom: 14px; }
-        .jig-breadcrumb a { color: #6b7280; text-decoration: none; }
-        .jig-breadcrumb a:hover { color: #1e3a8a; text-decoration: underline; }
-        .help-eyebrow {
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            color: #b23b3b;
-            margin-bottom: 8px;
-        }
-        .help-title { font-size: 28px; font-weight: 800; color: #0f172a; margin-bottom: 10px; }
-        .help-subtitle { font-size: 14.5px; color: #4b5563; line-height: 1.6; margin-bottom: 24px; max-width: 65ch; }
-        .help-article {
-            background-color: #ffffff;
-            border: 1px solid #cbd5e1;
-            border-radius: 14px;
-            padding: 32px;
-            box-shadow: 0 12px 30px -12px rgba(15, 23, 42, 0.15);
-        }
-
-        /* ---------- SHOP JIGS TOOL WIDGETS ---------- */
-        .jig-input-row { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; margin-bottom: 14px; }
-        .jig-field { display: flex; flex-direction: column; gap: 4px; }
-        .jig-field label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: #6b7280; }
-        .jig-field input, .jig-field select { padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; font-weight: 600; width: 108px; background: #ffffff; }
-        .jig-field input.narrow { width: 64px; }
-        .jig-radio-group { display: flex; gap: 16px; margin-bottom: 14px; flex-wrap: wrap; }
-        .jig-radio-group label { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: #1e293b; cursor: pointer; }
-
-        .jig-results-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-top: 4px; }
-        .jig-result { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px; }
-        .jig-result-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: #6b7280; }
-        .jig-result-value { font-size: 18px; font-weight: 800; color: #1e3a8a; margin-top: 2px; font-variant-numeric: tabular-nums; }
-        .jig-result-value.big { font-size: 22px; }
-        .jig-result-sub { font-size: 11px; color: #6b7280; margin-top: 2px; }
     </style>
 </head>
 <body>
@@ -313,7 +370,7 @@
             <div class="jigs-dropdown" id="jigsDropdown">
                 <button type="button" class="jigs-dropdown-btn" id="jigsDropdownBtn">Shop Jigs <span class="jigs-dropdown-caret">&#9662;</span></button>
                 <div class="jigs-dropdown-menu">
-                    <a href="shop-jigs-fraction-converter.html" class="current">Fraction Converter</a>
+                    <a href="shop-jigs-fraction-converter.html">Fraction Converter</a>
                     <a href="shop-jigs-add-fractions.html">Add Fractions</a>
                     <a href="shop-jigs-board-feet.html">Board Foot Calculator</a>
                     <a href="shop-jigs-angle-chart.html">Polygon Angle Chart</a>
@@ -436,35 +493,102 @@
 
     <div class="upgrade-nudge" id="upgradeNudge"></div>
 
-    <div class="jig-page-layout">
-        <div class="jig-breadcrumb"><a href="shop-jigs.html">Shop Jigs</a> / Fraction Converter</div>
-        <div class="help-eyebrow">Shop Jig</div>
-        <div class="help-title">Fraction Converter</div>
-        <div class="help-subtitle">Convert between millimeters, decimal inches, and real woodworking fractions — down to 1/64". Shows the nearest usable fraction at your chosen precision and how far off it actually is.</div>
+    <div class="help-layout">
+        <nav class="help-toc">
+            <div class="help-toc-group">
+                <div class="help-toc-group-title">Overview</div>
+                <a href="#scope">Scope of This Policy</a>
+                <a href="#processor">Who Actually Charges You</a>
+            </div>
+            <div class="help-toc-group">
+                <div class="help-toc-group-title">Subscriptions</div>
+                <a href="#first-charge">First-Time Charge Guarantee</a>
+                <a href="#cancellation">Cancelling a Subscription</a>
+                <a href="#annual">Annual Plans</a>
+                <a href="#seats">Team Seats</a>
+            </div>
+            <div class="help-toc-group">
+                <div class="help-toc-group-title">Exceptions</div>
+                <a href="#billing-errors">Billing Errors</a>
+                <a href="#disputes">Disputes &amp; Chargebacks</a>
+            </div>
+            <div class="help-toc-group">
+                <div class="help-toc-group-title">Legal</div>
+                <a href="#changes">Changes to This Policy</a>
+                <a href="#contact">Contact Us</a>
+            </div>
+        </nav>
 
-        <div class="help-article">
-            <div class="jig-radio-group">
-                <label><input type="radio" name="convMode" value="mm" checked> From millimeters</label>
-                <label><input type="radio" name="convMode" value="decimal"> From decimal inches</label>
-                <label><input type="radio" name="convMode" value="fraction"> From a fraction (in)</label>
+        <main class="help-main">
+            <div class="help-eyebrow">Legal</div>
+            <div class="help-title">Refund Policy</div>
+            <div class="help-subtitle">Last updated: <span class="fill-in">[EFFECTIVE DATE]</span>. This policy explains how refunds work for Kerph Pro and Premier subscriptions, operated by <span class="fill-in">[KERPH LEGAL ENTITY NAME, e.g. "Kerph LLC"]</span>. It should be read together with the billing terms in Section 4 of our <a href="terms.html">Terms of Service</a>.</div>
+
+            <div class="legal-notice">
+                <b>Before you publish this:</b> the terms below (a 7-day first-charge guarantee, no partial-period refunds after that) are a common, reasonable default for a small SaaS — not a legal requirement. Treat the "7 days" and "no partial refunds" language as a business decision you're free to adjust before this goes live; everything else describes how Lemon Squeezy, your Merchant of Record, actually processes a refund once you decide to grant one. Get a real legal read before publishing, same as the Terms of Service and Privacy Policy.
             </div>
 
-            <div class="jig-input-row" id="convInputRow"></div>
+            <article class="help-article" id="scope">
+                <div class="help-article-eyebrow">Overview</div>
+                <h2>1. Scope of This Policy</h2>
+                <p>This policy applies to paid Kerph subscriptions — Pro and Premier, monthly or annual — and to Premier's additional team seats. It does not apply to the Free plan, which is never charged.</p>
+            </article>
 
-            <div class="jig-input-row">
-                <div class="jig-field">
-                    <label for="convPrecision">Nearest</label>
-                    <select id="convPrecision">
-                        <option value="8">1/8"</option>
-                        <option value="16" selected>1/16"</option>
-                        <option value="32">1/32"</option>
-                        <option value="64">1/64"</option>
-                    </select>
+            <article class="help-article" id="processor">
+                <h2>2. Who Actually Charges You</h2>
+                <p>Kerph uses <b>Lemon Squeezy</b> as its payment processor and Merchant of Record. This means the charge on your card statement comes from Lemon Squeezy, not directly from Kerph, and Lemon Squeezy is the entity that technically processes any refund. When we approve a refund under this policy, we instruct Lemon Squeezy to issue it — refunds typically post back to your original payment method within <span class="fill-in">[5–10 business days, confirm with Lemon Squeezy]</span>, depending on your bank or card issuer.</p>
+            </article>
+
+            <article class="help-article" id="first-charge">
+                <div class="help-article-eyebrow">Subscriptions</div>
+                <h2>3. First-Time Charge Guarantee</h2>
+                <p>If you subscribe to Pro or Premier and decide it's not for you, contact us within <b>7 days of your first charge</b> for a full refund of that charge, no questions asked. This applies once per Kerph account, to your first subscription charge only — it's meant to cover a genuine "this isn't what I expected" case, not a way to repeatedly try a paid tier for free.</p>
+            </article>
+
+            <article class="help-article" id="cancellation">
+                <h2>4. Cancelling a Subscription</h2>
+                <p>You can cancel your subscription at any time from Account Settings. When you cancel:</p>
+                <ul>
+                    <li>You keep full access to your plan's features through the end of the billing period you already paid for.</li>
+                    <li>You will not be charged again after that period ends.</li>
+                    <li>Outside of the first-time charge guarantee in Section 3, we do not provide partial refunds for the unused portion of a billing period — the same "cancel anytime, no partial refund" structure described in our Terms of Service.</li>
+                </ul>
+            </article>
+
+            <article class="help-article" id="annual">
+                <h2>5. Annual Plans</h2>
+                <p>Annual plans are discounted specifically because they're a longer commitment. The Section 3 first-time charge guarantee still applies — 7 days from your first annual charge — but outside that window, annual subscriptions follow the same no-partial-refund rule as monthly ones: cancelling stops future renewal but does not refund the remaining months already paid for.</p>
+            </article>
+
+            <article class="help-article" id="seats">
+                <h2>6. Team Seats</h2>
+                <p>Premier's additional team seats (beyond the 4 included) are billed monthly, in sync with how many active teammates you have. Removing a teammate stops that seat's charge starting at the next billing cycle — it does not retroactively refund the current cycle's already-paid seat charge.</p>
+            </article>
+
+            <article class="help-article" id="billing-errors">
+                <div class="help-article-eyebrow">Exceptions</div>
+                <h2>7. Billing Errors</h2>
+                <p>If you were charged in error — for example, charged twice for the same period, or charged after a cancellation that should have taken effect — contact us and we'll investigate and refund the erroneous charge in full, regardless of the 7-day window in Section 3. This is a straightforward "we made a mistake, we'll fix it" exception, not a general refund right.</p>
+            </article>
+
+            <article class="help-article" id="disputes">
+                <h2>8. Disputes &amp; Chargebacks</h2>
+                <p>If you believe you're owed a refund, please contact us first (Section 10) so we can resolve it directly — it's faster than a bank dispute and doesn't risk your account being suspended while a chargeback is investigated. Filing a chargeback without contacting us first may result in your Kerph account being suspended pending resolution, consistent with standard practice under our agreement with Lemon Squeezy.</p>
+            </article>
+
+            <article class="help-article" id="changes">
+                <div class="help-article-eyebrow">Legal</div>
+                <h2>9. Changes to This Policy</h2>
+                <p>We may update this Refund Policy from time to time. If we make a material change, we'll update the "Last updated" date above; changes apply to charges made after the change takes effect, not retroactively.</p>
+            </article>
+
+            <article class="help-article" id="contact">
+                <h2>10. Contact Us</h2>
+                <div class="help-callout help-callout-good">
+                    <b>Requesting a refund is simple:</b> email <span class="fill-in">[support@kerphplans.com]</span> with the email address on your Kerph account and which charge you're asking about. We aim to respond within <span class="fill-in">[2 business days]</span>.
                 </div>
-            </div>
-
-            <div class="jig-results-grid" id="convResults"></div>
-        </div>
+            </article>
+        </main>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.7/dist/umd/supabase.js"></script>
@@ -785,111 +909,6 @@
             initHeaderSignIn();
             initAccountPanel();
         });
-
-        /* =====================================================================
-           FRACTION CONVERTER — mm / decimal-inch / fraction conversion math
-           ===================================================================== */
-
-        function gcd(a, b) { a = Math.abs(a); b = Math.abs(b); return b === 0 ? (a || 1) : gcd(b, a % b); }
-
-        // Nearest fraction of an inch at the given denominator (8/16/32/64).
-        // Returns the rounded value's own decimal (so callers can diff it against
-        // the true input to show a rounding error) plus ready-to-format parts.
-        function nearestFraction(decimalInches, denom) {
-            const sign = decimalInches < 0 ? -1 : 1;
-            const abs = Math.abs(decimalInches);
-            let whole = Math.floor(abs);
-            let num = Math.round((abs - whole) * denom);
-            let den = denom;
-            if (num === denom) { num = 0; whole += 1; }
-            if (num > 0) { const g = gcd(num, den); num /= g; den /= g; }
-            const roundedAbs = whole + (num > 0 ? num / den : 0);
-            const rounded = sign * roundedAbs;
-            return { sign, whole, num, den, rounded, errorIn: decimalInches - rounded };
-        }
-
-        function formatFraction(f) {
-            const signStr = f.sign < 0 && (f.whole > 0 || f.num > 0) ? '−' : '';
-            if (f.num === 0) return `${signStr}${f.whole}"`;
-            if (f.whole === 0) return `${signStr}${f.num}/${f.den}"`;
-            return `${signStr}${f.whole} ${f.num}/${f.den}"`;
-        }
-
-        function fmtNum(n, places) {
-            const s = n.toFixed(places);
-            return s.replace(/(\.\d*?)0+$/, '$1').replace(/\.$/, '');
-        }
-        function fmtSigned(n, places, suffix) {
-            const rounded = Math.abs(n) < Math.pow(10, -places) / 2 ? 0 : n;
-            const sign = rounded > 0 ? '+' : rounded < 0 ? '−' : '±';
-            return `${sign}${fmtNum(Math.abs(rounded), places)}${suffix}`;
-        }
-
-        const IN_PER_MM = 1 / 25.4;
-
-        function buildConvInputRow(mode) {
-            const row = document.getElementById('convInputRow');
-            if (mode === 'mm') {
-                row.innerHTML = `
-                    <div class="jig-field"><label for="convValMm">Millimeters</label><input type="number" id="convValMm" value="19" step="0.1"></div>
-                `;
-            } else if (mode === 'decimal') {
-                row.innerHTML = `
-                    <div class="jig-field"><label for="convValDec">Decimal inches</label><input type="number" id="convValDec" value="0.75" step="0.001"></div>
-                `;
-            } else {
-                row.innerHTML = `
-                    <div class="jig-field"><label for="convFracWhole">Whole (in)</label><input type="number" id="convFracWhole" value="0" min="0" class="narrow"></div>
-                    <div class="jig-field"><label>&nbsp;</label><span style="padding:8px 2px; font-weight:800; color:#6b7280;">+</span></div>
-                    <div class="jig-field"><label for="convFracNum">Numerator</label><input type="number" id="convFracNum" value="3" min="0" class="narrow"></div>
-                    <div class="jig-field"><label>&nbsp;</label><span style="padding:8px 2px; font-weight:800; color:#6b7280;">/</span></div>
-                    <div class="jig-field"><label for="convFracDen">Denominator</label>
-                        <select id="convFracDen">
-                            <option value="2">2</option><option value="4">4</option><option value="8">8</option>
-                            <option value="16" selected>16</option><option value="32">32</option><option value="64">64</option>
-                        </select>
-                    </div>
-                `;
-            }
-            row.querySelectorAll('input, select').forEach(el => el.addEventListener('input', runConverter));
-        }
-
-        function getConvMode() { return document.querySelector('input[name="convMode"]:checked').value; }
-
-        function readConvValueAsInches() {
-            const mode = getConvMode();
-            if (mode === 'mm') {
-                const mm = parseFloat(document.getElementById('convValMm').value) || 0;
-                return mm * IN_PER_MM;
-            }
-            if (mode === 'decimal') {
-                return parseFloat(document.getElementById('convValDec').value) || 0;
-            }
-            const whole = parseFloat(document.getElementById('convFracWhole').value) || 0;
-            const num = parseFloat(document.getElementById('convFracNum').value) || 0;
-            const den = parseFloat(document.getElementById('convFracDen').value) || 1;
-            return whole + num / den;
-        }
-
-        function runConverter() {
-            const inches = readConvValueAsInches();
-            const mm = inches / IN_PER_MM;
-            const denom = parseInt(document.getElementById('convPrecision').value, 10);
-            const nearest = nearestFraction(inches, denom);
-            const errMm = nearest.errorIn / IN_PER_MM;
-
-            document.getElementById('convResults').innerHTML = `
-                <div class="jig-result"><div class="jig-result-label">Millimeters</div><div class="jig-result-value">${fmtNum(mm, 2)} mm</div></div>
-                <div class="jig-result"><div class="jig-result-label">Centimeters</div><div class="jig-result-value">${fmtNum(mm / 10, 3)} cm</div></div>
-                <div class="jig-result"><div class="jig-result-label">Decimal inches</div><div class="jig-result-value">${fmtNum(inches, 4)}"</div></div>
-                <div class="jig-result"><div class="jig-result-label">Nearest fraction</div><div class="jig-result-value big">${formatFraction(nearest)}</div><div class="jig-result-sub">${fmtSigned(nearest.errorIn, 4, '"')} (${fmtSigned(errMm, 2, ' mm')})</div></div>
-            `;
-        }
-
-        document.querySelectorAll('input[name="convMode"]').forEach(r => r.addEventListener('change', () => { buildConvInputRow(r.value); runConverter(); }));
-        document.getElementById('convPrecision').addEventListener('change', runConverter);
-        buildConvInputRow('mm');
-        runConverter();
     </script>
 </body>
 </html>
