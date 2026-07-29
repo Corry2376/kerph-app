@@ -631,9 +631,37 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.7/dist/umd/supabase.js"></script>
     <script src="supabase-client.js"></script>
+    <script src="https://app.lemonsqueezy.com/js/lemon.js" defer></script>
     <script>
         /* ---------- SHARED STATE KEYS (must match workshop-planner.html / index.html exactly) ---------- */
         const PLAN_KEY = 'kerphPlan';
+
+        // Real Lemon Squeezy checkout config — Free stays a local preview toggle (no payment
+        // needed), Pro/Premier launch real checkout. checkout[custom][user_id] is what lets the
+        // lemon-squeezy-webhook Edge Function attribute the resulting subscription back to a
+        // specific Kerph account (see sql/lemon-squeezy-subscriptions.sql).
+        const LS_STORE_SLUG = 'kerphplans';
+        const LS_VARIANT_IDS = { pro: '1251465', premier: '1251466' };
+        function launchLemonSqueezyCheckout(tier) {
+            const user = (typeof kerphGetCachedUser === 'function') ? kerphGetCachedUser() : null;
+            if (!user) {
+                showToast('Sign in first, then click Upgrade again — a plan has to attach to an account.');
+                return;
+            }
+            const variantId = LS_VARIANT_IDS[tier];
+            if (!variantId) { showToast('Checkout is not configured for this plan yet.'); return; }
+            const params = new URLSearchParams();
+            params.set('checkout[email]', user.email || '');
+            params.set('checkout[custom][user_id]', user.id);
+            const checkoutUrl = `https://${LS_STORE_SLUG}.lemonsqueezy.com/checkout/buy/${variantId}?${params.toString()}`;
+            if (window.LemonSqueezy && window.LemonSqueezy.Url) {
+                window.LemonSqueezy.Url.Open(checkoutUrl);
+            } else {
+                // Lemon.js hasn't finished loading yet (it's a deferred script) — a plain
+                // navigation still completes a real purchase, just without the inline overlay.
+                window.location.href = checkoutUrl;
+            }
+        }
         /* ACCOUNT_KEY/AUTH_KEY removed — account + sign-in are now real, Supabase-backed
            (see supabase-client.js) instead of localStorage flags. */
         const TOOL_STATUS_KEY = 'kerphToolStatus';
@@ -945,7 +973,8 @@
                 }
                 const cta = card.querySelector('.pricing-cta');
                 cta.classList.toggle('is-current-cta', isCurrent);
-                cta.textContent = isCurrent ? 'Current Plan' : `Preview ${tier[0].toUpperCase()}${tier.slice(1)}`;
+                const verb = (tier === 'pro' || tier === 'premier') ? 'Upgrade to' : 'Preview';
+                cta.textContent = isCurrent ? 'Current Plan' : `${verb} ${tier[0].toUpperCase()}${tier.slice(1)}`;
             });
         }
 
@@ -954,6 +983,12 @@
                 btn.addEventListener('click', () => {
                     const tier = btn.getAttribute('data-tier-btn');
                     if (tier === getPlan()) return;
+                    // Pro/Premier are real money now — only Free stays a one-click local
+                    // toggle, since it costs nothing and needs no account-attribution.
+                    if (tier === 'pro' || tier === 'premier') {
+                        launchLemonSqueezyCheckout(tier);
+                        return;
+                    }
                     localStorage.setItem(PLAN_KEY, tier);
                     const headerSelect = document.getElementById('planSelector');
                     if (headerSelect) headerSelect.value = tier;
