@@ -328,6 +328,35 @@
         .compare-table .dash { color: #cbd5e1; font-weight: 700; }
 
         .pricing-footnote { font-size: 11.5px; color: #9ca3af; line-height: 1.6; margin-top: 18px; padding: 0 20px 16px; }
+
+        /* ---------- TEAM (PREMIER SEATS) PANEL ---------- */
+        .team-panel {
+            margin-top: 24px;
+            background-color: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 14px;
+            padding: 20px 22px 22px;
+            box-shadow: 0 12px 30px -12px rgba(15, 23, 42, 0.15);
+        }
+        .team-panel-title { font-size: 15px; font-weight: 800; color: #0f172a; margin-bottom: 4px; }
+        .team-panel-desc { font-size: 12px; color: #6b7280; line-height: 1.5; margin-bottom: 14px; }
+        .team-seat-summary { display: flex; align-items: center; justify-content: space-between; gap: 10px; background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px; margin-bottom: 14px; }
+        .team-seat-count { font-size: 13px; font-weight: 700; color: #1e293b; }
+        .team-seat-cost { font-size: 12px; font-weight: 700; color: #92400e; }
+        .team-invite-row { display: flex; gap: 8px; margin-bottom: 14px; }
+        .team-invite-row .input-box { flex: 1; }
+        .team-invite-row .mini-btn { flex: none; width: auto; padding: 8px 16px; }
+        .team-members-list { border: 1px solid #e2e8f0; border-radius: 8px; }
+        .team-member-item { display: flex; align-items: center; gap: 8px; padding: 9px 11px; border-bottom: 1px solid #f1f5f9; font-size: 12.5px; }
+        .team-member-item:last-child { border-bottom: none; }
+        .team-member-email { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 700; color: #1e293b; }
+        .team-member-status { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; border-radius: 4px; padding: 2px 6px; flex-shrink: 0; }
+        .team-member-status.invited { color: #92400e; background-color: #fffbeb; }
+        .team-member-status.active { color: #166534; background-color: #f0fdf4; }
+        .team-member-remove { flex-shrink: 0; border: none; background: none; color: #b91c1c; cursor: pointer; font-size: 13px; padding: 0 2px; }
+        .team-members-empty { font-size: 11.5px; color: #9ca3af; font-style: italic; padding: 12px; text-align: center; }
+        .team-panel-note { font-size: 11px; color: #9ca3af; line-height: 1.5; margin-top: 12px; }
+        .team-not-premier { font-size: 12.5px; color: #6b7280; line-height: 1.6; }
             .header-quick-links { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; font-size: 11px; }
             .header-quick-links-row { display: flex; align-items: center; gap: 6px; }
         .header-quick-links a { color: #6b7280; font-weight: 600; text-decoration: none; }
@@ -534,7 +563,7 @@
         </div>
 
         <div class="pricing-locked-banner" id="pricingLockedBanner" style="display:none;"></div>
-        <div class="pricing-preview-note">This is a local preview, not a real payment system — no card is charged. Use a card's button below (or the Account panel once signed in) to switch tiers instantly in this browser.</div>
+        <div class="pricing-preview-note">Pro and Premier now go through real Lemon Squeezy checkout — your card will be charged. Free stays a one-click local preview toggle, no account or card needed.</div>
 
         <div class="billing-toggle" id="billingToggle">
             <button type="button" class="billing-toggle-btn" data-cycle="monthly">Monthly</button>
@@ -562,7 +591,7 @@
                 <div class="pricing-plan-name">Premier</div>
                 <div class="pricing-price" data-monthly="17" data-annual="15">$17<span class="period">/mo</span></div>
                 <div class="pricing-annual-note"></div>
-                <div class="pricing-seats">Per user &mdash; no seat cap</div>
+                <div class="pricing-seats">4 users included, then $5/mo each additional</div>
                 <div class="pricing-blurb">Everything in Pro, plus unlimited saved projects, Quote Builder, Portfolio, the auto-generated insurance inventory report, and concierge Find-a-Builder quote requests.</div>
                 <button type="button" class="mini-btn pricing-cta" data-tier-btn="premier">Preview Premier</button>
             </div>
@@ -621,12 +650,14 @@
                     <tr class="feature-row"><td>Concierge Find-a-Builder quote requests</td><td class="plan-cell dash">&mdash;</td><td class="plan-cell dash">&mdash;</td><td class="plan-cell check">&#10003;</td></tr>
 
                     <tr class="section-row"><td colspan="4">Account</td></tr>
-                    <tr class="feature-row"><td>Seats included</td><td class="plan-cell">1</td><td class="plan-cell">2</td><td class="plan-cell">Per user, no cap</td></tr>
-                    <tr class="feature-row"><td>Price</td><td class="plan-cell">$0</td><td class="plan-cell">$9/mo<div style="font-size:10.5px; color:#9ca3af; font-weight:600;">$7/mo billed annually</div></td><td class="plan-cell">$17/user/mo<div style="font-size:10.5px; color:#9ca3af; font-weight:600;">$15/user/mo billed annually</div></td></tr>
+                    <tr class="feature-row"><td>Seats included</td><td class="plan-cell">1</td><td class="plan-cell">2</td><td class="plan-cell">4, then $5/mo each additional</td></tr>
+                    <tr class="feature-row"><td>Price</td><td class="plan-cell">$0</td><td class="plan-cell">$9/mo<div style="font-size:10.5px; color:#9ca3af; font-weight:600;">$7/mo billed annually</div></td><td class="plan-cell">$17/mo<div style="font-size:10.5px; color:#9ca3af; font-weight:600;">$15/mo billed annually</div></td></tr>
                 </tbody>
             </table>
-            <div class="pricing-footnote">Plan tier is stored locally in this browser for preview purposes — no payment, billing, or multi-seat account system is connected yet. Feature availability above reflects what's actually built in the app today. Annual rates reflect the discount for paying a full year up front, once billing goes live.</div>
+            <div class="pricing-footnote">Pro and Premier checkout above is real (Lemon Squeezy). Feature access in the app is still driven by a local plan preview toggle, not your live subscription yet, so what a signed-in account can actually open may not match a completed purchase until that switchover happens. Team seat invites for Premier are managed from the panel below once you're on a real Premier subscription.</div>
         </div>
+
+        <div class="team-panel" id="teamPanel" style="display:none;"></div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.7/dist/umd/supabase.js"></script>
@@ -646,10 +677,15 @@
         // real links from each product's own Share panel in the LS dashboard (a manually
         // constructed /checkout/buy/<numeric-variant-id> URL 404s; this is the only format that
         // actually resolves).
+        //
+        // Each tier has one product (one productUuid) with two variants — monthly and annual —
+        // matching the billing-cycle toggle below. `annual` starts null until the real annual
+        // variant IDs are added; launchLemonSqueezyCheckout() refuses to check out against a
+        // null variant rather than silently falling back to the monthly price.
         const LS_STORE_SLUG = 'kerphplans';
         const LS_CHECKOUT = {
-            pro: { productUuid: '0922ac82-41dc-4655-917b-5d54aae8f5b3', variantId: '1956245' },
-            premier: { productUuid: 'c7026ad4-b170-4cea-956c-9d25576adccd', variantId: '1956259' }
+            pro: { productUuid: '0922ac82-41dc-4655-917b-5d54aae8f5b3', monthly: '1956245', annual: null },
+            premier: { productUuid: 'c7026ad4-b170-4cea-956c-9d25576adccd', monthly: '1956259', annual: null }
         };
         function launchLemonSqueezyCheckout(tier) {
             const user = (typeof kerphGetCachedUser === 'function') ? kerphGetCachedUser() : null;
@@ -659,8 +695,13 @@
             }
             const checkout = LS_CHECKOUT[tier];
             if (!checkout) { showToast('Checkout is not configured for this plan yet.'); return; }
+            const variantId = billingCycle === 'annual' ? checkout.annual : checkout.monthly;
+            if (!variantId) {
+                showToast('Annual billing for this plan is still being finalized — switch to Monthly to upgrade right now.');
+                return;
+            }
             const params = new URLSearchParams();
-            params.set('enabled', checkout.variantId);
+            params.set('enabled', variantId);
             params.set('checkout[email]', user.email || '');
             params.set('checkout[custom][user_id]', user.id);
             const checkoutUrl = `https://${LS_STORE_SLUG}.lemonsqueezy.com/checkout/buy/${checkout.productUuid}?${params.toString()}`;
@@ -670,6 +711,42 @@
                 // Lemon.js hasn't finished loading yet (it's a deferred script) — a plain
                 // navigation still completes a real purchase, just without the inline overlay.
                 window.location.href = checkoutUrl;
+            }
+        }
+
+        // The one-time checkout that starts a team's paid "Extra Seats" subscription, once
+        // the team has grown past the 4 included seats. sync-team-seats (called after every
+        // invite/remove) reports requiresCheckout: true when this is needed — see
+        // handleTeamSyncResult() below. Every seat added *after* this checkout completes is
+        // billed automatically via the Edge Function's Lemon Squeezy API quantity update, no
+        // repeat checkout needed. variantId is null until the "Extra Seats" variant is created
+        // under the Premier product in the LS dashboard (see the setup notes delivered
+        // alongside this change) — same productUuid as Premier since it's just another variant
+        // of that product, only the variantId differs.
+        const LS_EXTRA_SEAT_CHECKOUT = { productUuid: LS_CHECKOUT.premier.productUuid, variantId: null };
+        function launchExtraSeatsCheckout(quantity) {
+            const user = (typeof kerphGetCachedUser === 'function') ? kerphGetCachedUser() : null;
+            if (!user) { showToast('Sign in first.'); return; }
+            if (!LS_EXTRA_SEAT_CHECKOUT.variantId) {
+                showToast('Extra-seat billing is still being finalized — teammates already invited keep their access either way.');
+                return;
+            }
+            const params = new URLSearchParams();
+            params.set('enabled', LS_EXTRA_SEAT_CHECKOUT.variantId);
+            params.set('quantity', String(quantity));
+            params.set('checkout[email]', user.email || '');
+            params.set('checkout[custom][user_id]', user.id);
+            const checkoutUrl = `https://${LS_STORE_SLUG}.lemonsqueezy.com/checkout/buy/${LS_EXTRA_SEAT_CHECKOUT.productUuid}?${params.toString()}`;
+            if (window.LemonSqueezy && window.LemonSqueezy.Url) window.LemonSqueezy.Url.Open(checkoutUrl);
+            else window.location.href = checkoutUrl;
+        }
+
+        // Shared reaction to a kerphInviteTeamMember/kerphRemoveTeamMember sync result:
+        // surfaces the one-time Extra Seats checkout when the team has grown past the
+        // included seats and no paid extra-seat subscription exists yet.
+        function handleTeamSyncResult(sync) {
+            if (sync && sync.requiresCheckout) {
+                showToast(`Your team now needs ${sync.extraSeats} extra seat${sync.extraSeats === 1 ? '' : 's'} — click "Add Extra Seats" below to start billing for them.`);
             }
         }
         /* ACCOUNT_KEY/AUTH_KEY removed — account + sign-in are now real, Supabase-backed
@@ -1075,6 +1152,117 @@
             banner.style.display = 'block';
         }
 
+        // ---------- Team panel (Premier seat management) ----------
+        // Hidden entirely unless the signed-in user's REAL subscription (not the local
+        // kerphPlan preview toggle — that's trivially self-editable) is an entitled Premier
+        // plan, since seat invites are only meaningful once real billing is behind them.
+        function escapeHtmlText(str) {
+            const div = document.createElement('div');
+            div.textContent = str == null ? '' : String(str);
+            return div.innerHTML;
+        }
+        async function renderTeamPanel() {
+            const panel = document.getElementById('teamPanel');
+            if (!panel) return;
+            const user = (typeof kerphGetCachedUser === 'function') ? kerphGetCachedUser() : null;
+            if (!user) { panel.style.display = 'none'; return; }
+            const { data: sub } = await kerphGetMySubscription();
+            if (!sub || sub.plan !== 'premier') { panel.style.display = 'none'; return; }
+
+            const { data: teamData } = await kerphGetMyTeam();
+            panel.style.display = 'block';
+
+            if (!teamData.isOwner && teamData.team) {
+                panel.innerHTML = `
+                    <div class="team-panel-title">Your Team</div>
+                    <div class="team-not-premier">You have Premier access as a teammate on someone else's plan. Seat management is done by the account owner.</div>
+                `;
+                return;
+            }
+
+            const members = teamData.members || [];
+            const activeMembers = members.filter(m => m.status === 'active');
+            const totalSeats = 1 + activeMembers.length; // owner + active members
+            const extraSeats = Math.max(0, totalSeats - teamData.includedSeats);
+            const extraCostLine = extraSeats > 0
+                ? `${extraSeats} extra seat${extraSeats === 1 ? '' : 's'} — $${extraSeats * teamData.extraSeatPrice}/mo`
+                : 'No extra-seat charges';
+
+            const memberRows = members.length ? members.map(m => `
+                <div class="team-member-item" data-member-id="${m.id}">
+                    <span class="team-member-email">${escapeHtmlText(m.invited_email)}</span>
+                    <span class="team-member-status ${m.status}">${m.status === 'active' ? 'Active' : 'Invited'}</span>
+                    <button type="button" class="team-member-remove" data-remove-member="${m.id}" title="Remove">&times;</button>
+                </div>
+            `).join('') : '<div class="team-members-empty">No teammates invited yet.</div>';
+
+            // A checkout is needed (rather than the automatic quantity sync) only once —
+            // when extra seats are owed but no Extra Seats subscription exists yet.
+            const needsCheckout = extraSeats > 0 && teamData.team && !teamData.team.extra_seats_subscription_item_id;
+            const checkoutButton = needsCheckout
+                ? `<button type="button" class="mini-btn" id="teamAddExtraSeatsBtn" style="width:100%; margin-top:10px;">Add ${extraSeats} Extra Seat${extraSeats === 1 ? '' : 's'} ($${extraSeats * teamData.extraSeatPrice}/mo)</button>`
+                : '';
+
+            panel.innerHTML = `
+                <div class="team-panel-title">Your Team</div>
+                <div class="team-panel-desc">Invite up to ${teamData.includedSeats - 1} teammates free (${teamData.includedSeats} total seats with you). Each seat beyond that is $${teamData.extraSeatPrice}/mo, billed automatically.</div>
+                <div class="team-seat-summary">
+                    <span class="team-seat-count">${totalSeats} of ${teamData.includedSeats} included seats used</span>
+                    <span class="team-seat-cost">${extraCostLine}</span>
+                </div>
+                <div class="team-invite-row">
+                    <input type="email" class="input-box" id="teamInviteEmail" placeholder="teammate@email.com">
+                    <button type="button" class="mini-btn" id="teamInviteBtn">Invite</button>
+                </div>
+                <div class="team-members-list">${memberRows}</div>
+                ${checkoutButton}
+                <div class="team-panel-note">Invited teammates get an email with an accept link. They need their own free Kerph account signed in with that same email address.</div>
+            `;
+
+            document.getElementById('teamInviteBtn').addEventListener('click', async () => {
+                const input = document.getElementById('teamInviteEmail');
+                const email = input.value.trim();
+                if (!email) { showToast('Enter an email address to invite.'); return; }
+                const { error, sync } = await kerphInviteTeamMember(email);
+                if (error) { showToast(error.message || 'Could not send that invite.'); return; }
+                showToast(`Invite sent to ${email}.`);
+                handleTeamSyncResult(sync);
+                renderTeamPanel();
+            });
+            const extraSeatsBtn = document.getElementById('teamAddExtraSeatsBtn');
+            if (extraSeatsBtn) extraSeatsBtn.addEventListener('click', () => launchExtraSeatsCheckout(extraSeats));
+            panel.querySelectorAll('[data-remove-member]').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    const { error, sync } = await kerphRemoveTeamMember(btn.getAttribute('data-remove-member'));
+                    if (error) { showToast(error.message || 'Could not remove that teammate.'); return; }
+                    handleTeamSyncResult(sync);
+                    renderTeamPanel();
+                });
+            });
+        }
+
+        // A teammate lands here from their invite email as pricing.html?acceptInvite=<token>.
+        // Runs once auth is known so we can tell a signed-out visitor to sign in first
+        // instead of silently failing, and strips the param afterward either way so a page
+        // refresh doesn't re-trigger it.
+        async function handleAcceptInviteParam() {
+            const params = new URLSearchParams(location.search);
+            const token = params.get('acceptInvite');
+            if (!token) return;
+            const user = (typeof kerphGetCachedUser === 'function') ? kerphGetCachedUser() : null;
+            if (!user) {
+                showToast('Sign in with the email your invite was sent to, then reopen this link.');
+            } else {
+                const { data, error } = await kerphAcceptTeamInvite(token);
+                if (error) showToast(error.message || 'Could not accept that invite.');
+                else if (data && data.alreadyActive) showToast("You're already on this team.");
+                else { showToast("You're in! Premier access is now active on your account."); renderTeamPanel(); }
+            }
+            params.delete('acceptInvite');
+            const cleanUrl = location.pathname + (params.toString() ? `?${params}` : '');
+            history.replaceState(null, '', cleanUrl);
+        }
+
         initJigsDropdown();
         initPlanSelector();
         initBillingToggle();
@@ -1085,11 +1273,14 @@
             renderAccountBadge();
             kerphLoadToolStatus().then(({ data }) => { cachedToolStatuses = data || {}; });
             kerphLoadSavedLayouts().then(({ data }) => { cachedSavedLayouts = data || []; });
+            renderTeamPanel();
         });
 
         kerphAuthReady.then(() => {
             initHeaderSignIn();
             initAccountPanel();
+            renderTeamPanel();
+            handleAcceptInviteParam();
         });
 
         initPricingCards();

@@ -859,6 +859,110 @@
     }
     window.kerphGetMySubscription = kerphGetMySubscription;
 
+    // ---------- Teams (Premier seat management) ----------
+    // A Premier subscriber can invite up to 3 additional teammates (4 total seats, owner
+    // included) for free; each seat beyond that is $5/mo, synced to Lemon Squeezy's "Extra
+    // Seats" variant by the sync-team-seats Edge Function. See sql/teams.sql for the schema
+    // and RLS — Postgres, not this file, is what actually stops a non-Premier user from
+    // inviting anyone, the same "browser can't self-grant" principle as kerphGetMySubscription.
+    const TEAM_INCLUDED_SEATS = 4;
+    const TEAM_EXTRA_SEAT_PRICE = 5;
+
+    async function kerphGetMyTeam() {
+        const fallback = { team: null, members: [], isOwner: false, includedSeats: TEAM_INCLUDED_SEATS, extraSeatPrice: TEAM_EXTRA_SEAT_PRICE };
+        if (!state.user) return { data: fallback, error: null };
+        const { data: ownedTeam } = await kerphSupabase.from('teams').select('*').eq('owner_id', state.user.id).maybeSingle();
+        if (ownedTeam) {
+            const { data: members } = await kerphSupabase.from('team_members').select('*').eq('team_id', ownedTeam.id).order('invited_at', { ascending: true });
+            return { data: { team: ownedTeam, members: members || [], isOwner: true, includedSeats: TEAM_INCLUDED_SEATS, extraSeatPrice: TEAM_EXTRA_SEAT_PRICE }, error: null };
+        }
+        // Not an owner — maybe an accepted member of someone else's team.
+        const { data: membership } = await kerphSupabase.from('team_members').select('*, teams(*)').eq('user_id', state.user.id).eq('status', 'active').maybeSingle();
+        if (membership && membership.teams) {
+            return { data: { team: membership.teams, members: [], isOwner: false, includedSeats: TEAM_INCLUDED_SEATS, extraSeatPrice: TEAM_EXTRA_SEAT_PRICE }, error: null };
+        }
+        return { data: fallback, error: null };
+    }
+
+    async function kerphInviteTeamMember(email) {
+        if (!state.user) return { error: { message: 'Not signed in.' } };
+        const normalizedEmail = (email || '').trim().toLowerCase();
+        if (!normalizedEmail) return { error: { message: 'Enter an email address to invite.' } };
+        const { data: team, error: teamError } = await kerphSupabase
+            .from('teams').upsert({ owner_id: state.user.id }, { onConflict: 'owner_id' }).select().single();
+        if (teamError) return { error: teamError };
+        const { data, error } = await kerphSupabase
+            .from('team_members')
+            .insert({ team_id: team.id, invited_email: normalizedEmail })
+            .select().single();
+        let sync = null;
+        if (!error) sync = await kerphSyncTeamSeats();
+        return { data, error, sync: sync ? sync.data : null };
+    }
+
+    async function kerphRemoveTeamMember(memberId) {
+        if (!state.user) return { error: { message: 'Not signed in.' } };
+        const { error } = await kerphSupabase.from('team_members').delete().eq('id', memberId);
+        let sync = null;
+        if (!error) sync = await kerphSyncTeamSeats();
+        return { error, sync: sync ? sync.data : null };
+    }
+
+    async function kerphLeaveTeam(memberId) {
+        if (!state.user) return { error: { message: 'Not signed in.' } };
+        const { error } = await kerphSupabase.from('team_members').delete().eq('id', memberId).eq('user_id', state.user.id);
+        return { error };
+    }
+
+    async function kerphCallEdgeFunction(name, body) {
+        const { data: { session } } = await kerphSupabase.auth.getSession();
+        if (!session) return { error: { message: 'Not signed in.' } };
+        try {
+            const resp = await fetch(`${kerphSupabase.supabaseUrl}/functions/v1/${name}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+                body: JSON.stringify(body || {})
+            });
+            const result = await resp.json().catch(() => ({}));
+            if (!resp.ok) return { error: { message: result.error || `${name} failed.` } };
+            return { data: result, error: null };
+        } catch (e) {
+            return { error: { message: e.message || `${name} failed.` } };
+        }
+    }
+
+    async function kerphAcceptTeamInvite(token) {
+        return kerphCallEdgeFunction('accept-team-invite', { token });
+    }
+
+    async function kerphSyncTeamSeats() {
+        return kerphCallEdgeFunction('sync-team-seats', {});
+    }
+
+    // The real (not localStorage-preview) effective plan for this user: their own direct
+    // subscription, or — if that's free/none — the Premier tier inherited from an active
+    // team membership. Nothing calls this yet, same "build it ahead of the cutover" reasoning
+    // as kerphGetMySubscription: the day the local kerphPlan preview toggle is retired in
+    // favor of real entitlement checks, this already accounts for both paths.
+    async function kerphGetMyEffectivePlan() {
+        const direct = await kerphGetMySubscription();
+        if (direct.data.plan !== 'free' || !state.user) return direct;
+        const { data: membership } = await kerphSupabase
+            .from('team_members').select('status').eq('user_id', state.user.id).eq('status', 'active').maybeSingle();
+        if (membership) return { data: { ...direct.data, plan: 'premier', viaTeam: true }, error: null };
+        return direct;
+    }
+
+    window.kerphGetMyTeam = kerphGetMyTeam;
+    window.kerphInviteTeamMember = kerphInviteTeamMember;
+    window.kerphRemoveTeamMember = kerphRemoveTeamMember;
+    window.kerphLeaveTeam = kerphLeaveTeam;
+    window.kerphAcceptTeamInvite = kerphAcceptTeamInvite;
+    window.kerphSyncTeamSeats = kerphSyncTeamSeats;
+    window.kerphGetMyEffectivePlan = kerphGetMyEffectivePlan;
+    window.TEAM_INCLUDED_SEATS = TEAM_INCLUDED_SEATS;
+    window.TEAM_EXTRA_SEAT_PRICE = TEAM_EXTRA_SEAT_PRICE;
+
     window.kerphPlanMeetsTier = kerphPlanMeetsTier;
     window.kerphRequiredTierFor = kerphRequiredTierFor;
     window.kerphRefreshTierLocks = kerphRefreshTierLocks;

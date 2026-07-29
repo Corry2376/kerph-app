@@ -18,12 +18,23 @@ const SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const WEBHOOK_SECRET = Deno.env.get('LEMON_SQUEEZY_WEBHOOK_SECRET')!;
 
 // Variant IDs come from the Lemon Squeezy dashboard (Products > [product] > variant) —
-// see Phase 2 of the setup doc. Starting monthly-only; add PRO_ANNUAL/PREMIER_ANNUAL
-// here (and to the map below) once annual billing is wired up.
+// see Phase 2 of the setup doc. Both the monthly and annual variant of a tier map to the
+// same plan name, since billing cadence doesn't affect feature access. The *_ANNUAL_VARIANT_ID
+// secrets are optional (default '') until annual checkout is wired up on the pricing page —
+// an empty string key is harmless here since real Lemon Squeezy variant IDs are never empty.
 const VARIANT_PLAN_MAP: Record<string, string> = {
   [Deno.env.get('LEMON_SQUEEZY_PRO_VARIANT_ID') ?? '']: 'pro',
+  [Deno.env.get('LEMON_SQUEEZY_PRO_ANNUAL_VARIANT_ID') ?? '']: 'pro',
   [Deno.env.get('LEMON_SQUEEZY_PREMIER_VARIANT_ID') ?? '']: 'premier',
+  [Deno.env.get('LEMON_SQUEEZY_PREMIER_ANNUAL_VARIANT_ID') ?? '']: 'premier',
 };
+delete VARIANT_PLAN_MAP[''];
+
+// The "Extra Seats" variant is a separate per-seat-priced line item a Premier owner checks
+// out for once their team grows past the 4 included seats (see sql/teams.sql and
+// supabase/functions/sync-team-seats). Its events update the teams table instead of
+// subscriptions — a team's paid seat count isn't itself a Kerph plan tier.
+const EXTRA_SEAT_VARIANT_ID = Deno.env.get('LEMON_SQUEEZY_PREMIER_EXTRA_SEAT_VARIANT_ID') ?? '';
 
 function hex(buffer: ArrayBuffer): string {
   return Array.from(new Uint8Array(buffer)).map((b) => b.toString(16).padStart(2, '0')).join('');
@@ -83,13 +94,32 @@ Deno.serve(async (req) => {
 
     const attrs = payload?.data?.attributes ?? {};
     const variantId: string = String(attrs.variant_id ?? '');
+    const supabaseAdmin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
+
+    if (EXTRA_SEAT_VARIANT_ID && variantId === EXTRA_SEAT_VARIANT_ID) {
+      // kerphUserId here is the team OWNER (they're the one who completed this checkout),
+      // not a plan grant for themselves — their base pro/premier subscription event (a
+      // separate webhook call) already handled that.
+      const subscriptionItemId = attrs.first_subscription_item?.id;
+      const { error: teamError } = await supabaseAdmin
+        .from('teams')
+        .update({
+          extra_seats_subscription_id: String(payload.data.id),
+          extra_seats_subscription_item_id: subscriptionItemId != null ? String(subscriptionItemId) : null,
+          extra_seats_quantity: attrs.first_subscription_item?.quantity ?? 0,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('owner_id', kerphUserId);
+      if (teamError) throw teamError;
+      return new Response('ok (extra seats)', { status: 200 });
+    }
+
     const plan = VARIANT_PLAN_MAP[variantId];
     if (!plan) {
       console.error('Lemon Squeezy webhook for unrecognized variant_id', variantId);
       return new Response('unrecognized variant', { status: 200 });
     }
 
-    const supabaseAdmin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
     const { error } = await supabaseAdmin.from('subscriptions').upsert(
       {
         user_id: kerphUserId,
