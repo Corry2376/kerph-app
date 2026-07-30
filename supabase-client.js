@@ -729,7 +729,8 @@
         'project-designer.html': 'pro',
         'shop-3d-viewer.html': 'pro',
         'quote-builder.html': 'premier',
-        'portfolio.html': 'premier'
+        'portfolio.html': 'premier',
+        'shop-jigs-part-finder.html': 'premier'
     };
     const KERPH_TIER_LABELS = { pro: 'Pro', premier: 'Premier' };
 
@@ -952,6 +953,39 @@
         if (membership) return { data: { ...direct.data, plan: 'premier', viaTeam: true }, error: null };
         return direct;
     }
+
+    // ---------- Part Finder (Premier) ----------
+    // Sends a photo to the identify-part Edge Function (which calls Claude's vision API
+    // server-side — the API key never touches the browser) and returns the identification
+    // plus generated retailer search links. Real per-photo cost, so this is Premier-gated;
+    // see supabase/functions/identify-part.
+    async function kerphIdentifyPart(imageBase64, mediaType) {
+        const { data: { session } } = await kerphSupabase.auth.getSession();
+        if (!session) return { error: { message: 'Not signed in.' } };
+        try {
+            const resp = await fetch(`${kerphSupabase.supabaseUrl}/functions/v1/identify-part`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+                body: JSON.stringify({ imageBase64, mediaType })
+            });
+            const result = await resp.json().catch(() => ({}));
+            if (!resp.ok || result.error) return { error: { message: result.error || 'Could not identify that part.' } };
+            return { data: result, error: null };
+        } catch (e) {
+            return { error: { message: e.message || 'Could not identify that part.' } };
+        }
+    }
+
+    async function kerphGetMyPartLookupHistory() {
+        if (!state.user) return { data: [], error: null };
+        const { data, error } = await kerphSupabase
+            .from('part_lookups').select('*').eq('user_id', state.user.id)
+            .order('created_at', { ascending: false }).limit(20);
+        return { data: data || [], error };
+    }
+
+    window.kerphIdentifyPart = kerphIdentifyPart;
+    window.kerphGetMyPartLookupHistory = kerphGetMyPartLookupHistory;
 
     window.kerphGetMyTeam = kerphGetMyTeam;
     window.kerphInviteTeamMember = kerphInviteTeamMember;

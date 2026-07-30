@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <script>if (localStorage.getItem('kerphComingSoonBypass') !== 'true') { location.replace('coming-soon.html'); }</script>
@@ -248,6 +248,7 @@
                     <a href="shop-jigs-wood-movement.html">Wood Movement Calculator</a>
                     <a href="shop-jigs-speeds-feeds.html">Speeds &amp; Feeds</a>
                     <a href="shop-jigs-sharpening-angles.html">Sharpening Angle Chart</a>
+                    <a href="shop-jigs-part-finder.html">Part Finder &#128274; Premier</a>
                     <div class="jigs-dropdown-menu-sep"></div>
                     <a href="shop-jigs.html">All Shop Jigs &rarr;</a>
                 </div>
@@ -294,7 +295,7 @@
     <div class="modal-overlay" id="accountModalOverlay" style="display:none;">
         <div class="modal-box account-modal-box">
             <div class="modal-title">Account Settings</div>
-            <div class="modal-warning">Your account (username, avatar, sign-in) is real and synced via Kerph. Saved layouts, projects, tools, Showcase posts, and reviews are synced too — available on any device you sign into.</div>
+            <div class="modal-warning">Your account (username, avatar, sign-in) is real and synced via Kerph. Saved layouts, projects, tools, Showcase posts, and reviews are synced too â€” available on any device you sign into.</div>
 
             <div class="header-field" style="align-items:center; display:flex; flex-direction:column; gap:4px;">
                 <div class="account-avatar-large" id="accountAvatarLarge">&#128100;</div>
@@ -346,7 +347,7 @@
 
             <div class="account-backup-zone">
                 <div class="account-backup-title">Local Device Settings</div>
-                <div class="account-backup-desc">Your layouts, projects, tools, Showcase posts, and reviews live on your account now — no backup needed. This just covers a couple of local display preferences still cached in this browser.</div>
+                <div class="account-backup-desc">Your layouts, projects, tools, Showcase posts, and reviews live on your account now â€” no backup needed. This just covers a couple of local display preferences still cached in this browser.</div>
                 <div style="display:flex; gap:8px;">
                     <button type="button" id="accountExportBtn" class="mini-btn" style="flex:1;">&#11015;&#65039; Export</button>
                     <button type="button" id="accountImportBtn" class="mini-btn" style="flex:1;">&#11014;&#65039; Import&hellip;</button>
@@ -450,7 +451,7 @@
             </div>
 
             <div class="workspace-future-note">
-                <strong>Coming later:</strong> a history of past Cut List Optimizer runs, and a log of contractors you've reached out to via Find a Builder. Both need some backend work we haven't built yet — for now, Cut List Optimizer keeps only your current working list, and Find a Builder doesn't save outreach history.
+                <strong>Coming later:</strong> a history of past Cut List Optimizer runs, and a log of contractors you've reached out to via Find a Builder. Both need some backend work we haven't built yet â€” for now, Cut List Optimizer keeps only your current working list, and Find a Builder doesn't save outreach history.
             </div>
         </div>
     </div>
@@ -770,7 +771,7 @@
         });
 
         /* =====================================================================
-           MY WORKSPACE — aggregates everything already built elsewhere in Kerph.
+           MY WORKSPACE â€” aggregates everything already built elsewhere in Kerph.
            Read-only rollup: every card deep-links out to the real editor for that
            item (workshop-planner.html?loadLayout=, project-designer.html?loadProject=,
            quote-builder.html?loadQuote=) rather than duplicating any editing UI here.
@@ -872,7 +873,7 @@
 
         function renderLayouts(layouts) {
             const grid = document.getElementById('workspaceLayoutsGrid');
-            if (!layouts.length) { grid.innerHTML = emptyBlock('No saved layouts yet — build one in the Workshop Layout Planner.'); return; }
+            if (!layouts.length) { grid.innerHTML = emptyBlock('No saved layouts yet â€” build one in the Workshop Layout Planner.'); return; }
             grid.innerHTML = layouts.slice().reverse().slice(0, 6).map((l) => {
                 const dims = (l.widthFeet && l.lengthFeet) ? `${l.widthFeet}&prime; &times; ${l.lengthFeet}&prime;` : fmtDate(l.savedAt);
                 return cardLink(`workshop-planner.html?loadLayout=${encodeURIComponent(l.id)}`, l.name || 'Untitled Layout', dims, LAYOUT_TYPE_LABELS[l.layoutType] || 'Workshop');
@@ -897,7 +898,7 @@
         function renderProjects(projects) {
             const grid = document.getElementById('workspaceProjectsGrid');
             document.getElementById('workspaceProjectsCount').textContent = projects.length ? `${projects.length} saved` : '';
-            if (!projects.length) { grid.innerHTML = emptyBlock('No saved projects yet — build one in Project Designer.'); return; }
+            if (!projects.length) { grid.innerHTML = emptyBlock('No saved projects yet â€” build one in Project Designer.'); return; }
             grid.innerHTML = projects.slice().reverse().slice(0, 6).map((p) => {
                 const panelCount = Array.isArray(p.panels) ? p.panels.length : 0;
                 return cardLink(`project-designer.html?loadProject=${encodeURIComponent(p.id)}`, p.name || 'Untitled Project', `${panelCount} panel${panelCount === 1 ? '' : 's'} &middot; ${fmtDate(p.savedAt)}`);
@@ -906,7 +907,7 @@
 
         function renderQuotes(quotes) {
             const grid = document.getElementById('workspaceQuotesGrid');
-            if (!quotes.length) { grid.innerHTML = emptyBlock('No saved quotes yet — build one in Quote Builder.'); return; }
+            if (!quotes.length) { grid.innerHTML = emptyBlock('No saved quotes yet â€” build one in Quote Builder.'); return; }
             grid.innerHTML = quotes.slice().reverse().slice(0, 6).map((q) => {
                 return cardLink(`quote-builder.html?loadQuote=${encodeURIComponent(q.id)}`, q.name || 'Untitled Quote', q.clientName ? `For ${q.clientName}` : fmtDate(q.savedAt));
             }).join('');
@@ -914,7 +915,7 @@
 
         function renderPortfolio(projects) {
             const grid = document.getElementById('workspacePortfolioGrid');
-            if (!projects.length) { grid.innerHTML = emptyBlock('No portfolio pieces yet — add one from your Portfolio page.'); return; }
+            if (!projects.length) { grid.innerHTML = emptyBlock('No portfolio pieces yet â€” add one from your Portfolio page.'); return; }
             grid.innerHTML = projects.slice(0, 6).map((p) => {
                 return cardLink('portfolio.html', p.title || 'Untitled', p.materials || '', p.is_public ? 'Public' : 'Private');
             }).join('');

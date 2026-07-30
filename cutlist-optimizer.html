@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <script>if (localStorage.getItem('kerphComingSoonBypass') !== 'true') { location.replace('coming-soon.html'); }</script>
@@ -76,7 +76,7 @@
         }
 
         .logo-tm {
-            /* Lower-right corner, inside the logo's own white background — clear of both the
+            /* Lower-right corner, inside the logo's own white background â€” clear of both the
                navy border below it and the wordmark above it. */
             position: absolute;
             bottom: 6px;
@@ -251,7 +251,7 @@
         .mini-btn:hover { background-color: #eef2ff; border-color: #2563eb; }
         .mini-btn.danger { color: #b91c1c; }
 
-        /* Top-of-content primary action button — same raised-card shadow language as the
+        /* Top-of-content primary action button â€” same raised-card shadow language as the
            home page tiles, so the "do the main thing on this page" button reads consistently
            across pages rather than each page inventing its own button treatment. */
         .page-action-btn {
@@ -631,9 +631,9 @@
             }
             .cut-diagram-block { page-break-inside: avoid; }
             /* `zoom` (not transform) so shrinking also shrinks the reserved layout
-               space, not just the visual appearance — otherwise a shrunk-but-still-
+               space, not just the visual appearance â€” otherwise a shrunk-but-still-
                full-size box would still overflow onto a mostly-blank second page.
-               Set from JS right before printing (see exportCutListPdf) — capped
+               Set from JS right before printing (see exportCutListPdf) â€” capped
                there so a long cut list doesn't get squeezed into illegibility just
                to force it onto one page. */
             #resultsWrap { zoom: var(--print-zoom, 1); }
@@ -724,6 +724,7 @@
                     <a href="shop-jigs-wood-movement.html">Wood Movement Calculator</a>
                     <a href="shop-jigs-speeds-feeds.html">Speeds &amp; Feeds</a>
                     <a href="shop-jigs-sharpening-angles.html">Sharpening Angle Chart</a>
+                    <a href="shop-jigs-part-finder.html">Part Finder &#128274; Premier</a>
                     <div class="jigs-dropdown-menu-sep"></div>
                     <a href="shop-jigs.html">All Shop Jigs &rarr;</a>
                 </div>
@@ -738,7 +739,7 @@
                 </div>
                 <a href="#" class="header-sign-in-mode-toggle" id="headerSignInModeToggle">New here? Create an account</a>
             </div>
-            <button type="button" id="accountBtn" class="account-btn plan-free" title="Account &amp; Plan Settings — border color shows your plan level" style="display:none;">
+            <button type="button" id="accountBtn" class="account-btn plan-free" title="Account &amp; Plan Settings â€” border color shows your plan level" style="display:none;">
                 <span class="account-avatar" id="accountAvatarPreview">&#128100;</span>
                 <span class="account-btn-text">
                     <span class="account-btn-name" id="accountBtnLabel">Account</span>
@@ -770,7 +771,7 @@
     <div class="modal-overlay" id="accountModalOverlay" style="display:none;">
         <div class="modal-box account-modal-box">
             <div class="modal-title">Account Settings</div>
-            <div class="modal-warning">Your account (username, avatar, sign-in) is real and synced via Kerph. Saved layouts, projects, tools, Showcase posts, and reviews are synced too — available on any device you sign into.</div>
+            <div class="modal-warning">Your account (username, avatar, sign-in) is real and synced via Kerph. Saved layouts, projects, tools, Showcase posts, and reviews are synced too â€” available on any device you sign into.</div>
 
             <div class="header-field" style="width:100%; margin-bottom:14px; display:flex; flex-direction:column; align-items:center;">
                 <div class="account-avatar-large" id="accountAvatarLarge">&#128100;</div>
@@ -822,7 +823,7 @@
 
             <div class="account-backup-zone">
                 <div class="account-backup-title">Local Device Settings</div>
-                <div class="account-backup-desc">Your layouts, projects, tools, Showcase posts, and reviews live on your account now — no backup needed. This just covers a couple of local display preferences still cached in this browser.</div>
+                <div class="account-backup-desc">Your layouts, projects, tools, Showcase posts, and reviews live on your account now â€” no backup needed. This just covers a couple of local display preferences still cached in this browser.</div>
                 <div style="display:flex; gap:8px;">
                     <button type="button" id="accountExportBtn" class="mini-btn" style="flex:1;">&#11015;&#65039; Export</button>
                     <button type="button" id="accountImportBtn" class="mini-btn" style="flex:1;">&#11014;&#65039; Import&hellip;</button>
@@ -895,7 +896,7 @@
         <div class="settings-row">
             <div class="header-field-label-row">
                 <label class="header-field-label" for="sheetSizeSelect">Sheet Size</label>
-                <span class="help-tip" tabindex="0">?<span class="help-tip-bubble">Used for sheet-goods parts (plywood, MDF). Independent from Board Length below — set both if your list has both plywood and lumber. Picking a preset here syncs Board Length to match when there's an obvious pairing (e.g. a 4x8 sheet syncs it to 8ft).</span></span>
+                <span class="help-tip" tabindex="0">?<span class="help-tip-bubble">Used for sheet-goods parts (plywood, MDF). Independent from Board Length below â€” set both if your list has both plywood and lumber. Picking a preset here syncs Board Length to match when there's an obvious pairing (e.g. a 4x8 sheet syncs it to 8ft).</span></span>
             </div>
             <select class="select-box" id="sheetSizeSelect">
                 <option value="48x96" selected>4' x 8' (48in x 96in)</option>
@@ -950,7 +951,7 @@
 
         <div class="sidebar-title" style="margin-top:20px;">
             My Stock Defects
-            <span class="help-tip" tabindex="0">?<span class="help-tip-bubble">Already own a sheet or board with a knot, check, or void? Mark it here (by material and which sheet/board number it is — "sheet 1", "sheet 2", etc.) and the optimizer routes parts around it instead of cutting through it. Stored on this device only.</span></span>
+            <span class="help-tip" tabindex="0">?<span class="help-tip-bubble">Already own a sheet or board with a knot, check, or void? Mark it here (by material and which sheet/board number it is â€” "sheet 1", "sheet 2", etc.) and the optimizer routes parts around it instead of cutting through it. Stored on this device only.</span></span>
         </div>
         <div class="defect-list" id="defectList"></div>
         <div class="defect-add-row">
@@ -992,7 +993,7 @@
     <script>
         /* ---------- SHARED STATE KEYS (must match workshop-planner.html / index.html / project-designer.html exactly) ---------- */
         const PLAN_KEY = 'kerphPlan';
-        /* ACCOUNT_KEY/AUTH_KEY removed — account + sign-in are now real, Supabase-backed
+        /* ACCOUNT_KEY/AUTH_KEY removed â€” account + sign-in are now real, Supabase-backed
            (see supabase-client.js) instead of localStorage flags. */
 
         function showToast(message) {
@@ -1043,7 +1044,7 @@
         }
 
         /* ---------- Account extras shared with the other pages: tool-status stats, saved
-           layouts (read-only view — editing lives in Workshop Layout Planner), plan card,
+           layouts (read-only view â€” editing lives in Workshop Layout Planner), plan card,
            member-since, danger zone. ---------- */
         const TOOL_STATUS_KEY = 'kerphToolStatus';
         const LAYOUTS_KEY = 'kerphSavedLayouts';
@@ -1361,18 +1362,18 @@
 
         /* ---------- DATA MODEL ----------
            parts: [{ id, name, widthIn, heightIn, thicknessIn, material, qty }, ...]
-           Same shape Project Designer uses for its panels, so a handoff is a direct copy —
+           Same shape Project Designer uses for its panels, so a handoff is a direct copy â€”
            no conversion needed. For 'linear' materials, widthIn is read as the cut LENGTH
            needed along the board (heightIn/thicknessIn describe the board's fixed profile
            and aren't used by the packer). */
         const PARTS_KEY = 'kerphCutListParts';
         const CUTLIST_HANDOFF_KEY = 'kerphCutListHandoff';
 
-        // Keep in sync with project-designer.html's copy — panels handed off from there carry
+        // Keep in sync with project-designer.html's copy â€” panels handed off from there carry
         // these material keys, and an unrecognized key just falls back to MATERIALS.custom
         // (see the `|| MATERIALS.custom` lookups below) rather than breaking, but that loses the
         // species-specific label/thickness, so the two lists should match.
-        // priceEach ($/4x8 sheet or $/linear ft) kept in sync with project-designer.html's copy —
+        // priceEach ($/4x8 sheet or $/linear ft) kept in sync with project-designer.html's copy â€”
         // see that file's MATERIALS comment for the override mechanism. Not used for nesting here,
         // only present so a project handed off from Project Designer keeps consistent material data.
         const MATERIALS = {
@@ -1410,7 +1411,7 @@
         let parts = [];
 
         // Tracks in-flight saves so a refresh/close mid-save can warn instead of silently
-        // dropping whatever hadn't reached the server yet — the async write itself has no way
+        // dropping whatever hadn't reached the server yet â€” the async write itself has no way
         // to finish before the browser navigates away, so this is the actual backstop.
         let pendingSaveCount = 0;
         function trackSave(promise) {
@@ -1510,7 +1511,7 @@
                 const item = document.createElement('div');
                 item.className = 'panel-item';
                 item.innerHTML = `
-                    <div class="panel-item-title">${escapeHtml(p.name)}${p.qty > 1 ? ` &times;${p.qty}` : ''}${p.grainLocked ? '<span class="grain-badge" title="Grain locked — will not be rotated when nesting">&#8593; grain</span>' : ''}</div>
+                    <div class="panel-item-title">${escapeHtml(p.name)}${p.qty > 1 ? ` &times;${p.qty}` : ''}${p.grainLocked ? '<span class="grain-badge" title="Grain locked â€” will not be rotated when nesting">&#8593; grain</span>' : ''}</div>
                     <div class="panel-item-dims">${p.widthIn}" x ${p.heightIn}" x ${p.thicknessIn}" &mdash; ${escapeHtml(mat.label)}</div>
                 `;
                 const actions = document.createElement('div');
@@ -1561,7 +1562,7 @@
         /* ---------- MY STOCK DEFECTS ----------
            Local-only (not synced through kerphSaveCutListParts, which stays a flat parts
            array so the existing Project Designer handoff and Supabase schema don't need
-           to change shape) — a defect is scoped to one material and a 1-based "which
+           to change shape) â€” a defect is scoped to one material and a 1-based "which
            sheet/board of this material" index, matching how a person actually thinks
            about their own stock ("my second sheet has a knot"). */
         const STOCK_DEFECTS_KEY = 'kerphCutlistStockDefects';
@@ -1629,7 +1630,7 @@
             }
             saveStockDefects();
             renderDefectList();
-            showToast('Defect marked — the optimizer will route around it.');
+            showToast('Defect marked â€” the optimizer will route around it.');
         });
 
         populateDefectMaterialSelect();
@@ -1653,10 +1654,10 @@
         });
 
         /* ---------- PACKING ALGORITHMS ----------
-           Real, functional heuristics (not a mockup) — not a globally-optimal nester (that's
+           Real, functional heuristics (not a mockup) â€” not a globally-optimal nester (that's
            an NP-hard bin-packing problem), but a genuinely useful first pass:
            - Sheet goods: shelf packing (sort by longest side descending, fill left-to-right
-             shelves, wrap to a new shelf/sheet when out of room), with a same-item 90°
+             shelves, wrap to a new shelf/sheet when out of room), with a same-item 90Â°
              rotation check when it helps a piece fit.
            - Linear stock: first-fit-decreasing along board length. */
         function expandParts(list) {
@@ -1667,16 +1668,16 @@
             return expanded;
         }
 
-        // AABB overlap test — used to keep placements clear of marked defect zones.
+        // AABB overlap test â€” used to keep placements clear of marked defect zones.
         function rectsOverlap(ax, ay, aw, ah, bx, by, bw, bh) {
             return ax < bx + bw && ax + aw > bx && ay < by + bh && ay + ah > by;
         }
 
         // stockIndex is 1-based ("sheet 1", "sheet 2"...) matching the order sheets are
-        // opened in — defects[] entries are scoped to a specific stockIndex the same way
+        // opened in â€” defects[] entries are scoped to a specific stockIndex the same way
         // a user would say "my third sheet has a knot here." Known limitation: a defect
         // is only checked against EXISTING sheets/shelves at the moment a part is being
-        // placed — the very first shelf on a brand-new sheet always starts unconditionally
+        // placed â€” the very first shelf on a brand-new sheet always starts unconditionally
         // (matches every other "not a certified optimizer, a genuinely useful first pass"
         // heuristic already in this file).
         function packSheets(rectList, sheetW, sheetH, kerf, defects) {
@@ -1689,7 +1690,7 @@
             function clear(stockIndex, x, y, w, h) {
                 return !defectsFor(stockIndex).some(d => rectsOverlap(x, y, w, h, d.x, d.y, d.w, d.h));
             }
-            // The first item on a brand-new shelf can't just assume x=0 — that's exactly
+            // The first item on a brand-new shelf can't just assume x=0 â€” that's exactly
             // where a corner defect usually sits. Walks x rightward past every defect it
             // would land in until clear, or returns null if that pushes it off the sheet.
             function firstClearX(stockIndex, y, w, h) {
@@ -1711,7 +1712,7 @@
 
             items.forEach(item => {
                 let placed = false;
-                // A grain-locked part can't be laid the other way just to nest tighter —
+                // A grain-locked part can't be laid the other way just to nest tighter â€”
                 // every rotated-placement branch below is skipped for it.
                 const allowRotate = !item.grainLocked;
 
@@ -1763,7 +1764,7 @@
                     const rotated = !fitsNormal && fitsRotated;
                     const w = rotated ? item.heightIn : item.widthIn;
                     const h = rotated ? item.widthIn : item.heightIn;
-                    // A fresh sheet's stockIndex is one past however many already exist —
+                    // A fresh sheet's stockIndex is one past however many already exist â€”
                     // computed before pushing, same numbering the user sees ("sheet 1",
                     // "sheet 2"...) when marking a defect.
                     const newStockIndex = sheets.length + 1;
@@ -1789,7 +1790,7 @@
 
             function defectsFor(stockIndex) { return defects.filter(d => d.stockIndex === stockIndex); }
             // Walks `start` forward past any defect zone it would land in or overlap,
-            // rather than just rejecting the board outright — a knot partway down a
+            // rather than just rejecting the board outright â€” a knot partway down a
             // board still leaves the rest of it usable.
             function nextClearStart(stockIndex, from, len) {
                 let start = from, moved = true;
@@ -1813,7 +1814,7 @@
                     const used = board.parts.reduce((sum, p) => sum + p.lengthIn + kerf, 0);
                     const start = nextClearStart(stockIndex, used, item.lengthIn);
                     if (start + item.lengthIn <= boardLen) {
-                        // A defect was skipped over — record the skipped span as a
+                        // A defect was skipped over â€” record the skipped span as a
                         // non-part "gap" so the diagram/sequence can show it as dead
                         // material instead of silently vanishing from the length math.
                         if (start > used) board.parts.push({ label: null, lengthIn: start - used, start: used, isGap: true });
@@ -1849,7 +1850,7 @@
         }
 
         // Text-fit helpers for the part labels drawn on each cut piece. SVG has no
-        // text wrapping/auto-shrink, so widths are measured with a scratch canvas —
+        // text wrapping/auto-shrink, so widths are measured with a scratch canvas â€”
         // font-size and the SVG viewBox are both in the same abstract "user units"
         // (inches here), so measuring at fontSize-as-px and comparing directly against
         // the available inches works without any unit conversion.
@@ -1864,10 +1865,10 @@
             let lo = 0, hi = text.length;
             while (lo < hi) {
                 const mid = Math.ceil((lo + hi) / 2);
-                const candidate = text.slice(0, mid) + '…';
+                const candidate = text.slice(0, mid) + 'â€¦';
                 if (measureTextWidth(candidate, fontSize, weight) <= maxWidth) lo = mid; else hi = mid - 1;
             }
-            return lo > 0 ? text.slice(0, lo) + '…' : '';
+            return lo > 0 ? text.slice(0, lo) + 'â€¦' : '';
         }
         // Shared white-on-color label style, with a soft dark stroke so it stays
         // legible against any of the PART_COLORS fills.
@@ -1878,16 +1879,16 @@
         function buildSheetSvg(sheet, sheetW, sheetH, labelColorMap, sheetDefects) {
             let rects = '';
             (sheetDefects || []).forEach(d => {
-                rects += `<rect x="${d.x}" y="${d.y}" width="${d.w}" height="${d.h}" fill="#dc2626" fill-opacity="0.25" stroke="#b91c1c" stroke-width="0.4" stroke-dasharray="1.2,0.8"><title>Marked defect — avoided</title></rect>`;
+                rects += `<rect x="${d.x}" y="${d.y}" width="${d.w}" height="${d.h}" fill="#dc2626" fill-opacity="0.25" stroke="#b91c1c" stroke-width="0.4" stroke-dasharray="1.2,0.8"><title>Marked defect â€” avoided</title></rect>`;
             });
             sheet.shelves.forEach(shelf => {
                 shelf.parts.forEach(p => {
                     const color = colorForLabel(p.label, labelColorMap);
                     const dimsText = `${p.w.toFixed(1)}" x ${p.h.toFixed(1)}"`;
-                    rects += `<rect x="${p.x}" y="${p.y}" width="${p.w}" height="${p.h}" fill="${color}" fill-opacity="0.75" stroke="#0f172a" stroke-width="0.3"><title>${escapeHtml(p.label)} — ${dimsText}${p.rotated ? ' (rotated)' : ''}</title></rect>`;
+                    rects += `<rect x="${p.x}" y="${p.y}" width="${p.w}" height="${p.h}" fill="${color}" fill-opacity="0.75" stroke="#0f172a" stroke-width="0.3"><title>${escapeHtml(p.label)} â€” ${dimsText}${p.rotated ? ' (rotated)' : ''}</title></rect>`;
 
                     // Label the piece with its part name + dimensions, not just its
-                    // color — skip entirely on pieces too small to hold legible text.
+                    // color â€” skip entirely on pieces too small to hold legible text.
                     const minDim = Math.min(p.w, p.h);
                     if (minDim >= 3) {
                         const fontSize = Math.max(1.6, Math.min(minDim * 0.22, 3.2));
@@ -1914,22 +1915,22 @@
             let rects = '';
             board.parts.forEach(p => {
                 if (p.isGap) {
-                    // A skipped defect zone — hatched red, not a part color, so it
+                    // A skipped defect zone â€” hatched red, not a part color, so it
                     // reads as "dead material" rather than another cut piece.
                     rects += `<rect x="${p.start}" y="0" width="${p.lengthIn}" height="${barHeight}" fill="#dc2626" fill-opacity="0.25" stroke="#b91c1c" stroke-width="0.4" stroke-dasharray="1.2,0.8"><title>Skipped past a marked defect (${p.lengthIn.toFixed(1)}")</title></rect>`;
                     return;
                 }
                 const color = colorForLabel(p.label, labelColorMap);
                 const dimsText = `${p.lengthIn.toFixed(1)}"`;
-                rects += `<rect x="${p.start}" y="0" width="${p.lengthIn}" height="${barHeight}" fill="${color}" fill-opacity="0.75" stroke="#0f172a" stroke-width="0.3"><title>${escapeHtml(p.label)} — ${dimsText}</title></rect>`;
+                rects += `<rect x="${p.start}" y="0" width="${p.lengthIn}" height="${barHeight}" fill="${color}" fill-opacity="0.75" stroke="#0f172a" stroke-width="0.3"><title>${escapeHtml(p.label)} â€” ${dimsText}</title></rect>`;
 
                 if (p.lengthIn >= 4) {
                     const fontSize = Math.min(4.2, Math.max(2.2, barHeight * 0.3));
                     const maxTextWidth = p.lengthIn - fontSize * 0.8;
-                    const combined = truncateToWidth(`${p.label} — ${dimsText}`, fontSize, maxTextWidth, 700);
+                    const combined = truncateToWidth(`${p.label} â€” ${dimsText}`, fontSize, maxTextWidth, 700);
                     // Falling back to just the dims keeps *something* legible on a
                     // narrow piece where the combined name+dims truncated to nothing useful.
-                    const text = combined.replace(/…$/, '').length >= 3 ? combined : truncateToWidth(dimsText, fontSize, maxTextWidth, 700);
+                    const text = combined.replace(/â€¦$/, '').length >= 3 ? combined : truncateToWidth(dimsText, fontSize, maxTextWidth, 700);
                     if (text) rects += labelTextSvg(p.start + p.lengthIn / 2, barHeight / 2, fontSize, 700, text);
                 }
             });
@@ -1942,7 +1943,7 @@
         }
 
         function boardWasteFraction(board, boardLen, kerf) {
-            // Gap entries (skipped defect zones) are excluded from "used" — they're
+            // Gap entries (skipped defect zones) are excluded from "used" â€” they're
             // material lost to the defect, not productive use, so they correctly show
             // up as waste rather than quietly inflating this board's efficiency.
             const realParts = board.parts.filter(p => !p.isGap);
@@ -1953,7 +1954,7 @@
         /* ---------- CUT SEQUENCE ----------
            A diagram alone doesn't tell you what to actually DO at the saw. This derives
            a real guillotine order from the same shelf/board data the diagrams already
-           use — no separate algorithm, just a different read of the same placement:
+           use â€” no separate algorithm, just a different read of the same placement:
            for a sheet, each shelf IS a horizontal strip, so step 1 is always "rip the
            sheet into strips" (one cut per shelf boundary), then step 2 crosscuts each
            strip into its individual parts. You can't crosscut before ripping on a table
@@ -1966,7 +1967,7 @@
                 const ripPoints = [];
                 let y = 0;
                 for (let i = 0; i < shelves.length - 1; i++) { y += shelves[i].height; ripPoints.push(fmtIn(y)); }
-                steps.push(`Rip the sheet into ${shelves.length} strip${shelves.length === 1 ? '' : 's'} — crosscut straight across at ${ripPoints.join('", ')}" from the top edge.`);
+                steps.push(`Rip the sheet into ${shelves.length} strip${shelves.length === 1 ? '' : 's'} â€” crosscut straight across at ${ripPoints.join('", ')}" from the top edge.`);
             }
             shelves.forEach((shelf, i) => {
                 const stripLabel = shelves.length > 1 ? `Strip ${i + 1} (${fmtIn(shelf.height)}" tall)` : 'The sheet';
@@ -1976,7 +1977,7 @@
                     for (let j = 0; j < shelf.parts.length - 1; j++) { x += shelf.parts[j].w; cutPoints.push(fmtIn(x)); }
                     steps.push(`${stripLabel}: crosscut at ${cutPoints.join('", ')}" from the left edge to separate ${shelf.parts.map(p => p.label).join(', ')}.`);
                 } else if (shelf.parts.length === 1 && shelves.length > 1) {
-                    steps.push(`${stripLabel} is already just ${shelf.parts[0].label} — no further cut needed.`);
+                    steps.push(`${stripLabel} is already just ${shelf.parts[0].label} â€” no further cut needed.`);
                 }
             });
             return steps;
@@ -1998,7 +1999,7 @@
         /* ---------- USABLE OFFCUTS ----------
            Reports leftover space big enough to be worth walking to the scrap rack for,
            not every last sliver of kerf waste. Thresholds are deliberately conservative
-           (12" both ways for sheet goods, 12" of length for linear stock) — smaller than
+           (12" both ways for sheet goods, 12" of length for linear stock) â€” smaller than
            that and it's really just waste, not a drop worth labeling and storing. */
         const MIN_OFFCUT_SHEET_IN = 12;
         const MIN_OFFCUT_LINEAR_IN = 12;
@@ -2097,7 +2098,7 @@
 
                     cardsHtml += `
                         <div class="material-result-card">
-                            <div class="material-result-title">${escapeHtml(mat.label)} — ${sheets.length} sheet${sheets.length === 1 ? '' : 's'} (${sheetW}" x ${sheetH}")</div>
+                            <div class="material-result-title">${escapeHtml(mat.label)} â€” ${sheets.length} sheet${sheets.length === 1 ? '' : 's'} (${sheetW}" x ${sheetH}")</div>
                             <div class="material-result-meta">Average waste per sheet: ${avgWaste.toFixed(0)}%</div>
                             ${sheetCost > 0 ? `<div class="material-result-cost">Estimated cost: $${(sheets.length * sheetCost).toFixed(2)} (${sheets.length} &times; $${sheetCost.toFixed(2)})</div>` : ''}
                             ${oversized.length ? `<div class="oversized-warning">${oversized.length} part(s) are larger than the sheet size in both orientations and couldn't be placed: ${escapeHtml(oversized.map(o => o.label).join(', '))}</div>` : ''}
@@ -2130,7 +2131,7 @@
 
                     cardsHtml += `
                         <div class="material-result-card">
-                            <div class="material-result-title">${escapeHtml(mat.label)} — ${boards.length} board${boards.length === 1 ? '' : 's'} (${boardLenFt}ft)</div>
+                            <div class="material-result-title">${escapeHtml(mat.label)} â€” ${boards.length} board${boards.length === 1 ? '' : 's'} (${boardLenFt}ft)</div>
                             <div class="material-result-meta">Average waste per board: ${avgWaste.toFixed(0)}%</div>
                             ${boardCostPerFt > 0 ? `<div class="material-result-cost">Estimated cost: $${(boards.length * boardLenFt * boardCostPerFt).toFixed(2)} (${boards.length} &times; ${boardLenFt}ft &times; $${boardCostPerFt.toFixed(2)}/ft)</div>` : ''}
                             ${oversized.length ? `<div class="oversized-warning">${oversized.length} part(s) are longer than the board length and couldn't be placed: ${escapeHtml(oversized.map(o => o.label).join(', '))}</div>` : ''}
@@ -2175,10 +2176,10 @@
 
         /* ---------- STOCK SETTINGS: custom dimensions + sheet/board-length sync ----------
            Sheet Size and Board Length are independent stock settings (a shop might cut both
-           plywood and lumber in the same list — see mat.type === 'sheet' vs the linear-board
+           plywood and lumber in the same list â€” see mat.type === 'sheet' vs the linear-board
            branch in runOptimization), so they don't NEED to match. But a 4x8 sheet is 8ft
            long, and defaulting Board Length to some unrelated value (10ft) when that sheet is
-           picked reads as a bug, not an independent choice — so picking a preset sheet size
+           picked reads as a bug, not an independent choice â€” so picking a preset sheet size
            auto-syncs Board Length to that sheet's long edge whenever a matching preset option
            exists (e.g. 48x96 -> 8ft), without overriding a board length the user set on
            purpose for an actual board-length material. */
@@ -2214,7 +2215,7 @@
                 <div class="print-meta">Generated ${dateStr}</div>
             `;
 
-            // Best-effort shrink to fit one portrait page — 680x900 CSS px is a
+            // Best-effort shrink to fit one portrait page â€” 680x900 CSS px is a
             // conservative printable area (comfortably inside Letter/A4 portrait at
             // the @page 0.5in margin, with room left for the header). A cut list with
             // many sheets/boards can legitimately be too long to shrink onto one page
@@ -2227,7 +2228,7 @@
             const scale = Math.min(1, PRINT_AREA_W / wrap.scrollWidth, PRINT_AREA_H / wrap.scrollHeight);
             wrap.style.setProperty('--print-zoom', scale >= PRINT_ZOOM_FLOOR ? scale : 1);
 
-            // Free-plan exports carry a watermark — clean exports are a Pro+ perk, same
+            // Free-plan exports carry a watermark â€” clean exports are a Pro+ perk, same
             // client-side "Plan (Preview)" gate used everywhere else in the app.
             document.getElementById('printWatermark').classList.toggle('active', getPlan() === 'free');
 

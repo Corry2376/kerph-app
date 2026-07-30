@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <script>if (localStorage.getItem('kerphComingSoonBypass') !== 'true') { location.replace('coming-soon.html'); }</script>
@@ -252,7 +252,7 @@
             overflow-y: auto; padding: 40px;
         }
         /* Quote preview sits left instead of dead-center now that the dashboard occupies the
-           right side — max-width caps prevents it from stretching too wide on its own. */
+           right side â€” max-width caps prevents it from stretching too wide on its own. */
         .quote-canvas-columns { display: flex; align-items: flex-start; gap: 32px; max-width: 1080px; margin: 0 auto; }
         #quoteWrap { max-width: 680px; flex: 1 1 auto; min-width: 0; }
 
@@ -317,7 +317,7 @@
         }
         .help-tip:hover .help-tip-bubble, .help-tip:focus .help-tip-bubble { display: block; }
 
-        /* Top-of-content primary action button — same raised-card shadow language as the
+        /* Top-of-content primary action button â€” same raised-card shadow language as the
            home page tiles, so the "do the main thing on this page" button reads consistently
            across pages rather than each page inventing its own button treatment. */
         .page-action-btn {
@@ -415,6 +415,7 @@
                     <a href="shop-jigs-wood-movement.html">Wood Movement Calculator</a>
                     <a href="shop-jigs-speeds-feeds.html">Speeds &amp; Feeds</a>
                     <a href="shop-jigs-sharpening-angles.html">Sharpening Angle Chart</a>
+                    <a href="shop-jigs-part-finder.html">Part Finder &#128274; Premier</a>
                     <div class="jigs-dropdown-menu-sep"></div>
                     <a href="shop-jigs.html">All Shop Jigs &rarr;</a>
                 </div>
@@ -461,7 +462,7 @@
     <div class="modal-overlay" id="accountModalOverlay" style="display:none;">
         <div class="modal-box account-modal-box">
             <div class="modal-title">Account Settings</div>
-            <div class="modal-warning">Your account (username, avatar, sign-in) is real and synced via Kerph. Saved layouts, projects, tools, Showcase posts, and reviews are synced too — available on any device you sign into.</div>
+            <div class="modal-warning">Your account (username, avatar, sign-in) is real and synced via Kerph. Saved layouts, projects, tools, Showcase posts, and reviews are synced too â€” available on any device you sign into.</div>
 
             <div class="header-field" style="align-items:center; display:flex; flex-direction:column; gap:4px;">
                 <div class="account-avatar-large" id="accountAvatarLarge">&#128100;</div>
@@ -513,7 +514,7 @@
 
             <div class="account-backup-zone">
                 <div class="account-backup-title">Local Device Settings</div>
-                <div class="account-backup-desc">Your layouts, projects, tools, Showcase posts, and reviews live on your account now — no backup needed. This just covers a couple of local display preferences still cached in this browser.</div>
+                <div class="account-backup-desc">Your layouts, projects, tools, Showcase posts, and reviews live on your account now â€” no backup needed. This just covers a couple of local display preferences still cached in this browser.</div>
                 <div style="display:flex; gap:8px;">
                     <button type="button" id="accountExportBtn" class="mini-btn" style="flex:1;">&#11015;&#65039; Export</button>
                     <button type="button" id="accountImportBtn" class="mini-btn" style="flex:1;">&#11014;&#65039; Import&hellip;</button>
@@ -550,7 +551,7 @@
     <div class="modal-overlay" id="shareQuoteModalOverlay" style="display:none;">
         <div class="modal-box" style="width:380px;">
             <div class="modal-title">Share With Client</div>
-            <div class="modal-warning" style="background-color:#eef2ff; border-color:#c7d2fe; color:#1e3a8a;">Anyone with this link can view the quote and accept or decline it — no Kerph account needed on their end. The response comes back into your quotes list automatically.</div>
+            <div class="modal-warning" style="background-color:#eef2ff; border-color:#c7d2fe; color:#1e3a8a;">Anyone with this link can view the quote and accept or decline it â€” no Kerph account needed on their end. The response comes back into your quotes list automatically.</div>
             <div class="header-field" style="width:100%;">
                 <label class="header-field-label" for="shareQuoteLinkInput">Client link</label>
                 <input type="text" class="input-box" id="shareQuoteLinkInput" readonly>
@@ -615,14 +616,14 @@
             <div class="settings-row">
                 <div class="header-field-label-row">
                     <label class="header-field-label" for="overheadPctInput">Overhead %</label>
-                    <span class="help-tip" tabindex="0">?<span class="help-tip-bubble">Your real shop cost of doing business — rent, insurance, tool depreciation — spread across jobs as a percentage of materials + labor + consumables.</span></span>
+                    <span class="help-tip" tabindex="0">?<span class="help-tip-bubble">Your real shop cost of doing business â€” rent, insurance, tool depreciation â€” spread across jobs as a percentage of materials + labor + consumables.</span></span>
                 </div>
                 <input type="number" class="input-box" id="overheadPctInput" min="0" step="1" value="0">
             </div>
             <div class="settings-row">
                 <div class="header-field-label-row">
                     <label class="header-field-label" for="marginPctInput">Margin %</label>
-                    <span class="help-tip" tabindex="0">?<span class="help-tip-bubble">Your markup/profit on top of true cost (materials + labor + consumables + overhead) — this is what actually pays you beyond breaking even.</span></span>
+                    <span class="help-tip" tabindex="0">?<span class="help-tip-bubble">Your markup/profit on top of true cost (materials + labor + consumables + overhead) â€” this is what actually pays you beyond breaking even.</span></span>
                 </div>
                 <input type="number" class="input-box" id="marginPctInput" min="0" step="1" value="0">
             </div>
@@ -673,7 +674,7 @@
 
             <div class="actual-card">
                 <div class="actual-card-title">Actual Costs (fill in after the job)</div>
-                <div class="actual-card-desc">Optional — once the job's done, log what it really cost so you can see your true profit vs. what you quoted. Not included in the client PDF.</div>
+                <div class="actual-card-desc">Optional â€” once the job's done, log what it really cost so you can see your true profit vs. what you quoted. Not included in the client PDF.</div>
                 <div class="actual-input-row">
                     <div class="actual-field">
                         <label for="actualMaterialsInput">Actual materials ($)</label>
@@ -1032,7 +1033,7 @@
                 showToast(`Loaded "${target.name}" from My Workspace.`);
             }
 
-            // One-shot handoff from Project Designer's "Send to Quote Builder" button — the
+            // One-shot handoff from Project Designer's "Send to Quote Builder" button â€” the
             // seed lives in localStorage rather than the URL since a materials list can get
             // long. Consumed (and the query param scrubbed) immediately so a page refresh
             // doesn't silently re-seed a quote the user has since edited.
@@ -1048,7 +1049,7 @@
                         seeded.projectName = seed.projectName || '';
                         seeded.materials = Array.isArray(seed.materials) ? seed.materials : [];
                         loadQuoteIntoForm(seeded);
-                        showToast(`Pre-filled from "${seed.projectName}" — review and Save Quote.`);
+                        showToast(`Pre-filled from "${seed.projectName}" â€” review and Save Quote.`);
                     } catch (e) { /* malformed seed, ignore */ }
                 }
             }
@@ -1060,11 +1061,11 @@
         }
 
         /* =====================================================================
-           QUOTE STATE + MATH — cost-plus pricing:
+           QUOTE STATE + MATH â€” cost-plus pricing:
              subtotal = materials + labor + consumables
              cost     = subtotal + overhead (overhead is a real cost of doing
                         business, priced in as a % of the job's raw cost)
-             total    = cost + margin (margin is the actual profit — clean by
+             total    = cost + margin (margin is the actual profit â€” clean by
                         construction, since total - cost === marginAmt exactly)
            ===================================================================== */
         function blankQuote() {
@@ -1204,7 +1205,7 @@
             card.className = 'quote-breakdown-card client-response-card' + (isRejected ? ' is-rejected' : '');
             const when = new Date(quote.clientRespondedAt).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
             card.innerHTML = `
-                <div class="client-response-title">${isRejected ? '❌ Declined' : '✅ Accepted'} by ${escapeHtml(quote.clientName || 'the client')}</div>
+                <div class="client-response-title">${isRejected ? 'âŒ Declined' : 'âœ… Accepted'} by ${escapeHtml(quote.clientName || 'the client')}</div>
                 <div class="client-response-meta">${when}</div>
                 ${quote.clientNotes ? `<div class="client-response-notes">${escapeHtml(quote.clientNotes)}</div>` : ''}
             `;
@@ -1297,7 +1298,7 @@
 
         // Renders both the compact sidebar list (visible while actively editing) and the
         // larger dashboard panel in the canvas area (the primary "browse and open a quote"
-        // surface) from the same data — they're two views onto the same open/past split, not
+        // surface) from the same data â€” they're two views onto the same open/past split, not
         // two separate lists to keep in sync by hand.
         function renderQuotesList() {
             const sorted = savedQuotes.slice().reverse();
@@ -1335,10 +1336,10 @@
             showToast('Quote saved.');
         });
 
-        // The share link is a random token, not the quote's own DB id — keeps the public
+        // The share link is a random token, not the quote's own DB id â€” keeps the public
         // credential separate from the row identity, so a leaked/no-longer-wanted link
         // could in principle be rotated later without touching the quote itself.
-        // Shared by the Share and Email actions — both need the quote actually saved and
+        // Shared by the Share and Email actions â€” both need the quote actually saved and
         // carrying a share token before they can point anywhere. Returns the client-facing
         // link, or null (after showing its own toast) if it couldn't get there.
         async function ensureQuoteSavedAndShared() {
@@ -1377,12 +1378,12 @@
                 await navigator.clipboard.writeText(linkInput.value);
                 showToast('Link copied.');
             } catch (e) {
-                showToast('Could not copy automatically — the link is selected, copy it manually.');
+                showToast('Could not copy automatically â€” the link is selected, copy it manually.');
             }
         });
 
         // Builds an offscreen, print-styled copy of the quote (title/meta + the already-
-        // rendered breakdown lines) for html2pdf to rasterize — reuses #quoteBreakdown's
+        // rendered breakdown lines) for html2pdf to rasterize â€” reuses #quoteBreakdown's
         // current innerHTML rather than recomputing the totals a second time.
         function buildQuotePdfElement() {
             const el = document.createElement('div');
@@ -1402,7 +1403,7 @@
             const btn = document.getElementById('emailQuoteBtn');
             const originalText = btn.textContent;
             btn.disabled = true;
-            btn.textContent = 'Sending…';
+            btn.textContent = 'Sendingâ€¦';
             try {
                 const link = await ensureQuoteSavedAndShared();
                 if (!link) return;
@@ -1445,7 +1446,7 @@
                 }
                 showToast(`Quote emailed to ${quote.clientEmail}.`);
             } catch (e) {
-                showToast('Could not send the email — please try again.');
+                showToast('Could not send the email â€” please try again.');
             } finally {
                 btn.disabled = false;
                 btn.textContent = originalText;

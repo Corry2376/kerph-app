@@ -1,10 +1,11 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <script>if (localStorage.getItem('kerphComingSoonBypass') !== 'true') { location.replace('coming-soon.html'); }</script>
+    <script>(function(){var r={free:0,pro:1,premier:2};if((r[localStorage.getItem('kerphPlan')||'free']||0)<r.premier){location.replace('pricing.html?locked=shop-jigs-part-finder.html');}})();</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kerph - Shop Showcase</title>
+    <title>Kerph - Part Finder</title>
     <style>
         * {
             box-sizing: border-box;
@@ -135,14 +136,13 @@
         .mini-btn:hover { background-color: #eef2ff; border-color: #2563eb; }
         .mini-btn.danger { color: #b91c1c; }
         .mini-btn.danger:hover { background-color: #fef2f2; border-color: #b91c1c; }
-        .mini-btn.primary { background-color: #1e3a8a; color: #ffffff; border-color: #1e3a8a; }
-        .mini-btn.primary:hover { background-color: #1e40af; }
+        .mini-btn:disabled { opacity: 0.5; cursor: default; }
+        .mini-btn:disabled:hover { background-color: #ffffff; border-color: #cbd5e1; }
 
         .input-box { width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; font-weight: 600; }
         .select-box { width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; font-weight: 600; background: #f8fafc; }
-        textarea.input-box { resize: vertical; min-height: 80px; font-family: inherit; font-weight: 400; }
 
-        .modal-overlay { position: fixed; inset: 0; background-color: rgba(15, 23, 42, 0.5); z-index: 3000; display: flex; align-items: center; justify-content: center; padding: 24px; overflow-y: auto; }
+        .modal-overlay { position: fixed; inset: 0; background-color: rgba(15, 23, 42, 0.5); z-index: 3000; display: flex; align-items: center; justify-content: center; padding: 24px; }
         .modal-box { background-color: #ffffff; border-radius: 12px; padding: 24px; width: 320px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4); }
         .account-modal-box { width: 380px; max-height: 88vh; overflow-y: auto; }
         .account-member-since { font-size: 10.5px; color: #94a3b8; font-weight: 600; margin-top: 6px; }
@@ -193,140 +193,8 @@
         }
         .upgrade-nudge.visible { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
 
-        /* ---------- PAGE CONTENT ---------- */
-        main {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 40px 24px 80px;
-        }
-
-        .showcase-eyebrow {
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            color: #b23b3b;
-            margin-bottom: 8px;
-        }
-        .showcase-title { font-size: 28px; font-weight: 800; color: #0f172a; margin-bottom: 10px; }
-        .showcase-subtitle { font-size: 14.5px; color: #4b5563; line-height: 1.6; margin-bottom: 28px; max-width: 70ch; }
-
-        .showcase-toolbar {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            align-items: center;
-            margin-bottom: 24px;
-            background-color: #ffffff;
-            border: 1px solid #cbd5e1;
-            border-radius: 12px;
-            padding: 14px;
-        }
-        .showcase-toolbar .input-box, .showcase-toolbar .select-box { width: auto; }
-        #postSearchInput { flex: 1; min-width: 160px; }
-        #postSortSelect { min-width: 150px; }
-        #sharePostBtn { flex: none; margin-left: auto; padding: 10px 18px; }
-
-        /* True masonry via CSS columns â€” simplest reliable approach with no JS layout pass,
-           and posts can have wildly different photo aspect ratios so a fixed-row grid would
-           either crop or leave uneven gaps. */
-        .showcase-masonry {
-            column-count: 3;
-            column-gap: 16px;
-        }
-        @media (max-width: 900px) { .showcase-masonry { column-count: 2; } }
-        @media (max-width: 600px) { .showcase-masonry { column-count: 1; } }
-
-        .post-card {
-            background-color: #ffffff;
-            border: 1px solid #cbd5e1;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 10px 25px -12px rgba(15, 23, 42, 0.15);
-            margin-bottom: 16px;
-            break-inside: avoid;
-            cursor: pointer;
-            transition: transform 0.15s ease, box-shadow 0.15s ease;
-        }
-        .post-card:hover { transform: translateY(-2px); box-shadow: 0 16px 32px -12px rgba(15, 23, 42, 0.25); }
-
-        .post-card-image { width: 100%; display: block; object-fit: cover; background-color: #e2e8f0; }
-        .post-card-placeholder {
-            width: 100%;
-            aspect-ratio: 4 / 3;
-            background: linear-gradient(135deg, #e0e7ff 0%, #eef2ff 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 40px;
-            color: #a5b4fc;
-        }
-
-        .post-card-body { padding: 14px; }
-        .post-card-title { font-size: 14.5px; font-weight: 800; color: #0f172a; margin-bottom: 4px; }
-        .post-card-desc { font-size: 12px; color: #4b5563; line-height: 1.5; margin-bottom: 8px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-
-        .post-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px; }
-        .post-tag { font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; color: #1e3a8a; background-color: #e0e7ff; padding: 2px 7px; border-radius: 999px; }
-
-        .post-card-footer { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-top: 10px; border-top: 1px solid #f1f5f9; font-size: 11px; color: #6b7280; }
-        .post-author { font-weight: 700; color: #1e293b; text-decoration: none; }
-        .post-author:hover { color: #1e3a8a; text-decoration: underline; }
-        .detail-meta a { color: #1e3a8a; font-weight: 600; text-decoration: none; }
-        .detail-meta a:hover { text-decoration: underline; }
-        .post-card-stats { display: flex; gap: 10px; align-items: center; }
-
-        .like-btn { border: none; background: none; cursor: pointer; font-size: 13px; color: #6b7280; padding: 2px; }
-        .like-btn.active { color: #db2777; }
-
-        .showcase-empty {
-            text-align: center;
-            padding: 60px 20px;
-            color: #6b7280;
-            background-color: #ffffff;
-            border: 1px dashed #cbd5e1;
-            border-radius: 12px;
-        }
-        .showcase-empty-icon { font-size: 40px; margin-bottom: 10px; }
-        .showcase-empty-title { font-size: 15px; font-weight: 700; color: #1e293b; margin-bottom: 6px; }
-        .showcase-empty-desc { font-size: 12.5px; max-width: 40ch; margin: 0 auto; line-height: 1.6; }
-
-        .header-field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; width: 100%; }
-
-        .image-upload-zone {
-            border: 2px dashed #cbd5e1;
-            border-radius: 8px;
-            padding: 16px;
-            text-align: center;
-            cursor: pointer;
-            font-size: 12px;
-            color: #6b7280;
-        }
-        .image-upload-zone:hover { background-color: #f8fafc; border-color: #2563eb; }
-        .image-upload-preview { width: 100%; max-height: 160px; object-fit: cover; border-radius: 8px; margin-top: 8px; display: none; }
-
-        /* ---------- POST DETAIL MODAL ---------- */
-        .detail-modal-box { width: 640px; max-width: 100%; max-height: 88vh; overflow-y: auto; padding: 0; }
-        .detail-image { width: 100%; max-height: 380px; object-fit: cover; display: block; }
-        .detail-placeholder { width: 100%; aspect-ratio: 16/9; background: linear-gradient(135deg, #e0e7ff 0%, #eef2ff 100%); display: flex; align-items: center; justify-content: center; font-size: 56px; color: #a5b4fc; }
-        .detail-body { padding: 22px; }
-        .detail-title { font-size: 19px; font-weight: 800; color: #0f172a; margin-bottom: 6px; }
-        .detail-meta { font-size: 12px; color: #6b7280; margin-bottom: 14px; }
-        .detail-desc { font-size: 13.5px; color: #374151; line-height: 1.6; margin-bottom: 14px; white-space: pre-wrap; }
-        .detail-actions { display: flex; gap: 14px; align-items: center; padding-bottom: 16px; margin-bottom: 16px; border-bottom: 1px solid #f1f5f9; }
-        .detail-like-btn { border: 1px solid #cbd5e1; background-color: #f8fafc; border-radius: 999px; padding: 6px 14px; font-size: 12.5px; font-weight: 700; color: #4b5563; cursor: pointer; }
-        .detail-like-btn.active { background-color: #fce7f3; border-color: #db2777; color: #be185d; }
-        .comments-title { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; color: #1e3a8a; margin-bottom: 10px; }
-        .comment-item { padding: 8px 0; border-bottom: 1px solid #f8fafc; font-size: 12.5px; }
-        .comment-author { font-weight: 700; color: #1e293b; }
-        .comment-date { font-size: 10.5px; color: #9ca3af; margin-left: 6px; }
-        .comment-text { color: #374151; margin-top: 2px; line-height: 1.5; }
-        .comments-empty { font-size: 12px; color: #9ca3af; font-style: italic; padding: 6px 0; }
-        .comment-form { display: flex; gap: 8px; margin-top: 12px; }
-        .comment-form .input-box { flex: 1; }
-        .comment-form button { flex: none; }
-            .header-quick-links { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; font-size: 11px; }
-            .header-quick-links-row { display: flex; align-items: center; gap: 6px; }
+        .header-quick-links { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; font-size: 11px; }
+        .header-quick-links-row { display: flex; align-items: center; gap: 6px; }
         .header-quick-links a { color: #6b7280; font-weight: 600; text-decoration: none; }
         .header-quick-links a:hover { color: #1e3a8a; text-decoration: underline; }
         .header-quick-links-sep { color: #cbd5e1; }
@@ -374,7 +242,81 @@
             text-decoration: none;
         }
         .jigs-dropdown-menu a:hover { background-color: #eef2ff; color: #1e3a8a; }
+        .jigs-dropdown-menu a.current { background-color: #eef2ff; color: #1e3a8a; }
         .jigs-dropdown-menu-sep { height: 1px; background-color: #e2e8f0; margin: 5px 2px; }
+
+        /* ---------- SINGLE-JIG PAGE LAYOUT ---------- */
+        .jig-page-layout {
+            max-width: 760px;
+            margin: 0 auto;
+            padding: 40px 24px 100px;
+        }
+        .jig-breadcrumb { font-size: 12.5px; font-weight: 600; margin-bottom: 14px; }
+        .jig-breadcrumb a { color: #6b7280; text-decoration: none; }
+        .jig-breadcrumb a:hover { color: #1e3a8a; text-decoration: underline; }
+        .help-eyebrow {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #b23b3b;
+            margin-bottom: 8px;
+        }
+        .help-title { font-size: 28px; font-weight: 800; color: #0f172a; margin-bottom: 10px; }
+        .help-subtitle { font-size: 14.5px; color: #4b5563; line-height: 1.6; margin-bottom: 24px; max-width: 65ch; }
+        .help-article {
+            background-color: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 14px;
+            padding: 32px;
+            box-shadow: 0 12px 30px -12px rgba(15, 23, 42, 0.15);
+        }
+
+        .premier-badge { display: inline-block; background: #fef3c7; color: #92400e; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; border-radius: 4px; padding: 3px 8px; margin-bottom: 12px; }
+
+        /* ---------- PART FINDER ---------- */
+        .pf-photo-zone {
+            border: 2px dashed #cbd5e1;
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+            background: #f8fafc;
+        }
+        .pf-photo-preview { max-width: 100%; max-height: 320px; border-radius: 10px; box-shadow: 0 8px 20px -8px rgba(15,23,42,0.25); }
+        .pf-photo-placeholder { padding: 20px 0; }
+        .pf-photo-placeholder-icon { font-size: 40px; margin-bottom: 10px; }
+        .pf-photo-placeholder-text { font-size: 13px; color: #6b7280; margin-bottom: 16px; }
+        .pf-choose-btn { background: #1e3a8a; color: #fff; border: none; padding: 12px 22px; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; }
+        .pf-choose-btn:hover { background: #1e40af; }
+        .pf-retake-btn { margin-top: 12px; }
+
+        .pf-identify-btn { width: 100%; margin-top: 16px; padding: 13px; background: #b23b3b; color: #fff; border: none; border-radius: 8px; font-size: 14px; font-weight: 800; cursor: pointer; }
+        .pf-identify-btn:hover { background: #9b2f2f; }
+        .pf-identify-btn:disabled { background: #cbd5e1; cursor: default; }
+
+        .pf-result { margin-top: 22px; padding-top: 20px; border-top: 1px solid #e2e8f0; }
+        .pf-result-name { font-size: 19px; font-weight: 800; color: #0f172a; margin-bottom: 4px; }
+        .pf-confidence { display: inline-block; font-size: 9.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; border-radius: 4px; padding: 2px 7px; margin-bottom: 10px; }
+        .pf-confidence.high { background: #dcfce7; color: #166534; }
+        .pf-confidence.medium { background: #fef3c7; color: #92400e; }
+        .pf-confidence.low { background: #fee2e2; color: #991b1b; }
+        .pf-result-desc { font-size: 13.5px; color: #374151; line-height: 1.6; margin-bottom: 10px; }
+        .pf-result-specs { font-size: 12.5px; color: #6b7280; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 12px; margin-bottom: 16px; }
+        .pf-buy-links-label { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: #6b7280; margin-bottom: 8px; }
+        .pf-buy-links { display: flex; gap: 8px; flex-wrap: wrap; }
+        .pf-buy-link { font-size: 12.5px; font-weight: 700; color: #1e3a8a; background: #eef2ff; border: 1px solid #c7d2fe; border-radius: 999px; padding: 7px 14px; text-decoration: none; }
+        .pf-buy-link:hover { background: #e0e7ff; }
+
+        .pf-error { margin-top: 16px; font-size: 13px; color: #b91c1c; background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 10px 14px; }
+        .pf-loading { margin-top: 16px; font-size: 13px; color: #6b7280; text-align: center; }
+
+        .pf-history { margin-top: 32px; }
+        .pf-history-title { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: #6b7280; margin-bottom: 10px; }
+        .pf-history-item { display: flex; align-items: baseline; gap: 8px; padding: 8px 0; border-bottom: 1px solid #f1f5f9; font-size: 12.5px; }
+        .pf-history-item:last-child { border-bottom: none; }
+        .pf-history-name { font-weight: 700; color: #1e293b; flex-shrink: 0; }
+        .pf-history-desc { color: #9ca3af; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .pf-history-empty { font-size: 12px; color: #9ca3af; font-style: italic; }
     </style>
 </head>
 <body>
@@ -396,7 +338,8 @@
                 <option value="find-a-builder.html">Find a Builder</option>
                 <option value="shop-3d-viewer.html">3D Shop Viewer</option>
                 <option value="tool-reviews.html">Cool Tool Reviews</option>
-                <option value="shop-showcase.html" selected>Shop Showcase</option>
+                <option value="shop-showcase.html">Shop Showcase</option>
+                <option value="garage-tips.html">Shop Tricks and How-To's</option>
                 <option value="portfolio.html">Portfolio</option>
                 <option value="print-library.html">3D Print Library</option>
             </select>
@@ -410,7 +353,7 @@
                     <a href="shop-jigs-wood-movement.html">Wood Movement Calculator</a>
                     <a href="shop-jigs-speeds-feeds.html">Speeds &amp; Feeds</a>
                     <a href="shop-jigs-sharpening-angles.html">Sharpening Angle Chart</a>
-                    <a href="shop-jigs-part-finder.html">Part Finder &#128274; Premier</a>
+                    <a href="shop-jigs-part-finder.html" class="current">Part Finder &#128274; Premier</a>
                     <div class="jigs-dropdown-menu-sep"></div>
                     <a href="shop-jigs.html">All Shop Jigs &rarr;</a>
                 </div>
@@ -425,7 +368,7 @@
                 </div>
                 <a href="#" class="header-sign-in-mode-toggle" id="headerSignInModeToggle">New here? Create an account</a>
             </div>
-            <button type="button" id="accountBtn" class="account-btn plan-free" title="Account &amp; Plan Settings â€” border color shows your plan level" style="display:none;">
+            <button type="button" id="accountBtn" class="account-btn plan-free" title="Account &amp; Plan Settings" style="display:none;">
                 <span class="account-avatar" id="accountAvatarPreview">&#128100;</span>
                 <span class="account-btn-text">
                     <span class="account-btn-name" id="accountBtnLabel">Account</span>
@@ -457,16 +400,16 @@
     <div class="modal-overlay" id="accountModalOverlay" style="display:none;">
         <div class="modal-box account-modal-box">
             <div class="modal-title">Account Settings</div>
-            <div class="modal-warning">Your account (username, avatar, sign-in) is real and synced via Kerph. Saved layouts, projects, tools, Showcase posts, and reviews are synced too â€” available on any device you sign into.</div>
+            <div class="modal-warning">Your account (username, avatar, sign-in) is real and synced via Kerph. Saved layouts, projects, tools, Showcase posts, and reviews are synced too — available on any device you sign into.</div>
 
-            <div class="header-field" style="align-items:center;">
+            <div class="header-field" style="align-items:center; display:flex; flex-direction:column; gap:4px;">
                 <div class="account-avatar-large" id="accountAvatarLarge">&#128100;</div>
                 <input type="file" id="accountAvatarInput" accept="image/*" style="display:none;">
                 <button type="button" id="accountAvatarBtn" class="mini-btn" style="margin-top:10px; flex:none;">Upload Photo</button>
                 <div class="account-member-since" id="accountMemberSince"></div>
             </div>
 
-            <div class="header-field">
+            <div class="header-field" style="display:flex; flex-direction:column; gap:4px; margin-top:12px;">
                 <label class="header-field-label" for="accountUsernameInput">Username</label>
                 <input type="text" class="input-box" id="accountUsernameInput" placeholder="Choose a username">
             </div>
@@ -488,7 +431,7 @@
                 <div class="account-plan-upsell" id="accountPlanUpsell" style="display:none;">Free includes 1 saved shop layout; custom shop shapes and unlimited saves unlock on Pro.</div>
             </div>
 
-            <div class="header-field" style="margin-top:10px;">
+            <div class="header-field" style="display:flex; flex-direction:column; gap:4px; margin-top:10px;">
                 <label class="header-field-label" for="accountUnitsSelect">Preferred Units</label>
                 <select class="select-box" id="accountUnitsSelect">
                     <option value="imperial">Imperial (ft / in)</option>
@@ -496,7 +439,7 @@
                 </select>
             </div>
 
-            <div class="header-field" style="margin-top:14px;">
+            <div class="header-field" style="display:flex; flex-direction:column; gap:4px; margin-top:14px;">
                 <label class="header-field-label">Saved Layouts</label>
                 <div id="accountLayoutsList" class="account-layouts-list"></div>
             </div>
@@ -509,7 +452,7 @@
 
             <div class="account-backup-zone">
                 <div class="account-backup-title">Local Device Settings</div>
-                <div class="account-backup-desc">Your layouts, projects, tools, Showcase posts, and reviews live on your account now â€” no backup needed. This just covers a couple of local display preferences still cached in this browser.</div>
+                <div class="account-backup-desc">Your layouts, projects, tools, Showcase posts, and reviews live on your account now — no backup needed. This just covers a couple of local display preferences still cached in this browser.</div>
                 <div style="display:flex; gap:8px;">
                     <button type="button" id="accountExportBtn" class="mini-btn" style="flex:1;">&#11015;&#65039; Export</button>
                     <button type="button" id="accountImportBtn" class="mini-btn" style="flex:1;">&#11014;&#65039; Import&hellip;</button>
@@ -525,78 +468,55 @@
         </div>
     </div>
 
-    <div class="modal-overlay" id="postModalOverlay" style="display:none;">
-        <div class="modal-box" style="width:420px;">
-            <div class="modal-title">Share Your Shop</div>
-
-            <div class="header-field">
-                <label class="header-field-label">Photo</label>
-                <div class="image-upload-zone" id="postImageZone">&#128247; Click to choose a photo (optional)</div>
-                <input type="file" id="postImageInput" accept="image/*" style="display:none;">
-                <img id="postImagePreview" class="image-upload-preview">
-            </div>
-
-            <div class="header-field">
-                <label class="header-field-label" for="postTitleInput">Title</label>
-                <input type="text" class="input-box" id="postTitleInput" placeholder="e.g. My 2-car garage shop">
-            </div>
-
-            <div class="header-field">
-                <label class="header-field-label" for="postDescInput">Description</label>
-                <textarea class="input-box" id="postDescInput" placeholder="What's your setup? What worked, what would you change?"></textarea>
-            </div>
-
-            <div class="header-field">
-                <label class="header-field-label" for="postTagsInput">Tags (comma separated)</label>
-                <input type="text" class="input-box" id="postTagsInput" placeholder="e.g. Garage, Small Shop, Dust Collection">
-            </div>
-
-            <div class="header-field">
-                <label class="header-field-label" for="postAuthorInput">Your Name</label>
-                <input type="text" class="input-box" id="postAuthorInput" placeholder="Anonymous">
-            </div>
-
-            <div class="modal-actions">
-                <button type="button" id="postCancelBtn" class="mini-btn">Cancel</button>
-                <button type="button" id="postSubmitBtn" class="mini-btn modal-primary-btn">Post</button>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal-overlay" id="postDetailOverlay" style="display:none;">
-        <div class="modal-box detail-modal-box" id="postDetailBox"></div>
-    </div>
-
     <div class="upgrade-nudge" id="upgradeNudge"></div>
 
-    <main>
-        <div class="showcase-eyebrow">Community</div>
-        <div class="showcase-title">Shop Showcase</div>
-        <div class="showcase-subtitle">Post pictures of your shop for inspiration, ideas, and bragging rights. Browse what everyone else has built, then click a post to comment. Every shop here is visible to the whole Kerph community.</div>
+    <div class="jig-page-layout">
+        <div class="jig-breadcrumb"><a href="shop-jigs.html">Shop Jigs</a> / Part Finder</div>
+        <div class="premier-badge">&#128274; Premier</div>
+        <div class="help-title">Part Finder</div>
+        <div class="help-subtitle">Snap a photo of a mystery screw, bracket, or part — a vision model identifies it and links to where you can buy a match. Unlike the other free Shop Jigs, this one costs real money per photo, so it's a Premier feature with a generous daily limit.</div>
 
-        <div class="showcase-toolbar">
-            <input type="text" class="input-box" id="postSearchInput" placeholder="&#128269; Search titles &amp; tags&hellip;">
-            <select class="select-box" id="postSortSelect">
-                <option value="newest">Newest</option>
-                <option value="liked">Most Liked</option>
-                <option value="discussed">Most Discussed</option>
-            </select>
-            <button type="button" id="sharePostBtn" class="mini-btn primary">+ Share Your Shop</button>
+        <div class="help-article">
+            <div class="pf-photo-zone" id="pfPhotoZone">
+                <div id="pfPhotoPreviewWrap" style="display:none;">
+                    <img class="pf-photo-preview" id="pfPhotoPreview" alt="Photo of the part">
+                    <div>
+                        <button type="button" class="mini-btn pf-retake-btn" id="pfRetakeBtn" style="flex:none;">Choose a Different Photo</button>
+                    </div>
+                </div>
+                <div class="pf-photo-placeholder" id="pfPhotoPlaceholder">
+                    <div class="pf-photo-placeholder-icon">&#128247;</div>
+                    <div class="pf-photo-placeholder-text">Take a clear, well-lit, close-up photo of the part — a plain background helps.</div>
+                    <button type="button" class="pf-choose-btn" id="pfChoosePhotoBtn">Take or Choose a Photo</button>
+                </div>
+                <input type="file" id="pfPhotoInput" accept="image/*" capture="environment" style="display:none;">
+            </div>
+
+            <button type="button" class="pf-identify-btn" id="pfIdentifyBtn" disabled>Identify This Part</button>
+
+            <div id="pfLoading" class="pf-loading" style="display:none;">Looking closely at your photo&hellip;</div>
+            <div id="pfError" class="pf-error" style="display:none;"></div>
+
+            <div id="pfResult" class="pf-result" style="display:none;">
+                <div class="pf-result-name" id="pfResultName"></div>
+                <div class="pf-confidence" id="pfResultConfidence"></div>
+                <div class="pf-result-desc" id="pfResultDesc"></div>
+                <div class="pf-result-specs" id="pfResultSpecs"></div>
+                <div class="pf-buy-links-label">Where to buy a match</div>
+                <div class="pf-buy-links" id="pfBuyLinks"></div>
+            </div>
+
+            <div class="pf-history">
+                <div class="pf-history-title">Recent Lookups</div>
+                <div id="pfHistoryList"></div>
+            </div>
         </div>
-
-        <div id="showcaseContent"></div>
-    </main>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.7/dist/umd/supabase.js"></script>
     <script src="supabase-client.js"></script>
     <script>
-        /* ---------- SHARED STATE KEYS (must match workshop-planner.html / index.html exactly) ---------- */
         const PLAN_KEY = 'kerphPlan';
-        /* ACCOUNT_KEY/AUTH_KEY removed â€” account + sign-in are now real, Supabase-backed
-           (see supabase-client.js) instead of localStorage flags. */
-        const TOOL_STATUS_KEY = 'kerphToolStatus';
-        const LAYOUTS_KEY = 'kerphSavedLayouts';
-        const LAYOUT_TYPE_LABELS = { workshop: 'Workshop', 'dust-collection': 'Dust Collection', lighting: 'Lighting' };
 
         function showToast(message) {
             const nudge = document.getElementById('upgradeNudge');
@@ -639,13 +559,10 @@
         }
 
         let cachedToolStatuses = {};
-        function loadToolStatuses() {
-            return cachedToolStatuses;
-        }
+        function loadToolStatuses() { return cachedToolStatuses; }
         let cachedSavedLayouts = [];
-        function loadLayouts() {
-            return cachedSavedLayouts;
-        }
+        function loadLayouts() { return cachedSavedLayouts; }
+
         function renderAccountStats() {
             const row = document.getElementById('accountStatsRow');
             if (!row) return;
@@ -673,6 +590,7 @@
             select.value = plan;
             upsell.style.display = plan === 'free' ? 'block' : 'none';
         }
+        const LAYOUT_TYPE_LABELS = { workshop: 'Workshop', 'dust-collection': 'Dust Collection', lighting: 'Lighting' };
         function renderAccountLayoutsList() {
             const list = document.getElementById('accountLayoutsList');
             if (!list) return;
@@ -882,249 +800,8 @@
             updateHeaderSignInState();
         }
 
-        /* ---------- SHOP SHOWCASE ----------
-           Real, Supabase-backed multi-user content now â€” showcase_posts/showcase_comments
-           (public-read) + showcase_likes (real per-user votes, denormalized onto likes_count
-           via a DB trigger). Photos live in Supabase Storage (bucket showcase-photos), not as
-           embedded data URLs â€” image_path is a storage path, resolved via
-           kerphShowcaseImageUrl(). cachedPosts/cachedMyLikes are refreshed on every
-           renderShowcase() call, not just once, since this is now real multi-user data other
-           people can change between renders. */
-        let cachedPosts = [];
-        let cachedMyLikes = [];
-
-        function cardMediaHtml(post) {
-            const url = kerphShowcaseImageUrl(post.image_path);
-            return url
-                ? `<img class="post-card-image" src="${url}" alt="">`
-                : `<div class="post-card-placeholder">&#128247;</div>`;
-        }
-
-        async function renderShowcase() {
-            const content = document.getElementById('showcaseContent');
-            const query = document.getElementById('postSearchInput').value.trim().toLowerCase();
-            const sort = document.getElementById('postSortSelect').value;
-
-            const [postsResult, likesResult] = await Promise.all([kerphLoadShowcasePosts(), kerphLoadMyShowcaseLikes()]);
-            cachedPosts = postsResult.data;
-            cachedMyLikes = likesResult.data;
-
-            let posts = cachedPosts;
-            if (query) {
-                posts = posts.filter(p =>
-                    p.title.toLowerCase().includes(query) ||
-                    (p.tags || []).some(t => t.toLowerCase().includes(query))
-                );
-            }
-            posts = posts.slice();
-            if (sort === 'newest') posts.sort((a, b) => b.created_at.localeCompare(a.created_at));
-            else if (sort === 'liked') posts.sort((a, b) => (b.likes_count || 0) - (a.likes_count || 0) || b.created_at.localeCompare(a.created_at));
-            else if (sort === 'discussed') posts.sort((a, b) => (b.showcase_comments || []).length - (a.showcase_comments || []).length || b.created_at.localeCompare(a.created_at));
-
-            if (!posts.length) {
-                const hasAny = cachedPosts.length > 0;
-                content.innerHTML = `
-                    <div class="showcase-empty">
-                        <div class="showcase-empty-icon">${hasAny ? '&#128269;' : '&#128247;'}</div>
-                        <div class="showcase-empty-title">${hasAny ? 'No posts match your search' : 'No shops shared yet'}</div>
-                        <div class="showcase-empty-desc">${hasAny ? 'Try a different search term.' : 'Be the first â€” click "+ Share Your Shop" above to post a photo of your setup.'}</div>
-                    </div>
-                `;
-                return;
-            }
-
-            content.innerHTML = `<div class="showcase-masonry">${posts.map(p => {
-                const dateStr = new Date(p.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
-                const isLiked = cachedMyLikes.includes(p.id);
-                const tagsHtml = (p.tags || []).map(t => `<span class="post-tag">${escapeHtml(t)}</span>`).join('');
-                return `
-                    <div class="post-card" data-id="${p.id}">
-                        ${cardMediaHtml(p)}
-                        <div class="post-card-body">
-                            <div class="post-card-title">${escapeHtml(p.title)}</div>
-                            ${p.description ? `<div class="post-card-desc">${escapeHtml(p.description)}</div>` : ''}
-                            ${tagsHtml ? `<div class="post-tags">${tagsHtml}</div>` : ''}
-                            <div class="post-card-footer">
-                                <span><a href="portfolio.html?user=${encodeURIComponent(p.user_id)}" class="post-author" onclick="event.stopPropagation();">${escapeHtml(p.author || 'Anonymous')}</a> &middot; ${dateStr}</span>
-                                <span class="post-card-stats">
-                                    <span class="like-btn${isLiked ? ' active' : ''}">&#9829; ${p.likes_count || 0}</span>
-                                    <span>&#128172; ${(p.showcase_comments || []).length}</span>
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }).join('')}</div>`;
-
-            content.querySelectorAll('.post-card').forEach(card => {
-                card.addEventListener('click', () => openPostDetail(card.getAttribute('data-id')));
-            });
-        }
-
-        async function toggleLike(id) {
-            if (!isSignedIn()) { showToast('Sign in (top right) to like a post.'); return; }
-            const currentlyLiked = cachedMyLikes.includes(id);
-            await kerphToggleShowcaseLike(id, currentlyLiked);
-        }
-
-        function openPostDetail(id) {
-            const overlay = document.getElementById('postDetailOverlay');
-            const box = document.getElementById('postDetailBox');
-
-            async function draw() {
-                const [postsResult, likesResult] = await Promise.all([kerphLoadShowcasePosts(), kerphLoadMyShowcaseLikes()]);
-                const post = postsResult.data.find(p => p.id === id);
-                if (!post) { overlay.style.display = 'none'; return; }
-                const isLiked = likesResult.data.includes(id);
-                const dateStr = new Date(post.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
-                const tagsHtml = (post.tags || []).map(t => `<span class="post-tag">${escapeHtml(t)}</span>`).join('');
-                const comments = (post.showcase_comments || []).slice().sort((a, b) => a.created_at.localeCompare(b.created_at));
-                const commentsHtml = comments.length
-                    ? comments.map(c => `
-                        <div class="comment-item">
-                            <span class="comment-author">${escapeHtml(c.author || 'Anonymous')}</span><span class="comment-date">${new Date(c.created_at).toLocaleDateString()}</span>
-                            <div class="comment-text">${escapeHtml(c.body)}</div>
-                        </div>
-                    `).join('')
-                    : '<div class="comments-empty">No comments yet â€” be the first.</div>';
-                const imageUrl = kerphShowcaseImageUrl(post.image_path);
-
-                box.innerHTML = `
-                    ${imageUrl ? `<img class="detail-image" src="${imageUrl}" alt="">` : `<div class="detail-placeholder">&#128247;</div>`}
-                    <div class="detail-body">
-                        <div class="detail-title">${escapeHtml(post.title)}</div>
-                        <div class="detail-meta"><a href="portfolio.html?user=${encodeURIComponent(post.user_id)}" class="post-author">${escapeHtml(post.author || 'Anonymous')}</a> &middot; ${dateStr} &middot; <a href="portfolio.html?user=${encodeURIComponent(post.user_id)}">View Portfolio &rarr;</a></div>
-                        ${post.description ? `<div class="detail-desc">${escapeHtml(post.description)}</div>` : ''}
-                        ${tagsHtml ? `<div class="post-tags">${tagsHtml}</div>` : ''}
-                        <div class="detail-actions">
-                            <button type="button" class="detail-like-btn${isLiked ? ' active' : ''}" id="detailLikeBtn">&#9829; ${post.likes_count || 0} Like${post.likes_count === 1 ? '' : 's'}</button>
-                            ${isSignedIn() && kerphGetCachedUser().id === post.user_id ? '<button type="button" class="mini-btn danger" id="detailDeleteBtn" style="flex:none;">Delete Post</button>' : ''}
-                        </div>
-                        <div class="comments-title">Comments (${comments.length})</div>
-                        <div id="commentsList">${commentsHtml}</div>
-                        <div class="comment-form">
-                            <input type="text" class="input-box" id="commentInput" placeholder="Add a comment&hellip;">
-                            <button type="button" class="mini-btn primary" id="commentSubmitBtn">Post</button>
-                        </div>
-                    </div>
-                `;
-
-                document.getElementById('detailLikeBtn').addEventListener('click', async () => { await toggleLike(id); draw(); renderShowcase(); });
-                const deleteBtn = document.getElementById('detailDeleteBtn');
-                if (deleteBtn) {
-                    deleteBtn.addEventListener('click', async () => {
-                        if (!confirm('Delete this post? This cannot be undone.')) return;
-                        await kerphDeleteShowcasePost(id, post.image_path);
-                        overlay.style.display = 'none';
-                        renderShowcase();
-                        showToast('Post deleted.');
-                    });
-                }
-
-                const commentInput = document.getElementById('commentInput');
-                async function submitComment() {
-                    const text = commentInput.value.trim();
-                    if (!text) return;
-                    if (!isSignedIn()) { showToast('Sign in (top right) to comment.'); return; }
-                    const { error } = await kerphAddShowcaseComment(id, text);
-                    if (error) { showToast('Could not post that comment.'); return; }
-                    draw();
-                    renderShowcase();
-                }
-                document.getElementById('commentSubmitBtn').addEventListener('click', submitComment);
-                commentInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') submitComment(); });
-            }
-
-            draw();
-            overlay.style.display = 'flex';
-        }
-
-        function initPostDetailOverlay() {
-            document.getElementById('postDetailOverlay').addEventListener('click', (e) => {
-                if (e.target.id === 'postDetailOverlay') e.target.style.display = 'none';
-            });
-        }
-
-        function initPostModal() {
-            const overlay = document.getElementById('postModalOverlay');
-            const openBtn = document.getElementById('sharePostBtn');
-            const cancelBtn = document.getElementById('postCancelBtn');
-            const submitBtn = document.getElementById('postSubmitBtn');
-            const titleInput = document.getElementById('postTitleInput');
-            const descInput = document.getElementById('postDescInput');
-            const tagsInput = document.getElementById('postTagsInput');
-            const authorInput = document.getElementById('postAuthorInput');
-            const imageZone = document.getElementById('postImageZone');
-            const imageInput = document.getElementById('postImageInput');
-            const imagePreview = document.getElementById('postImagePreview');
-            let pendingImage = null;
-
-            let pendingImageUrl = null;
-
-            imageZone.addEventListener('click', () => imageInput.click());
-            imageInput.addEventListener('change', () => {
-                const file = imageInput.files[0];
-                if (!file) return;
-                pendingImage = file;
-                if (pendingImageUrl) URL.revokeObjectURL(pendingImageUrl);
-                pendingImageUrl = URL.createObjectURL(file);
-                imagePreview.src = pendingImageUrl;
-                imagePreview.style.display = 'block';
-            });
-
-            function openModal() {
-                if (!isSignedIn()) { showToast('Sign in (top right) to share your shop.'); return; }
-                titleInput.value = '';
-                descInput.value = '';
-                tagsInput.value = '';
-                authorInput.value = loadAccount().username || '';
-                pendingImage = null;
-                if (pendingImageUrl) { URL.revokeObjectURL(pendingImageUrl); pendingImageUrl = null; }
-                imagePreview.src = '';
-                imagePreview.style.display = 'none';
-                overlay.style.display = 'flex';
-                titleInput.focus();
-            }
-
-            openBtn.addEventListener('click', openModal);
-            cancelBtn.addEventListener('click', () => { overlay.style.display = 'none'; });
-
-            submitBtn.addEventListener('click', async () => {
-                const title = titleInput.value.trim();
-                if (!title) { showToast('Give your post a title.'); titleInput.focus(); return; }
-                if (!isSignedIn()) { showToast('Sign in (top right) to share your shop.'); return; }
-                const tags = tagsInput.value.split(',').map(t => t.trim()).filter(Boolean);
-
-                submitBtn.disabled = true;
-                try {
-                    let imagePath = null;
-                    if (pendingImage) {
-                        const { data, error } = await kerphUploadShowcasePhoto(pendingImage);
-                        if (error) { showToast('Could not upload that photo.'); return; }
-                        imagePath = data.path;
-                    }
-                    const { error } = await kerphCreateShowcasePost({
-                        title,
-                        description: descInput.value.trim(),
-                        imagePath,
-                        tags,
-                        author: authorInput.value.trim() || 'Anonymous'
-                    });
-                    if (error) { showToast('Could not create your post.'); return; }
-                    overlay.style.display = 'none';
-                    showToast('Posted to the showcase.');
-                    renderShowcase();
-                } finally {
-                    submitBtn.disabled = false;
-                }
-            });
-        }
-
         document.getElementById('pageNavSelect').addEventListener('change', (e) => { window.location.href = e.target.value; });
 
-        // Standalone header dropdown (not folded into pageNavSelect) so Shop Jigs' four
-        // tools are one click away from every page instead of being buried as just another
-        // option in a 9-item combobox.
         function initJigsDropdown() {
             const dropdown = document.getElementById('jigsDropdown');
             const btn = document.getElementById('jigsDropdownBtn');
@@ -1150,15 +827,107 @@
         kerphAuthReady.then(() => {
             initHeaderSignIn();
             initAccountPanel();
-            // Public content â€” renders for signed-out visitors too, just needed auth to
-            // resolve first so kerphLoadMyShowcaseLikes() reflects the right (or no) user.
-            renderShowcase();
+            renderPartFinderHistory();
         });
 
-        initPostModal();
-        initPostDetailOverlay();
-        document.getElementById('postSearchInput').addEventListener('input', renderShowcase);
-        document.getElementById('postSortSelect').addEventListener('change', renderShowcase);
+        /* =====================================================================
+           PART FINDER
+           ===================================================================== */
+        let pendingPhotoDataUrl = null;
+
+        function pfSetLoading(loading) {
+            document.getElementById('pfLoading').style.display = loading ? 'block' : 'none';
+            document.getElementById('pfIdentifyBtn').disabled = loading || !pendingPhotoDataUrl;
+        }
+
+        function initPartFinderPhoto() {
+            const input = document.getElementById('pfPhotoInput');
+            const chooseBtn = document.getElementById('pfChoosePhotoBtn');
+            const retakeBtn = document.getElementById('pfRetakeBtn');
+            const previewWrap = document.getElementById('pfPhotoPreviewWrap');
+            const placeholder = document.getElementById('pfPhotoPlaceholder');
+            const previewImg = document.getElementById('pfPhotoPreview');
+            const identifyBtn = document.getElementById('pfIdentifyBtn');
+
+            chooseBtn.addEventListener('click', () => input.click());
+            retakeBtn.addEventListener('click', () => input.click());
+
+            input.addEventListener('change', async () => {
+                const file = input.files[0];
+                if (!file) return;
+                document.getElementById('pfError').style.display = 'none';
+                document.getElementById('pfResult').style.display = 'none';
+                try {
+                    const dataUrl = await kerphDownscaleImage(file, 1024);
+                    pendingPhotoDataUrl = dataUrl;
+                    previewImg.src = dataUrl;
+                    previewWrap.style.display = 'block';
+                    placeholder.style.display = 'none';
+                    identifyBtn.disabled = false;
+                } catch (e) {
+                    showToast('Could not read that photo — try a different one.');
+                }
+                input.value = '';
+            });
+
+            identifyBtn.addEventListener('click', runIdentifyPart);
+        }
+
+        async function runIdentifyPart() {
+            if (!pendingPhotoDataUrl) return;
+            const errorEl = document.getElementById('pfError');
+            const resultEl = document.getElementById('pfResult');
+            errorEl.style.display = 'none';
+            resultEl.style.display = 'none';
+            pfSetLoading(true);
+
+            const base64Only = pendingPhotoDataUrl.split(',')[1];
+            const { data, error } = await kerphIdentifyPart(base64Only, 'image/jpeg');
+            pfSetLoading(false);
+
+            if (error) {
+                errorEl.textContent = error.message || 'Could not identify that part.';
+                errorEl.style.display = 'block';
+                return;
+            }
+
+            renderPartFinderResult(data);
+            renderPartFinderHistory();
+        }
+
+        function renderPartFinderResult(data) {
+            document.getElementById('pfResultName').textContent = data.name || 'Unidentified part';
+            const confEl = document.getElementById('pfResultConfidence');
+            const conf = data.confidence || 'low';
+            confEl.textContent = conf + ' confidence';
+            confEl.className = 'pf-confidence ' + conf;
+            document.getElementById('pfResultDesc').textContent = data.description || '';
+            document.getElementById('pfResultSpecs').textContent = data.specs || 'Specs not determinable from photo.';
+
+            const links = data.buyLinks || {};
+            const labelMap = { amazon: 'Amazon', homeDepot: 'Home Depot', mcmasterCarr: 'McMaster-Carr', grainger: 'Grainger', fastenal: 'Fastenal' };
+            const linksHtml = Object.keys(labelMap)
+                .filter(key => links[key])
+                .map(key => `<a class="pf-buy-link" href="${links[key]}" target="_blank" rel="noopener">${labelMap[key]} &rarr;</a>`)
+                .join('');
+            document.getElementById('pfBuyLinks').innerHTML = linksHtml;
+            document.getElementById('pfResult').style.display = 'block';
+        }
+
+        async function renderPartFinderHistory() {
+            const list = document.getElementById('pfHistoryList');
+            if (!list) return;
+            const { data } = await kerphGetMyPartLookupHistory();
+            if (!data || !data.length) { list.innerHTML = '<div class="pf-history-empty">No lookups yet — identify your first part above.</div>'; return; }
+            list.innerHTML = data.map(row => `
+                <div class="pf-history-item">
+                    <span class="pf-history-name">${escapeHtml(row.identified_name || 'Unknown')}</span>
+                    <span class="pf-history-desc">${escapeHtml(row.description || '')}</span>
+                </div>
+            `).join('');
+        }
+
+        initPartFinderPhoto();
     </script>
 </body>
 </html>
