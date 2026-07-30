@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <script>if (localStorage.getItem('kerphComingSoonBypass') !== 'true') { location.replace('coming-soon.html'); }</script>
@@ -80,7 +80,7 @@
         }
 
         .logo-tm {
-            /* Lower-right corner, inside the logo's own white background â€” clear of both the
+            /* Lower-right corner, inside the logo's own white background — clear of both the
                navy border below it and the wordmark above it. */
             position: absolute;
             bottom: 6px;
@@ -388,7 +388,7 @@
 
         /* ---------- LAYOUT SKELETON ----------
            Mirrors the sidebar + main-canvas structure of workshop-planner.html so the two
-           tools feel like the same product family. Nothing in here is wired up yet â€” this
+           tools feel like the same product family. Nothing in here is wired up yet — this
            is the organizational scaffold to build the real panel/board designer into,
            discussed as its own multi-session feature, not a one-shot build. */
         #sidebar-panel {
@@ -458,7 +458,7 @@
 
         /* ---------- WHOLE-PAGE PAYWALL (Pro/Premier only) ----------
            Sits in the exact space #sidebar-panel + #canvas-area occupy (both are independently
-           position:absolute below the 150px header, not nested in a shared wrapper â€” see their
+           position:absolute below the 150px header, not nested in a shared wrapper — see their
            own rules above/below), so gating the page means hiding both of those plus the notes
            panel and showing this instead, rather than hiding one parent. */
         #projectDesignerPaywall {
@@ -647,14 +647,14 @@
         }
 
         /* ---------- PROJECT NOTES (fixed to the empty space on the right, visible on
-           either tab â€” not scoped to 3D Preview, since a note is just as relevant while
+           either tab — not scoped to 3D Preview, since a note is just as relevant while
            looking at the cut list) ---------- */
         .notes-panel {
             position: fixed;
             top: 170px;
             /* .floating-panel sets left:14px; without resetting it here, left+width+right are
                all non-auto and the box is over-constrained, so the browser drops `right` per
-               spec and pins this to the left edge instead â€” left:auto is what actually makes
+               spec and pins this to the left edge instead — left:auto is what actually makes
                `right` take effect. */
             left: auto;
             right: 24px;
@@ -670,7 +670,7 @@
         }
 
         /* ---------- PROJECT NOTES: formatting toolbar + preview ----------
-           Notes stay a single plain-text string (same as before) â€” formatting is just
+           Notes stay a single plain-text string (same as before) — formatting is just
            markdown syntax typed into the same textarea, so serializeCurrentProject/
            restoreProject/kerphSaveProjectNotes/etc. all keep working completely unchanged.
            The toolbar buttons just insert that syntax at the cursor; Preview mode renders it
@@ -852,7 +852,7 @@
                     <select class="select-box" id="savedProjectsSelect"></select>
                     <button type="button" id="loadProjectBtn" class="mini-btn">Load</button>
                     <button type="button" id="projectHistoryBtn" class="mini-btn" title="View and restore earlier saved versions of this project">History</button>
-                    <button type="button" id="shareProjectBtn" class="mini-btn" title="Get a read-only link anyone can open to view this piece in 3D â€” no sign-in needed">Share</button>
+                    <button type="button" id="shareProjectBtn" class="mini-btn" title="Get a read-only link anyone can open to view this piece in 3D — no sign-in needed">Share</button>
                     <button type="button" id="newProjectBtn" class="mini-btn" title="Start a new blank project">+ New</button>
                     <button type="button" id="deleteProjectBtn" class="mini-btn danger" title="Delete this project">&#10005;</button>
                 </div>
@@ -867,7 +867,7 @@
                 </div>
                 <a href="#" class="header-sign-in-mode-toggle" id="headerSignInModeToggle">New here? Create an account</a>
             </div>
-            <button type="button" id="accountBtn" class="account-btn plan-free" title="Account &amp; Plan Settings â€” border color shows your plan level" style="display:none;">
+            <button type="button" id="accountBtn" class="account-btn plan-free" title="Account &amp; Plan Settings — border color shows your plan level" style="display:none;">
                 <span class="account-avatar" id="accountAvatarPreview">&#128100;</span>
                 <span class="account-btn-text">
                     <span class="account-btn-name" id="accountBtnLabel">Account</span>
@@ -900,7 +900,7 @@
     <div class="modal-overlay" id="accountModalOverlay" style="display:none;">
         <div class="modal-box account-modal-box">
             <div class="modal-title">Account Settings</div>
-            <div class="modal-warning">Your account (username, avatar, sign-in) is real and synced via Kerph. Saved layouts, projects, tools, Showcase posts, and reviews are synced too â€” available on any device you sign into.</div>
+            <div class="modal-warning">Your account (username, avatar, sign-in) is real and synced via Kerph. Saved layouts, projects, tools, Showcase posts, and reviews are synced too — available on any device you sign into.</div>
 
             <div class="header-field" style="width:100%; margin-bottom:14px; display:flex; flex-direction:column; align-items:center;">
                 <div class="account-avatar-large" id="accountAvatarLarge">&#128100;</div>
@@ -952,7 +952,7 @@
 
             <div class="account-backup-zone">
                 <div class="account-backup-title">Local Device Settings</div>
-                <div class="account-backup-desc">Your layouts, projects, tools, Showcase posts, and reviews live on your account now â€” no backup needed. This just covers a couple of local display preferences still cached in this browser.</div>
+                <div class="account-backup-desc">Your layouts, projects, tools, Showcase posts, and reviews live on your account now — no backup needed. This just covers a couple of local display preferences still cached in this browser.</div>
                 <div style="display:flex; gap:8px;">
                     <button type="button" id="accountExportBtn" class="mini-btn" style="flex:1;">&#11015;&#65039; Export</button>
                     <button type="button" id="accountImportBtn" class="mini-btn" style="flex:1;">&#11014;&#65039; Import&hellip;</button>
@@ -1237,7 +1237,7 @@
                 </select>
             </div>
             <div id="sagCheckResult" style="margin-top:10px;"></div>
-            <p style="font-size:10.5px; color:#9ca3af; line-height:1.4; margin:10px 0 0;">Estimate only, using published typical modulus-of-elasticity values per material â€” actual stiffness varies by individual board, grain, and finish. Not a substitute for engineering judgment on anything load-bearing or safety-critical.</p>
+            <p style="font-size:10.5px; color:#9ca3af; line-height:1.4; margin:10px 0 0;">Estimate only, using published typical modulus-of-elasticity values per material — actual stiffness varies by individual board, grain, and finish. Not a substitute for engineering judgment on anything load-bearing or safety-critical.</p>
             <div class="modal-actions">
                 <button type="button" id="sagCheckCloseBtn" class="mini-btn modal-primary-btn">Close</button>
             </div>
@@ -1260,7 +1260,7 @@
         <div class="placeholder-box">
             <div class="placeholder-icon">&#128274;</div>
             <div class="placeholder-title">Project Designer is a Pro feature</div>
-            <div class="placeholder-desc">Build panel-by-panel cut lists, preview your build in 3D, and save named project designs â€” upgrade to Pro or Premier to unlock it.</div>
+            <div class="placeholder-desc">Build panel-by-panel cut lists, preview your build in 3D, and save named project designs — upgrade to Pro or Premier to unlock it.</div>
             <div class="paywall-tier-list">
                 <div><strong>Pro</strong> &mdash; full access, 5 saved projects</div>
                 <div><strong>Premier</strong> &mdash; full access, unlimited saved projects</div>
@@ -1271,7 +1271,7 @@
 
     <div id="sidebar-panel">
         <div class="sidebar-title">Panels</div>
-        <div class="empty-hint" id="panelListEmptyHint">No panels yet. Add the boards this project needs â€” sides, shelves, doors â€” each with a width, height, thickness, and material.</div>
+        <div class="empty-hint" id="panelListEmptyHint">No panels yet. Add the boards this project needs — sides, shelves, doors — each with a width, height, thickness, and material.</div>
         <div id="panelList"></div>
         <div style="display:flex; gap:6px;">
             <button type="button" class="mini-btn" id="addPanelBtn" style="flex:1;">+ Add Panel</button>
@@ -1295,7 +1295,7 @@
         </div>
         <textarea id="projectNotesInput" class="input-box notes-textarea" placeholder="Assembly order, reminders, cut notes, anything worth remembering about this project...
 
-Use the toolbar above for bold, italic, headings, and lists â€” or type markdown directly (**bold**, *italic*, # Heading, - bullet, 1. numbered, - [ ] checklist item)."></textarea>
+Use the toolbar above for bold, italic, headings, and lists — or type markdown directly (**bold**, *italic*, # Heading, - bullet, 1. numbered, - [ ] checklist item)."></textarea>
         <div class="notes-preview" id="notesPreview" style="display:none;"></div>
     </div>
 
@@ -1336,7 +1336,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
         <div class="placeholder-box" id="emptyProjectState">
             <div class="placeholder-icon">&#128208;</div>
             <div class="placeholder-title">Start your project</div>
-            <div class="placeholder-desc">Add panels on the left â€” sides, shelves, doors, whatever this piece needs â€” and a live cut list preview will build here as you go.</div>
+            <div class="placeholder-desc">Add panels on the left — sides, shelves, doors, whatever this piece needs — and a live cut list preview will build here as you go.</div>
         </div>
 
         <div id="projectPreview3D" style="display:none;">
@@ -1402,7 +1402,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
                     </div>
                 </div>
             </div>
-            <div class="preview3d-hint">Drag a piece near another's edge to snap them flush â€” the outline turns green when it locks. Hold Alt while dragging (or Alt+arrow keys) to bypass snapping for micro-adjustments. Type exact X/Y/Z above, or use the panel's Edit form on the left, for precise placement.</div>
+            <div class="preview3d-hint">Drag a piece near another's edge to snap them flush — the outline turns green when it locks. Hold Alt while dragging (or Alt+arrow keys) to bypass snapping for micro-adjustments. Type exact X/Y/Z above, or use the panel's Edit form on the left, for precise placement.</div>
         </div>
 
         <div id="cutListPreview" style="display:none;">
@@ -1455,14 +1455,14 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.7/dist/umd/supabase.js"></script>
     <script src="supabase-client.js"></script>
-    <!-- Google's <model-viewer> web component â€” gives us AR Quick Look (iOS) / Scene Viewer
+    <!-- Google's <model-viewer> web component — gives us AR Quick Look (iOS) / Scene Viewer
          (Android) for free from a plain GLB, no native app needed. Only used by the "View in
          Your Space" button below. -->
     <script type="module" src="https://unpkg.com/@google/model-viewer@3.5.0/dist/model-viewer.min.js"></script>
     <script>
         /* ---------- SHARED STATE KEYS (must match workshop-planner.html / index.html exactly) ---------- */
         const PLAN_KEY = 'kerphPlan';
-        /* ACCOUNT_KEY/AUTH_KEY removed â€” account + sign-in are now real, Supabase-backed
+        /* ACCOUNT_KEY/AUTH_KEY removed — account + sign-in are now real, Supabase-backed
            (see supabase-client.js) instead of localStorage flags. */
 
         function showToast(message) {
@@ -1518,7 +1518,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
         }
 
         /* ---------- Account extras shared with the other pages: tool-status stats, saved
-           layouts (read-only view â€” editing lives in Workshop Layout Planner), plan card,
+           layouts (read-only view — editing lives in Workshop Layout Planner), plan card,
            member-since, danger zone. ---------- */
         const TOOL_STATUS_KEY = 'kerphToolStatus';
         const LAYOUTS_KEY = 'kerphSavedLayouts';
@@ -1839,7 +1839,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
         });
 
         /* ---------- DATA MODEL ----------
-           Each panel is a discrete board with real dimensions â€” a cut list is never "derived"
+           Each panel is a discrete board with real dimensions — a cut list is never "derived"
            from anything ambiguous, it's just this array, formatted and grouped. Persisted to
            localStorage so a project survives a reload; handed off wholesale to the Cut List
            Optimizer (a separate page) via a different localStorage key when the user wants
@@ -1850,15 +1850,15 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
         const PANELS_KEY = 'kerphProjectPanels';
         const CUTLIST_HANDOFF_KEY = 'kerphCutListHandoff';
 
-        // Shared with cutlist-optimizer.html (keep both copies in sync) â€” 'sheet' materials get
+        // Shared with cutlist-optimizer.html (keep both copies in sync) — 'sheet' materials get
         // 2D-packed onto sheet goods, 'linear' materials get 1D-packed along board lengths.
         // Species-specific entries exist so two panels using the same generic "hardwood"/
-        // "plywood" category â€” e.g. a maple-ply carcase with a walnut face frame â€” still get
+        // "plywood" category — e.g. a maple-ply carcase with a walnut face frame — still get
         // distinct 3D colors (see MATERIAL_COLORS) instead of looking identical. `group` just
         // drives the Material dropdown's <optgroup> sections, nothing functional.
         //
         // priceEach is a starting-point retail estimate ($/4x8 sheet for 'sheet' materials,
-        // $/linear ft for 'linear' ones) â€” not a live quote. Meant to be overridden per-user
+        // $/linear ft for 'linear' ones) — not a live quote. Meant to be overridden per-user
         // via the Material Prices editor (see MATERIAL_PRICE_OVERRIDES_KEY) since real prices
         // vary by supplier and region; the cost rollup always prefers an override when one exists.
         const MATERIALS = {
@@ -1890,7 +1890,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
         // Static bending modulus of elasticity (psi), typical published values in the range
         // used across woodworking/engineering references (USDA Forest Products Laboratory Wood
         // Handbook style figures for solid species; plywood/MDF from manufacturer span-table
-        // literature). Real stiffness varies by individual board, moisture content, and grade â€”
+        // literature). Real stiffness varies by individual board, moisture content, and grade —
         // see the caveat shown alongside the Sag Check result. Keyed to the same MATERIALS list
         // above; anything not listed here falls back to a conservative generic-softwood estimate.
         const MATERIAL_MOE_PSI = {
@@ -1907,11 +1907,11 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
             'custom': 1400000
         };
 
-        // Uniform-load beam deflection at midspan â€” the two support conditions that actually
+        // Uniform-load beam deflection at midspan — the two support conditions that actually
         // come up in casework: resting freely on pins/cleats (simply supported) vs. captured in
         // a dado/rabbet on both ends (fixed), which is 5x stiffer for the same load and span.
         // L/360 is the standard serviceability threshold borrowed from general construction
-        // (floor joists etc.) â€” a reasonable, conservative "imperceptible under normal load" bar
+        // (floor joists etc.) — a reasonable, conservative "imperceptible under normal load" bar
         // for shelving too, not a code requirement for furniture.
         function calcShelfDeflection({ spanIn, depthIn, thicknessIn, loadLbs, moePsi, fixed }) {
             const I = (depthIn * Math.pow(thicknessIn, 3)) / 12; // in^4
@@ -1925,26 +1925,26 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
 
         // Tangential shrinkage/expansion coefficients (%/1% moisture-content change), the same
         // published USDA Forest Products Laboratory-style figures used by the standalone Wood
-        // Movement Calculator (shop-jigs-wood-movement.html) â€” kept numerically identical to
+        // Movement Calculator (shop-jigs-wood-movement.html) — kept numerically identical to
         // that page's WM_SPECIES table so the two never disagree, just keyed to MATERIALS
         // instead of that page's own species list. Sheet goods (plywood/MDF) are deliberately
-        // absent â€” cross-laminated construction makes them dimensionally stable, which is
+        // absent — cross-laminated construction makes them dimensionally stable, which is
         // exactly the distinction worth surfacing here (solid wood moves, plywood doesn't).
         const MATERIAL_WOOD_MOVEMENT_C = {
-            'hardwood': 0.0031, // generic solid wood â€” rough average across species, not a specific one
+            'hardwood': 0.0031, // generic solid wood — rough average across species, not a specific one
             'hardwood-maple': 0.00353, 'hardwood-walnut': 0.00274, 'hardwood-red-oak': 0.00369,
             'hardwood-white-oak': 0.00365, 'hardwood-cherry': 0.00248, 'hardwood-ash': 0.00274,
             'hardwood-hickory': 0.00390, 'hardwood-poplar': 0.00307, 'hardwood-cedar': 0.00186,
             'hardwood-mahogany': 0.00206,
             'pine-1x': 0.00224,
-            'lumber-2x4': 0.00298 // approximated as douglas fir â€” actual framing lumber species varies
+            'lumber-2x4': 0.00298 // approximated as douglas fir — actual framing lumber species varies
         };
-        // Typical indoor seasonal relative-humidity swing (same 30%â†’70% default as the standalone
+        // Typical indoor seasonal relative-humidity swing (same 30%→70% default as the standalone
         // calculator) converted to moisture content via the same Forest Products Lab EMC table:
         // 12.9% MC at 70% RH minus 6.3% MC at 30% RH.
         const WOOD_MOVEMENT_MC_DELTA = 12.9 - 6.3;
 
-        // Movement magnitude applies to whichever dimension runs across the grain â€” only
+        // Movement magnitude applies to whichever dimension runs across the grain — only
         // meaningful when the panel's grain direction is actually known, which is exactly what
         // Grain Locked already means elsewhere in this app (nesting won't rotate it because the
         // grain has to stay parallel to a specific edge). Convention: Width runs across the grain.
@@ -1960,7 +1960,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
             sagCheckPanel = panel;
             const mat = MATERIALS[panel.material] || MATERIALS.custom;
             document.getElementById('sagCheckPanelLabel').textContent =
-                `${panel.name} (${escapeHtml(mat.label)}) â€” fields below start from this piece's own dimensions; edit span if it's actually supported partway across.`;
+                `${panel.name} (${escapeHtml(mat.label)}) — fields below start from this piece's own dimensions; edit span if it's actually supported partway across.`;
             document.getElementById('sagSpanInput').value = panel.widthIn;
             document.getElementById('sagDepthInput').value = panel.heightIn;
             document.getElementById('sagThicknessInput').value = panel.thicknessIn;
@@ -1984,8 +1984,8 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
             const pct = Math.round(ratio * 100);
             let color, verdict;
             if (ratio <= 0.6) { color = '#16a34a'; verdict = 'Comfortably stiff'; }
-            else if (ratio <= 1.0) { color = '#d97706'; verdict = 'Borderline â€” noticeable under load'; }
-            else { color = '#dc2626'; verdict = 'Likely to sag visibly â€” add support or go thicker'; }
+            else if (ratio <= 1.0) { color = '#d97706'; verdict = 'Borderline — noticeable under load'; }
+            else { color = '#dc2626'; verdict = 'Likely to sag visibly — add support or go thicker'; }
             result.innerHTML = `
                 <div style="padding:10px; border-radius:6px; background:${color}14; border-left:3px solid ${color};">
                     <div style="font-size:13px; font-weight:700; color:${color};">${verdict}</div>
@@ -2001,7 +2001,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
             document.getElementById('sagCheckModalOverlay').style.display = 'none';
         });
 
-        // Per-material $ overrides, keyed the same as MATERIALS â€” local to this browser (like
+        // Per-material $ overrides, keyed the same as MATERIALS — local to this browser (like
         // the other "Local Device Settings" prefs) since real prices are supplier/region-specific,
         // not something to sync across devices or bake into the shared MATERIALS table above.
         const MATERIAL_PRICE_OVERRIDES_KEY = 'kerphMaterialPriceOverrides';
@@ -2015,7 +2015,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
             return (overrides[materialKey] != null) ? overrides[materialKey] : mat.priceEach;
         }
 
-        // Optional per-material "where I actually buy this" URL â€” deliberately separate from
+        // Optional per-material "where I actually buy this" URL — deliberately separate from
         // the price overrides above (and from anything server-side) since these are the user's
         // own real links, never fabricated ones. Blank until the user pastes one in.
         const MATERIAL_BUY_LINKS_KEY = 'kerphMaterialBuyLinks';
@@ -2070,7 +2070,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
                     linkInput.type = 'url';
                     linkInput.className = 'input-box';
                     linkInput.style.cssText = 'width:100%; font-size:11px;';
-                    linkInput.placeholder = 'Buy link (optional) â€” paste where you actually order this';
+                    linkInput.placeholder = 'Buy link (optional) — paste where you actually order this';
                     linkInput.value = getMaterialBuyLink(key);
                     linkInput.addEventListener('change', () => {
                         const links = getMaterialBuyLinks();
@@ -2106,7 +2106,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
 
         // Tracks in-flight/pending live-state saves so a refresh/close can warn before an
         // async write (or an armed debounce timer that hasn't fired yet) gets abandoned mid-flight
-        // â€” see the beforeunload listener below.
+        // — see the beforeunload listener below.
         let pendingSaveCount = 0;
         function trackSave(promise) {
             pendingSaveCount++;
@@ -2123,7 +2123,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
             trackSave(kerphSaveProjectPanels(panels).catch(() => {}));
         }
 
-        // Hardware/consumables: screws, hinges, glue, edge banding â€” anything beyond the
+        // Hardware/consumables: screws, hinges, glue, edge banding — anything beyond the
         // cut panels themselves. Parallel to `panels`, same load-once/save-on-mutate pattern,
         // deliberately not nested under a "project" object since panels aren't either (see
         // DATA MODEL comment above).
@@ -2133,10 +2133,10 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
             trackSave(kerphSaveProjectHardware(hardware).catch(() => {}));
         }
 
-        // {id, panelAId, panelBId, type ('butt'|'rabbet'|'dado'), depthIn} â€” panelA is the
+        // {id, panelAId, panelBId, type ('butt'|'rabbet'|'dado'), depthIn} — panelA is the
         // piece that gets material cut out of it; panelB is the piece that fits into the cut.
         // Geometry is computed live at render time from the two panels' current positions
-        // (see computeJointCutterBox), never stored â€” so editing a panel's size/position after
+        // (see computeJointCutterBox), never stored — so editing a panel's size/position after
         // adding a joint just re-cuts correctly instead of leaving a stale notch behind.
         let joints = [];
         function saveJoints() {
@@ -2145,11 +2145,11 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
 
         /* ---------- SAVED PROJECTS ----------
            panels/hardware/notes/labels/measurements (above and in the 3D module) are always
-           the "live" working project â€” autosaved continuously under their own keys exactly as
+           the "live" working project — autosaved continuously under their own keys exactly as
            before, regardless of this feature. Saved Projects is a separate layer on top: a named
            snapshot of all of those bundled together under one entry in kerphSavedProjects, so a
            user can keep several distinct projects and switch between them. Free/Pro/Premier get
-           2/8/unlimited *saved* projects â€” the live working project itself is never gated.
+           2/8/unlimited *saved* projects — the live working project itself is never gated.
         */
         let currentProjectId = null;
         let cachedSavedProjects = [];
@@ -2162,12 +2162,12 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
             const plan = getPlan();
             if (plan === 'premier') return Infinity;
             if (plan === 'pro') return 5;
-            return 0; // Free can't reach Project Designer at all â€” see applyProjectDesignerAccessGate.
+            return 0; // Free can't reach Project Designer at all — see applyProjectDesignerAccessGate.
         }
 
-        // Project Designer is Pro/Premier only â€” Free sees a paywall instead of the tool.
+        // Project Designer is Pro/Premier only — Free sees a paywall instead of the tool.
         // #sidebar-panel, .project-fields-group (header), .notes-panel, and #canvas-area are all
-        // independently position:absolute siblings (not nested in one shared wrapper â€” see their
+        // independently position:absolute siblings (not nested in one shared wrapper — see their
         // own CSS rules), so each has to be hidden individually rather than one parent toggle.
         function applyProjectDesignerAccessGate() {
             const hasAccess = getPlan() !== 'free';
@@ -2179,7 +2179,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
         }
 
         // A native confirm() would work for a real user, but it's styled outside the page (no
-        // match for the rest of the app's UI) and this app has no other native dialogs â€” so this
+        // match for the rest of the app's UI) and this app has no other native dialogs — so this
         // reuses the existing .modal-overlay look instead, wired up as a one-shot promise so
         // callers can just `await` it like a real confirm().
         function showConfirmModal(message) {
@@ -2201,7 +2201,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
             });
         }
 
-        // Only asks before something that would actually discard work â€” an empty canvas has
+        // Only asks before something that would actually discard work — an empty canvas has
         // nothing to lose, so New/Load proceed silently in that case.
         async function confirmDiscardIfNeeded(message) {
             const notesVal = (document.getElementById('projectNotesInput').value || '').trim();
@@ -2220,7 +2220,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
                 notes: document.getElementById('projectNotesInput').value || '',
                 labels: typeof window.getLabels === 'function' ? JSON.parse(JSON.stringify(window.getLabels())) : [],
                 measurements: typeof window.getMeasurements === 'function' ? JSON.parse(JSON.stringify(window.getMeasurements())) : [],
-                // Capped ladder of prior full snapshots â€” see saveCurrentProject, which is the
+                // Capped ladder of prior full snapshots — see saveCurrentProject, which is the
                 // only place that ever appends to this. Stored inside the same jsonb `data`
                 // blob as everything else above, so no separate table/schema was needed.
                 history: history || []
@@ -2267,7 +2267,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
             document.getElementById('loadProjectBtn').disabled = !list.length;
             document.getElementById('deleteProjectBtn').disabled = !list.length;
             document.getElementById('savedProjectsCountLabel').textContent =
-                `My Projects (${list.length}/${max === Infinity ? 'âˆž' : max})`;
+                `My Projects (${list.length}/${max === Infinity ? '∞' : max})`;
         }
 
         async function saveCurrentProject() {
@@ -2288,7 +2288,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
             }
 
             // Each save-over-an-existing-project pushes that project's PRIOR full snapshot onto
-            // its own history ladder (capped at 10, oldest dropped first) before overwriting â€”
+            // its own history ladder (capped at 10, oldest dropped first) before overwriting —
             // a brand-new save-as starts with empty history since there's nothing prior yet.
             let history = [];
             if (existingIdx !== -1) {
@@ -2381,7 +2381,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
         }
 
         // Field-level diff for panels that still exist in both versions (matched by id, which
-        // is stable across saves/edits â€” only a delete+recreate changes it). Position changes
+        // is stable across saves/edits — only a delete+recreate changes it). Position changes
         // are reported as one combined "moved" line rather than three separate X/Y/Z deltas,
         // since nobody cares about the individual axes, just that it moved.
         const DIFF_PANEL_FIELDS = [
@@ -2406,7 +2406,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
                 DIFF_PANEL_FIELDS.forEach(f => {
                     const ov = oldP[f.key], nv = newP[f.key];
                     if ((ov == null ? '' : ov) !== (nv == null ? '' : nv)) {
-                        fieldChanges.push(`${f.label}: ${ov != null ? ov : 'â€”'}${f.suffix || ''} â†’ ${nv != null ? nv : 'â€”'}${f.suffix || ''}`);
+                        fieldChanges.push(`${f.label}: ${ov != null ? ov : '—'}${f.suffix || ''} → ${nv != null ? nv : '—'}${f.suffix || ''}`);
                     }
                 });
                 if (typeof oldP.xIn === 'number' && typeof newP.xIn === 'number') {
@@ -2470,7 +2470,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
                 labels: snap.labels, measurements: snap.measurements
             });
             document.getElementById('projectHistoryModalOverlay').style.display = 'none';
-            showToast('Restored an earlier version â€” remember to Save if you want to keep it.');
+            showToast('Restored an earlier version — remember to Save if you want to keep it.');
         }
 
         document.getElementById('projectHistoryBtn').addEventListener('click', () => {
@@ -2483,7 +2483,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
         });
 
         // Read-only sharing: reuses whichever saved project is currently loaded (same gate as
-        // History above â€” has to be saved first, so there's a real row to attach a token to).
+        // History above — has to be saved first, so there's a real row to attach a token to).
         // The hero thumbnail step is best-effort and never blocks the link itself, since the
         // link is useful on its own even if the 3D tab was never opened or the upload hiccups.
         let lastSharedThumbnailUrl = null;
@@ -2497,7 +2497,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
             const linkInput = document.getElementById('shareProjectLinkInput');
             const statusEl = document.getElementById('shareProjectThumbStatus');
             const portfolioBtn = document.getElementById('shareToPortfolioBtn');
-            linkInput.value = 'Generating linkâ€¦';
+            linkInput.value = 'Generating link…';
             statusEl.textContent = '';
             portfolioBtn.style.display = 'none';
             lastSharedThumbnailUrl = null;
@@ -2512,7 +2512,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
             linkInput.value = `${window.location.origin}/project-view.html?token=${project.shareToken}`;
 
             if (typeof window.captureHeroThumbnail === 'function') {
-                statusEl.textContent = 'Generating a thumbnail from the current 3D viewâ€¦';
+                statusEl.textContent = 'Generating a thumbnail from the current 3D view…';
                 try {
                     const blob = await window.captureHeroThumbnail();
                     if (!blob) { statusEl.textContent = 'Open the 3D Preview tab first to also generate a thumbnail.'; return; }
@@ -2629,7 +2629,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
 
                 const removeBtn = document.createElement('button');
                 removeBtn.className = 'hardware-item-remove';
-                removeBtn.textContent = 'âœ•';
+                removeBtn.textContent = '✕';
                 removeBtn.title = 'Remove';
                 removeBtn.addEventListener('click', () => deleteHardwareItem(h.id));
 
@@ -2677,7 +2677,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
 
         let editingPanelId = null;
         // Holes are edited in this local buffer while the modal is open (mirrors every other
-        // modal field) and only written into the real panel on Save â€” so Cancel truly cancels,
+        // modal field) and only written into the real panel on Save — so Cancel truly cancels,
         // including any holes added/removed during this edit session.
         let editingHoles = [];
 
@@ -2691,11 +2691,11 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
                 const desc = document.createElement('span');
                 desc.className = 'hardware-item-name';
                 desc.textContent = h.shape === 'circle'
-                    ? `â—‹ âŒ€${h.dIn}" at (${h.xIn}, ${h.yIn})`
-                    : `â–­ ${h.wIn}"x${h.hIn}" at (${h.xIn}, ${h.yIn})`;
+                    ? `○ ⌀${h.dIn}" at (${h.xIn}, ${h.yIn})`
+                    : `▭ ${h.wIn}"x${h.hIn}" at (${h.xIn}, ${h.yIn})`;
                 const removeBtn = document.createElement('button');
                 removeBtn.className = 'hardware-item-remove';
-                removeBtn.textContent = 'âœ•';
+                removeBtn.textContent = '✕';
                 removeBtn.title = 'Remove';
                 removeBtn.addEventListener('click', () => {
                     editingHoles = editingHoles.filter(x => x.id !== h.id);
@@ -2734,7 +2734,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
             document.getElementById('holeSizeBInput').value = '';
         }
 
-        // Non-rectangular panel presets â€” only these two need an extra numeric input (arch
+        // Non-rectangular panel presets — only these two need an extra numeric input (arch
         // rise / corner radius); half-round, quarter-round, and ellipse are fully derived from
         // the panel's own width/height, same bounding box every shape already uses for
         // placement, holes, and cut-list grouping (see buildPanelGeometry).
@@ -2778,7 +2778,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
             document.getElementById('panelGroupInput').value = (panel && panel.groupName) || '';
             document.querySelector(`input[name="panelGrain"][value="${panel && panel.grainLocked ? 'locked' : 'free'}"]`).checked = true;
             // Position stays blank for a brand-new panel (auto-placed the first time the 3D
-            // tab opens â€” see rebuild3DPreviewMeshes) unless editing one that already has it.
+            // tab opens — see rebuild3DPreviewMeshes) unless editing one that already has it.
             document.getElementById('panelXInput').value = (panel && panel.xIn != null) ? panel.xIn : '';
             document.getElementById('panelYInput').value = (panel && panel.yIn != null) ? panel.yIn : '';
             document.getElementById('panelZInput').value = (panel && panel.zIn != null) ? panel.zIn : '';
@@ -2786,7 +2786,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
             document.getElementById('panelRotYInput').value = (panel && panel.rotYDeg != null) ? panel.rotYDeg : 0;
             document.getElementById('panelRotZInput').value = (panel && panel.rotZDeg != null) ? panel.rotZDeg : 0;
             // Orientation is a quick-set convenience, not its own stored value (see the Position
-            // Modal section of the plan) â€” always starts at the same default regardless of the
+            // Modal section of the plan) — always starts at the same default regardless of the
             // panel's actual current rotation, which is shown in the 3 fields above it instead.
             document.getElementById('panelOrientationSelect').value = 'standing-front';
             document.getElementById('panelModalOverlay').style.display = 'flex';
@@ -2810,7 +2810,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
 
             const shapeType = document.getElementById('panelShapeSelect').value;
             const shapeConfig = SHAPE_PARAM_CONFIG[shapeType];
-            // Only the field this shape actually uses gets a value â€” switching a panel from
+            // Only the field this shape actually uses gets a value — switching a panel from
             // Arched Top to Rounded Corners shouldn't leave a stale archRiseIn sitting around
             // (harmless to buildPanelGeometry, which only ever reads the field matching the
             // current shapeType, but no reason to keep dead data in the saved object either).
@@ -2859,7 +2859,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
         }
 
         // Deep-clones a panel (dims/material/holes and, if it's already been placed, position/
-        // rotation too) under a new id â€” offsetting the copy a few inches on X/Z so it doesn't
+        // rotation too) under a new id — offsetting the copy a few inches on X/Z so it doesn't
         // render exactly on top of the original in 3D, same "good enough, drag it into place"
         // starting point as a brand-new piece. Bridges into the 3D module's undo stack when
         // present so a sidebar-triggered copy is just as undoable as a 3D-view one.
@@ -2877,7 +2877,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
             renderAll();
         }
 
-        // Deep-clones every panel sharing a groupName under fresh ids, in one shot â€” the
+        // Deep-clones every panel sharing a groupName under fresh ids, in one shot — the
         // group equivalent of duplicatePanel, for sub-assemblies (e.g. "Drawer 1") that are
         // several panels acting as one repeatable unit rather than a single panel with a qty.
         function duplicateGroup(groupName) {
@@ -2909,7 +2909,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
                 const item = document.createElement('div');
                 item.className = 'panel-item';
                 const shapeTag = (p.shapeType && p.shapeType !== 'rectangle') ? ` &middot; ${escapeHtml(SHAPE_LABELS[p.shapeType] || p.shapeType)}` : '';
-                const grainTag = p.grainLocked ? ' <span class="grain-badge" title="Grain locked â€” will not be rotated when nesting">&#8593; grain</span>' : '';
+                const grainTag = p.grainLocked ? ' <span class="grain-badge" title="Grain locked — will not be rotated when nesting">&#8593; grain</span>' : '';
                 const movement = calcPanelWoodMovement(p);
                 const movementTag = movement
                     ? ` <span class="grain-badge" style="background:#eef2ff; color:#4338ca;" title="Predicted width change across a typical indoor 30%-70% relative humidity swing, using published movement coefficients for this species. Solid wood only &mdash; sheet goods are dimensionally stable.">&#8596; &plusmn;${movement.deltaIn.toFixed(3)}&quot; seasonal</span>`
@@ -2956,7 +2956,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
             }
 
             // Consecutive panels sharing a groupName render as one visual block with a shared
-            // header and a "Copy Group" action that duplicates the whole sub-assembly at once â€”
+            // header and a "Copy Group" action that duplicates the whole sub-assembly at once —
             // panels without a group (or a group that isn't contiguous) just render individually,
             // same as before this existed.
             let i = 0;
@@ -2997,14 +2997,14 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
             }
         }
 
-        // Groups panels by identical width/height/thickness/material â€” the same aggregation
+        // Groups panels by identical width/height/thickness/material — the same aggregation
         // a real cut list needs, since two panels with matching dimensions are cut from the
         // same size blank regardless of what each is individually named.
         function renderCutListPreview() {
             const empty = document.getElementById('emptyProjectState');
             const preview = document.getElementById('cutListPreview');
 
-            // Only touches the Cut List tab's own visibility â€” when the 3D Preview tab is
+            // Only touches the Cut List tab's own visibility — when the 3D Preview tab is
             // active, switchTab() already hid both of these, and this function shouldn't
             // fight that just because a panel was added/edited while looking at the 3D view.
             if (!panels.length) {
@@ -3020,14 +3020,14 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
 
             // Sheet-good area needed per material key, so cost rounds up to whole sheets per
             // material (mixing a maple-ply sheet's leftover area with a walnut-ply need would
-            // understate cost â€” each material buys its own sheets).
+            // understate cost — each material buys its own sheets).
             const sheetAreaByMaterial = {};
             const linearFeetByMaterial = {};
 
             let hasNonRectShape = false;
             panels.forEach(p => {
                 const mat = MATERIALS[p.material] || MATERIALS.custom;
-                // Shape (and its param, when it has one) has to be part of the grouping key too â€”
+                // Shape (and its param, when it has one) has to be part of the grouping key too —
                 // a rectangle and an arched-top panel that happen to share a bounding box need
                 // different blanks and can't be merged into one cut-list row.
                 const key = [p.widthIn, p.heightIn, p.thicknessIn, p.material, p.shapeType || 'rectangle', p.archRiseIn, p.cornerRadiusIn, !!p.grainLocked].join('|');
@@ -3055,7 +3055,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
 
             // Rough estimate, not an optimized nest: whole 4x8 (32 sq ft) sheets rounded up per
             // material, plus linear feet at their per-foot rate, plus hardware. Real material
-            // waste from nesting is always a bit higher â€” see estCostCaveat below the summary.
+            // waste from nesting is always a bit higher — see estCostCaveat below the summary.
             const SHEET_SQFT = 32;
             let materialCost = 0;
             Object.keys(sheetAreaByMaterial).forEach(matKey => {
@@ -3075,7 +3075,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
             Object.values(groups).forEach(g => {
                 const mat = MATERIALS[g.material] || MATERIALS.custom;
                 const shapeTag = (g.shapeType && g.shapeType !== 'rectangle') ? ` (${escapeHtml(SHAPE_LABELS[g.shapeType] || g.shapeType)})` : '';
-                const grainTag = g.grainLocked ? ' <span class="grain-badge" title="Grain locked â€” will not be rotated when nesting">&#8593; grain</span>' : '';
+                const grainTag = g.grainLocked ? ' <span class="grain-badge" title="Grain locked — will not be rotated when nesting">&#8593; grain</span>' : '';
                 const buyLink = getMaterialBuyLink(g.material);
                 const materialCell = buyLink
                     ? `${escapeHtml(mat.label)} <a href="${escapeHtml(buyLink)}" target="_blank" rel="noopener" class="material-buy-link">Buy &#8594;</a>`
@@ -3092,7 +3092,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
         }
 
         // One quote material line per distinct material key (sheets/linear feet rounded up
-        // exactly like the Cost Summary above), plus one line per tracked hardware item â€” the
+        // exactly like the Cost Summary above), plus one line per tracked hardware item — the
         // same numbers the user already sees on this page, never a second, divergent estimate.
         function buildQuoteMaterialLinesFromProject() {
             const sheetAreaByMaterial = {};
@@ -3113,7 +3113,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
                 if (sheetsNeeded <= 0) return;
                 lines.push({
                     id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
-                    name: `${mat.label} â€” ${sheetsNeeded} sheet${sheetsNeeded === 1 ? '' : 's'}`,
+                    name: `${mat.label} — ${sheetsNeeded} sheet${sheetsNeeded === 1 ? '' : 's'}`,
                     cost: sheetsNeeded * getMaterialPrice(matKey)
                 });
             });
@@ -3123,7 +3123,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
                 if (feetNeeded <= 0) return;
                 lines.push({
                     id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
-                    name: `${mat.label} â€” ${feetNeeded} ft`,
+                    name: `${mat.label} — ${feetNeeded} ft`,
                     cost: feetNeeded * getMaterialPrice(matKey)
                 });
             });
@@ -3139,21 +3139,21 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
             return lines;
         }
 
-        // Minimal, hand-written R12-era ASCII DXF â€” LINE and TEXT entities only, since those
+        // Minimal, hand-written R12-era ASCII DXF — LINE and TEXT entities only, since those
         // are supported by literally every DXF reader ever written (unlike LWPOLYLINE, which
         // needs DXF R14+ declared in the header). One flat outline per unique panel shape
         // (grouped the same way the Cut List table already groups them, so counts match what's
-        // on screen), laid out in a simple left-to-right/wrapping grid â€” this is a hand-off of
+        // on screen), laid out in a simple left-to-right/wrapping grid — this is a hand-off of
         // accurate geometry, not an optimized nest; the user's own CAM software does nesting
         // and toolpath generation with real knowledge of their machine, bit, and material.
         // Non-rectangular panels (arched top, rounded corners) export their bounding rectangle
         // with a note in the label rather than an approximated curve, since a silently-wrong
         // curve is worse than an honest flag to hand-adjust.
-        // World AABB for the DXF path â€” deliberately NOT the general rotation-aware version
+        // World AABB for the DXF path — deliberately NOT the general rotation-aware version
         // (that lives in the 3D module, which uses THREE and isn't loaded in this plain
         // script). Every jointed panel that actually exists today (the Shelving template's
         // real layout) is placed with zero rotation by design, so a flat min/max box is exact
-        // for those. A panel with real rotation just doesn't get notch geometry â€” see below.
+        // for those. A panel with real rotation just doesn't get notch geometry — see below.
         function dxfPlainWorldAABB(panel) {
             if (typeof panel.xIn !== 'number') return null;
             if ((panel.rotXDeg || 0) !== 0 || (panel.rotYDeg || 0) !== 0 || (panel.rotZDeg || 0) !== 0) return null;
@@ -3226,7 +3226,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
                             if (!cutter) { hadSkip = true; return; }
                             // World X/Y map straight onto this panel's own local width/height
                             // axes since dxfPlainWorldAABB only returns non-null for zero
-                            // rotation â€” offset into the panel's own 0..width/0..height frame,
+                            // rotation — offset into the panel's own 0..width/0..height frame,
                             // then into this item's position in the DXF layout grid.
                             const nx0 = x0 + (cutter.min.x - (panel.xIn - panel.widthIn / 2));
                             const nx1 = x0 + (cutter.max.x - (panel.xIn - panel.widthIn / 2));
@@ -3238,10 +3238,10 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
                     } else if (myJoints.length) {
                         hadSkip = true;
                     }
-                    if (hadSkip) { notchesSkipped++; notchNote = drewAny ? ' (some notches not shown â€” see 3D)' : ' (notches not shown â€” see 3D)'; }
+                    if (hadSkip) { notchesSkipped++; notchNote = drewAny ? ' (some notches not shown — see 3D)' : ' (notches not shown — see 3D)'; }
                 }
 
-                const shapeNote = (item.shapeType && item.shapeType !== 'rectangle') ? ' (bounding box â€” see 3D for true outline)' : '';
+                const shapeNote = (item.shapeType && item.shapeType !== 'rectangle') ? ' (bounding box — see 3D for true outline)' : '';
                 const label = `${Array.from(item.names).join(',')} x${item.qty} ${w}x${h}x${item.thicknessIn}${shapeNote}${notchNote}`;
                 addText(x0, y1 + 0.3, Math.min(1, h * 0.08), label, layer);
                 cursorX += w + GAP;
@@ -3260,7 +3260,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
             };
         }
         document.getElementById('exportDxfBtn').addEventListener('click', () => {
-            if (!panels.length) { showToast('Add some panels first â€” nothing to export.'); return; }
+            if (!panels.length) { showToast('Add some panels first — nothing to export.'); return; }
             const { dxf, notchesSkipped } = buildDxfForProject();
             const blob = new Blob([dxf], { type: 'application/dxf' });
             const url = URL.createObjectURL(blob);
@@ -3273,15 +3273,15 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
             showToast(notchesSkipped
-                ? `DXF exported with joint notches â€” ${notchesSkipped} piece${notchesSkipped === 1 ? '' : 's'} kept a plain outline (rotated or unplaced).`
-                : 'DXF exported â€” import it into your CAM software to generate toolpaths.');
+                ? `DXF exported with joint notches — ${notchesSkipped} piece${notchesSkipped === 1 ? '' : 's'} kept a plain outline (rotated or unplaced).`
+                : 'DXF exported — import it into your CAM software to generate toolpaths.');
         });
 
         document.getElementById('sendToQuoteBuilderBtn').addEventListener('click', () => {
-            if (!panels.length) { showToast('Add some panels first â€” nothing to quote yet.'); return; }
+            if (!panels.length) { showToast('Add some panels first — nothing to quote yet.'); return; }
             const projectName = document.getElementById('projectNameInput').value.trim() || 'Untitled Project';
             const seed = {
-                name: `Quote â€” ${projectName}`,
+                name: `Quote — ${projectName}`,
                 projectName,
                 materials: buildQuoteMaterialLinesFromProject()
             };
@@ -3317,7 +3317,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
         /* ---------- Parametric Assembly Templates ----------
            Each typology generates a real, correctly-dimensioned panel list from a handful of
            overall-size inputs, using simple, defensible butt-joint (box/cabinet/drawer) or
-           stub-tenon-and-groove (frame & panel) construction assumptions â€” documented per type
+           stub-tenon-and-groove (frame & panel) construction assumptions — documented per type
            in `note` and shown in the modal. Generated panels are pushed with no xIn/yIn/zIn so
            the 3D view's existing auto-arrange places them, exactly like a hand-added panel. */
         const ASSEMBLY_TEMPLATES = {
@@ -3390,7 +3390,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
                 checks: [
                     { key: 'hasFalseFront', label: 'Include false/overlay front (3/4", sized to box outer W x H)', default: false }
                 ],
-                note: 'Sides run full depth; front/back are captured between the sides; the bottom is inset and captured on all four sides, like a small box. A false front, if included, is sized to the drawer box\'s outer width and height â€” add your own reveal for an overlay fit.',
+                note: 'Sides run full depth; front/back are captured between the sides; the bottom is inset and captured on all four sides, like a small box. A false front, if included, is sized to the drawer box\'s outer width and height — add your own reveal for an overlay fit.',
                 generate(p, t) {
                     const parts = [
                         { name: 'Drawer Side (Left/Right)', widthIn: p.height, heightIn: p.depth, thicknessIn: t, qty: 2 },
@@ -3547,17 +3547,17 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
             document.getElementById('templateModalOverlay').style.display = 'none';
         }
 
-        // Real assembled layout + real dado joints for the Shelving/Bookcase template â€” the one
+        // Real assembled layout + real dado joints for the Shelving/Bookcase template — the one
         // case (of all the templates) where I could verify the geometry end-to-end against the
         // same CSG cut logic already confirmed working. Every part is built with its local
         // width/height/thickness ALREADY matching its true world orientation (X=left-right,
-        // Y=vertical, Z=front-to-back), so no rotation is ever needed â€” far safer than building
+        // Y=vertical, Z=front-to-back), so no rotation is ever needed — far safer than building
         // parts in the old flat-cutlist convention and trying to rotate them into place, which
         // risks silently-wrong geometry for a mistake I can't easily eyeball.
         //
         // Deliberately NOT extended to the Cabinet template's rabbeted-back option: a real
         // perimeter rabbet touches all four carcass members at once, which doesn't fit this
-        // pairwise joint model without real risk of a wrong cut â€” left as a manual joint if
+        // pairwise joint model without real risk of a wrong cut — left as a manual joint if
         // wanted, rather than shipping an automated one I can't fully verify.
         function layoutShelvingWithJoints(p, t) {
             const shelfCount = Math.max(0, Math.round(p.shelfCount));
@@ -3584,7 +3584,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
             }
 
             const leftIdx = 0, rightIdx = 1;
-            // { fromIdx (shelf), toIdx (side), depthIn } â€” resolved to real panel ids after push.
+            // { fromIdx (shelf), toIdx (side), depthIn } — resolved to real panel ids after push.
             const jointPairs = [];
             shelfIndices.forEach(idx => {
                 jointPairs.push({ a: leftIdx, b: idx, depthIn: p.dadoDepth });
@@ -3611,7 +3611,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
             }
 
             // The Shelving/Bookcase template gets a real assembled layout + real dado joints
-            // instead of the generic unpositioned-parts path below â€” see layoutShelvingWithJoints.
+            // instead of the generic unpositioned-parts path below — see layoutShelvingWithJoints.
             if (type === 'shelving') {
                 let layout;
                 try {
@@ -3621,7 +3621,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
                     return;
                 }
                 const badPart = layout.parts.find(pt => !(pt.widthIn > 0) || !(pt.heightIn > 0) || !(pt.thicknessIn > 0));
-                if (badPart) { showToast(`These dimensions are too small to produce a valid "${badPart.name}" â€” increase the overall size or reduce material thickness.`); return; }
+                if (badPart) { showToast(`These dimensions are too small to produce a valid "${badPart.name}" — increase the overall size or reduce material thickness.`); return; }
 
                 if (typeof window.push3DUndoSnapshot === 'function') window.push3DUndoSnapshot();
                 const newIds = layout.parts.map(() => Date.now().toString(36) + Math.random().toString(36).slice(2, 6) + Math.random().toString(36).slice(2, 4));
@@ -3656,7 +3656,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
                 return;
             }
             const bad = parts.find(pt => !(pt.widthIn > 0) || !(pt.heightIn > 0) || !(pt.thicknessIn > 0));
-            if (bad) { showToast(`These dimensions are too small to produce a valid "${bad.name}" â€” increase the overall size or reduce material thickness.`); return; }
+            if (bad) { showToast(`These dimensions are too small to produce a valid "${bad.name}" — increase the overall size or reduce material thickness.`); return; }
 
             if (typeof window.push3DUndoSnapshot === 'function') window.push3DUndoSnapshot();
             parts.forEach(pt => {
@@ -3686,7 +3686,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
         document.getElementById('holeShapeSelect').addEventListener('change', updateHoleShapeFields);
         document.getElementById('addHoleBtn').addEventListener('click', addHoleFromModalFields);
 
-        // Quick-set convenience â€” writes a preset combo into the 3 real rotation fields
+        // Quick-set convenience — writes a preset combo into the 3 real rotation fields
         // rather than being its own stored value (see savePanelFromModal/openPanelModal).
         const ORIENTATION_PRESETS = {
             'standing-front': [0, 0, 0],
@@ -3702,7 +3702,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
         });
 
         // Shared by the Cut List tab's "Open Full Cut List Optimizer" button and the 3D
-        // Preview toolbar's shortcut â€” both hand off the same panels the same way, so there's
+        // Preview toolbar's shortcut — both hand off the same panels the same way, so there's
         // no reason to go find the Cut List tab first just to reach the full optimizer.
         function sendToCutListOptimizer() {
             localStorage.setItem(CUTLIST_HANDOFF_KEY, JSON.stringify(panels));
@@ -3711,7 +3711,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
         document.getElementById('openFullCutListBtn').addEventListener('click', sendToCutListOptimizer);
         document.getElementById('open3DCutListBtn').addEventListener('click', sendToCutListOptimizer);
 
-        // No PDF library â€” fills in a print-only header/images/table and calls window.print(),
+        // No PDF library — fills in a print-only header/images/table and calls window.print(),
         // same approach as workshop-planner.html's layout export. The three images come from
         // captureTechnicalDrawingImages() in the 3D module (see there for how they're framed);
         // this only exists as a toolbar button on the 3D Preview tab so the scene is guaranteed
@@ -3719,7 +3719,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
         function printTechnicalDrawings() {
             if (!panels.length) { showToast('Add some panels first.'); return; }
             const images = (typeof window.captureTechnicalDrawingImages === 'function') ? window.captureTechnicalDrawingImages() : null;
-            if (!images) { showToast('Could not capture the 3D view â€” try again in a moment.'); return; }
+            if (!images) { showToast('Could not capture the 3D view — try again in a moment.'); return; }
 
             const projectName = document.getElementById('projectNameInput').value.trim() || 'Untitled Project';
             const dateStr = new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
@@ -3743,14 +3743,14 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
 
         // The "real" plan generator: not a separate document format, but the SAME print
         // pipeline as printTechnicalDrawings() above, with the extra sections (materials/cost,
-        // hardware, joinery, notes) filled in and shown â€” one coherent build document instead
+        // hardware, joinery, notes) filled in and shown — one coherent build document instead
         // of stitching together several separate exports by hand. Joint instructions are
         // generated from the actual joints[] data (real span/height numbers, not placeholders),
         // so they only ever describe cuts that are genuinely modeled in the 3D view.
         function printPlanPackage() {
             if (!panels.length) { showToast('Add some panels first.'); return; }
             const images = (typeof window.captureTechnicalDrawingImages === 'function') ? window.captureTechnicalDrawingImages() : null;
-            if (!images) { showToast('Could not capture the 3D view â€” try again in a moment.'); return; }
+            if (!images) { showToast('Could not capture the 3D view — try again in a moment.'); return; }
 
             const projectName = document.getElementById('projectNameInput').value.trim() || 'Untitled Project';
             const dateStr = new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
@@ -3766,7 +3766,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
             `;
             document.getElementById('techDrawingTableBody').innerHTML = document.getElementById('cutListTableBody').innerHTML;
 
-            // Materials & cost â€” the exact same numbers as the on-screen Cost Summary, not a
+            // Materials & cost — the exact same numbers as the on-screen Cost Summary, not a
             // recomputation, so the plan document can never quietly disagree with the app.
             document.getElementById('planPackageCostSummary').innerHTML = `
                 <div style="display:flex; gap:24px; font-size:13px; margin-bottom:6px;">
@@ -3783,7 +3783,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
             document.getElementById('planPackageHardwareTable').style.display = hasHardware ? 'table' : 'none';
             hwBody.innerHTML = hardware.map(h => `<tr><td>${escapeHtml(h.name)}</td><td>${h.qty}</td><td>${h.unitCost ? '$' + h.unitCost.toFixed(2) : ''}</td></tr>`).join('');
 
-            // Joinery â€” plain-language build instructions generated from the real joints[]
+            // Joinery — plain-language build instructions generated from the real joints[]
             // data (which panel, which type, real depth/dimensions), not generic boilerplate.
             const panelsByIdForPrint = new Map(panels.map(p => [p.id, p]));
             const realJoints = joints.filter(j => j.type !== 'butt');
@@ -3806,7 +3806,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
         document.getElementById('printPlanPackageBtn').addEventListener('click', printPlanPackage);
 
         // <model-viewer> (loaded via CDN script tag near the top of <body>) wants a real
-        // object URL, not raw bytes â€” a fresh <model-viewer> element is built each time rather
+        // object URL, not raw bytes — a fresh <model-viewer> element is built each time rather
         // than reused, since there's no supported way to swap its GLB after AR session state
         // has been established once. The previous blob URL is revoked on close so repeated
         // opens don't leak memory.
@@ -3814,7 +3814,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
         async function openArViewer() {
             if (!panels.length) { showToast('Add some panels first.'); return; }
             const glb = (typeof window.exportProjectGLB === 'function') ? await window.exportProjectGLB() : null;
-            if (!glb) { showToast('Could not export the 3D model â€” open the 3D Preview tab first.'); return; }
+            if (!glb) { showToast('Could not export the 3D model — open the 3D Preview tab first.'); return; }
 
             if (arObjectUrl) URL.revokeObjectURL(arObjectUrl);
             arObjectUrl = URL.createObjectURL(new Blob([glb], { type: 'model/gltf-binary' }));
@@ -3840,7 +3840,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
             const btn = document.getElementById('recordAssemblyBtn');
             btn.disabled = true;
             const originalLabel = btn.textContent;
-            btn.textContent = '\u{1F534} Recordingâ€¦';
+            btn.textContent = '\u{1F534} Recording…';
             try {
                 const blob = (typeof window.recordAssemblyVideo === 'function') ? await window.recordAssemblyVideo() : null;
                 if (!blob) { showToast('Open the 3D Preview tab first.'); return; }
@@ -3872,7 +3872,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
 
         /* ---------- PROJECT NOTES ----------
            Deliberately independent of the panels/labels/measurements data and of which tab is
-           active â€” freeform text about the project (assembly order, "use pocket screws here",
+           active — freeform text about the project (assembly order, "use pocket screws here",
            reminders) is useful regardless of whether you're looking at the cut list or the 3D
            view, so it lives in the always-visible fixed panel rather than being scoped to
            either tab. No Three.js involvement needed, so unlike panels this never needs a
@@ -3885,7 +3885,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
 
         // Deliberately small and specific to what the toolbar buttons themselves produce, not
         // a general CommonMark parser: **bold**, *italic*, "# "/"## " headings, "- " bullets,
-        // "1. " numbered lists, and "- [ ] "/"- [x] " checklist items â€” the last rendered as
+        // "1. " numbered lists, and "- [ ] "/"- [x] " checklist items — the last rendered as
         // real, clickable <input type="checkbox"> elements. data-check-line on each checkbox
         // is that line's actual index in the source text, so a click can toggle exactly that
         // line without needing any parallel data structure kept in sync with the plain string.
@@ -3933,11 +3933,11 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
                 }
             });
             closeList();
-            return html || '<p class="notes-preview-empty">Nothing here yet â€” switch to Edit and start typing.</p>';
+            return html || '<p class="notes-preview-empty">Nothing here yet — switch to Edit and start typing.</p>';
         }
 
         // Applies prefixFn to every line touched by the current selection (or just the current
-        // line, if nothing's selected) â€” shared by the bullet/numbered/checklist toolbar
+        // line, if nothing's selected) — shared by the bullet/numbered/checklist toolbar
         // buttons so they all select-aware in the same way.
         function applyLinePrefix(textarea, prefixFn) {
             const value = textarea.value;
@@ -3975,7 +3975,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
             textarea.dispatchEvent(new Event('input', { bubbles: true }));
         }
 
-        // On Enter, continues whatever list the cursor's current line is part of â€” a plain
+        // On Enter, continues whatever list the cursor's current line is part of — a plain
         // <textarea> has no native concept of "list item," so without this, clicking a list
         // toolbar button only ever formats the one line it was clicked on and every line
         // typed after Enter starts back at plain text (numbered lists in particular then
@@ -3995,7 +3995,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
             const bulletMatch = !checklistMatch && currentLine.match(/^(\s*)-\s(.*)$/);
             const numberedMatch = !checklistMatch && !bulletMatch && currentLine.match(/^(\s*)(\d+)\.\s(.*)$/);
             const match = checklistMatch || bulletMatch || numberedMatch;
-            if (!match) return; // not on a list line â€” let the browser insert a normal newline
+            if (!match) return; // not on a list line — let the browser insert a normal newline
 
             e.preventDefault();
             const isEmpty = match[match.length - 1].trim() === '';
@@ -4028,7 +4028,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
             input.addEventListener('input', () => {
                 clearTimeout(saveTimer);
                 // Count the debounce window itself as pending, not just the eventual network
-                // call â€” otherwise a refresh in the 400ms gap before the timer fires would slip
+                // call — otherwise a refresh in the 400ms gap before the timer fires would slip
                 // past the beforeunload check with real unsaved keystrokes.
                 if (!notesSavePending) { notesSavePending = true; pendingSaveCount++; }
                 saveTimer = setTimeout(() => {
@@ -4090,7 +4090,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
 
         /* ---------- BRIDGE TO THE 3D PREVIEW MODULE ----------
            The 3D preview lives in a separate <script type="module"> block below (needs ES
-           module imports for Three.js) â€” module scripts have their own top-level scope and
+           module imports for Three.js) — module scripts have their own top-level scope and
            can't see this classic script's `let`/`const` bindings directly the way two classic
            scripts can see each other's, so the state the module needs is deliberately exposed
            on `window` here rather than assumed reachable. `getPanels` is a live getter (not a
@@ -4103,12 +4103,12 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
         window.getPanelsById = () => new Map(panels.map(p => [p.id, p]));
         window.MATERIALS = MATERIALS;
 
-        // Heuristic, not a geometric proof â€” real position-aware cut geometry is computed at
+        // Heuristic, not a geometric proof — real position-aware cut geometry is computed at
         // render time from the panels' actual placement (see computeJointCutterBox in the 3D
         // module). This just picks a sensible starting suggestion from the two pieces' own
         // dimensions: a piece whose longest side is close to the receiving piece's own size
-        // reads as "spans across it" (dado â€” e.g. a shelf captured between two sides); a
-        // clearly smaller piece reads as "sits in a step at the edge" (rabbet â€” e.g. a back
+        // reads as "spans across it" (dado — e.g. a shelf captured between two sides); a
+        // clearly smaller piece reads as "sits in a step at the edge" (rabbet — e.g. a back
         // panel let into the rear of a case).
         function suggestJointType(panelA, panelB) {
             if (!panelA || !panelB) return 'butt';
@@ -4131,7 +4131,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
             });
             if (panels.some(p => p.id === prevA)) selA.value = prevA;
             // Default B to the SECOND piece rather than letting both selects land on the same
-            // first option â€” comparing a piece to itself is a meaningless suggestion and an
+            // first option — comparing a piece to itself is a meaningless suggestion and an
             // invalid joint (caught on Add, but no reason to show a confusing default first).
             if (panels.some(p => p.id === prevB) && prevB !== selA.value) {
                 selB.value = prevB;
@@ -4224,7 +4224,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
             renderAll();
             renderSavedProjectsPicker();
 
-            // Deep-link from My Workspace â€” a fresh page load, so no unsaved-work conflict
+            // Deep-link from My Workspace — a fresh page load, so no unsaved-work conflict
             // to guard against the way the manual picker's loadSelectedProject() does.
             const loadId = new URLSearchParams(window.location.search).get('loadProject');
             const target = loadId ? cachedSavedProjects.find((p) => p.id === loadId) : null;
@@ -4255,9 +4255,9 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
         import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
         import { Brush, Evaluator, SUBTRACTION } from 'three-bvh-csg';
 
-        // Sheet goods in tan/birch tones, solid lumber in browns â€” so material differences read
+        // Sheet goods in tan/birch tones, solid lumber in browns — so material differences read
         // at a glance without needing to click each panel. Keyed identically to the classic
-        // script's MATERIALS (window.MATERIALS), one entry per key there â€” species-specific
+        // script's MATERIALS (window.MATERIALS), one entry per key there — species-specific
         // entries get genuinely distinct tones (e.g. light maple vs near-black walnut) so a
         // maple-ply carcase and a walnut face frame are unmistakable in the 3D view even though
         // both would otherwise just be "plywood" / "hardwood".
@@ -4288,7 +4288,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
         };
 
         // Procedural wood grain, generated once per material key and reused (cloned per-mesh
-        // only to give each panel its own tile repeat â€” see getWoodGrainTexture). No image
+        // only to give each panel its own tile repeat — see getWoodGrainTexture). No image
         // assets, no licensing to track, and every reload of the same species looks identical
         // since the "randomness" is a seeded LCG keyed off the material name, not Math.random().
         // MDF and the generic "custom" placeholder are real materials without visible wood
@@ -4329,7 +4329,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
                 ctx.stroke();
             }
 
-            // Fine per-pixel noise on top of the streaks â€” pore texture, keeps it from
+            // Fine per-pixel noise on top of the streaks — pore texture, keeps it from
             // reading as a flat vector graphic up close.
             const imgData = ctx.getImageData(0, 0, size, size);
             const px = imgData.data;
@@ -4349,7 +4349,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
             return texture;
         }
 
-        // Each mesh gets its own clone so its tile repeat can match its own size â€” mutating
+        // Each mesh gets its own clone so its tile repeat can match its own size — mutating
         // .repeat on a texture shared directly across meshes would fight between panels.
         function makeWoodTextureForPanel(materialKey, widthIn, heightIn) {
             const base = getWoodGrainTexture(materialKey);
@@ -4373,17 +4373,17 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
         let tempMeasureMarker = null;
         let pendingLabelPoint = null;
         let pendingLabelNormal = null;
-        // Exploded view is a pure display transform â€” mesh.position gets moved for the camera's
+        // Exploded view is a pure display transform — mesh.position gets moved for the camera's
         // benefit, but nothing here ever calls persistMeshPosition/savePanels while it's active,
         // so panels[] (the real data) never sees it. That's what makes it safe to leave
         // read-only: there's nothing to "undo" going back to Assembled, just a position reset.
         let explodedView = false;
         let explodeLabelMeshes = []; // dimension tags, one per panel while exploded
         let explodeLineMeshes = []; // ghost lines from assembled -> exploded position
-        let showDimensions = false; // Dimensions toolbar toggle â€” size label next to every panel, assembled view only
+        let showDimensions = false; // Dimensions toolbar toggle — size label next to every panel, assembled view only
         let dimensionMeshes = []; // one entry per panel while showDimensions is on: { sprite, line }
         // Undo is a plain snapshot stack (panels/labels/measurements together, same trio a
-        // Saved Project bundles) rather than per-field diffs â€” simplest correct way to cover every
+        // Saved Project bundles) rather than per-field diffs — simplest correct way to cover every
         // mutation path (drag, rotate, nudge, typed position, add/remove) with one mechanism.
         // Deliberately excludes exploded view, same reasoning as explodedView above: it's a pure
         // display transform with nothing persisted to undo.
@@ -4392,24 +4392,24 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
         let lastNudgeUndoTime = 0;
         let lastNudgeUndoMeshId = null;
         const dragPoint = new THREE.Vector3();
-        // Every drag/nudge lands on a multiple of this â€” turns "drop it wherever the mouse
+        // Every drag/nudge lands on a multiple of this — turns "drop it wherever the mouse
         // happened to be" into "drop it on a real woodworking measurement," which is most of
         // what made free-floating drag feel klunky in the first place.
         const SNAP_IN = 0.5;
         // How close two panels' faces have to be (in inches) before a drag snaps them flush.
-        // Bigger than SNAP_IN on purpose â€” this is a coarser "did you mean to butt these
+        // Bigger than SNAP_IN on purpose — this is a coarser "did you mean to butt these
         // together" check applied on top of the grid-snapped position, not a replacement for it.
         const FACE_SNAP_THRESHOLD_IN = 1.5;
         const SELECT_COLOR = 0x7c3aed;
         const SNAP_COLOR = 0x16a34a;
 
         // Labels/measurements have no cut-list relevance, so unlike panels they're read/written
-        // directly here, entirely module-local â€” except for the 3 small bridge functions below,
+        // directly here, entirely module-local — except for the 3 small bridge functions below,
         // which exist solely so the classic script's Saved Projects feature can bundle these into
         // (and restore them from) a named snapshot alongside panels/hardware/notes.
         let labels = [];
         let measurementsData = [];
-        // Real, Supabase-backed now (project_live_state.labels/measurements) â€” this module
+        // Real, Supabase-backed now (project_live_state.labels/measurements) — this module
         // has its own top-level scope from the classic script above, so it awaits
         // kerphAuthReady independently rather than trying to share state across scripts.
         kerphAuthReady.then(async () => {
@@ -4421,7 +4421,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
         function saveMeasurementsData() { window.kerphTrackSave(kerphSaveProjectMeasurements3D(measurementsData).catch(() => {})); }
 
         // Called at the START of every mutating gesture (drag arm, rotate arm, nudge, typed
-        // edit, add, remove) â€” not after â€” so Undo always rewinds to the state right before
+        // edit, add, remove) — not after — so Undo always rewinds to the state right before
         // that action, matching the same "push on gesture start" convention already used for
         // undo in workshop-planner.html.
         function push3DUndoSnapshot() {
@@ -4465,13 +4465,13 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
             measurementsData = Array.isArray(newMeasurements) ? newMeasurements : [];
             saveLabelsData();
             saveMeasurementsData();
-            // Called on every project switch (load/new/delete) â€” the snapshot stack is only ever
+            // Called on every project switch (load/new/delete) — the snapshot stack is only ever
             // valid within a single project, so a switch invalidates it rather than leaving stale
             // undo steps that would rewind into a *different* project's data.
             undo3DStack = [];
             updateUndo3DBtnState();
             // Both rebuild functions already no-op if the 3D scene hasn't been initialized yet
-            // (see their own sceneReady guards) â€” safe to call unconditionally here.
+            // (see their own sceneReady guards) — safe to call unconditionally here.
             rebuildLabelMeshes();
             rebuildMeasurementMeshes();
             rebuildDimensionMeshes();
@@ -4481,7 +4481,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
             return Math.round(val / SNAP_IN) * SNAP_IN;
         }
 
-        // Shared canvas-sprite builder â€” badges, sticky-note labels, and measurement distance
+        // Shared canvas-sprite builder — badges, sticky-note labels, and measurement distance
         // tags are all the same "rounded box + centered text" shape, just different colors.
         function makeTextSprite(text, opts) {
             const o = Object.assign({ bg: 'rgba(15, 23, 42, 0.85)', border: null, ink: '#ffffff', fontSize: 26, worldHeight: 5, padding: 20 }, opts || {});
@@ -4526,7 +4526,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
             return makeTextSprite(text, { bg: 'rgba(255, 255, 255, 0.94)', border: '#475569', ink: '#0f172a', fontSize: 20, worldHeight: 3, padding: 14 });
         }
 
-        // Simple left-to-right row packing for any panel with no xIn set yet â€” a reasonable
+        // Simple left-to-right row packing for any panel with no xIn set yet — a reasonable
         // starting layout the user is expected to drag/rotate from, not a real solver. Mutates
         // the panel objects in place (same array reference the classic script holds via its
         // getPanels() closure) and reports whether anything changed so the caller knows to
@@ -4555,17 +4555,17 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
             return changed;
         }
 
-        // Holes aren't real geometry cuts (no CSG/boolean subtraction here â€” that's a much
-        // heavier lift than this static-CDN, zero-build setup wants to take on) â€” instead each
+        // Holes aren't real geometry cuts (no CSG/boolean subtraction here — that's a much
+        // heavier lift than this static-CDN, zero-build setup wants to take on) — instead each
         // hole is a thin dark cylinder/box, sized to just barely poke out of both faces, added
         // as a CHILD of the panel mesh. Being a child means it's positioned in the panel's own
         // local width/height/thickness space and automatically inherits the panel's position and
-        // rotation â€” no separate tracking needed for drag/rotate/persist. Since raycasting in
+        // rotation — no separate tracking needed for drag/rotate/persist. Since raycasting in
         // this file always calls intersectObjects(..., false) (non-recursive), these children are
         // also automatically invisible to click-selection, so they can't interfere with picking
         // the panel itself.
         // Three short parallel lines across the front face, along local X (the panel's own
-        // "width" axis) â€” a lightweight visual echo of the grainLocked flag set in the panel
+        // "width" axis) — a lightweight visual echo of the grainLocked flag set in the panel
         // modal, not a real texture/material change. Added as a child of mesh (like hole
         // markers) so it's freed automatically when clearPanelMeshes removes the parent.
         function addGrainIndicator(mesh, p) {
@@ -4603,7 +4603,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
             panelMeshes.forEach(({ mesh }) => {
                 if (mesh.userData.badge) scene.remove(mesh.userData.badge);
                 // Hole markers are children of mesh (see addHoleMeshes), so scene.remove(mesh)
-                // already drops them from the render graph â€” but three.js never auto-frees GPU
+                // already drops them from the render graph — but three.js never auto-frees GPU
                 // buffers, so their geometry/material still need explicit disposal here.
                 mesh.children.forEach(child => {
                     if (child.geometry) child.geometry.dispose();
@@ -4626,7 +4626,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
 
         // Builds a THREE.Shape for one non-rectangular panel preset, centered at local origin
         // (X: -width/2..width/2, Y: -height/2..height/2) so it drops into the same coordinate
-        // convention BoxGeometry already uses â€” position/rotation, hole placement ("measured
+        // convention BoxGeometry already uses — position/rotation, hole placement ("measured
         // from the piece's center"), and the qty badge offset all assume a centered origin,
         // and none of that changes just because the outline isn't a rectangle anymore.
         function buildPanelShape(p) {
@@ -4635,7 +4635,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
             const shape = new THREE.Shape();
             const type = p.shapeType;
             if (type === 'arched-top') {
-                // Rise is how far the two top corners are pulled DOWN from the peak â€” the
+                // Rise is how far the two top corners are pulled DOWN from the peak — the
                 // bounding box's full height is always reachable (at the arch's center), never
                 // exceeded, so the piece still nests in cut lists at exactly widthIn x heightIn.
                 const rise = Math.min(Math.max(p.archRiseIn || 3, 0.1), h - 0.1);
@@ -4660,7 +4660,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
                 shape.closePath();
             } else if (type === 'half-round') {
                 // Flat edge along the bottom of the bounding box, arcing up to a peak at the
-                // top-center â€” a demilune, not necessarily a true semicircle if width != 2*height.
+                // top-center — a demilune, not necessarily a true semicircle if width != 2*height.
                 shape.moveTo(-hw, -hh);
                 shape.lineTo(hw, -hh);
                 shape.absellipse(0, -hh, hw, h, 0, Math.PI, false, 0);
@@ -4685,7 +4685,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
         }
 
         // Rectangle stays plain BoxGeometry (cheaper, and visually identical to an extruded
-        // rectangle) â€” every curved preset goes through ExtrudeGeometry instead, translated so
+        // rectangle) — every curved preset goes through ExtrudeGeometry instead, translated so
         // its thickness is centered on local Z like BoxGeometry's depth already is.
         function buildPanelGeometry(p) {
             if (!p.shapeType || p.shapeType === 'rectangle') {
@@ -4699,7 +4699,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
 
         // Three clean orthographic snapshots (front/side/top) of everything currently in the
         // scene, framed to fit with a little padding, matching the live canvas's own aspect
-        // ratio so nothing looks stretched. Doesn't touch renderer size/camera/controls â€” just
+        // ratio so nothing looks stretched. Doesn't touch renderer size/camera/controls — just
         // swaps in a throwaway OrthographicCamera for one synchronous render() + toDataURL()
         // per view; the running animate() loop resumes painting from the real `camera` on its
         // very next frame regardless, so there's nothing to restore afterward.
@@ -4742,7 +4742,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
         // Just the panel meshes (not labels/measurements/badges/dimension lines, which are
         // sprites and UI furniture, not part of the actual piece) exported as a binary GLB,
         // scaled from this app's working unit (inches, matching the camera/lighting rig's own
-        // scale) down to meters â€” the unit glTF (and AR consumers like model-viewer/Quick
+        // scale) down to meters — the unit glTF (and AR consumers like model-viewer/Quick
         // Look) assume, so the object places at true size instead of ~39x too large.
         window.exportProjectGLB = function exportProjectGLB() {
             if (!sceneReady || !panelMeshes.length) return Promise.resolve(null);
@@ -4760,7 +4760,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
         };
 
         // Records a short pieces-apart-and-back-together clip straight off the live canvas via
-        // captureStream() + MediaRecorder â€” no server round-trip, no third-party GIF library
+        // captureStream() + MediaRecorder — no server round-trip, no third-party GIF library
         // (those have real reliability/CSP quirks in web workers). WebM plays natively in far
         // more places than a GIF would anyway and autoplays inline on most chat/social apps.
         // Reuses the existing exploded-view math (applyExplodedPositions/setExplodedView)
@@ -4822,8 +4822,8 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
             });
         };
 
-        // Whatever's currently on screen â€” i.e. the live camera angle the user last orbited
-        // to, not a fixed default â€” captured as a JPEG blob for the Share flow's auto
+        // Whatever's currently on screen — i.e. the live camera angle the user last orbited
+        // to, not a fixed default — captured as a JPEG blob for the Share flow's auto
         // thumbnail. Deliberately not a special beauty-shot camera move: letting the user's
         // own last-viewed angle become the thumbnail means they get to pick their best angle
         // just by looking at it before hitting Share.
@@ -4835,10 +4835,10 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
         };
 
         // World-space axis-aligned bounding box for a panel, or null if it can't be computed
-        // cleanly â€” either it hasn't been placed yet, or its rotation isn't a multiple of 90Â°
+        // cleanly — either it hasn't been placed yet, or its rotation isn't a multiple of 90°
         // (a tilted panel has no single "world AABB" that means anything for cutting purposes).
         // Box3.applyMatrix4 transforms all 8 local corners and re-derives min/max, so this
-        // handles any combination of 90Â°/180Â°/270Â° rotations correctly without hand-rolled
+        // handles any combination of 90°/180°/270° rotations correctly without hand-rolled
         // per-axis swap logic.
         function panelWorldAABB(panel) {
             if (typeof panel.xIn !== 'number') return null;
@@ -4860,15 +4860,15 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
 
         // Same formula produces both a corner notch (rabbet, when B only partially overlaps A
         // on the two non-adjacency axes) and a full slot (dado, when B spans A's whole extent
-        // on those axes) â€” the rabbet/dado label is just a UI description of the two cases,
+        // on those axes) — the rabbet/dado label is just a UI description of the two cases,
         // not two different algorithms. Returns null when A and B aren't cleanly adjacent along
         // exactly one axis (too far apart, or overlapping by more than the cut depth suggests)
         // rather than guessing at a cut that might be wrong.
         //
-        // The adjacency axis is picked by OVERLAP AMOUNT, not gap â€” a synthetic "touching from
+        // The adjacency axis is picked by OVERLAP AMOUNT, not gap — a synthetic "touching from
         // outside" test case has zero overlap (a gap), but a REAL assembled dado/rabbet joint
         // (e.g. from a template) already has the two pieces slightly embedded into each other
-        // by the joint's own depth, since that's what "assembled" looks like â€” the tongue sits
+        // by the joint's own depth, since that's what "assembled" looks like — the tongue sits
         // inside the slot. Using signed overlap (negative = gap, small positive = embedded by
         // roughly the joint depth) as one unified metric picks the right axis in both cases: the
         // two "spanning" axes show large overlap (one piece's footprint sits fully inside the
@@ -4900,7 +4900,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
                         cutMax[axis] = Math.min(aMin + depthIn, aMax);
                     }
                 } else {
-                    // Clip to the overlap of A and B on this axis â€” keeps the cut within A's
+                    // Clip to the overlap of A and B on this axis — keeps the cut within A's
                     // own footprint and is what naturally produces a corner notch vs. a full
                     // slot depending on how much of A's face B actually covers.
                     cutMin[axis] = Math.max(boxA.min[axis], boxB.min[axis]);
@@ -4913,20 +4913,20 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
         }
         // The algorithm only ever indexes boxA/boxB by axis name (boxA.min['x'], etc.), so it
         // works identically on a THREE.Box3 (used above) or a plain {min:{x,y,z},max:{x,y,z}}
-        // object â€” exposed so the DXF export (plain script, no THREE import) can reuse the exact
+        // object — exposed so the DXF export (plain script, no THREE import) can reuse the exact
         // same cut math instead of a second hand-maintained copy that could drift out of sync.
         window.computeJointCutterBox = computeJointCutterBox;
 
         const csgEvaluator = new Evaluator();
         // Cuts every joint where `panel` is the receiving side (panelAId) into `geo`, returning
         // either { geometry, worldSpace: true } if at least one cut succeeded (see the coordinate-
-        // space note below) or null if no cuts applied â€” callers fall back to the normal
+        // space note below) or null if no cuts applied — callers fall back to the normal
         // position-via-mesh.position path in that case, so a panel with no valid joints behaves
         // exactly as it did before this feature existed.
         //
         // three-bvh-csg's Evaluator.evaluate() bakes both input brushes' world transforms into
         // the OUTPUT geometry's vertex positions and returns a brush with an identity transform
-        // of its own (verified empirically before writing this, not assumed) â€” so the resulting
+        // of its own (verified empirically before writing this, not assumed) — so the resulting
         // mesh must be added at position (0,0,0) with no rotation, not positioned via p.xIn/etc.
         // the way every other panel mesh is.
         function applyJointCuts(panel, geo, allPanelsById, allJoints) {
@@ -4946,11 +4946,11 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
                 if (!cutter) continue;
 
                 // Only the FIRST cut's geometry is still in local space and needs the panel's
-                // transform applied â€” every cut after that starts from the previous cut's
+                // transform applied — every cut after that starts from the previous cut's
                 // OUTPUT, which is already world-space (see the coordinate-space note above).
                 // Re-applying the panel's position/rotation on later iterations would double
                 // (then triple, ...) the offset, scattering multi-joint pieces away from where
-                // they belong â€” exactly the bug this comment is here to stop from coming back.
+                // they belong — exactly the bug this comment is here to stop from coming back.
                 const brushA = new Brush(currentGeo);
                 if (!cutApplied) {
                     brushA.position.set(panel.xIn, panel.yIn, panel.zIn);
@@ -4973,7 +4973,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
                     z: (cutter.max.z + cutter.min.z) / 2
                 };
                 // The cutter box is already expressed in world space and axis-aligned (both
-                // inputs were axis-aligned, so their overlap/adjacency region is too) â€” no
+                // inputs were axis-aligned, so their overlap/adjacency region is too) — no
                 // rotation needed on the cutter brush itself, just position it at the box center.
                 const cutterGeo = new THREE.BoxGeometry(Math.max(cutSize.x, 0.001), Math.max(cutSize.y, 0.001), Math.max(cutSize.z, 0.001));
                 const brushB = new Brush(cutterGeo);
@@ -5011,27 +5011,27 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
                 const color = MATERIAL_COLORS[p.material] != null ? MATERIAL_COLORS[p.material] : MATERIAL_COLORS.custom;
                 let geo = buildPanelGeometry(p);
 
-                // Real rabbet/dado cut geometry when this piece has joints cutting into it â€” see
+                // Real rabbet/dado cut geometry when this piece has joints cutting into it — see
                 // applyJointCuts above. The resulting geometry already has the panel's world
                 // position/rotation baked into its vertices (confirmed empirically: three-bvh-csg
                 // returns an identity-transform brush), so a cut panel's mesh gets added at the
-                // origin with no rotation instead of the usual p.xIn/p.yIn/p.zIn positioning â€”
+                // origin with no rotation instead of the usual p.xIn/p.yIn/p.zIn positioning —
                 // doing both would double-apply the transform and scatter the geometry.
                 const cutGeo = currentJoints.length ? applyJointCuts(p, geo, panelsById, currentJoints) : null;
                 const isCut = !!cutGeo;
                 if (isCut) { geo.dispose(); geo = cutGeo; }
 
-                // Every material here is wood (or a generic gray placeholder) â€” a single
+                // Every material here is wood (or a generic gray placeholder) — a single
                 // semi-matte roughness/metalness profile reads as real material under the
                 // PMREM environment instead of the flat, plasticky look default values give.
                 // Real species get a procedural grain texture layered on top of the tint
                 // (see WOOD_GRAIN_MATERIALS above); MDF/custom stay flat since they have no
                 // visible grain in real life. A cut panel also stays flat-tinted rather than
-                // textured â€” the CSG output geometry doesn't carry the clean box-mapped UVs the
+                // textured — the CSG output geometry doesn't carry the clean box-mapped UVs the
                 // grain texture assumes, so mapping it on would likely look stretched/broken.
                 const hasGrainTexture = WOOD_GRAIN_MATERIALS.has(p.material) && !isCut;
                 // The grain texture already bakes in the species' tint (see getWoodGrainTexture),
-                // so the material's own .color has to stay white when a map is present â€” leaving
+                // so the material's own .color has to stay white when a map is present — leaving
                 // it at the flat tint too would double-multiply and come out too dark/saturated.
                 const matOpts = { color: hasGrainTexture ? 0xffffff : color, roughness: 0.72, metalness: 0.02 };
                 if (hasGrainTexture) matOpts.map = makeWoodTextureForPanel(p.material, p.widthIn, p.heightIn);
@@ -5059,7 +5059,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
 
                 if (p.qty > 1) {
                     const badgeOffsetY = p.heightIn / 2 + 4;
-                    const badge = makeBadgeSprite('Ã—' + p.qty);
+                    const badge = makeBadgeSprite('×' + p.qty);
                     badge.position.set(p.xIn, p.yIn + badgeOffsetY, p.zIn);
                     scene.add(badge);
                     mesh.userData.badge = badge;
@@ -5084,11 +5084,11 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
         }
 
         // A label sits a little off its actual attachment point (the exact spot the user
-        // clicked), with a small dot + leader line back to that point â€” otherwise the text
+        // clicked), with a small dot + leader line back to that point — otherwise the text
         // sprite would sit flush on/inside the surface it's marking, unreadable and prone to
         // losing the raycast hit-test to the panel's own solid geometry sitting right at the
         // same spot. l.offX/offY/offZ is that fixed local offset (sprite position minus anchor
-        // position) â€” stored once at placement time along whichever direction actually clears
+        // position) — stored once at placement time along whichever direction actually clears
         // the surface (see raycastScenePoint's normal), not always straight up, since a
         // "standing" panel's face points sideways, not up.
         function rebuildLabelMeshes() {
@@ -5145,7 +5145,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
                 const lineGeo = new THREE.BufferGeometry().setFromPoints([a, b]);
                 group.add(new THREE.Line(lineGeo, new THREE.LineBasicMaterial({ color: 0x1e3a8a })));
                 // The endpoint dots are tagged and returned as hit targets too (see
-                // getAllSelectableMeshes) â€” the distance-label sprite at the midpoint is a small,
+                // getAllSelectableMeshes) — the distance-label sprite at the midpoint is a small,
                 // easy-to-miss click target on its own, so both ends of the line give a second,
                 // bigger chance to select (and then Remove) a measurement.
                 const dots = [a, b].map(pt => {
@@ -5174,7 +5174,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
             return window.getPanels().find(p => p.id === panelId);
         }
 
-        // Labels/measurements are tied to a specific spot on the assembled model â€” with pieces
+        // Labels/measurements are tied to a specific spot on the assembled model — with pieces
         // scattered apart they'd float in disconnected space and just add noise, so they're left
         // out of both the selectable set and (via visible=false, see setExplodedView) the render
         // while exploded.
@@ -5196,7 +5196,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
             dimensionMeshes = [];
         }
 
-        // Toggle-able size callout next to every panel (assembled view only â€” exploded already
+        // Toggle-able size callout next to every panel (assembled view only — exploded already
         // shows name+dims via rebuildExplodeExtras, and mid-explode positions are synthetic
         // display coordinates, not real placements worth annotating). Full rebuild rather than
         // incremental per-panel sync: called from every place a panel's position/rotation gets
@@ -5230,7 +5230,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
             return slider ? parseInt(slider.value, 10) / 100 : 0.6;
         }
 
-        // Radial explode from the assembly's centroid â€” every panel moves straight away from
+        // Radial explode from the assembly's centroid — every panel moves straight away from
         // the group's center, farther pieces moving farther, which is the standard "exploded
         // parts diagram" convention. A panel sitting exactly on the centroid (e.g. a single-panel
         // project) has no direction to explode along, so it falls back to straight up.
@@ -5244,7 +5244,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
                 const d = new THREE.Vector3(p.xIn - cx, p.yIn - cy, p.zIn - cz);
                 const len = d.length();
                 const dir = len < 0.01 ? new THREE.Vector3(0, 1, 0) : d.clone().normalize();
-                // Was 6 + len*2.5 â€” at the old 60% default that pushed pieces to ~2.5x their
+                // Was 6 + len*2.5 — at the old 60% default that pushed pieces to ~2.5x their
                 // assembled distance from center, easily further than the camera's assembled-view
                 // framing could show. Gentler now, and setExplodedView re-frames the camera to
                 // whatever's actually on screen besides, so pieces stay visible either way.
@@ -5272,7 +5272,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
         function rebuildExplodeExtras(targets) {
             clearExplodeExtras();
             targets.forEach(t => {
-                const sprite = makeDimensionSprite(`${t.name} â€” ${t.dims}`);
+                const sprite = makeDimensionSprite(`${t.name} — ${t.dims}`);
                 sprite.position.set(t.exploded.x, t.exploded.y + t.heightIn / 2 + 3, t.exploded.z);
                 scene.add(sprite);
                 explodeLabelMeshes.push(sprite);
@@ -5285,7 +5285,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
         }
 
         // Applies (or re-applies, when the amount slider moves) the explode transform to every
-        // current panel mesh. Purely a display transform â€” see the explodedView declaration for
+        // current panel mesh. Purely a display transform — see the explodedView declaration for
         // why this never touches panels[]/localStorage.
         function applyExplodedPositions() {
             const targets = computeExplodeTargets(getExplodeFactor());
@@ -5313,9 +5313,9 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
         function updateExplodeUI() {
             const btn = document.getElementById('explodeToggleBtn');
             btn.classList.toggle('mini-btn-active', explodedView);
-            btn.textContent = explodedView ? 'ðŸ’¥ Back to Assembled' : 'ðŸ’¥ Exploded View';
+            btn.textContent = explodedView ? '💥 Back to Assembled' : '💥 Exploded View';
             document.getElementById('explodeAmountRow').style.display = explodedView ? 'flex' : 'none';
-            // These tools all mutate panels[] or need a real assembled surface to click on â€”
+            // These tools all mutate panels[] or need a real assembled surface to click on —
             // neither makes sense mid-explode, so they're disabled rather than silently broken.
             ['addPieceToolBtn', 'addLabelToolBtn', 'measureToolBtn'].forEach(id => {
                 document.getElementById(id).disabled = explodedView;
@@ -5340,10 +5340,10 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
             measurementMeshes.forEach(mm => { mm.group.visible = !on; mm.textMesh.visible = !on; });
             rebuildDimensionMeshes();
             updateExplodeUI();
-            // The whole point of exploding is to see every piece clearly â€” re-fit the camera to
+            // The whole point of exploding is to see every piece clearly — re-fit the camera to
             // whatever's actually on screen now (scattered on explode, back together on
             // collapse) instead of leaving it framed for the assembled size while pieces move
-            // well outside that view. Only on toggle, not on every Spread-slider tick â€” a camera
+            // well outside that view. Only on toggle, not on every Spread-slider tick — a camera
             // that jumps mid-drag would fight the user's own orbit/zoom instead of just helping
             // them get oriented once.
             frameCameraToPanels();
@@ -5359,7 +5359,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
         }
 
         // Keeps a panel's qty badge and a label's dot/leader-line glued to their parent
-        // through drag/nudge â€” both are separate scene objects (not children of the mesh)
+        // through drag/nudge — both are separate scene objects (not children of the mesh)
         // so selectMesh()'s BoxHelper doesn't try to wrap them too.
         function syncAttachments(mesh) {
             if (mesh.userData.badge) {
@@ -5379,7 +5379,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
         // or labels *that exact surface point*), falling back to the floor plane so a label or
         // measurement point can still be placed in open space (e.g. an overall envelope
         // dimension that isn't flush against any single panel). Also returns the world-space
-        // surface normal at the hit point â€” a label needs to be offset *away from the surface*
+        // surface normal at the hit point — a label needs to be offset *away from the surface*
         // to avoid being swallowed by the panel's own geometry, and "away" means straight up
         // for the floor but sideways for a standing panel's face, so a fixed +Y offset can't
         // work in general (see rebuildLabelMeshes).
@@ -5393,8 +5393,8 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
             const pt = new THREE.Vector3();
             if (!raycaster.ray.intersectPlane(plane, pt)) return null;
             // A grazing camera angle (looking near the horizon) can put this floor-plane
-            // intersection hundreds of inches out â€” technically a valid point, but effectively
-            // offscreen and useless for a label/measurement. Same Â±120in work-area bound already
+            // intersection hundreds of inches out — technically a valid point, but effectively
+            // offscreen and useless for a label/measurement. Same ±120in work-area bound already
             // used to clamp panel dragging (see onDragMove), so "too far to place a point" means
             // the same thing everywhere in this view.
             const bound = 120;
@@ -5404,7 +5404,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
 
         // A measurement's "position" is two fixed endpoints, not a single point, so it keeps
         // the old read-only text line; panels/labels get live-editable X/Y/Z number fields
-        // instead â€” typing an exact value is the fast path for "get these two pieces flush"
+        // instead — typing an exact value is the fast path for "get these two pieces flush"
         // when eyeballing a drag is too fiddly.
         function updateSelectionCoords(mesh) {
             const textEl = document.getElementById('preview3DSelectionCoords');
@@ -5418,7 +5418,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
                 textEl.textContent = mesh.userData.name;
             } else if (explodedView) {
                 // mesh.position is the synthetic exploded coordinate here, not the real
-                // assembled position â€” showing it in editable fields (and letting an edit
+                // assembled position — showing it in editable fields (and letting an edit
                 // persist it) would silently corrupt the panel's real placement. Dimensions are
                 // the useful, unambiguous thing to show instead.
                 fieldsEl.style.display = 'none';
@@ -5440,10 +5440,10 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
             return Math.round(n * 100) / 100;
         }
 
-        // Typed values are applied exactly as entered â€” no grid/face snapping â€” since typing a
+        // Typed values are applied exactly as entered — no grid/face snapping — since typing a
         // precise number is the deliberate alternative to snap-assisted dragging, not another
         // input to the same snap logic. Refuses to run in exploded view too (belt-and-suspenders
-        // alongside the fields being hidden there â€” see updateSelectionCoords).
+        // alongside the fields being hidden there — see updateSelectionCoords).
         function applyPositionFieldEdit() {
             if (!selectedMesh || selectedMesh.userData.type === 'measurement' || explodedView) return;
             push3DUndoSnapshot();
@@ -5459,8 +5459,8 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
         }
 
         const SELECTION_HINTS = {
-            panel: 'Drag to move (X/Z) Â· Shift+drag to move up/down Â· arrow keys to nudge Â· hold Alt to bypass snapping Â· click empty space to deselect.',
-            label: 'Drag to reposition Â· Shift+drag to move up/down Â· click empty space to deselect.',
+            panel: 'Drag to move (X/Z) · Shift+drag to move up/down · arrow keys to nudge · hold Alt to bypass snapping · click empty space to deselect.',
+            label: 'Drag to reposition · Shift+drag to move up/down · click empty space to deselect.',
             measurement: 'Click empty space to deselect.'
         };
 
@@ -5481,9 +5481,9 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
             panelEl.style.display = 'block';
             document.getElementById('preview3DSelectionName').textContent = mesh.userData.name || 'Panel';
             document.getElementById('preview3DSelectionHint').textContent = explodedView
-                ? 'Exploded view is read-only â€” switch back to Assembled to drag, rotate, or remove.'
+                ? 'Exploded view is read-only — switch back to Assembled to drag, rotate, or remove.'
                 : (SELECTION_HINTS[type] || SELECTION_HINTS.panel);
-            // Rotation and removal both write back to the real panel â€” neither makes sense on a
+            // Rotation and removal both write back to the real panel — neither makes sense on a
             // synthetic exploded position, so both stay hidden until back in Assembled view.
             // A billboard label or two-point measurement never gets Free Rotate either way.
             document.getElementById('preview3DFreeRotateBtn').style.display = (type === 'panel' && !explodedView) ? 'block' : 'none';
@@ -5492,9 +5492,9 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
             document.getElementById('preview3DRemoveBtn').style.display = explodedView ? 'none' : 'block';
             updateSelectionCoords(mesh);
             // Purple to match the selection outline used everywhere else in the app (e.g. the
-            // 2D planners' .selected-node dashed outline) â€” makes it unambiguous which box is
+            // 2D planners' .selected-node dashed outline) — makes it unambiguous which box is
             // actually selected instead of having to infer it from the floating panel alone.
-            // Only real Mesh objects (panels) get one â€” a BoxHelper on a billboard Sprite
+            // Only real Mesh objects (panels) get one — a BoxHelper on a billboard Sprite
             // computes a degenerate, camera-relative box that doesn't mean anything useful.
             if (mesh.isMesh) {
                 selectionHelper = new THREE.BoxHelper(mesh, SELECT_COLOR);
@@ -5517,7 +5517,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
             if (!transformControls) {
                 transformControls = new TransformControls(camera, renderer.domElement);
                 transformControls.setMode('rotate');
-                // Unrestricted (unlike the shop viewer's Y-only tool gizmo) â€” a furniture panel
+                // Unrestricted (unlike the shop viewer's Y-only tool gizmo) — a furniture panel
                 // genuinely needs arbitrary orientation, not just a spin around one axis.
                 transformControls.addEventListener('dragging-changed', (e) => {
                     controls.enabled = !e.value;
@@ -5535,7 +5535,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
 
         // Box3().setFromObject(mesh) would also sweep in any hole-marker children (see
         // addHoleMeshes), which are deliberately sized a hair deeper than the panel itself so
-        // they poke through both faces â€” that'd inflate every overlap/snap check by that sliver.
+        // they poke through both faces — that'd inflate every overlap/snap check by that sliver.
         // This measures only the panel's own BoxGeometry, transformed by its current world
         // matrix, matching what setFromObject would give a mesh with no children.
         function getPanelBox3(mesh) {
@@ -5557,7 +5557,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
         }
 
         // Finds the nearest other panel face within FACE_SNAP_THRESHOLD_IN along one world axis
-        // and returns the delta to add to mesh.position[axis] to land flush against it â€” this is
+        // and returns the delta to add to mesh.position[axis] to land flush against it — this is
         // what makes "get two pieces to touch" a drag-near-it instead of a fiddly pixel-hunt.
         // Uses each mesh's axis-aligned bounding box (not its literal rotated faces), which is
         // the right target for a rotated panel too: touching AABB edges is still "these two
@@ -5587,7 +5587,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
             return best;
         }
 
-        // Persists whatever moved â€” branches on type since panels/labels write back into
+        // Persists whatever moved — branches on type since panels/labels write back into
         // different backing arrays (panels via the classic-script bridge, labels module-local).
         function persistMeshPosition(mesh) {
             const type = mesh.userData.type || 'panel';
@@ -5600,9 +5600,9 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
             }
         }
 
-        // One-click "make it neat": squares the piece's rotation to the nearest 90Â° on every
+        // One-click "make it neat": squares the piece's rotation to the nearest 90° on every
         // axis (Level), then reuses the same face-snap check drag already does to rest it flush
-        // on whatever's directly below (or the floor, if nothing's there â€” Flat), and pulls it
+        // on whatever's directly below (or the floor, if nothing's there — Flat), and pulls it
         // flush against the nearest neighbor on X/Z if one's close enough (Flush). Same
         // FACE_SNAP_THRESHOLD_IN tolerance as drag-snapping, so "close enough to butt up
         // against" means the same thing here as it does everywhere else in the app.
@@ -5637,7 +5637,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
         }
 
         // Deep-clones the selected panel under a new id, offset a few inches on X/Z so it
-        // doesn't render exactly on top of the original â€” same starting point as commitQuickAdd's
+        // doesn't render exactly on top of the original — same starting point as commitQuickAdd's
         // "New Piece", and likewise selects the copy right after so the very next thing to do is
         // drag it (with face-snap) into place.
         function duplicateSelected() {
@@ -5704,21 +5704,21 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
             const mesh = hits[0].object;
             selectMesh(mesh);
 
-            // Exploded positions are synthetic display coordinates (see setExplodedView) â€” a
+            // Exploded positions are synthetic display coordinates (see setExplodedView) — a
             // piece is still clickable to see its name/dimensions, but dragging it would have
             // nothing real to persist to, so selection is as far as it goes here.
             if (explodedView) return;
 
-            // Measurements mark two fixed points, not a single draggable position â€” selectable
+            // Measurements mark two fixed points, not a single draggable position — selectable
             // (for Remove) but not draggable, so stop here rather than arming a drag.
             if (mesh.userData.type === 'measurement') return;
 
             push3DUndoSnapshot();
 
-            // Shift+drag moves the item up/down instead of along the floor â€” without this the
+            // Shift+drag moves the item up/down instead of along the floor — without this the
             // only way to change a panel's height was typing into the Y field by hand, which
             // was most of what made "moving pieces" feel incomplete rather than klunky.
-            // Uses raw screen-Y delta rather than raycasting against a camera-facing plane â€”
+            // Uses raw screen-Y delta rather than raycasting against a camera-facing plane —
             // the plane approach is what real 3D tools use, but its up/down correspondence to
             // screen-Y flips depending on which side of the plane the camera ends up on for a
             // given orbit angle, which measured as *inverted* drag direction here. Screen-delta
@@ -5749,7 +5749,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
             if (!dragState || !selectedMesh) return;
             const isPanel = selectedMesh.userData.type === 'panel';
             let snapped = false;
-            // Alt held = raw, unsnapped positioning â€” the override for micro-adjustments once
+            // Alt held = raw, unsnapped positioning — the override for micro-adjustments once
             // grid-snap or face-snap has gotten a piece close but not exactly where it's wanted.
             const freeform = e.altKey;
 
@@ -5781,7 +5781,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
                     selectedMesh.position.z = snap(rawZ);
 
                     // Face-snap refines the grid-snapped position further, pulling it flush against
-                    // a nearby panel's edge when within tolerance â€” this is what makes "get two
+                    // a nearby panel's edge when within tolerance — this is what makes "get two
                     // pieces to touch" a matter of dragging *near* the target instead of pixel-hunting.
                     if (isPanel) {
                         const snapX = computeFaceSnapOffset(selectedMesh, 'x');
@@ -5791,7 +5791,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
                     }
                 }
 
-                // Soft warning only â€” mirrors the shop-3d-viewer.html pattern (red tint while
+                // Soft warning only — mirrors the shop-3d-viewer.html pattern (red tint while
                 // overlapping, drop still allowed on release). Panels only; a label overlapping
                 // a panel it's marking is normal, not a problem worth flagging.
                 if (dragState.originalColor != null) {
@@ -5799,7 +5799,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
                     selectedMesh.material.color.setHex(overlapping ? 0xef4444 : dragState.originalColor);
                 }
             }
-            // Green outline is the "it locked" signal â€” cheap to show since selectionHelper
+            // Green outline is the "it locked" signal — cheap to show since selectionHelper
             // already tracks selectedMesh every frame, no extra geometry needed.
             if (selectionHelper) selectionHelper.material.color.setHex(snapped ? SNAP_COLOR : SELECT_COLOR);
             syncAttachments(selectedMesh);
@@ -5824,16 +5824,16 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
             if (dragState) return; // onDragMove already owns the cursor mid-drag
             raycastFromEvent(e, renderer.domElement);
             const hits = raycaster.intersectObjects(getAllSelectableMeshes(), false);
-            // 'grab' promises a drag exploded view doesn't allow (see onPointerDown) â€” 'pointer'
+            // 'grab' promises a drag exploded view doesn't allow (see onPointerDown) — 'pointer'
             // still signals "clickable" without that promise.
             renderer.domElement.style.cursor = hits.length ? (activeTool ? 'crosshair' : (explodedView ? 'pointer' : 'grab')) : (activeTool ? 'crosshair' : '');
         }
 
-        // Fine nudge for Alt+Arrow â€” the keyboard equivalent of Alt+drag, for the "just a hair
+        // Fine nudge for Alt+Arrow — the keyboard equivalent of Alt+drag, for the "just a hair
         // more" adjustment once the piece is already close.
         const FINE_NUDGE_IN = 0.0625;
 
-        // Arrow keys nudge whatever's selected by one snap increment â€” precise, mouse-free
+        // Arrow keys nudge whatever's selected by one snap increment — precise, mouse-free
         // fine-tuning, the same role keyboard nudging plays in real CAD tools. Shift+Up/Down
         // moves vertically instead of front/back, matching the Shift+drag convention above.
         // Alt swaps the increment to FINE_NUDGE_IN for micro-adjustments. Measurements aren't
@@ -5843,7 +5843,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
             const tag = document.activeElement && document.activeElement.tagName;
             if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
 
-            // Ctrl/Cmd+Z works regardless of what's selected (or nothing at all) â€” it's not a
+            // Ctrl/Cmd+Z works regardless of what's selected (or nothing at all) — it's not a
             // per-piece action, so it doesn't belong behind the selection guard below.
             if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
                 e.preventDefault();
@@ -5864,7 +5864,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
             e.preventDefault();
 
             // Coalesces a held-down/rapid-repeat arrow key into a single undo step instead of
-            // one per keystroke â€” same reasoning as commit-on-blur for the typed position
+            // one per keystroke — same reasoning as commit-on-blur for the typed position
             // fields, applied to nudging: only the state right before the *burst* is worth
             // rewinding to.
             const now = Date.now();
@@ -5898,8 +5898,8 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
             document.getElementById('measureToolBtn').classList.toggle('mini-btn-active', activeTool === 'measure');
             document.getElementById('addLabelToolBtn').classList.toggle('mini-btn-active', activeTool === 'label');
             const hint = document.getElementById('preview3dToolHint');
-            if (activeTool === 'measure') hint.textContent = measureFirstPoint ? 'Click the second pointâ€¦' : 'Click the first point to measure fromâ€¦';
-            else if (activeTool === 'label') hint.textContent = 'Click a panel or the floor to place the labelâ€¦';
+            if (activeTool === 'measure') hint.textContent = measureFirstPoint ? 'Click the second point…' : 'Click the first point to measure from…';
+            else if (activeTool === 'label') hint.textContent = 'Click a panel or the floor to place the label…';
             else hint.textContent = '';
         }
 
@@ -5917,7 +5917,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
                 push3DUndoSnapshot();
                 // Offset the sprite 3in off the clicked surface along its own normal (not a
                 // fixed +Y) so it clears the panel's geometry regardless of that panel's
-                // orientation â€” see rebuildLabelMeshes for why a fixed +Y offset fails here.
+                // orientation — see rebuildLabelMeshes for why a fixed +Y offset fails here.
                 const offset = pendingLabelNormal.clone().multiplyScalar(3);
                 const pos = pendingLabelPoint.clone().add(offset);
                 labels.push({
@@ -5971,7 +5971,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
         }
 
         // Builds a real panel row (the same data model the sidebar's Add Panel modal writes)
-        // with no xIn/yIn/zIn â€” that's what tells rebuild3DPreviewMeshes' auto-arrange to place
+        // with no xIn/yIn/zIn — that's what tells rebuild3DPreviewMeshes' auto-arrange to place
         // it, exactly like a brand-new panel added from the Cut List tab. Selecting it right
         // after means the very next thing the user can do is drag it (with face-snap) into place,
         // without ever leaving the 3D view or hunting for it in the sidebar list.
@@ -6000,7 +6000,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
         }
 
         // Points the camera at the actual project instead of a fixed, project-size-agnostic
-        // spot â€” a 12" jewelry box and an 80" wardrobe both used to load at the same fixed
+        // spot — a 12" jewelry box and an 80" wardrobe both used to load at the same fixed
         // camera position, which meant one was a speck and the other was clipped/too close.
         // Runs once per page load (see hasFramedCamera), not on every edit, so it doesn't yank
         // the view out from under someone mid-adjustment.
@@ -6032,7 +6032,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
             requestAnimationFrame(animate);
             if (controls) controls.update();
             // Keeps the outline glued to the mesh through both drag and the free-rotate
-            // gizmo â€” simplest correct way to track a box that can change every frame from
+            // gizmo — simplest correct way to track a box that can change every frame from
             // either interaction, rather than trying to hook both individually.
             if (selectionHelper) selectionHelper.update();
             if (renderer && scene && camera) renderer.render(scene, camera);
@@ -6051,7 +6051,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
             renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(wrap.clientWidth, wrap.clientHeight);
             renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-            // Same pipeline as the Workshop Layout Planner's 3D viewer (shop-3d-viewer.html) â€”
+            // Same pipeline as the Workshop Layout Planner's 3D viewer (shop-3d-viewer.html) —
             // soft shadows + filmic tone mapping are what separate "flat-lit CAD block" from
             // "a real piece sitting on a bench"; everything else here (materials, light rig)
             // is tuned assuming both are on.
@@ -6062,7 +6062,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
             renderer.outputColorSpace = THREE.SRGBColorSpace;
             wrap.appendChild(renderer.domElement);
 
-            // Baked once and left on the scene for its whole lifetime â€” gives every
+            // Baked once and left on the scene for its whole lifetime — gives every
             // MeshStandardMaterial a subtle, physically plausible reflection/ambient term
             // instead of looking lit from one flat direction with pitch-black reflections.
             const pmremGenerator = new THREE.PMREMGenerator(renderer);
@@ -6073,7 +6073,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
             controls.target.set(0, 20, 0);
             controls.update();
 
-            // Sky/ground hemisphere instead of flat AmbientLight â€” upward-facing faces get a
+            // Sky/ground hemisphere instead of flat AmbientLight — upward-facing faces get a
             // cool tint, downward-facing ones a warm bench-level bounce, rather than every
             // surface receiving identical fill light regardless of orientation.
             scene.add(new THREE.HemisphereLight(0xdbe6f2, 0x8a7d5c, 0.6));
@@ -6099,14 +6099,14 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
             dirLight.shadow.normalBias = 0.02;
             scene.add(dirLight);
 
-            // Soft fill from the opposite side, no shadow of its own â€” without this the key
+            // Soft fill from the opposite side, no shadow of its own — without this the key
             // light's shadow side reads as pure black-ish instead of gently shaded, since
             // there's no bounce light in a synthetic scene to fill it in naturally.
             const fillLight = new THREE.DirectionalLight(0xcfe0ff, 0.55);
             fillLight.position.set(-90, 100, -70);
             scene.add(fillLight);
 
-            // A soft shadow-catching bench surface under the grid â€” without it, shadows have
+            // A soft shadow-catching bench surface under the grid — without it, shadows have
             // nothing to land on even with shadowMap enabled, and the piece reads as floating.
             const floorGeo = new THREE.PlaneGeometry(400, 400);
             const floorMat = new THREE.ShadowMaterial({ opacity: 0.18 });
@@ -6156,7 +6156,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
                     selectMesh(null);
                     // renderAll() refreshes the sidebar panel list/cut-list data too, and
                     // already calls rebuild3DPreviewMeshes() itself since the 3D tab is the
-                    // active one right now (see the classic script's renderAll) â€” no need to
+                    // active one right now (see the classic script's renderAll) — no need to
                     // call it twice.
                     window.renderAll();
                 }
@@ -6197,7 +6197,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
                 });
             });
 
-            // Typed X/Y/Z is the numeric alternative to dragging â€” commits on blur/Enter so a
+            // Typed X/Y/Z is the numeric alternative to dragging — commits on blur/Enter so a
             // half-typed number never mid-edits the mesh, then behaves exactly like a drag/nudge
             // for persistence (syncAttachments + persistMeshPosition, see applyPositionFieldEdit).
             [document.getElementById('preview3DPosX'), document.getElementById('preview3DPosY'), document.getElementById('preview3DPosZ')].forEach(input => {
