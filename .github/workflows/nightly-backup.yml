@@ -28,8 +28,15 @@ jobs:
           RCLONE_CONFIG_B2REMOTE_KEY: ${{ secrets.B2_APP_KEY }}
 
       - name: Sync Supabase Storage buckets to B2
+        # Supabase's S3-compatible Storage gateway doesn't support a root-level ListBuckets
+        # call, so a bare "supabasestorage:" source (rclone's normal all-buckets form) fails
+        # with an endpoint-resolution error. Bucket names must be listed explicitly instead.
+        # Update this list if a new Storage bucket is ever added in supabase-client.js.
         run: |
-          rclone sync supabasestorage: "b2remote:${{ secrets.B2_BUCKET_NAME }}/storage/" --checksum
+          for bucket in garage-tips-images portfolio-photos print-plans project-thumbnails showcase-photos; do
+            echo "Syncing bucket: $bucket"
+            rclone sync "supabasestorage:$bucket" "b2remote:${{ secrets.B2_BUCKET_NAME }}/storage/$bucket/" --checksum
+          done
         env:
           RCLONE_CONFIG_SUPABASESTORAGE_TYPE: s3
           RCLONE_CONFIG_SUPABASESTORAGE_PROVIDER: Other
