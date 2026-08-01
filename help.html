@@ -243,6 +243,24 @@
         .help-title { font-size: 28px; font-weight: 800; color: #0f172a; margin-bottom: 10px; }
         .help-subtitle { font-size: 14.5px; color: #4b5563; line-height: 1.6; margin-bottom: 32px; max-width: 70ch; }
 
+        .help-search-wrap { position: relative; max-width: 480px; margin-bottom: 28px; }
+        .help-search-input {
+            width: 100%; box-sizing: border-box; font-family: inherit; font-size: 14px;
+            padding: 11px 40px 11px 14px; border: 1px solid #d1d5db; border-radius: 10px;
+            color: #0f172a; background: #fff;
+        }
+        .help-search-input:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,0.12); }
+        .help-search-clear {
+            position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+            background: none; border: none; color: #9ca3af; font-size: 18px; line-height: 1;
+            cursor: pointer; padding: 6px; display: none;
+        }
+        .help-search-clear:hover { color: #374151; }
+        .help-search-count { font-size: 12px; color: #6b7280; margin-top: 6px; }
+        .help-article.hidden-by-search, .help-toc a.hidden-by-search, .help-toc-group.hidden-by-search { display: none; }
+        mark.help-search-hit { background: #fde68a; color: inherit; border-radius: 2px; padding: 0 1px; }
+        .help-no-results { display: none; font-size: 14px; color: #6b7280; padding: 40px 0; text-align: center; }
+
         .help-article {
             background-color: #ffffff;
             border: 1px solid #cbd5e1;
@@ -587,6 +605,14 @@
             <div class="help-eyebrow">Trouble with the Kerph</div>
             <div class="help-title">How to use Kerph</div>
             <div class="help-subtitle">Step-by-step walkthroughs for every part of the app. This page will keep growing as new features ship — got something that needs a clearer explainer? Let us know.</div>
+
+            <div class="help-search-wrap">
+                <input type="text" class="help-search-input" id="helpSearchInput" placeholder="Search help articles..." autocomplete="off">
+                <button type="button" class="help-search-clear" id="helpSearchClear" aria-label="Clear search">&times;</button>
+                <div class="help-search-count" id="helpSearchCount"></div>
+            </div>
+
+            <div class="help-no-results" id="helpNoResults">No articles match your search. Try different words, or use <a href="#contact-support">Contact Support</a> below.</div>
 
             <article class="help-article" id="gs-account">
                 <div class="help-article-eyebrow">Getting Started</div>
@@ -1291,6 +1317,78 @@
                 }
             });
         }
+
+        // ---------- Help article search ----------
+        // Client-side filter over every .help-article — matches title, eyebrow, and body
+        // text (all search terms must appear somewhere in the article, order-independent).
+        // Deliberately doesn't try to highlight matched text inline (risks mangling nested
+        // <b>/<code>/<a> tags inside article bodies) — filtering + a result count is the
+        // safe, robust core; highlighting can be layered on later if wanted.
+        (function initHelpSearch() {
+            const input = document.getElementById('helpSearchInput');
+            const clearBtn = document.getElementById('helpSearchClear');
+            const countEl = document.getElementById('helpSearchCount');
+            const noResultsEl = document.getElementById('helpNoResults');
+            if (!input) return;
+
+            const articles = Array.from(document.querySelectorAll('.help-article'));
+            const articleText = new Map(articles.map((a) => [a, a.innerText.toLowerCase()]));
+            const tocGroups = Array.from(document.querySelectorAll('.help-toc-group'));
+
+            function runSearch() {
+                const raw = input.value.trim().toLowerCase();
+                clearBtn.style.display = raw ? 'block' : 'none';
+
+                if (!raw) {
+                    articles.forEach((a) => a.classList.remove('hidden-by-search'));
+                    document.querySelectorAll('.help-toc a').forEach((a) => a.classList.remove('hidden-by-search'));
+                    tocGroups.forEach((g) => g.classList.remove('hidden-by-search'));
+                    countEl.textContent = '';
+                    noResultsEl.style.display = 'none';
+                    return;
+                }
+
+                const terms = raw.split(/\s+/).filter(Boolean);
+                let visibleCount = 0;
+                const visibleIds = new Set();
+
+                articles.forEach((a) => {
+                    const text = articleText.get(a);
+                    const matches = terms.every((t) => text.includes(t));
+                    a.classList.toggle('hidden-by-search', !matches);
+                    if (matches) { visibleCount++; visibleIds.add(a.id); }
+                });
+
+                tocGroups.forEach((group) => {
+                    let groupHasVisible = false;
+                    group.querySelectorAll('a[href^="#"]').forEach((link) => {
+                        const targetId = link.getAttribute('href').slice(1);
+                        const isVisible = !targetId || visibleIds.has(targetId);
+                        link.classList.toggle('hidden-by-search', !isVisible);
+                        if (isVisible) groupHasVisible = true;
+                    });
+                    group.classList.toggle('hidden-by-search', !groupHasVisible);
+                });
+
+                countEl.textContent = visibleCount === 1 ? '1 article found' : `${visibleCount} articles found`;
+                noResultsEl.style.display = visibleCount === 0 ? 'block' : 'none';
+            }
+
+            input.addEventListener('input', runSearch);
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') { input.value = ''; runSearch(); input.blur(); }
+            });
+            clearBtn.addEventListener('click', () => { input.value = ''; runSearch(); input.focus(); });
+
+            // "/" focuses search from anywhere on the page, like most docs sites — skipped
+            // while typing in another field so it doesn't hijack normal text entry.
+            document.addEventListener('keydown', (e) => {
+                if (e.key === '/' && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+                    e.preventDefault();
+                    input.focus();
+                }
+            });
+        })();
     </script>
 </body>
 </html>
