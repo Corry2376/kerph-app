@@ -1091,4 +1091,60 @@
     window.kerphToggleReviewHelpful = kerphToggleReviewHelpful;
 
     window.kerphRunLocalMigration = kerphRunLocalMigration;
+
+    // ---------- Telemetry: error monitoring + lightweight pageview analytics ----------
+    // Runs automatically on every page that loads this file — no per-page wiring needed.
+    // Goes through log-telemetry (JWT off, service-role writes) rather than a direct
+    // Supabase insert so it still works for signed-out visitors and doesn't need a public
+    // insert policy on client_errors/analytics_events.
+    let telemetryErrorCount = 0;
+    const TELEMETRY_ERROR_CAP = 10; // stop reporting after this many in one page load — an
+                                     // error loop shouldn't be able to flood the table
+
+    function kerphSendTelemetry(payload) {
+        try {
+            fetch(`${kerphSupabase.supabaseUrl}/functions/v1/log-telemetry`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId: state.user ? state.user.id : null, ...payload }),
+                keepalive: true, // lets the request finish even during page unload/navigation
+            }).catch(() => {}); // never let telemetry reporting itself throw
+        } catch (e) { /* ditto */ }
+    }
+
+    function kerphGetAnonSessionId() {
+        try {
+            let id = localStorage.getItem('kerphAnonSessionId');
+            if (!id) {
+                id = crypto.randomUUID();
+                localStorage.setItem('kerphAnonSessionId', id);
+            }
+            return id;
+        } catch (e) { return null; } // localStorage can throw in some locked-down contexts
+    }
+
+    window.addEventListener('error', (event) => {
+        if (telemetryErrorCount++ >= TELEMETRY_ERROR_CAP) return;
+        kerphSendTelemetry({
+            type: 'error',
+            message: event.message || 'Unknown error',
+            stack: event.error && event.error.stack ? event.error.stack : null,
+            pageUrl: location.href,
+            userAgent: navigator.userAgent,
+        });
+    });
+
+    window.addEventListener('unhandledrejection', (event) => {
+        if (telemetryErrorCount++ >= TELEMETRY_ERROR_CAP) return;
+        const reason = event.reason;
+        kerphSendTelemetry({
+            type: 'error',
+            message: 'Unhandled promise rejection: ' + (reason && reason.message ? reason.message : String(reason)),
+            stack: reason && reason.stack ? reason.stack : null,
+            pageUrl: location.href,
+            userAgent: navigator.userAgent,
+        });
+    });
+
+    kerphSendTelemetry({ type: 'pageview', path: location.pathname, sessionId: kerphGetAnonSessionId() });
 })();

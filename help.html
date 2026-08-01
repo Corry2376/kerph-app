@@ -274,6 +274,24 @@
         .help-callout-note { background: rgba(217, 119, 6, 0.07); border: 1px solid #fde68a; border-left: 3px solid #d97706; color: #92400e; }
         .help-callout-note b { color: #92400e; }
 
+        .support-form { display: flex; flex-direction: column; gap: 10px; max-width: 480px; margin-top: 14px; }
+        .support-form label { font-size: 12px; font-weight: 700; color: #374151; margin-bottom: -4px; }
+        .support-form input, .support-form textarea {
+            font-family: inherit; font-size: 13px; padding: 9px 11px; border: 1px solid #d1d5db;
+            border-radius: 8px; color: #0f172a; background: #fff;
+        }
+        .support-form input:focus, .support-form textarea:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,0.12); }
+        .support-form textarea { min-height: 100px; resize: vertical; }
+        .support-form button {
+            align-self: flex-start; background: #1e3a8a; color: #fff; border: none; border-radius: 8px;
+            padding: 10px 20px; font-size: 13px; font-weight: 700; cursor: pointer;
+        }
+        .support-form button:hover { background: #1e40af; }
+        .support-form button:disabled { background: #9ca3af; cursor: not-allowed; }
+        .support-form-status { font-size: 12.5px; font-weight: 600; min-height: 16px; }
+        .support-form-status.ok { color: #16a34a; }
+        .support-form-status.err { color: #dc2626; }
+
         .help-placeholder {
             background-color: #ffffff;
             border: 1px dashed #cbd5e1;
@@ -558,6 +576,10 @@
                 <div class="help-toc-group-title">Community</div>
                 <a href="#comm-showcase">Shop Showcase</a>
                 <a href="#comm-reviews">Cool Tool Reviews</a>
+            </div>
+            <div class="help-toc-group">
+                <div class="help-toc-group-title">Still Stuck?</div>
+                <a href="#contact-support">Contact Support</a>
             </div>
         </nav>
 
@@ -873,6 +895,22 @@
                     <li>Mark other users' reviews as <b>Helpful</b> to surface the most useful ones; sort by newest, highest rated, or most helpful.</li>
                     <li>Your posted name on a review is snapshotted at the time you post it, so a later username change won't rewrite old reviews.</li>
                 </ul>
+            </article>
+
+            <article class="help-article" id="contact-support">
+                <div class="help-article-eyebrow">Still Stuck?</div>
+                <h2>Contact Support</h2>
+                <p>Didn't find your answer above? Send us a message directly &mdash; this goes straight to our support inbox, and we'll reply to the email address you enter here.</p>
+                <form class="support-form" id="supportForm">
+                    <label for="supportEmail">Your email</label>
+                    <input type="email" id="supportEmail" required placeholder="you@example.com">
+                    <label for="supportSubject">Subject</label>
+                    <input type="text" id="supportSubject" required placeholder="What's this about?">
+                    <label for="supportMessage">Message</label>
+                    <textarea id="supportMessage" required placeholder="Describe what happened, what you expected, and any steps to reproduce it."></textarea>
+                    <button type="submit" id="supportSubmitBtn">Send Message</button>
+                    <div class="support-form-status" id="supportFormStatus"></div>
+                </form>
             </article>
         </main>
     </div>
@@ -1203,7 +1241,56 @@
         kerphAuthReady.then(() => {
             initHeaderSignIn();
             initAccountPanel();
+            const emailInput = document.getElementById('supportEmail');
+            const user = kerphGetCachedUser();
+            if (user && user.email && emailInput && !emailInput.value) emailInput.value = user.email;
         });
+
+        const supportForm = document.getElementById('supportForm');
+        if (supportForm) {
+            supportForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const btn = document.getElementById('supportSubmitBtn');
+                const statusEl = document.getElementById('supportFormStatus');
+                const email = document.getElementById('supportEmail').value.trim();
+                const subject = document.getElementById('supportSubject').value.trim();
+                const message = document.getElementById('supportMessage').value.trim();
+
+                btn.disabled = true;
+                btn.textContent = 'Sending...';
+                statusEl.textContent = '';
+                statusEl.className = 'support-form-status';
+
+                try {
+                    const user = kerphGetCachedUser();
+                    const resp = await fetch(`${kerphSupabase.supabaseUrl}/functions/v1/send-support-ticket`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            email, subject, message,
+                            pageContext: location.href,
+                            userId: user ? user.id : null
+                        })
+                    });
+                    const result = await resp.json().catch(() => ({}));
+                    if (!resp.ok || result.error) {
+                        statusEl.textContent = result.error || 'Something went wrong sending your message. Try again in a moment.';
+                        statusEl.className = 'support-form-status err';
+                    } else {
+                        statusEl.textContent = "Message sent — we'll reply to your email.";
+                        statusEl.className = 'support-form-status ok';
+                        supportForm.reset();
+                        if (user && user.email) document.getElementById('supportEmail').value = user.email;
+                    }
+                } catch (err) {
+                    statusEl.textContent = 'Network error — check your connection and try again.';
+                    statusEl.className = 'support-form-status err';
+                } finally {
+                    btn.disabled = false;
+                    btn.textContent = 'Send Message';
+                }
+            });
+        }
     </script>
 </body>
 </html>
