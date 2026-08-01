@@ -684,13 +684,13 @@
         // actually resolves).
         //
         // Each tier has one product (one productUuid) with two variants — monthly and annual —
-        // matching the billing-cycle toggle below. `annual` starts null until the real annual
-        // variant IDs are added; launchLemonSqueezyCheckout() refuses to check out against a
-        // null variant rather than silently falling back to the monthly price.
+        // matching the billing-cycle toggle below. launchLemonSqueezyCheckout() still refuses
+        // to check out against a null/missing variant rather than silently falling back to
+        // the monthly price, in case a tier's annual variant is ever unset again later.
         const LS_STORE_SLUG = 'kerphplans';
         const LS_CHECKOUT = {
-            pro: { productUuid: '0922ac82-41dc-4655-917b-5d54aae8f5b3', monthly: '1956245', annual: null },
-            premier: { productUuid: 'c7026ad4-b170-4cea-956c-9d25576adccd', monthly: '1956259', annual: null }
+            pro: { productUuid: '0922ac82-41dc-4655-917b-5d54aae8f5b3', monthly: '1956245', annual: '1956244' },
+            premier: { productUuid: 'c7026ad4-b170-4cea-956c-9d25576adccd', monthly: '1956259', annual: '1956248' }
         };
         function launchLemonSqueezyCheckout(tier) {
             const user = (typeof kerphGetCachedUser === 'function') ? kerphGetCachedUser() : null;
@@ -724,11 +724,9 @@
         // invite/remove) reports requiresCheckout: true when this is needed — see
         // handleTeamSyncResult() below. Every seat added *after* this checkout completes is
         // billed automatically via the Edge Function's Lemon Squeezy API quantity update, no
-        // repeat checkout needed. variantId is null until the "Extra Seats" variant is created
-        // under the Premier product in the LS dashboard (see the setup notes delivered
-        // alongside this change) — same productUuid as Premier since it's just another variant
-        // of that product, only the variantId differs.
-        const LS_EXTRA_SEAT_CHECKOUT = { productUuid: LS_CHECKOUT.premier.productUuid, variantId: null };
+        // repeat checkout needed. Same productUuid as Premier since the "Extra Seats" variant
+        // lives under the Premier product in the LS dashboard, not a separate product.
+        const LS_EXTRA_SEAT_CHECKOUT = { productUuid: LS_CHECKOUT.premier.productUuid, variantId: '1260686' };
         function launchExtraSeatsCheckout(quantity) {
             const user = (typeof kerphGetCachedUser === 'function') ? kerphGetCachedUser() : null;
             if (!user) { showToast('Sign in first.'); return; }
