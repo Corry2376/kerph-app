@@ -171,6 +171,27 @@
         });
     }
 
+    // Shown once right after a brand-new account is created (not on ordinary sign-in) — a
+    // dismissible, non-blocking nudge toward the Kerph YouTube channel. Deliberately never a
+    // requirement to use Free tier: YouTube's Fake Engagement policy prohibits gating access
+    // behind a forced subscribe, but explicitly allows just encouraging it, which is all this
+    // does. Built with inline styles instead of a page's own CSS classes so it works
+    // identically on every page without needing matching markup/CSS added everywhere.
+    const KERPH_YOUTUBE_HANDLE = 'kerphplans';
+    function kerphShowSubscribePrompt() {
+        if (document.getElementById('kerphSubscribePrompt')) return;
+        const el = document.createElement('div');
+        el.id = 'kerphSubscribePrompt';
+        el.style.cssText = 'position:fixed; bottom:24px; right:24px; max-width:320px; background:#0f172a; color:#fff; border-radius:10px; box-shadow:0 10px 25px rgba(0,0,0,0.3); padding:14px 16px; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; font-size:13px; line-height:1.5; z-index:5000; display:flex; align-items:flex-start; gap:10px;';
+        el.innerHTML = `
+            <span style="flex:1;">Welcome to Kerph! <a href="https://www.youtube.com/@${KERPH_YOUTUBE_HANDLE}?sub_confirmation=1" target="_blank" rel="noopener" style="color:#93c5fd; font-weight:700; text-decoration:none;">Subscribe on YouTube &#8599;</a> for shop tips and feature walkthroughs.</span>
+            <button type="button" aria-label="Dismiss" style="flex-shrink:0; background:none; border:none; color:#94a3b8; font-size:16px; line-height:1; cursor:pointer; padding:0;">&times;</button>
+        `;
+        el.querySelector('button').addEventListener('click', () => el.remove());
+        document.body.appendChild(el);
+        setTimeout(() => { if (document.body.contains(el)) el.remove(); }, 15000);
+    }
+
     /* ---------- Singleton domains: one row per user, upsert-only ---------- */
 
     function makeSingletonDomain(table, column, defaultValue) {
@@ -1011,6 +1032,7 @@
     window.kerphSaveProfile = kerphSaveProfile;
     window.kerphOnAuthChange = kerphOnAuthChange;
     window.kerphDownscaleImage = kerphDownscaleImage;
+    window.kerphShowSubscribePrompt = kerphShowSubscribePrompt;
     window.kerphOnVisible = kerphOnVisible;
 
     window.kerphLoadCurrentLayout = kerphLoadCurrentLayout;
