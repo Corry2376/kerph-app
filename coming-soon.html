@@ -123,6 +123,37 @@
         padding: 8px 10px;
     }
     .gate-error.visible { display: block; }
+
+    .waitlist-status {
+        display: none;
+        margin-top: 12px;
+        font-size: 12.5px;
+        border-radius: 6px;
+        padding: 8px 10px;
+    }
+    .waitlist-status.visible { display: block; }
+    .waitlist-status.success { color: #166534; background: #f0fdf4; border: 1px solid #bbf7d0; }
+    .waitlist-status.error { color: #b91c1c; background: #fef2f2; border: 1px solid #fecaca; }
+
+    .preview-access-toggle {
+        display: block;
+        margin-top: 22px;
+        font-size: 12px;
+        font-weight: 600;
+        color: #6b7280;
+        text-decoration: none;
+        text-align: center;
+    }
+    .preview-access-toggle:hover { color: #1e3a8a; text-decoration: underline; }
+
+    .gate-form-wrap {
+        display: none;
+        margin-top: 14px;
+        padding-top: 14px;
+        border-top: 1px solid #e2e8f0;
+        text-align: left;
+    }
+    .gate-form-wrap.visible { display: block; }
 </style>
 </head>
 <body>
@@ -133,20 +164,33 @@
             <span class="logo-tm">&trade;</span>
         </div>
         <h1>Coming Soon</h1>
-        <p class="subtitle">We're putting the finishing touches on Kerph. Check back soon — or sign in below if you already have preview access.</p>
+        <p class="subtitle">Plan your shop, design your builds, and quote the work &mdash; all in one place. We're putting the finishing touches on Kerph. Leave your email and we'll let you know the moment it opens.</p>
 
-        <form id="gateForm" autocomplete="off">
+        <form id="waitlistForm" autocomplete="off">
             <div class="field-group">
-                <label class="field-label" for="gateUsername">Username</label>
-                <input type="text" class="gate-input" id="gateUsername" autocomplete="username">
+                <label class="field-label" for="waitlistEmail">Email</label>
+                <input type="email" class="gate-input" id="waitlistEmail" autocomplete="email" placeholder="you@example.com" required>
             </div>
-            <div class="field-group">
-                <label class="field-label" for="gatePassword">Password</label>
-                <input type="password" class="gate-input" id="gatePassword" autocomplete="current-password">
-            </div>
-            <button type="submit" class="enter-btn">Enter</button>
-            <div class="gate-error" id="gateError">That username/password combination isn't recognized.</div>
+            <button type="submit" class="enter-btn" id="waitlistSubmitBtn">Notify Me at Launch</button>
+            <div class="waitlist-status" id="waitlistStatus"></div>
         </form>
+
+        <a href="#" class="preview-access-toggle" id="previewAccessToggle">Already have preview access?</a>
+
+        <div class="gate-form-wrap" id="gateFormWrap">
+            <form id="gateForm" autocomplete="off">
+                <div class="field-group">
+                    <label class="field-label" for="gateUsername">Username</label>
+                    <input type="text" class="gate-input" id="gateUsername" autocomplete="username">
+                </div>
+                <div class="field-group">
+                    <label class="field-label" for="gatePassword">Password</label>
+                    <input type="password" class="gate-input" id="gatePassword" autocomplete="current-password">
+                </div>
+                <button type="submit" class="enter-btn">Enter</button>
+                <div class="gate-error" id="gateError">That username/password combination isn't recognized.</div>
+            </form>
+        </div>
     </div>
 
 <script>
@@ -162,6 +206,11 @@
         location.replace('index.html');
     }
 
+    document.getElementById('previewAccessToggle').addEventListener('click', function (e) {
+        e.preventDefault();
+        document.getElementById('gateFormWrap').classList.toggle('visible');
+    });
+
     document.getElementById('gateForm').addEventListener('submit', function (e) {
         e.preventDefault();
         var username = document.getElementById('gateUsername').value.trim();
@@ -175,6 +224,50 @@
             errorEl.classList.add('visible');
             document.getElementById('gatePassword').value = '';
         }
+    });
+
+    // Same Supabase project as every other page, but this page intentionally doesn't load the
+    // full supabase-client.js (no auth/session apparatus needed pre-gate) — just enough to hit
+    // the join-waitlist Edge Function directly, same fetch pattern kerphSendTelemetry() uses.
+    var SUPABASE_URL = 'https://qawfiktqeoarnvsarejo.supabase.co';
+
+    document.getElementById('waitlistForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+        var emailInput = document.getElementById('waitlistEmail');
+        var submitBtn = document.getElementById('waitlistSubmitBtn');
+        var statusEl = document.getElementById('waitlistStatus');
+        var email = emailInput.value.trim();
+
+        statusEl.classList.remove('visible', 'success', 'error');
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Submitting…';
+
+        fetch(SUPABASE_URL + '/functions/v1/join-waitlist', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: email }),
+        })
+            .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+            .then(function (result) {
+                if (result.ok) {
+                    statusEl.textContent = result.data.alreadyOnList
+                        ? "You're already on the list — we'll email you at launch."
+                        : "Thanks! We'll email you the moment Kerph opens.";
+                    statusEl.classList.add('visible', 'success');
+                    emailInput.value = '';
+                } else {
+                    statusEl.textContent = (result.data && result.data.error) || 'Something went wrong. Please try again.';
+                    statusEl.classList.add('visible', 'error');
+                }
+            })
+            .catch(function () {
+                statusEl.textContent = 'Something went wrong. Please try again.';
+                statusEl.classList.add('visible', 'error');
+            })
+            .finally(function () {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Notify Me at Launch';
+            });
     });
 </script>
 
