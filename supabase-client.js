@@ -175,21 +175,42 @@
     // dismissible, non-blocking nudge toward the Kerph YouTube channel. Deliberately never a
     // requirement to use Free tier: YouTube's Fake Engagement policy prohibits gating access
     // behind a forced subscribe, but explicitly allows just encouraging it, which is all this
-    // does. Built with inline styles instead of a page's own CSS classes so it works
+    // does — the modal closes via the X, "Maybe later", or a backdrop click, no action is
+    // required. Built with inline styles instead of a page's own CSS classes so it works
     // identically on every page without needing matching markup/CSS added everywhere.
     const KERPH_YOUTUBE_HANDLE = 'kerphplans';
+    // Set to a real YouTube video ID once the full-platform walkthrough is recorded and
+    // published — the video area below switches from the "coming soon" placeholder to a
+    // real embedded player automatically the moment this is non-empty.
+    const KERPH_WALKTHROUGH_VIDEO_ID = '';
     function kerphShowSubscribePrompt() {
         if (document.getElementById('kerphSubscribePrompt')) return;
         const el = document.createElement('div');
         el.id = 'kerphSubscribePrompt';
-        el.style.cssText = 'position:fixed; bottom:24px; right:24px; max-width:320px; background:#0f172a; color:#fff; border-radius:10px; box-shadow:0 10px 25px rgba(0,0,0,0.3); padding:14px 16px; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; font-size:13px; line-height:1.5; z-index:5000; display:flex; align-items:flex-start; gap:10px;';
+        el.style.cssText = 'position:fixed; inset:0; background:rgba(15,23,42,0.65); z-index:5000; display:flex; align-items:center; justify-content:center; padding:20px; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;';
+        const videoHtml = KERPH_WALKTHROUGH_VIDEO_ID
+            ? `<iframe width="100%" height="100%" style="position:absolute; inset:0; border:0;" src="https://www.youtube-nocookie.com/embed/${KERPH_WALKTHROUGH_VIDEO_ID}" title="Kerph walkthrough" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`
+            : `<div style="position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px;">
+                   <div style="width:56px; height:56px; border-radius:50%; background:rgba(255,255,255,0.12); display:flex; align-items:center; justify-content:center; font-size:20px; color:#fff;">&#9654;</div>
+                   <div style="font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:0.06em; color:#94a3b8;">Full walkthrough coming soon</div>
+               </div>`;
         el.innerHTML = `
-            <span style="flex:1;">Welcome to Kerph! <a href="https://www.youtube.com/@${KERPH_YOUTUBE_HANDLE}?sub_confirmation=1" target="_blank" rel="noopener" style="color:#93c5fd; font-weight:700; text-decoration:none;">Subscribe on YouTube &#8599;</a> for shop tips and feature walkthroughs.</span>
-            <button type="button" aria-label="Dismiss" style="flex-shrink:0; background:none; border:none; color:#94a3b8; font-size:16px; line-height:1; cursor:pointer; padding:0;">&times;</button>
+            <div style="background:#0f172a; color:#fff; border-radius:16px; box-shadow:0 25px 60px rgba(0,0,0,0.5); max-width:420px; width:100%; overflow:hidden; position:relative;">
+                <button type="button" aria-label="Dismiss" style="position:absolute; top:10px; right:10px; z-index:1; background:rgba(15,23,42,0.6); border:none; color:#fff; font-size:16px; line-height:1; width:26px; height:26px; border-radius:50%; cursor:pointer;">&times;</button>
+                <div style="position:relative; aspect-ratio:16/9; background:linear-gradient(135deg,#1e293b,#0f172a); border-bottom:1px solid #1e293b;">${videoHtml}</div>
+                <div style="padding:20px 22px 22px;">
+                    <div style="font-size:17px; font-weight:800; margin-bottom:6px;">Welcome to Kerph!</div>
+                    <div style="font-size:13.5px; line-height:1.6; color:#cbd5e1; margin-bottom:16px;">We're building full video walkthroughs of every feature &mdash; subscribe on YouTube so you don't miss them, plus shop tips and new-feature drops as they ship.</div>
+                    <a href="https://www.youtube.com/@${KERPH_YOUTUBE_HANDLE}?sub_confirmation=1" target="_blank" rel="noopener" style="display:block; text-align:center; background:#dc2626; color:#fff; font-weight:800; font-size:14px; padding:12px; border-radius:8px; text-decoration:none;">Subscribe on YouTube &#8599;</a>
+                    <button type="button" data-dismiss style="display:block; width:100%; text-align:center; background:none; border:none; color:#94a3b8; font-size:12.5px; margin-top:10px; cursor:pointer; padding:4px;">Maybe later</button>
+                </div>
+            </div>
         `;
-        el.querySelector('button').addEventListener('click', () => el.remove());
+        function close() { el.remove(); }
+        el.querySelector('button[aria-label="Dismiss"]').addEventListener('click', close);
+        el.querySelector('button[data-dismiss]').addEventListener('click', close);
+        el.addEventListener('click', (e) => { if (e.target === el) close(); });
         document.body.appendChild(el);
-        setTimeout(() => { if (document.body.contains(el)) el.remove(); }, 15000);
     }
 
     /* ---------- Singleton domains: one row per user, upsert-only ---------- */
