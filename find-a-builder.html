@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <script>if (localStorage.getItem('kerphComingSoonBypass') !== 'true') { location.replace('coming-soon.html'); }</script>
@@ -375,9 +375,9 @@
         }
         .concierge-checkbox-row input[type="checkbox"] { margin-top: 2px; flex-shrink: 0; }
 
-        /* Same window.print()-based export pattern as the Insurance Report on the home page —
+        /* Same window.print()-based export pattern as the Insurance Report on the home page â€”
            no PDF library. A summary (dimensions + equipment list), not a rendered visual floor
-           plan — the actual grid graphics live in the Workshop Layout Planner's own renderer,
+           plan â€” the actual grid graphics live in the Workshop Layout Planner's own renderer,
            which isn't something this page has a copy of. */
         @media print {
             body.printing-shop-summary > *:not(#shopSummaryPrintArea) { display: none !important; }
@@ -428,7 +428,7 @@
                 <button type="button" class="jigs-dropdown-btn" id="jigsDropdownBtn">Shop Jigs <span class="jigs-dropdown-caret">&#9662;</span></button>
                 <div class="jigs-dropdown-menu">
                     <a href="shop-jigs-fraction-converter.html">Fraction Converter</a>
-                    <a href="shop-jigs-add-fractions.html">Add Fractions</a>
+                    <a href="shop-jigs-add-fractions.html">Add &amp; Subtract Fractions</a>
                     <a href="shop-jigs-board-feet.html">Board Foot Calculator</a>
                     <a href="shop-jigs-angle-chart.html">Polygon Angle Chart</a>
                     <a href="shop-jigs-wood-movement.html">Wood Movement Calculator</a>
@@ -449,7 +449,7 @@
                 </div>
                 <a href="#" class="header-sign-in-mode-toggle" id="headerSignInModeToggle">New here? Create an account</a>
             </div>
-            <button type="button" id="accountBtn" class="account-btn plan-free" title="Account &amp; Plan Settings — border color shows your plan level" style="display:none;">
+            <button type="button" id="accountBtn" class="account-btn plan-free" title="Account &amp; Plan Settings â€” border color shows your plan level" style="display:none;">
                 <span class="account-avatar" id="accountAvatarPreview">&#128100;</span>
                 <span class="account-btn-text">
                     <span class="account-btn-name" id="accountBtnLabel">Account</span>
@@ -481,7 +481,7 @@
     <div class="modal-overlay" id="accountModalOverlay" style="display:none;">
         <div class="modal-box account-modal-box">
             <div class="modal-title">Account Settings</div>
-            <div class="modal-warning">Your account (username, avatar, sign-in) is real and synced via Kerph. Saved layouts, projects, tools, Showcase posts, and reviews are synced too — available on any device you sign into.</div>
+            <div class="modal-warning">Your account (username, avatar, sign-in) is real and synced via Kerph. Saved layouts, projects, tools, Showcase posts, and reviews are synced too â€” available on any device you sign into.</div>
 
             <div class="header-field" style="width:100%; margin-bottom:14px; display:flex; flex-direction:column; align-items:center;">
                 <div class="account-avatar-large" id="accountAvatarLarge">&#128100;</div>
@@ -533,7 +533,7 @@
 
             <div class="account-backup-zone">
                 <div class="account-backup-title">Local Device Settings</div>
-                <div class="account-backup-desc">Your layouts, projects, tools, Showcase posts, and reviews live on your account now — no backup needed. This just covers a couple of local display preferences still cached in this browser.</div>
+                <div class="account-backup-desc">Your layouts, projects, tools, Showcase posts, and reviews live on your account now â€” no backup needed. This just covers a couple of local display preferences still cached in this browser.</div>
                 <div style="display:flex; gap:8px;">
                     <button type="button" id="accountExportBtn" class="mini-btn" style="flex:1;">&#11015;&#65039; Export</button>
                     <button type="button" id="accountImportBtn" class="mini-btn" style="flex:1;">&#11014;&#65039; Import&hellip;</button>
@@ -554,7 +554,7 @@
     <main>
         <div class="finder-eyebrow">Resource &middot; not a Kerph directory</div>
         <div class="finder-title">Find a pole barn / post-frame builder</div>
-        <div class="finder-subtitle">Designed your shop — now find someone to build it. Enter a zip code and we'll hand you straight to Google Maps, filtered to builders near you, with real ratings and reviews.</div>
+        <div class="finder-subtitle">Designed your shop â€” now find someone to build it. Enter a zip code and we'll hand you straight to Google Maps, filtered to builders near you, with real ratings and reviews.</div>
 
         <div class="finder-card">
             <div class="finder-row">
@@ -591,14 +591,14 @@
             </div>
 
             <div class="concierge-locked-note" id="conciergeLockedNote">
-                Premier members can generate a polished, ready-to-send quote request pulled straight from their actual shop layout — no retyping the same project description for every builder you contact.
+                Premier members can generate a polished, ready-to-send quote request pulled straight from their actual shop layout â€” no retyping the same project description for every builder you contact.
                 <div style="margin-top:10px;">
                     <button type="button" class="mini-btn modal-primary-btn" id="conciergeUpgradeBtn">Switch to Premier (preview)</button>
                 </div>
             </div>
 
             <div id="conciergeForm" style="display:none;">
-                <p class="concierge-desc">Fill this out once — we'll draft a professional inquiry, pre-filled with your actual shop dimensions where available, that you can send to any builder you find above.</p>
+                <p class="concierge-desc">Fill this out once â€” we'll draft a professional inquiry, pre-filled with your actual shop dimensions where available, that you can send to any builder you find above.</p>
 
                 <div class="header-field" style="margin-bottom:10px;">
                     <label class="header-field-label" for="conciergeProjectType">Project</label>
@@ -671,7 +671,7 @@
         <div id="shopSummaryPrintArea"></div>
 
         <div class="why-note">
-            <b>Why we link out instead of hosting our own list:</b> Google Maps' listings, ratings, and reviews stay current on their own — a directory we maintained ourselves would go stale and risks pointing you to bad contact info. This always shows real, live listings for your area.
+            <b>Why we link out instead of hosting our own list:</b> Google Maps' listings, ratings, and reviews stay current on their own â€” a directory we maintained ourselves would go stale and risks pointing you to bad contact info. This always shows real, live listings for your area.
         </div>
     </main>
 
@@ -680,7 +680,7 @@
     <script>
         /* ---------- SHARED STATE KEYS (must match workshop-planner.html / index.html exactly) ---------- */
         const PLAN_KEY = 'kerphPlan';
-        /* ACCOUNT_KEY/AUTH_KEY removed — account + sign-in are now real, Supabase-backed
+        /* ACCOUNT_KEY/AUTH_KEY removed â€” account + sign-in are now real, Supabase-backed
            (see supabase-client.js) instead of localStorage flags. */
 
         function showToast(message) {
@@ -725,7 +725,7 @@
         }
 
         /* ---------- Account extras shared with the other pages: tool-status stats, saved
-           layouts (read-only view — editing lives in Workshop Layout Planner), plan card,
+           layouts (read-only view â€” editing lives in Workshop Layout Planner), plan card,
            member-since, danger zone. ---------- */
         const TOOL_STATUS_KEY = 'kerphToolStatus';
         const LAYOUTS_KEY = 'kerphSavedLayouts';
@@ -1049,10 +1049,10 @@
 
         /* ---------- CONCIERGE QUOTE REQUEST (Premier) ----------
            No real vetted-builder database or outbound email service exists yet (see the
-           why-note above — this page deliberately doesn't host its own directory), so this
+           why-note above â€” this page deliberately doesn't host its own directory), so this
            can't literally "auto-send to 3 vetted builders" without either fabricating builder
            contacts or building real backend infrastructure. What it can honestly do today:
-           draft the inquiry once — pulling real data from the user's own shop layout — so they
+           draft the inquiry once â€” pulling real data from the user's own shop layout â€” so they
            aren't retyping the same project description into every builder's contact form. */
         function isPremium() { return getPlan() === 'premier'; }
 
@@ -1080,7 +1080,7 @@
         }
 
         // Splits on commas AND newlines so pasting either a comma-separated list or one address
-        // per line both work — no cap on how many, unlike a real vetted-directory "send to your
+        // per line both work â€” no cap on how many, unlike a real vetted-directory "send to your
         // top N" flow this deliberately isn't (see the comment above).
         function parseBuilderRecipients() {
             const raw = document.getElementById('conciergeRecipients').value;
@@ -1098,7 +1098,7 @@
             const shop = await loadCurrentShopSummary();
 
             const lines = [];
-            lines.push(`Hi — I'm looking for a quote on a ${projectType}${zip ? ` near ${zip}` : ''}.`);
+            lines.push(`Hi â€” I'm looking for a quote on a ${projectType}${zip ? ` near ${zip}` : ''}.`);
             lines.push('');
             if (shop) {
                 lines.push(`Planned size: ${shop.widthFeet}' x ${shop.lengthFeet}'${shop.tools.length ? ` (already laid out with ${shop.tools.length} tool/equipment placements in Kerph)` : ''}.`);
@@ -1113,23 +1113,23 @@
             return lines.join('\n');
         }
 
-        // Same window.print() pattern as the home page's Insurance Report — no PDF library, no
+        // Same window.print() pattern as the home page's Insurance Report â€” no PDF library, no
         // real attachment mechanism (mailto: links can't attach files; that's a hard limitation
         // of the URI scheme, not something any amount of JS here can work around). This lets the
         // user save a PDF via their browser's print dialog, then attach it themselves once their
-        // email client opens — the toast on the "Open in Email" button spells that out so it's
+        // email client opens â€” the toast on the "Open in Email" button spells that out so it's
         // not a silent assumption.
         async function generateShopLayoutSummaryPDF() {
             const shop = await loadCurrentShopSummary();
             if (!shop) {
-                showToast('No current shop layout found — lay one out in the Workshop Layout Planner first.');
+                showToast('No current shop layout found â€” lay one out in the Workshop Layout Planner first.');
                 return;
             }
             const today = new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
             const rows = shop.tools.map(t => `<tr>
                 <td>${escapeHtml(t.displayName || t.label || 'Item')}</td>
-                <td>${escapeHtml(t.layer || '—')}</td>
-                <td>${escapeHtml(t.displayDims || '—')}</td>
+                <td>${escapeHtml(t.layer || 'â€”')}</td>
+                <td>${escapeHtml(t.displayDims || 'â€”')}</td>
             </tr>`).join('');
 
             const printArea = document.getElementById('shopSummaryPrintArea');
@@ -1177,25 +1177,25 @@
                 output.style.display = 'block';
                 pdfBtn.style.display = includePdfCheckbox.checked ? 'block' : 'none';
                 nextNote.textContent = includePdfCheckbox.checked
-                    ? `${defaultNextNote} Download the PDF below and attach it before you hit send — mailto: links can't attach files automatically.`
+                    ? `${defaultNextNote} Download the PDF below and attach it before you hit send â€” mailto: links can't attach files automatically.`
                     : defaultNextNote;
                 output.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             });
 
             document.getElementById('conciergeCopyBtn').addEventListener('click', () => {
                 navigator.clipboard.writeText(outputText.value).then(() => {
-                    showToast('Request copied — paste it into an email or contact form.');
+                    showToast('Request copied â€” paste it into an email or contact form.');
                 }).catch(() => {
                     outputText.select();
-                    showToast('Select-all applied — copy with Ctrl/Cmd+C.');
+                    showToast('Select-all applied â€” copy with Ctrl/Cmd+C.');
                 });
             });
 
-            // No cap on recipients — comma/newline-separated, all handed straight through to
+            // No cap on recipients â€” comma/newline-separated, all handed straight through to
             // mailto:'s own to= field, which supports as many comma-separated addresses as you
             // give it. Left blank, this is the same blank-recipient behavior as before.
             document.getElementById('conciergeEmailBtn').addEventListener('click', () => {
-                // Commas here must stay literal, not percent-encoded — mailto:'s recipient list
+                // Commas here must stay literal, not percent-encoded â€” mailto:'s recipient list
                 // (the part before "?") is comma-separated addresses, and encoding the commas
                 // would make mail clients read the whole thing as one (invalid) address instead
                 // of a list. Individual addresses don't need escaping; they don't contain

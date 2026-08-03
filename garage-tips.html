@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <script>if (localStorage.getItem('kerphComingSoonBypass') !== 'true') { location.replace('coming-soon.html'); }</script>
@@ -423,7 +423,7 @@
                 <button type="button" class="jigs-dropdown-btn" id="jigsDropdownBtn">Shop Jigs <span class="jigs-dropdown-caret">&#9662;</span></button>
                 <div class="jigs-dropdown-menu">
                     <a href="shop-jigs-fraction-converter.html">Fraction Converter</a>
-                    <a href="shop-jigs-add-fractions.html">Add Fractions</a>
+                    <a href="shop-jigs-add-fractions.html">Add &amp; Subtract Fractions</a>
                     <a href="shop-jigs-board-feet.html">Board Foot Calculator</a>
                     <a href="shop-jigs-angle-chart.html">Polygon Angle Chart</a>
                     <a href="shop-jigs-wood-movement.html">Wood Movement Calculator</a>
@@ -444,7 +444,7 @@
                 </div>
                 <a href="#" class="header-sign-in-mode-toggle" id="headerSignInModeToggle">New here? Create an account</a>
             </div>
-            <button type="button" id="accountBtn" class="account-btn plan-free" title="Account &amp; Plan Settings — border color shows your plan level" style="display:none;">
+            <button type="button" id="accountBtn" class="account-btn plan-free" title="Account &amp; Plan Settings â€” border color shows your plan level" style="display:none;">
                 <span class="account-avatar" id="accountAvatarPreview">&#128100;</span>
                 <span class="account-btn-text">
                     <span class="account-btn-name" id="accountBtnLabel">Account</span>
@@ -476,7 +476,7 @@
     <div class="modal-overlay" id="accountModalOverlay" style="display:none;">
         <div class="modal-box account-modal-box">
             <div class="modal-title">Account Settings</div>
-            <div class="modal-warning">Your account (username, avatar, sign-in) is real and synced via Kerph. Saved layouts, projects, tools, Showcase posts, and reviews are synced too — available on any device you sign into.</div>
+            <div class="modal-warning">Your account (username, avatar, sign-in) is real and synced via Kerph. Saved layouts, projects, tools, Showcase posts, and reviews are synced too â€” available on any device you sign into.</div>
 
             <div class="header-field" style="align-items:center;">
                 <div class="account-avatar-large" id="accountAvatarLarge">&#128100;</div>
@@ -528,7 +528,7 @@
 
             <div class="account-backup-zone">
                 <div class="account-backup-title">Local Device Settings</div>
-                <div class="account-backup-desc">Your layouts, projects, tools, Showcase posts, and reviews live on your account now — no backup needed. This just covers a couple of local display preferences still cached in this browser.</div>
+                <div class="account-backup-desc">Your layouts, projects, tools, Showcase posts, and reviews live on your account now â€” no backup needed. This just covers a couple of local display preferences still cached in this browser.</div>
                 <div style="display:flex; gap:8px;">
                     <button type="button" id="accountExportBtn" class="mini-btn" style="flex:1;">&#11015;&#65039; Export</button>
                     <button type="button" id="accountImportBtn" class="mini-btn" style="flex:1;">&#11014;&#65039; Import&hellip;</button>
@@ -576,12 +576,12 @@
             </div>
 
             <div class="header-field">
-                <label class="header-field-label" for="tipVideoInput">Video URL (optional — YouTube or Vimeo link)</label>
+                <label class="header-field-label" for="tipVideoInput">Video URL (optional â€” YouTube or Vimeo link)</label>
                 <input type="text" class="input-box" id="tipVideoInput" placeholder="https://www.youtube.com/watch?v=...">
             </div>
 
             <div class="header-field">
-                <label class="header-field-label" for="tipBodyInput">Article Body (HTML — headings, paragraphs, lists, images all work)</label>
+                <label class="header-field-label" for="tipBodyInput">Article Body (HTML â€” headings, paragraphs, lists, images all work)</label>
                 <textarea class="input-box code-input" id="tipBodyInput" placeholder="&lt;p&gt;Start writing here...&lt;/p&gt;"></textarea>
             </div>
 
@@ -606,7 +606,7 @@
     <main>
         <div class="tips-eyebrow">Shop Tricks</div>
         <div class="tips-title">Tips, Tricks &amp; How-To's</div>
-        <div class="tips-subtitle">Articles and videos on getting more out of your shop — technique, tool care, jigs, and the small stuff nobody tells you until you've already made the mistake.</div>
+        <div class="tips-subtitle">Articles and videos on getting more out of your shop â€” technique, tool care, jigs, and the small stuff nobody tells you until you've already made the mistake.</div>
 
         <div class="tips-toolbar">
             <input type="text" class="input-box" id="tipSearchInput" placeholder="&#128269; Search titles &amp; tags&hellip;">
@@ -910,7 +910,7 @@
 
         /* ---------- GARAGE TIPS ----------
            Public-read content (RLS: published=true is visible to everyone, drafts only to an
-           admin) — see supabase-garage-tips.sql. Reading needs no sign-in at all; only the
+           admin) â€” see supabase-garage-tips.sql. Reading needs no sign-in at all; only the
            "+ New Article" compose flow is admin-gated, checked both for showing the button and
            again server-side via RLS on insert/update/delete. cachedTips refreshes on every
            renderTips() call since an admin editing in one tab should show up if this page is
@@ -1070,7 +1070,7 @@
                     await navigator.clipboard.writeText(shareUrl);
                     showToast('Link copied.');
                 } catch (e) {
-                    showToast('Could not copy the link — copy it from the address bar instead.');
+                    showToast('Could not copy the link â€” copy it from the address bar instead.');
                 }
             });
 
@@ -1080,7 +1080,7 @@
                 nativeBtn.addEventListener('click', async () => {
                     try {
                         await navigator.share({ title: tip.title, text: tip.excerpt || '', url: shareUrl });
-                    } catch (e) { /* user cancelled the share sheet — nothing to do */ }
+                    } catch (e) { /* user cancelled the share sheet â€” nothing to do */ }
                 });
             }
 
@@ -1205,7 +1205,7 @@
                         ({ data, error } = await kerphInsertGarageTip({ ...payload, author: loadAccount().username || 'Kerph' }));
                     }
                     if (error) { showToast('Could not save that article.'); return; }
-                    // Only the transition into published fires a social post — re-saving an
+                    // Only the transition into published fires a social post â€” re-saving an
                     // already-published article (fixing a typo, say) must not re-post it.
                     if (payload.published && !editingTipWasPublished && data) {
                         kerphQueueSocialPost({
@@ -1260,7 +1260,7 @@
             initHeaderSignIn();
             initAccountPanel();
             updateNewTipButtonVisibility();
-            // Public content — renders for signed-out visitors too.
+            // Public content â€” renders for signed-out visitors too.
             await renderTips();
 
             const articleId = new URLSearchParams(window.location.search).get('article');

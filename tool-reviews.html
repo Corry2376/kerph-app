@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <script>if (localStorage.getItem('kerphComingSoonBypass') !== 'true') { location.replace('coming-soon.html'); }</script>
@@ -388,7 +388,7 @@
                 <button type="button" class="jigs-dropdown-btn" id="jigsDropdownBtn">Shop Jigs <span class="jigs-dropdown-caret">&#9662;</span></button>
                 <div class="jigs-dropdown-menu">
                     <a href="shop-jigs-fraction-converter.html">Fraction Converter</a>
-                    <a href="shop-jigs-add-fractions.html">Add Fractions</a>
+                    <a href="shop-jigs-add-fractions.html">Add &amp; Subtract Fractions</a>
                     <a href="shop-jigs-board-feet.html">Board Foot Calculator</a>
                     <a href="shop-jigs-angle-chart.html">Polygon Angle Chart</a>
                     <a href="shop-jigs-wood-movement.html">Wood Movement Calculator</a>
@@ -409,7 +409,7 @@
                 </div>
                 <a href="#" class="header-sign-in-mode-toggle" id="headerSignInModeToggle">New here? Create an account</a>
             </div>
-            <button type="button" id="accountBtn" class="account-btn plan-free" title="Account &amp; Plan Settings — border color shows your plan level" style="display:none;">
+            <button type="button" id="accountBtn" class="account-btn plan-free" title="Account &amp; Plan Settings â€” border color shows your plan level" style="display:none;">
                 <span class="account-avatar" id="accountAvatarPreview">&#128100;</span>
                 <span class="account-btn-text">
                     <span class="account-btn-name" id="accountBtnLabel">Account</span>
@@ -441,7 +441,7 @@
     <div class="modal-overlay" id="accountModalOverlay" style="display:none;">
         <div class="modal-box account-modal-box">
             <div class="modal-title">Account Settings</div>
-            <div class="modal-warning">Your account (username, avatar, sign-in) is real and synced via Kerph. Saved layouts, projects, tools, Showcase posts, and reviews are synced too — available on any device you sign into.</div>
+            <div class="modal-warning">Your account (username, avatar, sign-in) is real and synced via Kerph. Saved layouts, projects, tools, Showcase posts, and reviews are synced too â€” available on any device you sign into.</div>
 
             <div class="header-field" style="align-items:center;">
                 <div class="account-avatar-large" id="accountAvatarLarge">&#128100;</div>
@@ -493,7 +493,7 @@
 
             <div class="account-backup-zone">
                 <div class="account-backup-title">Local Device Settings</div>
-                <div class="account-backup-desc">Your layouts, projects, tools, Showcase posts, and reviews live on your account now — no backup needed. This just covers a couple of local display preferences still cached in this browser.</div>
+                <div class="account-backup-desc">Your layouts, projects, tools, Showcase posts, and reviews live on your account now â€” no backup needed. This just covers a couple of local display preferences still cached in this browser.</div>
                 <div style="display:flex; gap:8px;">
                     <button type="button" id="accountExportBtn" class="mini-btn" style="flex:1;">&#11015;&#65039; Export</button>
                     <button type="button" id="accountImportBtn" class="mini-btn" style="flex:1;">&#11014;&#65039; Import&hellip;</button>
@@ -556,7 +556,7 @@
     <main>
         <div class="reviews-eyebrow">Community</div>
         <div class="reviews-title">Cool Tool Reviews</div>
-        <div class="reviews-subtitle">Real feedback from real shops — before you buy, see what other woodworkers actually think. Every review here is visible to the whole Kerph community.</div>
+        <div class="reviews-subtitle">Real feedback from real shops â€” before you buy, see what other woodworkers actually think. Every review here is visible to the whole Kerph community.</div>
 
         <div class="reviews-toolbar">
             <input type="text" class="input-box" id="reviewSearchInput" placeholder="&#128269; Search tool names&hellip;">
@@ -577,7 +577,7 @@
     <script>
         /* ---------- SHARED STATE KEYS (must match workshop-planner.html / index.html exactly) ---------- */
         const PLAN_KEY = 'kerphPlan';
-        /* ACCOUNT_KEY/AUTH_KEY removed — account + sign-in are now real, Supabase-backed
+        /* ACCOUNT_KEY/AUTH_KEY removed â€” account + sign-in are now real, Supabase-backed
            (see supabase-client.js) instead of localStorage flags. */
         const TOOL_STATUS_KEY = 'kerphToolStatus';
         const LAYOUTS_KEY = 'kerphSavedLayouts';
@@ -868,7 +868,7 @@
         }
 
         /* ---------- TOOL REVIEWS ----------
-           Real, Supabase-backed multi-user content now — tool_reviews (public-read) +
+           Real, Supabase-backed multi-user content now â€” tool_reviews (public-read) +
            tool_review_votes (real per-user "helpful" votes, denormalized onto helpful_count
            via a DB trigger). cachedReviews/cachedMyVotes are refreshed on every renderReviews()
            call, not just once, since this is now real multi-user data other people can change
@@ -923,7 +923,7 @@
                     <div class="reviews-empty">
                         <div class="reviews-empty-icon">${hasAny ? '&#128269;' : '&#11088;'}</div>
                         <div class="reviews-empty-title">${hasAny ? 'No reviews match your search' : 'No reviews yet'}</div>
-                        <div class="reviews-empty-desc">${hasAny ? 'Try a different search term or category.' : 'Be the first to review a tool — click "+ Write a Review" above.'}</div>
+                        <div class="reviews-empty-desc">${hasAny ? 'Try a different search term or category.' : 'Be the first to review a tool â€” click "+ Write a Review" above.'}</div>
                     </div>
                 `;
                 return;
@@ -1055,7 +1055,7 @@
         kerphAuthReady.then(() => {
             initHeaderSignIn();
             initAccountPanel();
-            // Public content — renders for signed-out visitors too, just needed auth to
+            // Public content â€” renders for signed-out visitors too, just needed auth to
             // resolve first so kerphLoadMyReviewVotes() reflects the right (or no) user.
             renderReviews();
         });

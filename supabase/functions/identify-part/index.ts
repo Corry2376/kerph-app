@@ -15,6 +15,18 @@ const SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY')!;
 const ANTHROPIC_API_KEY = Deno.env.get('ANTHROPIC_API_KEY')!;
 
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
+function json(body: unknown, status = 200) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+  });
+}
+
 // claude-opus-5 gives the best identification accuracy on obscure/generic hardware. Swap to
 // a cheaper/faster model here (e.g. claude-haiku-4-5) if real usage volume makes that
 // tradeoff worth it later — this is the only line that needs to change.
@@ -47,11 +59,13 @@ function buildSearchLinks(searchTerms: string) {
 }
 
 Deno.serve(async (req) => {
+  if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
+
   try {
     const authHeader = req.headers.get('Authorization') ?? '';
     const callerClient = createClient(SUPABASE_URL, ANON_KEY, { global: { headers: { Authorization: authHeader } } });
     const { data: { user }, error: userError } = await callerClient.auth.getUser();
-    if (userError || !user) return new Response(JSON.stringify({ error: 'Not signed in.' }), { status: 401 });
+    if (userError || !user) return json({ error: 'Not signed in.' }, 401);
 
     const supabaseAdmin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
 
@@ -62,7 +76,7 @@ Deno.serve(async (req) => {
       .maybeSingle();
     const entitled = !!sub && sub.plan === 'premier' && ['active', 'on_trial', 'past_due'].includes(sub.status);
     if (!entitled) {
-      return new Response(JSON.stringify({ error: 'Part Finder is a Premier feature.' }), { status: 403 });
+      return json({ error: 'Part Finder is a Premier feature.' }, 403);
     }
 
     const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
@@ -70,12 +84,12 @@ Deno.serve(async (req) => {
       .from('part_lookups').select('id', { count: 'exact', head: true })
       .eq('user_id', user.id).gte('created_at', since);
     if ((count ?? 0) >= INCLUDED_DAILY_LOOKUPS) {
-      return new Response(JSON.stringify({ error: `Daily limit reached (${INCLUDED_DAILY_LOOKUPS} lookups/day) — try again tomorrow.` }), { status: 429 });
+      return json({ error: `Daily limit reached (${INCLUDED_DAILY_LOOKUPS} lookups/day) — try again tomorrow.` }, 429);
     }
 
     const { imageBase64, mediaType } = await req.json();
     if (!imageBase64 || !mediaType) {
-      return new Response(JSON.stringify({ error: 'No photo received.' }), { status: 400 });
+      return json({ error: 'No photo received.' }, 400);
     }
 
     const claudeResp = await fetch('https://api.anthropic.com/v1/messages', {
@@ -108,24 +122,24 @@ Deno.serve(async (req) => {
     if (!claudeResp.ok) {
       const errBody = await claudeResp.text();
       console.error('Claude API error', claudeResp.status, errBody);
-      return new Response(JSON.stringify({ error: 'Could not identify that part right now — try again in a moment.' }), { status: 502 });
+      return json({ error: 'Could not identify that part right now — try again in a moment.' }, 502);
     }
 
     const claudeData = await claudeResp.json();
     if (claudeData.stop_reason === 'refusal') {
-      return new Response(JSON.stringify({ error: 'Could not identify that part from this photo.' }), { status: 200 });
+      return json({ error: 'Could not identify that part from this photo.' }, 200);
     }
 
     const textBlock = (claudeData.content ?? []).find((b: { type: string }) => b.type === 'text');
     if (!textBlock) {
-      return new Response(JSON.stringify({ error: 'No identification returned — try a clearer, closer photo.' }), { status: 200 });
+      return json({ error: 'No identification returned — try a clearer, closer photo.' }, 200);
     }
 
     let identification;
     try {
       identification = JSON.parse(textBlock.text);
     } catch {
-      return new Response(JSON.stringify({ error: 'Could not parse the identification — try again.' }), { status: 502 });
+      return json({ error: 'Could not parse the identification — try again.' }, 502);
     }
 
     const { error: insertError } = await supabaseAdmin.from('part_lookups').insert({
@@ -138,11 +152,11 @@ Deno.serve(async (req) => {
     });
     if (insertError) console.error('part_lookups insert failed', insertError);
 
-    return new Response(JSON.stringify({
+    return json({
       ...identification,
       buyLinks: buildSearchLinks(identification.search_terms),
-    }), { status: 200 });
+    }, 200);
   } catch (e) {
-    return new Response(JSON.stringify({ error: e instanceof Error ? e.message : 'error' }), { status: 500 });
+    return json({ error: e instanceof Error ? e.message : 'error' }, 500);
   }
 });

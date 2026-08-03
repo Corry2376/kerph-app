@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <script>if (localStorage.getItem('kerphComingSoonBypass') !== 'true') { location.replace('coming-soon.html'); }</script>
@@ -347,7 +347,7 @@
                 <button type="button" class="jigs-dropdown-btn" id="jigsDropdownBtn">Shop Jigs <span class="jigs-dropdown-caret">&#9662;</span></button>
                 <div class="jigs-dropdown-menu">
                     <a href="shop-jigs-fraction-converter.html">Fraction Converter</a>
-                    <a href="shop-jigs-add-fractions.html">Add Fractions</a>
+                    <a href="shop-jigs-add-fractions.html">Add &amp; Subtract Fractions</a>
                     <a href="shop-jigs-board-feet.html">Board Foot Calculator</a>
                     <a href="shop-jigs-angle-chart.html">Polygon Angle Chart</a>
                     <a href="shop-jigs-wood-movement.html">Wood Movement Calculator</a>
@@ -400,7 +400,7 @@
     <div class="modal-overlay" id="accountModalOverlay" style="display:none;">
         <div class="modal-box account-modal-box">
             <div class="modal-title">Account Settings</div>
-            <div class="modal-warning">Your account (username, avatar, sign-in) is real and synced via Kerph. Saved layouts, projects, tools, Showcase posts, and reviews are synced too — available on any device you sign into.</div>
+            <div class="modal-warning">Your account (username, avatar, sign-in) is real and synced via Kerph. Saved layouts, projects, tools, Showcase posts, and reviews are synced too â€” available on any device you sign into.</div>
 
             <div class="header-field" style="align-items:center; display:flex; flex-direction:column; gap:4px;">
                 <div class="account-avatar-large" id="accountAvatarLarge">&#128100;</div>
@@ -452,7 +452,7 @@
 
             <div class="account-backup-zone">
                 <div class="account-backup-title">Local Device Settings</div>
-                <div class="account-backup-desc">Your layouts, projects, tools, Showcase posts, and reviews live on your account now — no backup needed. This just covers a couple of local display preferences still cached in this browser.</div>
+                <div class="account-backup-desc">Your layouts, projects, tools, Showcase posts, and reviews live on your account now â€” no backup needed. This just covers a couple of local display preferences still cached in this browser.</div>
                 <div style="display:flex; gap:8px;">
                     <button type="button" id="accountExportBtn" class="mini-btn" style="flex:1;">&#11015;&#65039; Export</button>
                     <button type="button" id="accountImportBtn" class="mini-btn" style="flex:1;">&#11014;&#65039; Import&hellip;</button>
@@ -474,7 +474,7 @@
         <div class="jig-breadcrumb"><a href="shop-jigs.html">Shop Jigs</a> / Part Finder</div>
         <div class="premier-badge">&#128274; Premier</div>
         <div class="help-title">Part Finder</div>
-        <div class="help-subtitle">Snap a photo of a mystery screw, bracket, or part — a vision model identifies it and links to where you can buy a match. Unlike the other free Shop Jigs, this one costs real money per photo, so it's a Premier feature with a generous daily limit.</div>
+        <div class="help-subtitle">Snap a photo of a mystery screw, bracket, or part â€” a vision model identifies it and links to where you can buy a match. Unlike the other free Shop Jigs, this one costs real money per photo, so it's a Premier feature with a generous daily limit.</div>
 
         <div class="help-article">
             <div class="pf-photo-zone" id="pfPhotoZone">
@@ -486,7 +486,7 @@
                 </div>
                 <div class="pf-photo-placeholder" id="pfPhotoPlaceholder">
                     <div class="pf-photo-placeholder-icon">&#128247;</div>
-                    <div class="pf-photo-placeholder-text">Take a clear, well-lit, close-up photo of the part — a plain background helps.</div>
+                    <div class="pf-photo-placeholder-text">Take a clear, well-lit, close-up photo of the part â€” a plain background helps.</div>
                     <button type="button" class="pf-choose-btn" id="pfChoosePhotoBtn">Take or Choose a Photo</button>
                 </div>
                 <input type="file" id="pfPhotoInput" accept="image/*" capture="environment" style="display:none;">
@@ -865,7 +865,7 @@
                     placeholder.style.display = 'none';
                     identifyBtn.disabled = false;
                 } catch (e) {
-                    showToast('Could not read that photo — try a different one.');
+                    showToast('Could not read that photo â€” try a different one.');
                 }
                 input.value = '';
             });
@@ -918,7 +918,7 @@
             const list = document.getElementById('pfHistoryList');
             if (!list) return;
             const { data } = await kerphGetMyPartLookupHistory();
-            if (!data || !data.length) { list.innerHTML = '<div class="pf-history-empty">No lookups yet — identify your first part above.</div>'; return; }
+            if (!data || !data.length) { list.innerHTML = '<div class="pf-history-empty">No lookups yet â€” identify your first part above.</div>'; return; }
             list.innerHTML = data.map(row => `
                 <div class="pf-history-item">
                     <span class="pf-history-name">${escapeHtml(row.identified_name || 'Unknown')}</span>

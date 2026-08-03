@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <script>if (localStorage.getItem('kerphComingSoonBypass') !== 'true') { location.replace('coming-soon.html'); }</script>
@@ -437,7 +437,7 @@
                 <button type="button" class="jigs-dropdown-btn" id="jigsDropdownBtn">Shop Jigs <span class="jigs-dropdown-caret">&#9662;</span></button>
                 <div class="jigs-dropdown-menu">
                     <a href="shop-jigs-fraction-converter.html">Fraction Converter</a>
-                    <a href="shop-jigs-add-fractions.html">Add Fractions</a>
+                    <a href="shop-jigs-add-fractions.html">Add &amp; Subtract Fractions</a>
                     <a href="shop-jigs-board-feet.html">Board Foot Calculator</a>
                     <a href="shop-jigs-angle-chart.html">Polygon Angle Chart</a>
                     <a href="shop-jigs-wood-movement.html">Wood Movement Calculator</a>
@@ -458,7 +458,7 @@
                 </div>
                 <a href="#" class="header-sign-in-mode-toggle" id="headerSignInModeToggle">New here? Create an account</a>
             </div>
-            <button type="button" id="accountBtn" class="account-btn plan-free" title="Account &amp; Plan Settings — border color shows your plan level" style="display:none;">
+            <button type="button" id="accountBtn" class="account-btn plan-free" title="Account &amp; Plan Settings â€” border color shows your plan level" style="display:none;">
                 <span class="account-avatar" id="accountAvatarPreview">&#128100;</span>
                 <span class="account-btn-text">
                     <span class="account-btn-name" id="accountBtnLabel">Account</span>
@@ -490,7 +490,7 @@
     <div class="modal-overlay" id="accountModalOverlay" style="display:none;">
         <div class="modal-box account-modal-box">
             <div class="modal-title">Account Settings</div>
-            <div class="modal-warning">Your account (username, avatar, sign-in) is real and synced via Kerph. Saved layouts, projects, tools, Showcase posts, and reviews are synced too — available on any device you sign into.</div>
+            <div class="modal-warning">Your account (username, avatar, sign-in) is real and synced via Kerph. Saved layouts, projects, tools, Showcase posts, and reviews are synced too â€” available on any device you sign into.</div>
 
             <div class="header-field" style="align-items:center; display:flex; flex-direction:column; gap:4px;">
                 <div class="account-avatar-large" id="accountAvatarLarge">&#128100;</div>
@@ -542,7 +542,7 @@
 
             <div class="account-backup-zone">
                 <div class="account-backup-title">Local Device Settings</div>
-                <div class="account-backup-desc">Your layouts, projects, tools, Showcase posts, and reviews live on your account now — no backup needed. This just covers a couple of local display preferences still cached in this browser.</div>
+                <div class="account-backup-desc">Your layouts, projects, tools, Showcase posts, and reviews live on your account now â€” no backup needed. This just covers a couple of local display preferences still cached in this browser.</div>
                 <div style="display:flex; gap:8px;">
                     <button type="button" id="accountExportBtn" class="mini-btn" style="flex:1;">&#11015;&#65039; Export</button>
                     <button type="button" id="accountImportBtn" class="mini-btn" style="flex:1;">&#11014;&#65039; Import&hellip;</button>
@@ -564,11 +564,11 @@
         <div class="pricing-hero">
             <div class="pricing-eyebrow">Plan Comparison</div>
             <div class="pricing-title">Plans built for your shop</div>
-            <div class="pricing-subtitle">From a single-project free plan to unlimited multi-project access with concierge builder quotes — pick the tier that matches how much you're building.</div>
+            <div class="pricing-subtitle">From a single-project free plan to unlimited multi-project access with concierge builder quotes â€” pick the tier that matches how much you're building.</div>
         </div>
 
         <div class="pricing-locked-banner" id="pricingLockedBanner" style="display:none;"></div>
-        <div class="pricing-preview-note">Pro and Premier now go through real Lemon Squeezy checkout — your card will be charged. Free stays a one-click local preview toggle, no account or card needed.</div>
+        <div class="pricing-preview-note">Pro and Premier now go through real Lemon Squeezy checkout â€” your card will be charged. Free stays a one-click local preview toggle, no account or card needed.</div>
 
         <div class="billing-toggle" id="billingToggle">
             <button type="button" class="billing-toggle-btn" data-cycle="monthly">Monthly</button>
@@ -581,7 +581,7 @@
                 <div class="pricing-price" data-monthly="0" data-annual="0">$0<span class="period">/mo</span></div>
                 <div class="pricing-annual-note"></div>
                 <div class="pricing-seats">1 seat</div>
-                <div class="pricing-blurb">The full Workshop &amp; Dust Collection planners, cabinetry builder, and Cut List Optimizer — everything you need to lay out a shop and cut real material, watermarked on export.</div>
+                <div class="pricing-blurb">The full Workshop &amp; Dust Collection planners, cabinetry builder, and Cut List Optimizer â€” everything you need to lay out a shop and cut real material, watermarked on export.</div>
                 <button type="button" class="mini-btn pricing-cta" data-tier-btn="free">Preview Free</button>
             </div>
             <div class="pricing-card tier-pro" data-tier="pro">
@@ -672,18 +672,18 @@
         /* ---------- SHARED STATE KEYS (must match workshop-planner.html / index.html exactly) ---------- */
         const PLAN_KEY = 'kerphPlan';
 
-        // Real Lemon Squeezy checkout config — Free stays a local preview toggle (no payment
+        // Real Lemon Squeezy checkout config â€” Free stays a local preview toggle (no payment
         // needed), Pro/Premier launch real checkout. checkout[custom][user_id] is what lets the
         // lemon-squeezy-webhook Edge Function attribute the resulting subscription back to a
         // specific Kerph account (see sql/lemon-squeezy-subscriptions.sql).
         //
-        // The checkout URL's path segment is the PRODUCT's UUID, not the numeric variant ID —
+        // The checkout URL's path segment is the PRODUCT's UUID, not the numeric variant ID â€”
         // the variant is selected via the `enabled` query param instead. Confirmed by generating
         // real links from each product's own Share panel in the LS dashboard (a manually
         // constructed /checkout/buy/<numeric-variant-id> URL 404s; this is the only format that
         // actually resolves).
         //
-        // Each tier has one product (one productUuid) with two variants — monthly and annual —
+        // Each tier has one product (one productUuid) with two variants â€” monthly and annual â€”
         // matching the billing-cycle toggle below. launchLemonSqueezyCheckout() still refuses
         // to check out against a null/missing variant rather than silently falling back to
         // the monthly price, in case a tier's annual variant is ever unset again later.
@@ -695,14 +695,14 @@
         function launchLemonSqueezyCheckout(tier) {
             const user = (typeof kerphGetCachedUser === 'function') ? kerphGetCachedUser() : null;
             if (!user) {
-                showToast('Sign in first, then click Upgrade again — a plan has to attach to an account.');
+                showToast('Sign in first, then click Upgrade again â€” a plan has to attach to an account.');
                 return;
             }
             const checkout = LS_CHECKOUT[tier];
             if (!checkout) { showToast('Checkout is not configured for this plan yet.'); return; }
             const variantId = billingCycle === 'annual' ? checkout.annual : checkout.monthly;
             if (!variantId) {
-                showToast('Annual billing for this plan is still being finalized — switch to Monthly to upgrade right now.');
+                showToast('Annual billing for this plan is still being finalized â€” switch to Monthly to upgrade right now.');
                 return;
             }
             const params = new URLSearchParams();
@@ -713,7 +713,7 @@
             if (window.LemonSqueezy && window.LemonSqueezy.Url) {
                 window.LemonSqueezy.Url.Open(checkoutUrl);
             } else {
-                // Lemon.js hasn't finished loading yet (it's a deferred script) — a plain
+                // Lemon.js hasn't finished loading yet (it's a deferred script) â€” a plain
                 // navigation still completes a real purchase, just without the inline overlay.
                 window.location.href = checkoutUrl;
             }
@@ -721,7 +721,7 @@
 
         // The one-time checkout that starts a team's paid "Extra Seats" subscription, once
         // the team has grown past the 4 included seats. sync-team-seats (called after every
-        // invite/remove) reports requiresCheckout: true when this is needed — see
+        // invite/remove) reports requiresCheckout: true when this is needed â€” see
         // handleTeamSyncResult() below. Every seat added *after* this checkout completes is
         // billed automatically via the Edge Function's Lemon Squeezy API quantity update, no
         // repeat checkout needed. Same productUuid as Premier since the "Extra Seats" variant
@@ -731,7 +731,7 @@
             const user = (typeof kerphGetCachedUser === 'function') ? kerphGetCachedUser() : null;
             if (!user) { showToast('Sign in first.'); return; }
             if (!LS_EXTRA_SEAT_CHECKOUT.variantId) {
-                showToast('Extra-seat billing is still being finalized — teammates already invited keep their access either way.');
+                showToast('Extra-seat billing is still being finalized â€” teammates already invited keep their access either way.');
                 return;
             }
             const params = new URLSearchParams();
@@ -749,10 +749,10 @@
         // included seats and no paid extra-seat subscription exists yet.
         function handleTeamSyncResult(sync) {
             if (sync && sync.requiresCheckout) {
-                showToast(`Your team now needs ${sync.extraSeats} extra seat${sync.extraSeats === 1 ? '' : 's'} — click "Add Extra Seats" below to start billing for them.`);
+                showToast(`Your team now needs ${sync.extraSeats} extra seat${sync.extraSeats === 1 ? '' : 's'} â€” click "Add Extra Seats" below to start billing for them.`);
             }
         }
-        /* ACCOUNT_KEY/AUTH_KEY removed — account + sign-in are now real, Supabase-backed
+        /* ACCOUNT_KEY/AUTH_KEY removed â€” account + sign-in are now real, Supabase-backed
            (see supabase-client.js) instead of localStorage flags. */
         const TOOL_STATUS_KEY = 'kerphToolStatus';
         const LAYOUTS_KEY = 'kerphSavedLayouts';
@@ -1045,7 +1045,7 @@
 
         // Highlights whichever pricing card matches the current preview plan, and turns its own
         // CTA into a disabled "Current Plan" state so a user can't re-click into the plan they're
-        // already on — the other two cards stay live, one click each to switch preview tiers.
+        // already on â€” the other two cards stay live, one click each to switch preview tiers.
         function renderPricingCards() {
             const plan = getPlan();
             document.querySelectorAll('.pricing-card').forEach(card => {
@@ -1073,7 +1073,7 @@
                 btn.addEventListener('click', () => {
                     const tier = btn.getAttribute('data-tier-btn');
                     if (tier === getPlan()) return;
-                    // Pro/Premier are real money now — only Free stays a one-click local
+                    // Pro/Premier are real money now â€” only Free stays a one-click local
                     // toggle, since it costs nothing and needs no account-attribution.
                     if (tier === 'pro' || tier === 'premier') {
                         launchLemonSqueezyCheckout(tier);
@@ -1090,7 +1090,7 @@
             renderPricingCards();
         }
 
-        // Purely a display toggle for the marketing cards — doesn't touch the local plan-preview
+        // Purely a display toggle for the marketing cards â€” doesn't touch the local plan-preview
         // system (kerphPlan) at all, since billing cadence and feature tier are independent axes.
         let billingCycle = 'annual';
         function renderBillingCycle() {
@@ -1136,7 +1136,7 @@
         }
         // Reads ?locked=<page>, set by the redirect a gated page's own top-of-head script
         // fires when the current plan doesn't reach that tool's required tier (see
-        // supabase-client.js's KERPH_TOOL_TIER_MAP) — surfaces why the visitor landed here
+        // supabase-client.js's KERPH_TOOL_TIER_MAP) â€” surfaces why the visitor landed here
         // instead of the tool they clicked into.
         const TOOL_DISPLAY_NAMES = {
             'project-designer.html': 'Project Designer',
@@ -1152,13 +1152,13 @@
             const tier = kerphRequiredTierFor(locked);
             const tierLabel = tier === 'premier' ? 'Premier' : 'Pro';
             const banner = document.getElementById('pricingLockedBanner');
-            banner.textContent = `\u{1F512} ${toolName} needs the ${tierLabel} plan — pick it below to unlock it.`;
+            banner.textContent = `\u{1F512} ${toolName} needs the ${tierLabel} plan â€” pick it below to unlock it.`;
             banner.style.display = 'block';
         }
 
         // ---------- Team panel (Premier seat management) ----------
         // Hidden entirely unless the signed-in user's REAL subscription (not the local
-        // kerphPlan preview toggle — that's trivially self-editable) is an entitled Premier
+        // kerphPlan preview toggle â€” that's trivially self-editable) is an entitled Premier
         // plan, since seat invites are only meaningful once real billing is behind them.
         function escapeHtmlText(str) {
             const div = document.createElement('div');
@@ -1189,7 +1189,7 @@
             const totalSeats = 1 + activeMembers.length; // owner + active members
             const extraSeats = Math.max(0, totalSeats - teamData.includedSeats);
             const extraCostLine = extraSeats > 0
-                ? `${extraSeats} extra seat${extraSeats === 1 ? '' : 's'} — $${extraSeats * teamData.extraSeatPrice}/mo`
+                ? `${extraSeats} extra seat${extraSeats === 1 ? '' : 's'} â€” $${extraSeats * teamData.extraSeatPrice}/mo`
                 : 'No extra-seat charges';
 
             const memberRows = members.length ? members.map(m => `
@@ -1200,7 +1200,7 @@
                 </div>
             `).join('') : '<div class="team-members-empty">No teammates invited yet.</div>';
 
-            // A checkout is needed (rather than the automatic quantity sync) only once —
+            // A checkout is needed (rather than the automatic quantity sync) only once â€”
             // when extra seats are owed but no Extra Seats subscription exists yet.
             const needsCheckout = extraSeats > 0 && teamData.team && !teamData.team.extra_seats_subscription_item_id;
             const checkoutButton = needsCheckout
