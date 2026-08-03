@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <script>if (localStorage.getItem('kerphComingSoonBypass') !== 'true') { location.replace('coming-soon.html'); }</script>
@@ -322,77 +322,8 @@
 <body>
 
     <header>
-        <div class="brand-assembly">
-            <div class="logo-spotlight">
-                <a href="index.html" class="logo-link" title="Kerph Home">
-                    <img src="logo.png" alt="Kerph Logo" class="logo-image">
-                </a>
-                <span class="logo-tm">&trade;</span>
-            </div>
-            <select class="page-title-select" id="pageNavSelect">
-                <option value="index.html">Home</option>
-                <option value="workshop-planner.html">Workshop Layout Planner</option>
-                <option value="project-designer.html">Project Designer</option>
-                <option value="cutlist-optimizer.html">Cut List Optimizer</option>
-                <option value="quote-builder.html">Quote Builder</option>
-                <option value="find-a-builder.html">Find a Builder</option>
-                <option value="shop-3d-viewer.html">3D Shop Viewer</option>
-                <option value="tool-reviews.html">Cool Tool Reviews</option>
-                <option value="shop-showcase.html">Shop Showcase</option>
-                <option value="garage-tips.html">Shop Tricks and How-To's</option>
-                <option value="portfolio.html">Portfolio</option>
-                <option value="print-library.html">3D Print Library</option>
-            </select>
-            <div class="jigs-dropdown" id="jigsDropdown">
-                <button type="button" class="jigs-dropdown-btn" id="jigsDropdownBtn">Shop Jigs <span class="jigs-dropdown-caret">&#9662;</span></button>
-                <div class="jigs-dropdown-menu">
-                    <a href="shop-jigs-fraction-converter.html">Fraction Converter</a>
-                    <a href="shop-jigs-add-fractions.html">Add &amp; Subtract Fractions</a>
-                    <a href="shop-jigs-board-feet.html">Board Foot Calculator</a>
-                    <a href="shop-jigs-angle-chart.html">Polygon Angle Chart</a>
-                    <a href="shop-jigs-wood-movement.html">Wood Movement Calculator</a>
-                    <a href="shop-jigs-speeds-feeds.html">Speeds &amp; Feeds</a>
-                    <a href="shop-jigs-sharpening-angles.html">Sharpening Angle Chart</a>
-                    <a href="shop-jigs-part-finder.html" class="current">Part Finder &#128274; Premier</a>
-                    <div class="jigs-dropdown-menu-sep"></div>
-                    <a href="shop-jigs.html">All Shop Jigs &rarr;</a>
-                </div>
-            </div>
-        </div>
-        <div class="plan-badge-group">
-            <div class="header-sign-in" id="headerSignIn">
-                <div class="header-sign-in-row">
-                    <input type="email" class="header-sign-in-input" id="headerSignInEmail" placeholder="Email" autocomplete="email">
-                    <input type="password" class="header-sign-in-input" id="headerSignInPassword" placeholder="Password" autocomplete="current-password">
-                    <button type="button" id="headerSignInBtn" class="mini-btn" title="Sign In">Sign In</button>
-                </div>
-                <a href="#" class="header-sign-in-mode-toggle" id="headerSignInModeToggle">New here? Create an account</a>
-            </div>
-            <button type="button" id="accountBtn" class="account-btn plan-free" title="Account &amp; Plan Settings" style="display:none;">
-                <span class="account-avatar" id="accountAvatarPreview">&#128100;</span>
-                <span class="account-btn-text">
-                    <span class="account-btn-name" id="accountBtnLabel">Account</span>
-                    <span class="account-btn-plan" id="accountBtnPlan">Free</span>
-                </span>
-            </button>
-            <div class="header-quick-links">
-                <div class="header-quick-links-row">
-                    <a href="pricing.html">Plan Comparison</a>
-                    <span class="header-quick-links-sep">&middot;</span>
-                    <a href="follow.html">Follow Us</a>
-                    <span class="header-quick-links-sep">&middot;</span>
-                    <a href="terms.html">Terms</a>
-                    <span class="header-quick-links-sep">&middot;</span>
-                    <a href="privacy.html">Privacy</a>
-                </div>
-                <a href="help.html">Trouble with the Kerph</a>
-            </div>
-            <select class="plan-select" id="planSelector" style="display:none;">
-                <option value="free">Free</option>
-                <option value="pro">Pro</option>
-                <option value="premier">Premier</option>
-            </select>
-        </div>
+        <script src="site-header-brand.js"></script>
+        <script src="site-header-tail.js"></script>
     </header>
 
     <div class="modal-overlay" id="accountModalOverlay" style="display:none;">
