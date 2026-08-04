@@ -1101,6 +1101,40 @@
         }
         .jigs-dropdown-menu a:hover { background-color: #eef2ff; color: #1e3a8a; }
         .jigs-dropdown-menu-sep { height: 1px; background-color: #e2e8f0; margin: 5px 2px; }
+
+        /* Mobile header — index.html hand-writes its own header markup (no page-nav dropdown,
+           plus a Reminders checkbox other pages don't have), so it needs its own copy of the
+           rules injected via site-header-brand.js/tail.js on every other page. Keep these two
+           rule sets in sync. */
+        @media (max-width: 760px) {
+            header {
+                height: auto;
+                flex-direction: column;
+                align-items: stretch;
+                gap: 10px;
+                padding: 12px 14px;
+            }
+            .brand-assembly {
+                height: auto;
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 8px;
+            }
+            .logo-spotlight { width: 150px; height: 41px; }
+            .logo-image { width: 150px; height: 41px; }
+            .logo-tm { display: none; }
+            .jigs-dropdown-menu { left: auto; right: 0; }
+            .plan-badge-group { align-items: stretch; width: 100%; }
+            .header-sign-in { align-items: stretch; }
+            .header-sign-in-row { flex-wrap: wrap; }
+            .header-sign-in-input { flex: 1 1 120px; width: auto; }
+            .header-sign-in-check { flex: 1 1 100%; justify-content: center; }
+            .header-sign-in-mode-toggle { text-align: center; }
+            .account-btn { justify-content: center; }
+            .header-quick-links { align-items: center; }
+            .header-quick-links-row { flex-wrap: wrap; justify-content: center; }
+            .plan-select { width: 100%; }
+        }
     </style>
 </head>
 <body>

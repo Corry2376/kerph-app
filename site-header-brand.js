@@ -9,6 +9,39 @@
 // index.html keeps its own hand-written header (no page-nav dropdown, plus a Reminders
 // checkbox in the sign-in form) — it's the one deliberately different page, not worth forcing
 // into this shared template. coming-soon.html has no app header at all.
+// Mobile header rules, injected once here rather than copied into ~26 pages' own <style>
+// blocks. Selectors match each page's existing desktop rules exactly (header, .logo-image,
+// etc.) so — since this <style> lands later in document order than each page's own inline
+// <style> in <head> — same-specificity rules here win on the cascade without needing !important
+// or edits to every page's existing CSS. See site-header-tail.js for the matching mobile rules
+// for the sign-in form / account button / quick links (that file loads second, so its <style>
+// wins over both the page's own CSS and this file's, for the handful of selectors both touch).
+document.write(`
+<style>
+@media (max-width: 760px) {
+    header {
+        height: auto;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+        padding: 12px 14px;
+    }
+    .brand-assembly {
+        height: auto;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 8px;
+    }
+    .logo-spotlight { width: 150px; height: 41px; }
+    .logo-image { width: 150px; height: 41px; }
+    .logo-tm { display: none; }
+    .page-title-select { flex: 1 1 160px; min-width: 0; }
+    .jigs-dropdown { margin-left: 0; }
+    .jigs-dropdown-menu { left: auto; right: 0; }
+}
+</style>
+`);
+
 document.write(`
 <div class="brand-assembly">
     <div class="logo-spotlight">

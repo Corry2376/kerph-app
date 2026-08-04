@@ -4,6 +4,25 @@
 //
 // index.html keeps its own hand-written header (it adds a Reminders checkbox to the sign-in
 // form that no other page has) — deliberately excluded from this shared block.
+//
+// Mobile rules loaded here (not per-page) for the same reason as site-header-brand.js's —
+// see that file's comment for how the cascade-order override works.
+document.write(`
+<style>
+@media (max-width: 760px) {
+    .plan-badge-group { align-items: stretch; width: 100%; }
+    .header-sign-in { align-items: stretch; }
+    .header-sign-in-row { flex-wrap: wrap; }
+    .header-sign-in-input { flex: 1 1 120px; width: auto; }
+    .header-sign-in-mode-toggle { text-align: center; }
+    .account-btn { justify-content: center; }
+    .header-quick-links { align-items: center; }
+    .header-quick-links-row { flex-wrap: wrap; justify-content: center; }
+    .plan-select { width: 100%; }
+}
+</style>
+`);
+
 document.write(`
 <div class="plan-badge-group">
     <div class="header-sign-in" id="headerSignIn" title="Sign in or create a free Kerph account.">
