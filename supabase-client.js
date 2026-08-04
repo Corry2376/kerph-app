@@ -108,6 +108,7 @@
             unitSystem: state.profile.unit_system || 'imperial',
             maintenanceRemindersEnabled: state.profile.maintenance_reminders_enabled !== false,
             homeTileOrder: state.profile.home_tile_order || null,
+            homeTileHidden: state.profile.home_tile_hidden || [],
             isAdmin: state.profile.is_admin === true
         };
     }
@@ -119,13 +120,14 @@
     // upsert (not update) so a missing profile row — trigger failure, edge case, whatever —
     // never permanently locks a signed-in user out of saving; the INSERT RLS policy exists
     // specifically to make this self-healing path work.
-    async function kerphSaveProfile({ username, avatarDataUrl, unitSystem, maintenanceRemindersEnabled, homeTileOrder } = {}) {
+    async function kerphSaveProfile({ username, avatarDataUrl, unitSystem, maintenanceRemindersEnabled, homeTileOrder, homeTileHidden } = {}) {
         if (!state.user) return { error: { message: 'Not signed in.' } };
         const updates = { id: state.user.id, username };
         if (avatarDataUrl !== undefined) updates.avatar_data_url = avatarDataUrl;
         if (unitSystem !== undefined) updates.unit_system = unitSystem;
         if (maintenanceRemindersEnabled !== undefined) updates.maintenance_reminders_enabled = maintenanceRemindersEnabled;
         if (homeTileOrder !== undefined) updates.home_tile_order = homeTileOrder;
+        if (homeTileHidden !== undefined) updates.home_tile_hidden = homeTileHidden;
         const { data, error } = await kerphSupabase.from('profiles').upsert(updates).select().maybeSingle();
         if (!error && data) {
             state.profile = data;

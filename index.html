@@ -651,6 +651,82 @@
             line-height: 1.5;
         }
 
+        /* "Customize Tiles" — lets a user hide tiles they have access to but don't want
+           cluttering their home page. Same open/close pattern as .jigs-dropdown. Only tiles
+           the current plan unlocks are offered here; a locked tile is already an upsell
+           prompt, not something to "remove." */
+        .tile-visibility-dropdown { position: relative; display: inline-block; margin-top: 12px; }
+        .tile-visibility-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12.5px;
+            font-weight: 700;
+            color: #1e3a8a;
+            background-color: #ffffff;
+            padding: 7px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .tile-visibility-btn:hover { background-color: #eef2ff; border-color: #1e3a8a; }
+        .tile-visibility-caret { font-size: 9px; transition: transform 0.15s ease; }
+        .tile-visibility-dropdown.open .tile-visibility-caret { transform: rotate(180deg); }
+        .tile-visibility-menu {
+            display: none;
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 0;
+            background-color: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            box-shadow: 0 12px 30px -8px rgba(15, 23, 42, 0.3);
+            padding: 12px;
+            min-width: 270px;
+            max-height: 320px;
+            overflow-y: auto;
+            z-index: 500;
+        }
+        .tile-visibility-dropdown.open .tile-visibility-menu { display: block; }
+        .tile-visibility-menu-title {
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #94a3b8;
+            margin-bottom: 8px;
+        }
+        .tile-visibility-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 4px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #1e293b;
+            cursor: pointer;
+            border-radius: 6px;
+        }
+        .tile-visibility-item:hover { background-color: #f8fafc; }
+        .tile-visibility-item input { flex-shrink: 0; cursor: pointer; }
+        .tile-visibility-empty { font-size: 12px; color: #9ca3af; font-style: italic; padding: 4px; }
+        .tile-visibility-menu-sep { height: 1px; background-color: #e2e8f0; margin: 8px 2px; }
+        .tile-visibility-reset {
+            width: 100%;
+            text-align: left;
+            background: none;
+            border: none;
+            font-size: 12px;
+            font-weight: 700;
+            color: #1e3a8a;
+            cursor: pointer;
+            padding: 4px;
+        }
+        .tile-visibility-reset:hover { text-decoration: underline; }
+
+        .tool-card-hidden { display: none !important; }
+
         /* Uses the horizontal room a fixed-width single column left empty on wide screens:
            a welcome/CTA on the left, a live snapshot of the user's own data on the right,
            instead of just widening the tile grid into dead space. */
@@ -1066,7 +1142,7 @@
                 </div>
                 <a href="#" id="headerSignInModeToggle" class="header-sign-in-mode-toggle">New here? Create an account</a>
             </div>
-            <button type="button" id="accountBtn" class="account-btn plan-free" title="Account &amp; Plan Settings â€” border color shows your plan level" style="display:none;">
+            <button type="button" id="accountBtn" class="account-btn plan-free" title="Account &amp; Plan Settings &mdash; border color shows your plan level" style="display:none;">
                 <span class="account-avatar" id="accountAvatarPreview">&#128100;</span>
                 <span class="account-btn-text">
                     <span class="account-btn-name" id="accountBtnLabel">Account</span>
@@ -1096,7 +1172,7 @@
     <div class="modal-overlay" id="accountModalOverlay" style="display:none;">
         <div class="modal-box account-modal-box">
             <div class="modal-title">Account Settings</div>
-            <div class="modal-warning">Your account (username, avatar, sign-in) is real and synced via Kerph. Saved layouts, projects, tools, Showcase posts, and reviews are synced too â€” available on any device you sign into.</div>
+            <div class="modal-warning">Your account (username, avatar, sign-in) is real and synced via Kerph. Saved layouts, projects, tools, Showcase posts, and reviews are synced too &mdash; available on any device you sign into.</div>
 
             <div class="header-field" style="width:100%; margin-bottom:14px; display:flex; flex-direction:column; align-items:center;">
                 <div class="account-avatar-large" id="accountAvatarLarge">&#128100;</div>
@@ -1155,7 +1231,7 @@
 
             <div class="account-backup-zone">
                 <div class="account-backup-title">Local Device Settings</div>
-                <div class="account-backup-desc">Your layouts, projects, tools, Showcase posts, and reviews live on your account now â€” no backup needed. This just covers a couple of local display preferences still cached in this browser.</div>
+                <div class="account-backup-desc">Your layouts, projects, tools, Showcase posts, and reviews live on your account now &mdash; no backup needed. This just covers a couple of local display preferences still cached in this browser.</div>
                 <div style="display:flex; gap:8px;">
                     <button type="button" id="accountExportBtn" class="mini-btn" style="flex:1;">&#11015;&#65039; Export</button>
                     <button type="button" id="accountImportBtn" class="mini-btn" style="flex:1;">&#11014;&#65039; Import&hellip;</button>
@@ -1221,7 +1297,7 @@
                 <span class="category-chevron">&#9656;</span>
             </summary>
             <div class="category-items">
-                <div class="empty-hint">Drills, routers, circular saws, and other portable power tools that never sit on the shop floor â€” browse or search below to add them to My Tools or your wishlist. They'll count in the Insurance Report either way.</div>
+                <div class="empty-hint">Drills, routers, circular saws, and other portable power tools that never sit on the shop floor &mdash; browse or search below to add them to My Tools or your wishlist. They'll count in the Insurance Report either way.</div>
                 <div class="tool-search-wrap">
                     <input type="text" class="input-box" id="smallPowerToolSearchInput" placeholder="&#128269; Search small power tools...">
                 </div>
@@ -1239,6 +1315,15 @@
                 <div class="hero-intro">
                     <div class="intro-title" id="heroTitle">Workshop &amp; project tools</div>
                     <div class="intro-subtitle" id="heroSubtitle">Pick a tool to get started. More will show up here over time.</div>
+                    <div class="tile-visibility-dropdown" id="tileVisibilityDropdown">
+                        <button type="button" class="tile-visibility-btn" id="tileVisibilityBtn">Customize Tiles <span class="tile-visibility-caret">&#9662;</span></button>
+                        <div class="tile-visibility-menu" id="tileVisibilityMenu">
+                            <div class="tile-visibility-menu-title">Show on this page</div>
+                            <div class="tile-visibility-list" id="tileVisibilityList"></div>
+                            <div class="tile-visibility-menu-sep"></div>
+                            <button type="button" class="tile-visibility-reset" id="tileVisibilityReset">Show all</button>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="tool-grid">
@@ -1246,7 +1331,7 @@
                         <div class="tool-card-icon">&#128736;</div>
                         <div>
                             <div class="tool-card-title">Workshop layout planner</div>
-                            <div class="tool-card-desc">Lay out your shop floor to scale â€” tools, cabinets, dust collection, and lighting, all placed and sized for real. Start here â€” everything else below builds on the shop you lay out.</div>
+                            <div class="tool-card-desc">Lay out your shop floor to scale &mdash; tools, cabinets, dust collection, and lighting, all placed and sized for real. Start here &mdash; everything else below builds on the shop you lay out.</div>
                         </div>
                     </a>
 
@@ -1265,19 +1350,19 @@
                     <a href="find-a-builder.html" class="tool-card">
                         <div class="tool-card-icon">&#127959;&#65039;</div>
                         <div class="tool-card-title">Find a builder</div>
-                        <div class="tool-card-desc">Designed your shop â€” now find a pole barn or post-frame contractor near you to build it, with real Google reviews.</div>
+                        <div class="tool-card-desc">Designed your shop &mdash; now find a pole barn or post-frame contractor near you to build it, with real Google reviews.</div>
                     </a>
 
                     <a href="shop-3d-viewer.html" class="tool-card">
                         <div class="tool-card-icon">&#129482;</div>
                         <div class="tool-card-title">3D shop viewer</div>
-                        <div class="tool-card-desc">See the shop you built in the Workshop Layout Planner assembled in 3D â€” orbit, pan, and zoom around it.</div>
+                        <div class="tool-card-desc">See the shop you built in the Workshop Layout Planner assembled in 3D &mdash; orbit, pan, and zoom around it.</div>
                     </a>
 
                     <a href="tool-reviews.html" class="tool-card">
                         <div class="tool-card-icon">&#11088;</div>
                         <div class="tool-card-title">Cool tool reviews</div>
-                        <div class="tool-card-desc">Real feedback from real shops â€” browse tool reviews by category and star rating, or write your own.</div>
+                        <div class="tool-card-desc">Real feedback from real shops &mdash; browse tool reviews by category and star rating, or write your own.</div>
                     </a>
 
                     <a href="shop-showcase.html" class="tool-card">
@@ -1295,13 +1380,13 @@
                     <a href="portfolio.html" class="tool-card">
                         <div class="tool-card-icon">&#128188;</div>
                         <div class="tool-card-title">Portfolio</div>
-                        <div class="tool-card-desc">A permanent, shareable page for everything you've built â€” pull from Project Designer or upload photos and plans from anywhere.</div>
+                        <div class="tool-card-desc">A permanent, shareable page for everything you've built &mdash; pull from Project Designer or upload photos and plans from anywhere.</div>
                     </a>
 
                     <a href="quote-builder.html" class="tool-card">
                         <div class="tool-card-icon">&#129309;</div>
                         <div class="tool-card-title">Quote builder</div>
-                        <div class="tool-card-desc">Turn a cut list into a real client quote â€” materials, labor, overhead, and margin, exported as a PDF.</div>
+                        <div class="tool-card-desc">Turn a cut list into a real client quote &mdash; materials, labor, overhead, and margin, exported as a PDF.</div>
                     </a>
 
                     <a href="print-library.html" class="tool-card">
@@ -2046,7 +2131,7 @@
                 const status = formatMaintenanceStatus(entry.maintenance.dueDate);
                 const badge = document.createElement('div');
                 badge.className = 'maintenance-badge ' + status.cls;
-                badge.textContent = `\u{1F527} ${entry.maintenance.note ? entry.maintenance.note + ' â€” ' : ''}${status.text}`;
+                badge.textContent = `\u{1F527} ${entry.maintenance.note ? entry.maintenance.note + ' — ' : ''}${status.text}`;
                 wrap.appendChild(badge);
 
                 const actions = document.createElement('div');
@@ -2124,9 +2209,9 @@
             dims.className = 'tool-dims';
             const hasDims = entry.widthFt && entry.lengthFt;
             const dimText = hasDims
-                ? `${entry.widthFt}â€² Ã— ${entry.lengthFt}â€²${entry.heightFt ? ' Ã— ' + entry.heightFt + 'â€²' : ''}`
+                ? `${entry.widthFt}′ × ${entry.lengthFt}′${entry.heightFt ? ' × ' + entry.heightFt + '′' : ''}`
                 : 'Dimensions unavailable';
-            dims.textContent = [entry.category, dimText].filter(Boolean).join(' â€” ');
+            dims.textContent = [entry.category, dimText].filter(Boolean).join(' — ');
             details.appendChild(dims);
 
             if (entry.status === 'owned' && maintenanceRemindersEnabled()) {
@@ -2171,7 +2256,7 @@
             removeBtn.type = 'button';
             removeBtn.className = 'cabinet-remove-btn';
             removeBtn.title = 'Remove from this list';
-            removeBtn.textContent = 'âœ•';
+            removeBtn.textContent = '✕';
             removeBtn.addEventListener('click', () => {
                 const current = loadToolStatuses();
                 delete current[name];
@@ -2277,14 +2362,14 @@
             const ownedBtn = document.createElement('button');
             ownedBtn.type = 'button';
             ownedBtn.className = 'maintenance-mini-btn' + (entry && entry.status === 'owned' ? ' is-active' : '');
-            ownedBtn.textContent = 'âœ“ Owned';
+            ownedBtn.textContent = '✓ Owned';
             ownedBtn.addEventListener('click', () => setToolStatus(tool.name, tool.category, 'owned'));
             actions.appendChild(ownedBtn);
 
             const wishBtn = document.createElement('button');
             wishBtn.type = 'button';
             wishBtn.className = 'maintenance-mini-btn' + (entry && entry.status === 'wishlist' ? ' is-active' : '');
-            wishBtn.textContent = 'â˜… Wishlist';
+            wishBtn.textContent = '★ Wishlist';
             wishBtn.addEventListener('click', () => setToolStatus(tool.name, tool.category, 'wishlist'));
             actions.appendChild(wishBtn);
 
@@ -2358,7 +2443,7 @@
             info.appendChild(title);
             const dims = document.createElement('div');
             dims.className = 'tool-dims';
-            dims.textContent = `${tool.category} â€” ${tool.widthFt}' x ${tool.lengthFt}' Footprint`;
+            dims.textContent = `${tool.category} — ${tool.widthFt}' x ${tool.lengthFt}' Footprint`;
             info.appendChild(dims);
 
             const actions = document.createElement('div');
@@ -2369,14 +2454,14 @@
             const ownedBtn = document.createElement('button');
             ownedBtn.type = 'button';
             ownedBtn.className = 'maintenance-mini-btn' + (entry && entry.status === 'owned' ? ' is-active' : '');
-            ownedBtn.textContent = 'âœ“ Owned';
+            ownedBtn.textContent = '✓ Owned';
             ownedBtn.addEventListener('click', () => setToolStatus(tool.name, tool.category, 'owned', extraFields));
             actions.appendChild(ownedBtn);
 
             const wishBtn = document.createElement('button');
             wishBtn.type = 'button';
             wishBtn.className = 'maintenance-mini-btn' + (entry && entry.status === 'wishlist' ? ' is-active' : '');
-            wishBtn.textContent = 'â˜… Wishlist';
+            wishBtn.textContent = '★ Wishlist';
             wishBtn.addEventListener('click', () => setToolStatus(tool.name, tool.category, 'wishlist', extraFields));
             actions.appendChild(wishBtn);
 
@@ -2439,7 +2524,7 @@
             const statuses = loadToolStatuses();
             const owned = Object.entries(statuses).filter(([, e]) => e.status === 'owned');
             if (!owned.length) {
-                showToast('Mark some tools as owned first â€” there\'s nothing to put in the report yet.');
+                showToast('Mark some tools as owned first — there\'s nothing to put in the report yet.');
                 return;
             }
 
@@ -2452,14 +2537,14 @@
                 const dispName = entry.nickname ? `${name} (${entry.nickname})` : name;
                 const dims = (entry.widthFt && entry.lengthFt)
                     ? `${entry.widthFt}' x ${entry.lengthFt}'${entry.heightFt ? ' x ' + entry.heightFt + '\'' : ''}`
-                    : 'â€”';
+                    : '—';
                 const hasValue = entry.replacementValue != null;
                 if (hasValue) { total += entry.replacementValue; valuedCount++; }
                 const valueText = hasValue ? `$${entry.replacementValue.toLocaleString()}` : 'Not entered';
-                const serialText = entry.serialNumber || 'â€”';
+                const serialText = entry.serialNumber || '—';
                 return `<tr>
                     <td>${escapeHtml(dispName)}</td>
-                    <td>${escapeHtml(entry.category || 'â€”')}</td>
+                    <td>${escapeHtml(entry.category || '—')}</td>
                     <td>${escapeHtml(dims)}</td>
                     <td>${escapeHtml(serialText)}</td>
                     <td class="ins-value">${escapeHtml(valueText)}</td>
@@ -2483,7 +2568,7 @@
                     </tbody>
                 </table>
                 <div class="ins-report-disclaimer">
-                    Values shown are estimates entered by the account holder, not a professional appraisal â€” ${valuedCount} of ${owned.length} item${owned.length === 1 ? '' : 's'} have a value entered.
+                    Values shown are estimates entered by the account holder, not a professional appraisal — ${valuedCount} of ${owned.length} item${owned.length === 1 ? '' : 's'} have a value entered.
                     Dimensions come from tools placed in the Kerph Workshop Layout Planner; hand and power tools added via search have no floor footprint to report, so only name, category, and whatever value/serial number you entered are shown for those.
                     Provide this alongside receipts or your own documentation when filing an insurance claim or setting coverage limits; consult your insurance provider for how they'd like replacement-cost documentation formatted.
                 </div>
@@ -2595,7 +2680,7 @@
                     const handle = document.createElement('span');
                     handle.className = 'tool-card-drag-handle';
                     handle.title = 'Drag to reorder';
-                    handle.textContent = 'â‹®â‹®';
+                    handle.textContent = '⋮⋮';
                     card.appendChild(handle);
                 }
                 card.setAttribute('draggable', 'true');
@@ -2624,6 +2709,97 @@
             });
         }
 
+        /* ---------- HOME PAGE TILE VISIBILITY ----------
+           "Customize Tiles" lets a user hide tiles they have access to but don't want
+           cluttering their home page. By default every tile the current plan unlocks is
+           shown; unchecking one hides it immediately. Same cache-locally + sync-to-account
+           pattern as tile reorder above (home_tile_hidden on profiles). The featured
+           Workshop Layout Planner tile isn't offered here, same as it isn't reorderable —
+           it's the page's anchor, not something to remove. A locked tile isn't offered
+           either, since it's already an upsell prompt rather than a tile to "not want." */
+        const HOME_TILE_HIDDEN_KEY = 'kerphHomeTileHidden';
+
+        function getHideableCards() {
+            const plan = localStorage.getItem(PLAN_KEY) || 'free';
+            return getReorderableCards().filter((card) => {
+                const tier = (typeof kerphRequiredTierFor === 'function') ? kerphRequiredTierFor(card.getAttribute('href')) : null;
+                return !tier || (typeof kerphPlanMeetsTier !== 'function') || kerphPlanMeetsTier(plan, tier);
+            });
+        }
+
+        function loadHiddenTiles() {
+            try { return JSON.parse(localStorage.getItem(HOME_TILE_HIDDEN_KEY) || '[]'); } catch (e) { return []; }
+        }
+
+        function applyTileVisibility(hidden) {
+            const set = new Set(Array.isArray(hidden) ? hidden : []);
+            getReorderableCards().forEach((card) => {
+                card.classList.toggle('tool-card-hidden', set.has(card.getAttribute('href')));
+            });
+        }
+
+        function saveTileHidden(hidden) {
+            localStorage.setItem(HOME_TILE_HIDDEN_KEY, JSON.stringify(hidden));
+            kerphSaveProfile({ username: kerphGetCachedProfile().username, homeTileHidden: hidden }).catch(() => {});
+        }
+
+        function renderTileVisibilityMenu() {
+            const list = document.getElementById('tileVisibilityList');
+            if (!list) return;
+            const hidden = new Set(loadHiddenTiles());
+            const cards = getHideableCards();
+            if (!cards.length) {
+                list.innerHTML = '<div class="tile-visibility-empty">Nothing to customize yet.</div>';
+                return;
+            }
+            list.innerHTML = cards.map((card) => {
+                const href = card.getAttribute('href') || '';
+                const title = card.querySelector('.tool-card-title');
+                const label = title ? title.textContent : href;
+                const checked = !hidden.has(href);
+                return `
+                    <label class="tile-visibility-item">
+                        <input type="checkbox" data-href="${escapeHtml(href)}" ${checked ? 'checked' : ''}>
+                        ${escapeHtml(label)}
+                    </label>
+                `;
+            }).join('');
+        }
+
+        function initTileVisibilityMenu() {
+            const dropdown = document.getElementById('tileVisibilityDropdown');
+            const btn = document.getElementById('tileVisibilityBtn');
+            const list = document.getElementById('tileVisibilityList');
+            const resetBtn = document.getElementById('tileVisibilityReset');
+            if (!dropdown || !btn || !list || !resetBtn) return;
+
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (!dropdown.classList.contains('open')) renderTileVisibilityMenu();
+                dropdown.classList.toggle('open');
+            });
+            document.addEventListener('click', (e) => {
+                if (!dropdown.contains(e.target)) dropdown.classList.remove('open');
+            });
+
+            list.addEventListener('change', (e) => {
+                const input = e.target.closest('input[data-href]');
+                if (!input) return;
+                const hidden = new Set(loadHiddenTiles());
+                if (input.checked) hidden.delete(input.dataset.href);
+                else hidden.add(input.dataset.href);
+                const hiddenArr = Array.from(hidden);
+                applyTileVisibility(hiddenArr);
+                saveTileHidden(hiddenArr);
+            });
+
+            resetBtn.addEventListener('click', () => {
+                applyTileVisibility([]);
+                saveTileHidden([]);
+                renderTileVisibilityMenu();
+            });
+        }
+
         // Single reactive point for sign-in/account changes â€” fires in every open tab
         // whenever auth state changes anywhere (sign in, sign up, sign out, profile save),
         // replacing the old AUTH_KEY/ACCOUNT_KEY storage-event branches this listener used
@@ -2646,8 +2822,10 @@
             let cached = null;
             try { cached = JSON.parse(localStorage.getItem(HOME_TILE_ORDER_KEY) || 'null'); } catch (e) { /* ignore */ }
             applyTileOrder(resolveTileOrder(cached));
+            applyTileVisibility(loadHiddenTiles());
         })();
         initTileReorder();
+        initTileVisibilityMenu();
 
         // Standalone header dropdown (not folded into pageNavSelect) so Shop Jigs' four
         // tools are one click away from every page instead of being buried as just another
@@ -2691,6 +2869,13 @@
                 const resolved = resolveTileOrder(profile.homeTileOrder);
                 applyTileOrder(resolved);
                 localStorage.setItem(HOME_TILE_ORDER_KEY, JSON.stringify(resolved));
+            }
+            // Same idea for hidden tiles — an empty array is a meaningful "show everything"
+            // state here (not "nothing saved yet"), so apply it whenever the profile has
+            // actually loaded rather than gating on .length like the order sync above.
+            if (Array.isArray(profile.homeTileHidden)) {
+                applyTileVisibility(profile.homeTileHidden);
+                localStorage.setItem(HOME_TILE_HIDDEN_KEY, JSON.stringify(profile.homeTileHidden));
             }
             cachedToolStatuses = (await kerphLoadToolStatus()).data || {};
             renderToolLists();
