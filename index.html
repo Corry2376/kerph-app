@@ -710,6 +710,7 @@
         }
         .tile-visibility-item:hover { background-color: #f8fafc; }
         .tile-visibility-item input { flex-shrink: 0; cursor: pointer; }
+        .tile-visibility-select-all { font-weight: 800; color: #1e3a8a; }
         .tile-visibility-empty { font-size: 12px; color: #9ca3af; font-style: italic; padding: 4px; }
         .tile-visibility-menu-sep { height: 1px; background-color: #e2e8f0; margin: 8px 2px; }
         .tile-visibility-reset {
@@ -1155,9 +1156,7 @@
                     <span class="header-quick-links-sep">&middot;</span>
                     <a href="follow.html">Follow Us</a>
                     <span class="header-quick-links-sep">&middot;</span>
-                    <a href="terms.html">Terms</a>
-                    <span class="header-quick-links-sep">&middot;</span>
-                    <a href="privacy.html">Privacy</a>
+                    <a href="terms.html">Terms &amp; Privacy</a>
                 </div>
                 <a href="help.html">Trouble with the Kerph</a>
             </div>
@@ -1319,9 +1318,12 @@
                         <button type="button" class="tile-visibility-btn" id="tileVisibilityBtn">Customize Tiles <span class="tile-visibility-caret">&#9662;</span></button>
                         <div class="tile-visibility-menu" id="tileVisibilityMenu">
                             <div class="tile-visibility-menu-title">Show on this page</div>
-                            <div class="tile-visibility-list" id="tileVisibilityList"></div>
+                            <label class="tile-visibility-item tile-visibility-select-all">
+                                <input type="checkbox" id="tileVisibilitySelectAll">
+                                <span id="tileVisibilitySelectAllLabel">Select All</span>
+                            </label>
                             <div class="tile-visibility-menu-sep"></div>
-                            <button type="button" class="tile-visibility-reset" id="tileVisibilityReset">Show all</button>
+                            <div class="tile-visibility-list" id="tileVisibilityList"></div>
                         </div>
                     </div>
                 </div>
@@ -2745,13 +2747,17 @@
 
         function renderTileVisibilityMenu() {
             const list = document.getElementById('tileVisibilityList');
+            const selectAll = document.getElementById('tileVisibilitySelectAll');
+            const selectAllRow = selectAll ? selectAll.closest('.tile-visibility-select-all') : null;
             if (!list) return;
             const hidden = new Set(loadHiddenTiles());
             const cards = getHideableCards();
             if (!cards.length) {
                 list.innerHTML = '<div class="tile-visibility-empty">Nothing to customize yet.</div>';
+                if (selectAllRow) selectAllRow.style.display = 'none';
                 return;
             }
+            if (selectAllRow) selectAllRow.style.display = '';
             list.innerHTML = cards.map((card) => {
                 const href = card.getAttribute('href') || '';
                 const title = card.querySelector('.tool-card-title');
@@ -2764,14 +2770,19 @@
                     </label>
                 `;
             }).join('');
+            if (selectAll) {
+                const visibleCount = cards.filter((c) => !hidden.has(c.getAttribute('href'))).length;
+                selectAll.checked = visibleCount === cards.length;
+                selectAll.indeterminate = visibleCount > 0 && visibleCount < cards.length;
+            }
         }
 
         function initTileVisibilityMenu() {
             const dropdown = document.getElementById('tileVisibilityDropdown');
             const btn = document.getElementById('tileVisibilityBtn');
             const list = document.getElementById('tileVisibilityList');
-            const resetBtn = document.getElementById('tileVisibilityReset');
-            if (!dropdown || !btn || !list || !resetBtn) return;
+            const selectAll = document.getElementById('tileVisibilitySelectAll');
+            if (!dropdown || !btn || !list || !selectAll) return;
 
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
@@ -2791,11 +2802,19 @@
                 const hiddenArr = Array.from(hidden);
                 applyTileVisibility(hiddenArr);
                 saveTileHidden(hiddenArr);
+                // Keep the master checkbox's checked/indeterminate state in sync with
+                // whatever the individual toggle above just produced.
+                renderTileVisibilityMenu();
             });
 
-            resetBtn.addEventListener('click', () => {
-                applyTileVisibility([]);
-                saveTileHidden([]);
+            // Master checkbox: checks/unchecks every hideable tile at once. Re-clicking after
+            // a mixed (indeterminate) state always resolves to "select all" first, same as
+            // the standard select-all-checkbox convention (Gmail, etc.) rather than toggling
+            // off from an ambiguous middle state.
+            selectAll.addEventListener('change', () => {
+                const hiddenArr = selectAll.checked ? [] : getHideableCards().map((c) => c.getAttribute('href'));
+                applyTileVisibility(hiddenArr);
+                saveTileHidden(hiddenArr);
                 renderTileVisibilityMenu();
             });
         }

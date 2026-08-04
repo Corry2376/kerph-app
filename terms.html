@@ -4,7 +4,7 @@
     <script>if (localStorage.getItem('kerphComingSoonBypass') !== 'true') { location.replace('coming-soon.html'); }</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kerph - Terms of Service</title>
+    <title>Kerph - Terms of Service &amp; Privacy Policy</title>
     <style>
         * {
             box-sizing: border-box;
@@ -295,6 +295,21 @@
         .header-quick-links a:hover { color: #1e3a8a; text-decoration: underline; }
         .header-quick-links-sep { color: #cbd5e1; }
 
+        /* Marks the handoff point in the TOC between the two documents combined on this page
+           -- without this, "Overview"/"Legal" appearing twice in one sidebar list reads as a
+           mistake rather than the start of a second document. */
+        .help-toc-doc-divider {
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: #1e3a8a;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 12px;
+            margin: 4px 0 12px;
+        }
+        .legal-doc-break { margin-top: 40px; padding-top: 32px; border-top: 2px solid #e2e8f0; }
+
         /* ---------- SHOP JIGS DROPDOWN ---------- */
         .jigs-dropdown { position: relative; margin-left: 30px; }
         .jigs-dropdown-btn {
@@ -351,7 +366,7 @@
     <div class="modal-overlay" id="accountModalOverlay" style="display:none;">
         <div class="modal-box account-modal-box">
             <div class="modal-title">Account Settings</div>
-            <div class="modal-warning">Your account (username, avatar, sign-in) is real and synced via Kerph. Saved layouts, projects, tools, Showcase posts, and reviews are synced too â€” available on any device you sign into.</div>
+            <div class="modal-warning">Your account (username, avatar, sign-in) is real and synced via Kerph. Saved layouts, projects, tools, Showcase posts, and reviews are synced too &mdash; available on any device you sign into.</div>
 
             <div class="header-field" style="align-items:center; display:flex; flex-direction:column; gap:4px;">
                 <div class="account-avatar-large" id="accountAvatarLarge">&#128100;</div>
@@ -403,7 +418,7 @@
 
             <div class="account-backup-zone">
                 <div class="account-backup-title">Local Device Settings</div>
-                <div class="account-backup-desc">Your layouts, projects, tools, Showcase posts, and reviews live on your account now â€” no backup needed. This just covers a couple of local display preferences still cached in this browser.</div>
+                <div class="account-backup-desc">Your layouts, projects, tools, Showcase posts, and reviews live on your account now &mdash; no backup needed. This just covers a couple of local display preferences still cached in this browser.</div>
                 <div style="display:flex; gap:8px;">
                     <button type="button" id="accountExportBtn" class="mini-btn" style="flex:1;">&#11015;&#65039; Export</button>
                     <button type="button" id="accountImportBtn" class="mini-btn" style="flex:1;">&#11014;&#65039; Import&hellip;</button>
@@ -448,21 +463,47 @@
                 <a href="#governing-law">Governing Law</a>
                 <a href="#contact">Contact Us</a>
             </div>
+
+            <div class="help-toc-doc-divider">Privacy Policy</div>
+            <div class="help-toc-group">
+                <div class="help-toc-group-title">Overview</div>
+                <a href="#privacy-scope">Scope of This Policy</a>
+                <a href="#privacy-what-we-collect">What We Collect</a>
+            </div>
+            <div class="help-toc-group">
+                <div class="help-toc-group-title">How It's Used</div>
+                <a href="#privacy-how-we-use">How We Use Your Data</a>
+                <a href="#privacy-sharing">Who We Share Data With</a>
+                <a href="#privacy-payments">Payment Data Specifically</a>
+                <a href="#privacy-cookies">Cookies &amp; Local Storage</a>
+            </div>
+            <div class="help-toc-group">
+                <div class="help-toc-group-title">Your Rights</div>
+                <a href="#privacy-your-rights">Access, Export &amp; Deletion</a>
+                <a href="#privacy-retention">Data Retention</a>
+                <a href="#privacy-security">Security</a>
+                <a href="#privacy-children">Children's Privacy</a>
+            </div>
+            <div class="help-toc-group">
+                <div class="help-toc-group-title">Legal</div>
+                <a href="#privacy-changes">Changes to This Policy</a>
+                <a href="#privacy-contact">Contact Us</a>
+            </div>
         </nav>
 
         <main class="help-main">
             <div class="help-eyebrow">Legal</div>
-            <div class="help-title">Terms of Service</div>
+            <div class="help-title" id="terms-of-service">Terms of Service</div>
             <div class="help-subtitle">Last updated: <span class="fill-in">[EFFECTIVE DATE]</span>. These Terms govern your use of Kerph (the "Service"), operated by <span class="fill-in">[KERPH LEGAL ENTITY NAME, e.g. "Kerph LLC"]</span> ("Kerph," "we," "us," or "our").</div>
 
             <div class="legal-notice">
-                <b>Before you publish this:</b> this is a solid, Kerph-specific starting draft â€” it is not a substitute for review by a licensed attorney in your state, especially once you've formed your business entity and picked a payment processor. Anywhere you see a <span class="fill-in">highlighted bracket</span>, that's a real gap to fill in (your legal entity name, state of formation, support email, effective date) before this goes live. The disclaimer and liability sections below matter most to get right, since Kerph now suggests physical placements for electrical outlets, dust collection ductwork, and plumbing fixtures â€” get a real legal read on those specifically.
+                <b>Before you publish this:</b> this is a solid, Kerph-specific starting draft &mdash; it is not a substitute for review by a licensed attorney in your state, especially once you've formed your business entity and picked a payment processor. Anywhere you see a <span class="fill-in">highlighted bracket</span>, that's a real gap to fill in (your legal entity name, state of formation, support email, effective date) before this goes live. The disclaimer and liability sections below matter most to get right, since Kerph now suggests physical placements for electrical outlets, dust collection ductwork, and plumbing fixtures &mdash; get a real legal read on those specifically.
             </div>
 
             <article class="help-article" id="acceptance">
                 <div class="help-article-eyebrow">Overview</div>
                 <h2>1. Acceptance of Terms</h2>
-                <p>By creating an account, accessing, or using Kerph â€” including the Workshop Layout Planner, Dust Collection planner, Project Designer, Cut List Optimizer, 3D Shop Viewer, Find a Builder, Shop Showcase, Cool Tool Reviews, or any other part of the Service â€” you agree to be bound by these Terms of Service ("Terms") and our <a href="privacy.html">Privacy Policy</a>. If you don't agree to these Terms, don't use Kerph.</p>
+                <p>By creating an account, accessing, or using Kerph &mdash; including the Workshop Layout Planner, Dust Collection planner, Project Designer, Cut List Optimizer, 3D Shop Viewer, Find a Builder, Shop Showcase, Cool Tool Reviews, or any other part of the Service &mdash; you agree to be bound by these Terms of Service ("Terms") and our <a href="#privacy-policy">Privacy Policy</a>. If you don't agree to these Terms, don't use Kerph.</p>
                 <p>If you're using Kerph on behalf of a business, you're agreeing to these Terms on behalf of that business, and you're personally confirming you have the authority to do so.</p>
             </article>
 
@@ -474,7 +515,7 @@
             <article class="help-article" id="accounts">
                 <div class="help-article-eyebrow">Your Account</div>
                 <h2>3. Creating an Account</h2>
-                <p>Some parts of Kerph â€” saving layouts, tracking tools, posting to Shop Showcase, writing Tool Reviews â€” require a real account, authenticated through our backend provider. You agree to:</p>
+                <p>Some parts of Kerph &mdash; saving layouts, tracking tools, posting to Shop Showcase, writing Tool Reviews &mdash; require a real account, authenticated through our backend provider. You agree to:</p>
                 <ul>
                     <li>Provide accurate information when you sign up, and keep your email address current.</li>
                     <li>Keep your password confidential. You're responsible for all activity that happens under your account, whether or not you personally took the action.</li>
@@ -486,44 +527,44 @@
 
             <article class="help-article" id="plans-billing">
                 <h2>4. Plans &amp; Billing</h2>
-                <p>Kerph is offered on three tiers: <b>Free</b>, <b>Pro</b>, and <b>Premier</b>, each unlocking different features (saved layouts, custom shapes, cabinetry tools, and more). Current plan details and pricing are listed on our <a href="pricing.html">Plan Comparison</a> page, which is the authoritative source for what each tier includes â€” not this document.</p>
-                <p>Paid plans (Pro and Premier) are billed through <b>Lemon Squeezy</b>, our payment processor and Merchant of Record â€” the charge on your statement comes from Lemon Squeezy, not directly from Kerph. Subscriptions are available monthly or annually, renew automatically at the end of each billing period until canceled, and you can cancel at any time from Account Settings and keep access through the end of the period you already paid for. Premier includes 4 team seats, with additional seats billed monthly per seat. Fees are non-refundable except where required by law or as described in our <a href="help.html#billing-overview">Refund Policy</a>, which also covers the first-time charge guarantee.</p>
+                <p>Kerph is offered on three tiers: <b>Free</b>, <b>Pro</b>, and <b>Premier</b>, each unlocking different features (saved layouts, custom shapes, cabinetry tools, and more). Current plan details and pricing are listed on our <a href="pricing.html">Plan Comparison</a> page, which is the authoritative source for what each tier includes &mdash; not this document.</p>
+                <p>Paid plans (Pro and Premier) are billed through <b>Lemon Squeezy</b>, our payment processor and Merchant of Record &mdash; the charge on your statement comes from Lemon Squeezy, not directly from Kerph. Subscriptions are available monthly or annually, renew automatically at the end of each billing period until canceled, and you can cancel at any time from Account Settings and keep access through the end of the period you already paid for. Premier includes 4 team seats, with additional seats billed monthly per seat. Fees are non-refundable except where required by law or as described in our <a href="help.html#billing-overview">Refund Policy</a>, which also covers the first-time charge guarantee.</p>
             </article>
 
             <article class="help-article" id="your-content">
                 <div class="help-article-eyebrow">Content</div>
                 <h2>5. Your Content</h2>
                 <h3>What you own</h3>
-                <p>You own the content you create or upload on Kerph â€” your shop layouts, saved projects, cut lists, and any photos or text you post to Shop Showcase or Cool Tool Reviews ("Your Content"). We don't claim ownership of it.</p>
+                <p>You own the content you create or upload on Kerph &mdash; your shop layouts, saved projects, cut lists, and any photos or text you post to Shop Showcase or Cool Tool Reviews ("Your Content"). We don't claim ownership of it.</p>
                 <h3>The license you grant us</h3>
                 <p>To operate the Service, you grant Kerph a worldwide, non-exclusive, royalty-free license to host, store, reproduce, and display Your Content solely as needed to provide the Service to you and, for anything you post publicly (Shop Showcase posts, comments, and Tool Reviews), to display it to other users. This license ends when you delete the specific content or close your account, except for copies already made for backups or that other users have separately kept.</p>
                 <h3>Community content &amp; conduct</h3>
-                <p>Shop Showcase and Cool Tool Reviews are public â€” anything you post there (including photos) is visible to other users and, potentially, the public internet. Don't post anything you don't have the right to share, and don't post content that is illegal, infringing, harassing, or that reveals other people's private information without consent. We reserve the right to remove content or suspend accounts that violate this section, though we're not obligated to monitor content proactively.</p>
-                <p>Your posted username and content are attributed to you at the time you post â€” changing your username later does not retroactively change the byline on content you already posted.</p>
+                <p>Shop Showcase and Cool Tool Reviews are public &mdash; anything you post there (including photos) is visible to other users and, potentially, the public internet. Don't post anything you don't have the right to share, and don't post content that is illegal, infringing, harassing, or that reveals other people's private information without consent. We reserve the right to remove content or suspend accounts that violate this section, though we're not obligated to monitor content proactively.</p>
+                <p>Your posted username and content are attributed to you at the time you post &mdash; changing your username later does not retroactively change the byline on content you already posted.</p>
             </article>
 
             <article class="help-article" id="our-content">
                 <h2>6. Our Content &amp; Trademarks</h2>
-                <p>Kerph, the Kerph logo, and the "K&#8801;RPH" mark are trademarks of <span class="fill-in">[KERPH LEGAL ENTITY NAME]</span>. The Service itself â€” including its software, design, tool catalog, and calculators â€” is owned by Kerph and protected by copyright and other intellectual property laws. Your subscription gives you a limited, personal, non-transferable license to use the Service; it doesn't give you any ownership interest in it.</p>
+                <p>Kerph, the Kerph logo, and the "K&#8801;RPH" mark are trademarks of <span class="fill-in">[KERPH LEGAL ENTITY NAME]</span>. The Service itself &mdash; including its software, design, tool catalog, and calculators &mdash; is owned by Kerph and protected by copyright and other intellectual property laws. Your subscription gives you a limited, personal, non-transferable license to use the Service; it doesn't give you any ownership interest in it.</p>
             </article>
 
             <article class="help-article" id="third-party">
                 <h2>7. Third-Party Links</h2>
-                <p>Kerph's tool catalog includes outbound links to third-party retailers (for example, Rockler, Home Depot, Amazon, and others) so you can check current pricing and availability. We don't control those sites, and we're not responsible for their content, pricing accuracy, availability, or policies. Purchases you make through those links are between you and the retailer â€” Kerph is not a party to that transaction. If Kerph earns a referral commission on a purchase made through one of these links, that will be disclosed on the page where the link appears.</p>
+                <p>Kerph's tool catalog includes outbound links to third-party retailers (for example, Rockler, Home Depot, Amazon, and others) so you can check current pricing and availability. We don't control those sites, and we're not responsible for their content, pricing accuracy, availability, or policies. Purchases you make through those links are between you and the retailer &mdash; Kerph is not a party to that transaction. If Kerph earns a referral commission on a purchase made through one of these links, that will be disclosed on the page where the link appears.</p>
             </article>
 
             <article class="help-article" id="disclaimers">
                 <div class="help-article-eyebrow">Legal</div>
                 <h2>8. Disclaimers</h2>
                 <div class="help-callout help-callout-note">
-                    <b>Kerph is a planning tool, not a licensed professional.</b> Nothing in the Service â€” including the dust collection sizing calculator, electrical load estimates, clearance/walkway checker, tool footprint dimensions, or plumbing fixture placements â€” constitutes professional engineering, electrical, plumbing, or construction advice, and none of it is a substitute for review by a licensed electrician, plumber, contractor, or your local building/fire code inspector. You are solely responsible for verifying that any layout you build complies with your local building codes, electrical codes, and manufacturer specifications before you act on it.
+                    <b>Kerph is a planning tool, not a licensed professional.</b> Nothing in the Service &mdash; including the dust collection sizing calculator, electrical load estimates, clearance/walkway checker, tool footprint dimensions, or plumbing fixture placements &mdash; constitutes professional engineering, electrical, plumbing, or construction advice, and none of it is a substitute for review by a licensed electrician, plumber, contractor, or your local building/fire code inspector. You are solely responsible for verifying that any layout you build complies with your local building codes, electrical codes, and manufacturer specifications before you act on it.
                 </div>
-                <p>The Service, including all tool specifications, dimensions, and third-party pricing links, is provided "as is" and "as available," without warranties of any kind, whether express or implied, including implied warranties of merchantability, fitness for a particular purpose, and non-infringement. We don't guarantee that tool dimensions, specifications, or calculator outputs are error-free, complete, or current â€” always verify against the manufacturer's own documentation before purchasing or installing anything.</p>
+                <p>The Service, including all tool specifications, dimensions, and third-party pricing links, is provided "as is" and "as available," without warranties of any kind, whether express or implied, including implied warranties of merchantability, fitness for a particular purpose, and non-infringement. We don't guarantee that tool dimensions, specifications, or calculator outputs are error-free, complete, or current &mdash; always verify against the manufacturer's own documentation before purchasing or installing anything.</p>
             </article>
 
             <article class="help-article" id="liability">
                 <h2>9. Limitation of Liability</h2>
-                <p>To the fullest extent permitted by law, Kerph and its officers, employees, and affiliates will not be liable for any indirect, incidental, special, consequential, or punitive damages, or any loss of data, profits, or revenue, arising out of or related to your use of the Service â€” including any physical injury, property damage, or code violation resulting from a layout, calculation, or suggestion produced by the Service. Kerph's total liability for any claim arising from these Terms or the Service is limited to the amount you paid Kerph, if any, in the 12 months before the claim arose.</p>
+                <p>To the fullest extent permitted by law, Kerph and its officers, employees, and affiliates will not be liable for any indirect, incidental, special, consequential, or punitive damages, or any loss of data, profits, or revenue, arising out of or related to your use of the Service &mdash; including any physical injury, property damage, or code violation resulting from a layout, calculation, or suggestion produced by the Service. Kerph's total liability for any claim arising from these Terms or the Service is limited to the amount you paid Kerph, if any, in the 12 months before the claim arose.</p>
                 <p>Some jurisdictions don't allow the exclusion of certain warranties or the limitation of certain damages, so some of the limitations above may not apply to you.</p>
             </article>
 
@@ -545,6 +586,104 @@
             <article class="help-article" id="contact">
                 <h2>13. Contact Us</h2>
                 <p>Questions about these Terms? Reach us at <span class="fill-in">[support@kerphplans.com]</span>.</p>
+            </article>
+
+            <div class="help-eyebrow legal-doc-break">Legal</div>
+            <div class="help-title" id="privacy-policy">Privacy Policy</div>
+            <div class="help-subtitle">Last updated: <span class="fill-in">[EFFECTIVE DATE]</span>. This Privacy Policy explains what data Kerph (the "Service"), operated by <span class="fill-in">[KERPH LEGAL ENTITY NAME, e.g. "Kerph LLC"]</span> ("Kerph," "we," "us," or "our"), collects, how we use it, and the choices you have. It should be read together with our <a href="#terms-of-service">Terms of Service</a>.</div>
+
+            <div class="legal-notice">
+                <b>Before you publish this:</b> this is a solid, Kerph-specific starting draft describing what the app actually does today — it is not a substitute for review by a licensed attorney in your state, and it doesn't cover jurisdiction-specific frameworks (GDPR, CCPA, etc.) in the depth a real legal review would. It's written to be accurate about Kerph's real data flows as of this writing (Supabase for auth/data/storage, Lemon Squeezy for payments, Resend for transactional email) — if you add analytics, ads, or other processors later, this document needs a matching update, not just a date change. Anywhere you see a <span class="fill-in">highlighted bracket</span>, fill it in before this goes live.
+            </div>
+
+            <article class="help-article" id="privacy-scope">
+                <div class="help-article-eyebrow">Overview</div>
+                <h2>1. Scope of This Policy</h2>
+                <p>This policy covers personal data collected through Kerph's website and application at <span class="fill-in">kerphplans.com</span> — the Workshop Layout Planner, Project Designer, Cut List Optimizer, 3D Shop Viewer, Quote Builder, Portfolio, Shop Showcase, Cool Tool Reviews, Find a Builder, Shop Jigs, and Garage Tips. It does not cover the privacy practices of third-party sites we link to, including tool retailers or the third-party services listed in Section 4.</p>
+            </article>
+
+            <article class="help-article" id="privacy-what-we-collect">
+                <h2>2. What We Collect</h2>
+                <h3>Account information</h3>
+                <p>When you create an account: your email address and password (your password is never stored by Kerph in readable form — authentication is handled by our backend provider, Supabase, using industry-standard hashing). Optionally: a username and profile photo you choose to add.</p>
+                <h3>Content you create</h3>
+                <p>Saved shop layouts, Project Designer projects and cut lists, Quote Builder quotes (including any client name/email you enter about your own customers — see the note in Section 4), Shop Showcase posts and photos, Portfolio pieces, Cool Tool Reviews you write, and tool ownership/wishlist status. This is the same content described as "Your Content" in our <a href="#terms-of-service">Terms of Service</a>.</p>
+                <h3>Subscription &amp; billing status</h3>
+                <p>If you upgrade to a paid plan, our payment processor (Section 5) sends us your plan tier, subscription status, and renewal date so the app can grant you the right features. We do not receive or store your full card number — see Section 5.</p>
+                <h3>Technical data</h3>
+                <p>Standard web server logs (IP address, browser type, pages requested, timestamps) collected by our hosting provider as part of normal operation, and a session token used to keep you signed in (Section 6). As of this writing, Kerph does not run any analytics or advertising trackers — if that changes, this section will be updated first.</p>
+            </article>
+
+            <article class="help-article" id="privacy-how-we-use">
+                <div class="help-article-eyebrow">How It's Used</div>
+                <h2>3. How We Use Your Data</h2>
+                <ul>
+                    <li>To provide the Service — save and sync your layouts and projects across devices, authenticate you, and display content you've chosen to make public (Shop Showcase, Reviews, Portfolio).</li>
+                    <li>To process payments and manage your subscription, including granting or removing access to paid features based on your subscription status.</li>
+                    <li>To send you service-related email — for example, notifying you when a client responds to a quote you sent through Quote Builder.</li>
+                    <li>To maintain the security and integrity of the Service, including detecting abuse and enforcing our Terms of Service.</li>
+                    <li>To comply with legal obligations.</li>
+                </ul>
+                <p>We do not use your data to serve you third-party advertising, and we do not sell your personal data to anyone.</p>
+            </article>
+
+            <article class="help-article" id="privacy-sharing">
+                <h2>4. Who We Share Data With</h2>
+                <p>We share data only with service providers ("processors") who need it to help us run Kerph, under agreements that limit their use of it to providing that service:</p>
+                <ul>
+                    <li><b>Supabase</b> — hosts our database, file storage, and authentication. This is where your account and content actually live.</li>
+                    <li><b>Lemon Squeezy</b> — our payment processor and Merchant of Record. See Section 5 for specifics.</li>
+                    <li><b>Resend</b> — sends transactional email (for example, quote-response notifications) on our behalf.</li>
+                    <li><span class="fill-in">[CLOUDFLARE OR CURRENT HOSTING PROVIDER]</span> — serves the Kerph website and application.</li>
+                    <li><span class="fill-in">[BACKBLAZE B2, ONCE BACKUP AUTOMATION IS ACTIVATED]</span> — stores encrypted backup copies of the database and uploaded files, for disaster recovery only.</li>
+                </ul>
+                <p>We may also disclose data if required by law, subpoena, or other legal process, or to protect the rights, property, or safety of Kerph, our users, or the public.</p>
+                <div class="help-callout help-callout-note">
+                    <b>A note on Quote Builder specifically:</b> if you use Quote Builder to send a quote to your own client, the client name and email address you enter is data about a third party that you have provided to us on their behalf. You're responsible for having a lawful basis to share that information with us for this purpose — the same way any invoicing or CRM tool would require of its users.
+                </div>
+            </article>
+
+            <article class="help-article" id="privacy-payments">
+                <h2>5. Payment Data Specifically</h2>
+                <p>Kerph uses <b>Lemon Squeezy</b> as its payment processor and Merchant of Record. When you subscribe to a paid plan, you enter your card details directly into Lemon Squeezy's checkout — Kerph never receives, transmits, or stores your full card number, CVC, or other raw payment credentials. Lemon Squeezy sends us back only what we need to run your subscription: your plan tier, subscription status, and renewal/expiration dates, tied to your Kerph account. Lemon Squeezy's own handling of your payment data is governed by <a href="https://www.lemonsqueezy.com/privacy" target="_blank" rel="noopener">Lemon Squeezy's Privacy Policy</a>, which we encourage you to review.</p>
+            </article>
+
+            <article class="help-article" id="privacy-cookies">
+                <h2>6. Cookies &amp; Local Storage</h2>
+                <p>Kerph uses your browser's local storage and a session cookie/token to keep you signed in between visits — this is strictly functional and required for the Service to work; it is not used for advertising or cross-site tracking. Some display preferences (like your preferred measurement units and current plan-preview selection) are also cached locally in your browser. You can clear this at any time from Account Settings or your browser's own settings, though doing so will sign you out.</p>
+            </article>
+
+            <article class="help-article" id="privacy-your-rights">
+                <div class="help-article-eyebrow">Your Rights</div>
+                <h2>7. Access, Export &amp; Deletion</h2>
+                <p>You can review and update your account information (username, avatar, preferred units) at any time from Account Settings. Local display preferences can be exported or imported as a JSON file from the same panel.</p>
+                <p>To request a full export of your account data, or to request that your account and associated data be deleted, contact us at <span class="fill-in">[support@kerphplans.com]</span>. We'll verify your identity and fulfill deletion requests within a reasonable time, except where we're required or permitted to retain certain information (for example, transaction records needed for tax or accounting purposes).</p>
+            </article>
+
+            <article class="help-article" id="privacy-retention">
+                <h2>8. Data Retention</h2>
+                <p>We keep your account and content for as long as your account is active. If you request deletion under Section 7, we'll delete or anonymize your personal data within a reasonable time, except where retention is required by law or legitimate business need (such as billing records).</p>
+            </article>
+
+            <article class="help-article" id="privacy-security">
+                <h2>9. Security</h2>
+                <p>Kerph's database uses row-level security policies so that, technically, one user's private data (layouts, projects, quotes) cannot be read by another user's account — this isn't just a UI restriction, it's enforced at the database layer. Payment credentials are never handled by Kerph directly (Section 5). No method of transmission or storage is 100% secure, and we can't guarantee absolute security, but we take reasonable technical and organizational measures to protect your data.</p>
+            </article>
+
+            <article class="help-article" id="privacy-children">
+                <h2>10. Children's Privacy</h2>
+                <p>Kerph is not directed at children, and consistent with the eligibility requirement in our <a href="#terms-of-service">Terms of Service</a>, you must be at least 18 (or the age of legal majority in your jurisdiction) to create an account. We do not knowingly collect personal data from children. If you believe a child has provided us with personal data, contact us at the address in Section 12 and we'll delete it.</p>
+            </article>
+
+            <article class="help-article" id="privacy-changes">
+                <div class="help-article-eyebrow">Legal</div>
+                <h2>11. Changes to This Policy</h2>
+                <p>We may update this Privacy Policy from time to time, most often to reflect new features or new service providers. If we make a material change — for example, adding analytics or advertising — we'll update the "Last updated" date above and, where appropriate, notify you through the Service or by email before the change takes effect.</p>
+            </article>
+
+            <article class="help-article" id="privacy-contact">
+                <h2>12. Contact Us</h2>
+                <p>Questions about this Privacy Policy, or a request under Section 7? Reach us at <span class="fill-in">[support@kerphplans.com]</span>.</p>
             </article>
         </main>
     </div>
