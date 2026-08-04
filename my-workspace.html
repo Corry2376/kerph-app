@@ -200,6 +200,7 @@
         .workspace-shop-card-meta strong { color: #0f172a; }
 
         .workspace-tools-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .workspace-community-cols { grid-template-columns: repeat(3, 1fr); }
         .workspace-tools-panel { background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 16px; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04); }
         .workspace-tools-panel-title { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; color: #6b7280; margin-bottom: 8px; }
         .workspace-tools-list { font-size: 12.5px; color: #1e293b; line-height: 1.9; max-height: 150px; overflow-y: auto; }
@@ -211,6 +212,16 @@
         @media (max-width: 900px) {
             .workspace-stats-row { grid-template-columns: repeat(3, 1fr); }
             .workspace-tools-cols { grid-template-columns: 1fr; }
+        }
+
+        /* ---------- MOBILE ---------- */
+        @media (max-width: 640px) {
+            .workspace-layout { padding: 20px 16px 72px; }
+            .workspace-hero-title { font-size: 22px; }
+            .workspace-stats-row { grid-template-columns: repeat(2, 1fr); }
+            .workspace-section-head { flex-wrap: wrap; gap: 6px; }
+            .modal-overlay { padding: 16px; overflow-y: auto; }
+            .modal-box, .account-modal-box { width: 100%; max-width: 340px; }
         }
     </style>
 </head>
@@ -360,7 +371,7 @@
                 <div class="workspace-section-head">
                     <div class="workspace-section-title"><span class="emoji">&#127775;</span> My Community Activity</div>
                 </div>
-                <div class="workspace-tools-cols" style="grid-template-columns: 1fr 1fr 1fr;">
+                <div class="workspace-tools-cols workspace-community-cols">
                     <div class="workspace-tools-panel">
                         <div class="workspace-tools-panel-title">Shop Showcase Posts</div>
                         <div class="workspace-tools-list" id="workspaceMyShowcaseList"></div>

@@ -404,6 +404,21 @@
         }
         .jigs-dropdown-menu a:hover { background-color: #eef2ff; color: #1e3a8a; }
         .jigs-dropdown-menu-sep { height: 1px; background-color: #e2e8f0; margin: 5px 2px; }
+
+        /* ---------- MOBILE ---------- */
+        @media (max-width: 640px) {
+            .showcase-toolbar { padding: 12px; }
+            #postSearchInput,
+            #postSortSelect,
+            #sharePostBtn { flex: 1 1 100%; min-width: 0; margin-left: 0; }
+
+            .modal-overlay { padding: 12px; }
+            .modal-box { max-width: 92vw; }
+            .detail-modal-box { max-width: 92vw; }
+            .detail-body { padding: 16px; }
+            .detail-thumb-strip { padding: 10px 16px 0; }
+            .detail-layout-card { flex-wrap: wrap; }
+        }
     </style>
 </head>
 <body>

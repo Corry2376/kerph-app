@@ -309,6 +309,29 @@
         .frac-value-group .frac-slash { font-weight: 800; color: #94a3b8; font-size: 13px; margin: 0 1px; }
         .frac-value-group .frac-unit { font-size: 10.5px; color: #94a3b8; font-weight: 700; margin-left: 3px; }
         .jig-remove-row { border: none; background: none; color: #b91c1c; cursor: pointer; font-size: 16px; padding: 4px 8px; }
+
+        @media (max-width: 640px) {
+            .jig-page-layout { padding: 24px 16px 60px; }
+            .help-title { font-size: 22px; }
+            .help-subtitle { font-size: 13.5px; }
+            .help-article { padding: 20px; }
+
+            .jig-field input, .jig-field select { min-height: 44px; font-size: 16px; }
+            .jig-results-grid { grid-template-columns: repeat(2, 1fr); }
+
+            /* Bigger tap targets on the fraction-line controls without breaking the
+               inline "sign + whole + num/den" reading order (it already fits and
+               wraps fine at 375px, so it stays a row rather than stacking). */
+            .jig-fraction-row .sign-toggle { width: 42px; height: 42px; font-size: 18px; }
+            .frac-value-group { padding: 4px 8px; }
+            .frac-value-group input[type="number"] { padding: 12px 5px; font-size: 15px; }
+            .frac-value-group select { padding: 12px 4px; font-size: 14px; min-width: 46px; }
+            .jig-remove-row { padding: 10px; font-size: 18px; }
+
+            .account-modal-box { width: calc(100vw - 48px); }
+            .modal-box { width: calc(100vw - 48px); max-width: 320px; }
+            .upgrade-nudge { max-width: calc(100vw - 32px); }
+        }
     </style>
 </head>
 <body>

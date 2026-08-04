@@ -317,6 +317,26 @@
         .pf-history-name { font-weight: 700; color: #1e293b; flex-shrink: 0; }
         .pf-history-desc { color: #9ca3af; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .pf-history-empty { font-size: 12px; color: #9ca3af; font-style: italic; }
+
+        @media (max-width: 640px) {
+            .jig-page-layout { padding: 24px 16px 60px; }
+            .help-title { font-size: 22px; }
+            .help-subtitle { font-size: 13.5px; }
+            .help-article { padding: 20px; }
+
+            .pf-photo-zone { padding: 18px 14px; }
+            .pf-photo-preview { max-height: 240px; }
+            .pf-choose-btn { width: 100%; padding: 14px 22px; }
+
+            /* This item's flex-basis defaults to its (nowrap) content width, so the
+               ellipsis never engaged and long lookups could push the row wider than
+               the viewport — give it a shrinkable basis so it truncates instead. */
+            .pf-history-desc { flex: 1 1 auto; min-width: 0; }
+
+            .account-modal-box { width: calc(100vw - 48px); }
+            .modal-box { width: calc(100vw - 48px); max-width: 320px; }
+            .upgrade-nudge { max-width: calc(100vw - 32px); }
+        }
     </style>
 </head>
 <body>

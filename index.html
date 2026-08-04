@@ -1106,7 +1106,7 @@
            plus a Reminders checkbox other pages don't have), so it needs its own copy of the
            rules injected via site-header-brand.js/tail.js on every other page. Keep these two
            rule sets in sync. */
-        @media (max-width: 760px) {
+        @media (max-width: 1100px) {
             header {
                 height: auto;
                 flex-direction: column;
@@ -1134,6 +1134,54 @@
             .header-quick-links { align-items: center; }
             .header-quick-links-row { flex-wrap: wrap; justify-content: center; }
             .plan-select { width: 100%; }
+        }
+
+        /* ---------- MOBILE LAYOUT: sidebar + main content ----------
+           Everything below is layout for the page body (sidebar, hero, tile grid, modals) —
+           the header rules above (site-header-brand.js/tail.js equivalent, hand-written here)
+           are already responsive and untouched. #sidebar-panel is position:fixed/width:310px
+           on desktop, which would otherwise crush main content into a sliver at phone widths,
+           so it drops into normal document flow (stacked above main) below the tablet step. */
+
+        /* The header is position:fixed at every width (that rule lives above, untouched), and
+           its own 760px mobile breakpoint (also above, untouched) grows it from 150px tall to
+           ~222px tall (measured across 375-759px) once its contents wrap to multiple rows.
+           body's padding-top has to grow to match at the same breakpoint, or the fixed header
+           overlaps the top of the sidebar/main content below it — this is a content-offset fix,
+           not a header style change, so it belongs here rather than in the header rules above. */
+        @media (max-width: 1100px) {
+            body { padding-top: 226px; }
+        }
+
+        @media (max-width: 900px) {
+            #sidebar-panel {
+                position: static;
+                top: auto;
+                left: auto;
+                width: 100%;
+                height: auto;
+                max-height: none;
+                border-right: none;
+                border-bottom: 1px solid #cbd5e1;
+            }
+            main {
+                margin-left: 0;
+                max-width: 100%;
+            }
+            .snapshot-panel { flex: 1 1 260px; }
+        }
+
+        @media (max-width: 640px) {
+            main { padding: 24px 16px 60px; }
+            .hero-row { flex-direction: column; }
+            .snapshot-panel { flex: 1 1 auto; width: 100%; }
+            .tool-grid { grid-template-columns: 1fr; }
+            .tool-card.tool-card-featured { flex-direction: column; align-items: flex-start; }
+            .tool-card-featured .tool-card-icon { margin-bottom: 8px; }
+            .intro-title { font-size: 22px; }
+            #sidebar-panel { padding: 16px; }
+            .modal-box { width: 100%; max-width: 92vw; }
+            .tile-visibility-menu { min-width: 0; width: min(270px, 92vw); }
         }
     </style>
 </head>

@@ -354,6 +354,28 @@
         }
         .jigs-dropdown-menu a:hover { background-color: #eef2ff; color: #1e3a8a; }
         .jigs-dropdown-menu-sep { height: 1px; background-color: #e2e8f0; margin: 5px 2px; }
+
+        /* ---------- MOBILE LAYOUT ----------
+           Header rules are untouched (out of scope) — this is the page body: the sticky
+           table-of-contents sidebar (shared with help.html's pattern) stacks above the
+           article column instead of sitting beside it once there's no room for both. */
+        @media (max-width: 900px) {
+            .help-layout { flex-direction: column; }
+            .help-toc {
+                position: static;
+                top: auto;
+                width: 100%;
+                max-height: none;
+                overflow-y: visible;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .help-layout { padding: 24px 16px 60px; }
+            .help-title { font-size: 22px; }
+            .help-article, .legal-notice { padding: 20px; }
+            .modal-box { width: 100%; max-width: 92vw; }
+        }
     </style>
 </head>
 <body>

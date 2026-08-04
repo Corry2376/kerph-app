@@ -405,6 +405,18 @@
         }
         .jigs-dropdown-menu a:hover { background-color: #eef2ff; color: #1e3a8a; }
         .jigs-dropdown-menu-sep { height: 1px; background-color: #e2e8f0; margin: 5px 2px; }
+
+        /* ---------- MOBILE ---------- */
+        @media (max-width: 640px) {
+            .reviews-toolbar { padding: 12px; }
+            #reviewSearchInput,
+            #reviewCategoryFilter,
+            #reviewSortSelect,
+            #writeReviewBtn { flex: 1 1 100%; min-width: 0; margin-left: 0; }
+
+            .modal-overlay { padding: 12px; }
+            .modal-box { max-width: 92vw; }
+        }
     </style>
 </head>
 <body>

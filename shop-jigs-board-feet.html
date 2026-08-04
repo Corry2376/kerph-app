@@ -287,6 +287,26 @@
         .bf-quickpick { font-size: 11px; font-weight: 700; color: #1e3a8a; background: #eef2ff; border: 1px solid #c7d2fe; border-radius: 999px; padding: 3px 10px; cursor: pointer; }
         .bf-quickpick:hover { background: #e0e7ff; }
         .bf-quickpick.active { background: #1e3a8a; color: #fff; border-color: #1e3a8a; }
+
+        @media (max-width: 640px) {
+            .jig-page-layout { padding: 24px 16px 60px; }
+            .help-title { font-size: 22px; }
+            .help-subtitle { font-size: 13.5px; }
+            .help-article { padding: 20px; }
+
+            /* Six side-by-side fields is the canonical "squeezed" case — stack to
+               one full-width field per row instead of wrapping 2-per-row. */
+            .jig-input-row { flex-direction: column; align-items: stretch; }
+            .jig-field { width: 100%; }
+            .jig-field input, .jig-field select { width: 100%; min-height: 44px; font-size: 16px; }
+            .jig-field input.narrow { width: 100%; }
+
+            .jig-results-grid { grid-template-columns: repeat(2, 1fr); }
+
+            .account-modal-box { width: calc(100vw - 48px); }
+            .modal-box { width: calc(100vw - 48px); max-width: 320px; }
+            .upgrade-nudge { max-width: calc(100vw - 32px); }
+        }
     </style>
 </head>
 <body>

@@ -9,7 +9,7 @@
 // see that file's comment for how the cascade-order override works.
 document.write(`
 <style>
-@media (max-width: 760px) {
+@media (max-width: 1100px) {
     .plan-badge-group { align-items: stretch; width: 100%; }
     .header-sign-in { align-items: stretch; }
     .header-sign-in-row { flex-wrap: wrap; }

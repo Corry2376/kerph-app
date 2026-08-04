@@ -18,7 +18,7 @@
 // wins over both the page's own CSS and this file's, for the handful of selectors both touch).
 document.write(`
 <style>
-@media (max-width: 760px) {
+@media (max-width: 1100px) {
     header {
         height: auto;
         flex-direction: column;

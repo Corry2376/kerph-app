@@ -293,6 +293,24 @@
         .angle-table tr:hover td { background: #f8fafc; }
         .angle-table td.num { font-variant-numeric: tabular-nums; font-weight: 700; color: #1e293b; }
         .angle-group-row td { padding-top: 16px; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; border-bottom: none; }
+
+        @media (max-width: 640px) {
+            .jig-page-layout { padding: 24px 16px 60px; }
+            .help-title { font-size: 22px; }
+            .help-subtitle { font-size: 13.5px; }
+            .help-article { padding: 20px; margin-bottom: 16px; }
+
+            .jig-input-row { flex-direction: column; align-items: stretch; }
+            .jig-field { width: 100%; }
+            .jig-field input { width: 100%; min-height: 44px; font-size: 16px; }
+            .jig-results-grid { grid-template-columns: repeat(2, 1fr); }
+
+            .angle-table th, .angle-table td { padding: 7px 6px; font-size: 12px; }
+
+            .account-modal-box { width: calc(100vw - 48px); }
+            .modal-box { width: calc(100vw - 48px); max-width: 320px; }
+            .upgrade-nudge { max-width: calc(100vw - 32px); }
+        }
     </style>
 </head>
 <body>

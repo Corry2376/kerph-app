@@ -420,6 +420,24 @@
         }
         .jigs-dropdown-menu a:hover { background-color: #eef2ff; color: #1e3a8a; }
         .jigs-dropdown-menu-sep { height: 1px; background-color: #e2e8f0; margin: 5px 2px; }
+
+        /* ---------- MOBILE LAYOUT ----------
+           Header rules are untouched (out of scope) — this is the page body: three plan
+           cards side by side, the feature-comparison table (already wrapped in .compare-wrap
+           with overflow-x:auto so only the table scrolls), and the Team panel. */
+        @media (max-width: 900px) {
+            .pricing-cards { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (max-width: 640px) {
+            .pricing-layout { padding: 28px 16px 60px; }
+            .pricing-title { font-size: 24px; }
+            .pricing-cards { grid-template-columns: 1fr; }
+            .billing-toggle { width: 100%; flex-wrap: wrap; justify-content: center; }
+            .team-invite-row { flex-wrap: wrap; }
+            .team-invite-row .mini-btn { width: 100%; }
+            .modal-box { width: 100%; max-width: 92vw; }
+        }
     </style>
 </head>
 <body>

@@ -292,6 +292,24 @@
         .angle-shape-name { font-weight: 700; color: #0f172a; }
         .angle-shape-aka { font-size: 10.5px; color: #9ca3af; font-weight: 600; }
         .angle-num { font-variant-numeric: tabular-nums; font-weight: 700; color: #1e293b; }
+
+        @media (max-width: 640px) {
+            .jig-page-layout { padding: 24px 16px 60px; }
+            .help-title { font-size: 22px; }
+            .help-subtitle { font-size: 13.5px; }
+            .help-article { padding: 20px; }
+
+            .jig-field input, .jig-field select { min-height: 44px; font-size: 16px; }
+            .jig-field input.narrow { width: 100%; }
+            .angle-custom-row { flex-direction: column; align-items: stretch; gap: 14px; }
+            .jig-results-grid { grid-template-columns: repeat(2, 1fr); }
+
+            .angle-table th, .angle-table td { padding: 7px 6px; font-size: 12px; }
+
+            .account-modal-box { width: calc(100vw - 48px); }
+            .modal-box { width: calc(100vw - 48px); max-width: 320px; }
+            .upgrade-nudge { max-width: calc(100vw - 32px); }
+        }
     </style>
 </head>
 <body>
