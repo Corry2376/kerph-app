@@ -227,6 +227,53 @@
         #reviewCategoryFilter, #reviewSortSelect { min-width: 150px; }
         #writeReviewBtn { flex: none; margin-left: auto; padding: 10px 18px; }
 
+        /* Tool Name typeahead in the Write a Review modal — picking a suggestion keeps entries
+           consistent (same model, same spelling) across every review; typing something that
+           matches nothing just stays as free text, covering tools not in the catalog yet. */
+        .tool-name-suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            z-index: 10;
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            box-shadow: 0 12px 24px -8px rgba(15, 23, 42, 0.3);
+            max-height: 220px;
+            overflow-y: auto;
+            margin-top: 2px;
+        }
+        .tool-name-suggestion {
+            padding: 8px 10px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #1e293b;
+            cursor: pointer;
+        }
+        .tool-name-suggestion:hover, .tool-name-suggestion.active { background-color: #eef2ff; color: #1e3a8a; }
+        .tool-name-suggestion-category { font-size: 10.5px; font-weight: 700; color: #6b7280; text-transform: uppercase; margin-left: 6px; }
+        .tool-name-hint { font-size: 11px; color: #6b7280; margin-top: 4px; font-style: italic; }
+
+        /* Models rollup — sits above the flat review grid so "browse by category, see a list
+           of models, see that model's reviews" works without a separate page. */
+        .reviews-models-section { margin-bottom: 20px; }
+        .reviews-models-title { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: #6b7280; margin-bottom: 8px; }
+        .reviews-models-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
+        .review-model-card {
+            background-color: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            padding: 12px 14px;
+            cursor: pointer;
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+        .review-model-card:hover { border-color: #1e3a8a; box-shadow: 0 6px 14px -6px rgba(15, 23, 42, 0.2); }
+        .review-model-card.active { border-color: #1e3a8a; background-color: #eef2ff; }
+        .review-model-card-name { font-size: 13px; font-weight: 700; color: #0f172a; margin-bottom: 4px; }
+        .review-model-card-meta { font-size: 11.5px; color: #6b7280; display: flex; align-items: center; gap: 6px; }
+        .review-model-card-stars { color: #d97706; letter-spacing: -1px; }
+
         .reviews-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -442,9 +489,11 @@
         <div class="modal-box" style="width:400px;">
             <div class="modal-title">Write a Review</div>
 
-            <div class="header-field">
+            <div class="header-field" style="position:relative;">
                 <label class="header-field-label" for="reviewToolName">Tool Name</label>
-                <input type="text" class="input-box" id="reviewToolName" placeholder="e.g. SawStop PCS175">
+                <input type="text" class="input-box" id="reviewToolName" placeholder="Search the catalog, or type your own" autocomplete="off">
+                <div class="tool-name-suggestions" id="toolNameSuggestions" style="display:none;"></div>
+                <div class="tool-name-hint" id="toolNameHint" style="display:none;"></div>
             </div>
 
             <div class="header-field">
@@ -498,9 +547,15 @@
             <button type="button" id="writeReviewBtn" class="mini-btn primary">+ Write a Review</button>
         </div>
 
+        <div class="reviews-models-section" id="reviewsModelsSection" style="display:none;">
+            <div class="reviews-models-title">Models</div>
+            <div class="reviews-models-grid" id="reviewsModelsGrid"></div>
+        </div>
+
         <div class="reviews-grid" id="reviewsGrid"></div>
     </main>
 
+    <script src="catalog-data.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.7/dist/umd/supabase.js"></script>
     <script src="supabase-client.js"></script>
     <script>
@@ -827,6 +882,47 @@
             formSel.innerHTML = REVIEW_CATEGORIES.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
         }
 
+        function computeModelsRollup(category) {
+            const filtered = category ? cachedReviews.filter(r => r.category === category) : cachedReviews;
+            const map = new Map();
+            filtered.forEach(r => {
+                if (!map.has(r.tool_name)) map.set(r.tool_name, { name: r.tool_name, count: 0, ratingSum: 0 });
+                const entry = map.get(r.tool_name);
+                entry.count += 1;
+                entry.ratingSum += r.rating;
+            });
+            return Array.from(map.values()).sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+        }
+
+        function renderModelsRollup() {
+            const section = document.getElementById('reviewsModelsSection');
+            const grid = document.getElementById('reviewsModelsGrid');
+            const category = document.getElementById('reviewCategoryFilter').value;
+            const query = document.getElementById('reviewSearchInput').value.trim();
+
+            const models = (!category || query) ? [] : computeModelsRollup(category);
+            if (models.length < 2) { section.style.display = 'none'; grid.innerHTML = ''; return; }
+
+            grid.innerHTML = models.map(m => {
+                const avg = m.count ? (m.ratingSum / m.count) : 0;
+                return `
+                    <div class="review-model-card" data-name="${escapeHtml(m.name)}">
+                        <div class="review-model-card-name">${escapeHtml(m.name)}</div>
+                        <div class="review-model-card-meta">${m.count} review${m.count === 1 ? '' : 's'}</div>
+                        <div class="review-model-card-stars">${starsHtml(Math.round(avg))}</div>
+                    </div>
+                `;
+            }).join('');
+            section.style.display = 'block';
+
+            grid.querySelectorAll('.review-model-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    document.getElementById('reviewSearchInput').value = card.getAttribute('data-name');
+                    renderReviews();
+                });
+            });
+        }
+
         async function renderReviews() {
             const grid = document.getElementById('reviewsGrid');
             const query = document.getElementById('reviewSearchInput').value.trim().toLowerCase();
@@ -845,6 +941,8 @@
             if (sort === 'newest') reviews.sort((a, b) => b.created_at.localeCompare(a.created_at));
             else if (sort === 'highest') reviews.sort((a, b) => b.rating - a.rating || b.created_at.localeCompare(a.created_at));
             else if (sort === 'helpful') reviews.sort((a, b) => (b.helpful_count || 0) - (a.helpful_count || 0) || b.created_at.localeCompare(a.created_at));
+
+            renderModelsRollup();
 
             if (!reviews.length) {
                 const hasAny = cachedReviews.length > 0;
@@ -885,6 +983,87 @@
                     await kerphToggleReviewHelpful(id, currentlyVoted);
                     renderReviews();
                 });
+            });
+        }
+
+        function initToolNameTypeahead() {
+            const input = document.getElementById('reviewToolName');
+            const suggestionsEl = document.getElementById('toolNameSuggestions');
+            const hintEl = document.getElementById('toolNameHint');
+            const categorySelect = document.getElementById('reviewCategorySelect');
+            const items = Array.isArray(window.CATALOG_ITEMS) ? window.CATALOG_ITEMS : [];
+            let matches = [];
+            let activeIndex = -1;
+
+            function updateActive() {
+                suggestionsEl.querySelectorAll('.tool-name-suggestion').forEach((el, i) => {
+                    el.classList.toggle('active', i === activeIndex);
+                });
+            }
+
+            function closeSuggestions() {
+                suggestionsEl.style.display = 'none';
+                suggestionsEl.innerHTML = '';
+                matches = [];
+                activeIndex = -1;
+            }
+
+            function selectMatch(item) {
+                input.value = item.name;
+                if (REVIEW_CATEGORIES.includes(item.category)) categorySelect.value = item.category;
+                closeSuggestions();
+                hintEl.style.display = 'none';
+            }
+
+            function renderSuggestions() {
+                const query = input.value.trim().toLowerCase();
+                if (!query) { closeSuggestions(); hintEl.style.display = 'none'; return; }
+
+                matches = items.filter(item => item.name.toLowerCase().includes(query)).slice(0, 8);
+                activeIndex = -1;
+
+                if (!matches.length) {
+                    closeSuggestions();
+                    hintEl.textContent = 'No catalog match — this will be saved as a custom tool.';
+                    hintEl.style.display = 'block';
+                    return;
+                }
+
+                hintEl.style.display = 'none';
+                suggestionsEl.innerHTML = matches.map((item, i) => `
+                    <div class="tool-name-suggestion" data-index="${i}">
+                        <span>${escapeHtml(item.name)}</span>
+                        <span class="tool-name-suggestion-category">${escapeHtml(item.category)}</span>
+                    </div>
+                `).join('');
+                suggestionsEl.style.display = 'block';
+                suggestionsEl.querySelectorAll('.tool-name-suggestion').forEach((el) => {
+                    el.addEventListener('mousedown', (e) => {
+                        e.preventDefault();
+                        selectMatch(matches[parseInt(el.getAttribute('data-index'), 10)]);
+                    });
+                });
+            }
+
+            input.addEventListener('input', renderSuggestions);
+            input.addEventListener('focus', () => { if (input.value.trim()) renderSuggestions(); });
+            input.addEventListener('blur', () => { setTimeout(closeSuggestions, 120); });
+            input.addEventListener('keydown', (e) => {
+                if (!matches.length || suggestionsEl.style.display === 'none') return;
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    activeIndex = Math.min(activeIndex + 1, matches.length - 1);
+                    updateActive();
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    activeIndex = Math.max(activeIndex - 1, 0);
+                    updateActive();
+                } else if (e.key === 'Enter' && activeIndex >= 0) {
+                    e.preventDefault();
+                    selectMatch(matches[activeIndex]);
+                } else if (e.key === 'Escape') {
+                    closeSuggestions();
+                }
             });
         }
 
@@ -991,6 +1170,7 @@
 
         populateCategorySelects();
         initReviewModal();
+        initToolNameTypeahead();
         document.getElementById('reviewSearchInput').addEventListener('input', renderReviews);
         document.getElementById('reviewCategoryFilter').addEventListener('change', renderReviews);
         document.getElementById('reviewSortSelect').addEventListener('change', renderReviews);

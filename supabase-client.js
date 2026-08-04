@@ -307,15 +307,25 @@
     }
 
     function rowToSavedLayout(row) {
-        return { ...row.data, id: row.id, name: row.name, layoutType: row.layout_type, savedAt: row.updated_at };
+        return { ...row.data, id: row.id, name: row.name, layoutType: row.layout_type, savedAt: row.updated_at, shareToken: row.share_token || null };
     }
     const savedLayoutsDomain = makeNamedSaveDomain('saved_layouts', rowToSavedLayout, (layout) => ({
-        name: layout.name, layout_type: layout.layoutType || 'workshop', data: layout
+        name: layout.name, layout_type: layout.layoutType || 'workshop', data: layout, share_token: layout.shareToken || null
     }));
     const kerphLoadSavedLayouts = savedLayoutsDomain.load;
     const kerphInsertSavedLayout = savedLayoutsDomain.insert;
     const kerphUpdateSavedLayout = savedLayoutsDomain.update;
     const kerphDeleteSavedLayout = savedLayoutsDomain.del;
+
+    // Shop Showcase "attach a layout" needs a way for OTHER visitors (including signed-out
+    // ones) to open one specific saved_layouts row that RLS otherwise restricts to its owner —
+    // same security-definer-RPC pattern as kerphGetProjectByShareToken below.
+    async function kerphGetLayoutByShareToken(token) {
+        const { data, error } = await kerphSupabase.rpc('get_layout_by_share_token', { p_token: token });
+        if (error) return { data: null, error };
+        const row = Array.isArray(data) ? data[0] : data;
+        return { data: row ? { ...row.data, id: row.id, name: row.name, layoutType: row.layout_type } : null, error: null };
+    }
 
     function rowToSavedProject(row) {
         return { ...row.data, id: row.id, name: row.name, savedAt: row.updated_at, shareToken: row.share_token || null };
@@ -442,21 +452,39 @@
         return kerphSupabase.storage.from('showcase-photos').getPublicUrl(path).data.publicUrl;
     }
 
+    // Videos go into the same public showcase-photos bucket (its storage policies key off
+    // bucket + owner folder, not content-type) but skip the canvas-based downscale pipeline
+    // that only works on images.
+    async function kerphUploadShowcaseVideo(file) {
+        if (!state.user) return { data: null, error: { message: 'Not signed in.' } };
+        const ext = (file.name.split('.').pop() || 'mp4').toLowerCase().replace(/[^a-z0-9]/g, '') || 'mp4';
+        const path = `${state.user.id}/${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}.${ext}`;
+        const { error } = await kerphSupabase.storage.from('showcase-photos').upload(path, file, { contentType: file.type || 'video/mp4' });
+        if (error) return { data: null, error };
+        return { data: { path }, error: null };
+    }
+
     async function kerphLoadShowcasePosts() {
         const { data, error } = await kerphSupabase.from('showcase_posts')
             .select('*, showcase_comments(*)').order('created_at', { ascending: false });
         return { data: data || [], error };
     }
 
-    async function kerphCreateShowcasePost({ title, description, imagePath, tags, author }) {
+    async function kerphCreateShowcasePost({ title, description, imagePath, galleryPaths, videoPath, layoutId, layoutShareToken, layoutName, tags, author }) {
         if (!state.user) return { data: null, error: { message: 'Not signed in.' } };
         return kerphSupabase.from('showcase_posts')
-            .insert({ user_id: state.user.id, title, description, image_path: imagePath, tags, author })
+            .insert({
+                user_id: state.user.id, title, description, image_path: imagePath,
+                gallery_paths: galleryPaths || [], video_path: videoPath || null,
+                layout_id: layoutId || null, layout_share_token: layoutShareToken || null, layout_name: layoutName || null,
+                tags, author
+            })
             .select().single();
     }
 
-    async function kerphDeleteShowcasePost(id, imagePath) {
-        if (imagePath) await kerphSupabase.storage.from('showcase-photos').remove([imagePath]);
+    async function kerphDeleteShowcasePost(id, imagePath, galleryPaths, videoPath) {
+        const paths = [imagePath, ...(galleryPaths || []), videoPath].filter(Boolean);
+        if (paths.length) await kerphSupabase.storage.from('showcase-photos').remove(paths);
         const { error } = await kerphSupabase.from('showcase_posts').delete().eq('id', id).eq('user_id', state.user.id);
         return { error };
     }
@@ -1081,6 +1109,7 @@
     window.kerphInsertSavedLayout = kerphInsertSavedLayout;
     window.kerphUpdateSavedLayout = kerphUpdateSavedLayout;
     window.kerphDeleteSavedLayout = kerphDeleteSavedLayout;
+    window.kerphGetLayoutByShareToken = kerphGetLayoutByShareToken;
     window.kerphLoadSavedProjects = kerphLoadSavedProjects;
     window.kerphInsertSavedProject = kerphInsertSavedProject;
     window.kerphUpdateSavedProject = kerphUpdateSavedProject;
@@ -1099,6 +1128,7 @@
 
     window.kerphDownscaleImageToBlob = kerphDownscaleImageToBlob;
     window.kerphUploadShowcasePhoto = kerphUploadShowcasePhoto;
+    window.kerphUploadShowcaseVideo = kerphUploadShowcaseVideo;
     window.kerphShowcaseImageUrl = kerphShowcaseImageUrl;
     window.kerphLoadShowcasePosts = kerphLoadShowcasePosts;
     window.kerphCreateShowcasePost = kerphCreateShowcasePost;

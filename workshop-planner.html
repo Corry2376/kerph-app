@@ -9803,6 +9803,21 @@
         initLayers();
         initPlanSelector();
 
+        // Shop Showcase "attach a layout" deep link — distinct from ?loadLayout=id (which
+        // only ever resolves against the signed-in viewer's own cachedSavedLayouts). This one
+        // opens someone else's layout via kerphGetLayoutByShareToken, which bypasses RLS only
+        // for the exact unguessable token, so it works for signed-out visitors too and doesn't
+        // wait on kerphOnAuthChange.
+        (function initSharedLayoutView() {
+            const token = new URLSearchParams(window.location.search).get('viewLayout');
+            if (!token) return;
+            kerphGetLayoutByShareToken(token).then(({ data }) => {
+                if (!data) { showToast('That shared layout link is invalid or was removed.'); return; }
+                applyLayoutState(data);
+                showToast(`Viewing "${data.name}" — a shared layout from Shop Showcase.`);
+            });
+        })();
+
         // Single reactive point for sign-in/account changes â€” fires in every open tab
         // whenever auth state changes anywhere (sign in, sign up, sign out, profile save).
         // Replaces the applyPlanGating()/renderSavedLayoutsPicker() calls that used to be
