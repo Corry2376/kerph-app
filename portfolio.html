@@ -205,6 +205,12 @@
         .project-view-meta { font-size: 12.5px; color: #6b7280; line-height: 1.6; margin-bottom: 14px; }
         .project-view-meta strong { color: #1e293b; }
         .project-view-desc { font-size: 13.5px; color: #1e293b; line-height: 1.6; margin-bottom: 14px; }
+        .detail-share { padding-top: 14px; margin-top: 4px; margin-bottom: 14px; border-top: 1px solid #f1f5f9; }
+        .detail-share-label { display: block; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: #94a3b8; margin-bottom: 8px; }
+        .detail-share-row { display: flex; flex-wrap: wrap; gap: 8px; }
+        .share-btn { flex: none; min-width: 36px; height: 36px; padding: 0 10px; display: inline-flex; align-items: center; justify-content: center; gap: 5px; border: 1px solid #cbd5e1; border-radius: 8px; background-color: #ffffff; font-size: 15px; font-weight: 700; color: #1e3a8a; cursor: pointer; text-decoration: none; }
+        .share-btn:hover { background-color: #eef2ff; border-color: #2563eb; }
+        .share-btn-text { font-size: 11.5px; }
     </style>
 </head>
 <body>
@@ -742,6 +748,23 @@
         function openProjectView(p) {
             const img = p.cover_path ? kerphPortfolioImageUrl(p.cover_path) : null;
             const gallery = (p.gallery_paths || []).map(path => `<img src="${kerphPortfolioImageUrl(path)}">`).join('');
+            // Only public projects get a share row — a private project's link would just 404
+            // for anyone else, since kerphLoadPublicPortfolio (and RLS) never returns it.
+            const shareUrl = p.is_public ? `${window.location.origin}${window.location.pathname}?user=${encodeURIComponent(p.user_id)}&project=${encodeURIComponent(p.id)}` : null;
+            const shareHtml = shareUrl ? `
+                <div class="detail-share">
+                    <span class="detail-share-label">Share this project</span>
+                    <div class="detail-share-row">
+                        <button type="button" class="share-btn" id="viewShareNativeBtn" style="display:none;">&#128228; <span class="share-btn-text">Share</span></button>
+                        <button type="button" class="share-btn" id="viewShareCopyBtn" title="Copy link">&#128279;</button>
+                        <a class="share-btn" href="https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}" target="_blank" rel="noopener" title="Share on Facebook">f</a>
+                        <a class="share-btn" href="https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&amp;text=${encodeURIComponent(p.title)}" target="_blank" rel="noopener" title="Share on X">&#120143;</a>
+                        ${img ? `<a class="share-btn" href="https://www.pinterest.com/pin/create/button/?url=${encodeURIComponent(shareUrl)}&amp;media=${encodeURIComponent(new URL(img, window.location.href).href)}&amp;description=${encodeURIComponent(p.title)}" target="_blank" rel="noopener" title="Pin it">&#128204;</a>` : ''}
+                        <a class="share-btn" href="https://www.reddit.com/submit?url=${encodeURIComponent(shareUrl)}&amp;title=${encodeURIComponent(p.title)}" target="_blank" rel="noopener" title="Share on Reddit"><span class="share-btn-text">Reddit</span></a>
+                        <a class="share-btn" href="mailto:?subject=${encodeURIComponent(p.title)}&amp;body=${encodeURIComponent((p.description || '') + '\n\n' + shareUrl)}" title="Share by email">&#9993;&#65039;</a>
+                    </div>
+                </div>
+            ` : '';
             document.getElementById('projectViewBox').innerHTML = `
                 <div class="modal-title">${escapeHtml(p.title)}</div>
                 ${img ? `<img class="project-view-hero" src="${img}" alt="${escapeHtml(p.title)}">` : ''}
@@ -752,6 +775,7 @@
                 </div>
                 ${p.description ? `<div class="project-view-desc">${escapeHtml(p.description)}</div>` : ''}
                 ${gallery ? `<div class="project-modal-gallery">${gallery}</div>` : ''}
+                ${shareHtml}
                 <div class="modal-actions">
                     ${ownerMode ? `<button type="button" class="mini-btn" id="viewEditBtn">Edit</button><button type="button" class="mini-btn danger" id="viewDeleteBtn">Delete</button>` : ''}
                     <button type="button" class="mini-btn modal-primary-btn" id="viewCloseBtn">Close</button>
@@ -759,6 +783,25 @@
             `;
             document.getElementById('projectViewOverlay').style.display = 'flex';
             document.getElementById('viewCloseBtn').addEventListener('click', () => { document.getElementById('projectViewOverlay').style.display = 'none'; });
+            if (shareUrl) {
+                document.getElementById('viewShareCopyBtn').addEventListener('click', async () => {
+                    try {
+                        await navigator.clipboard.writeText(shareUrl);
+                        showToast('Link copied.');
+                    } catch (e) {
+                        showToast('Could not copy the link — copy it from the address bar instead.');
+                    }
+                });
+                if (navigator.share) {
+                    const nativeBtn = document.getElementById('viewShareNativeBtn');
+                    nativeBtn.style.display = '';
+                    nativeBtn.addEventListener('click', async () => {
+                        try {
+                            await navigator.share({ title: p.title, text: p.description || '', url: shareUrl });
+                        } catch (e) { /* user cancelled the share sheet — nothing to do */ }
+                    });
+                }
+            }
             if (ownerMode) {
                 document.getElementById('viewEditBtn').addEventListener('click', () => { document.getElementById('projectViewOverlay').style.display = 'none'; openProjectModal(p); });
                 document.getElementById('viewDeleteBtn').addEventListener('click', async () => {

@@ -332,6 +332,12 @@
         }
         .detail-layout-card-label { font-size: 12px; color: #4338ca; }
         .detail-layout-card-name { font-weight: 700; color: #1e3a8a; }
+        .detail-share { padding-top: 14px; margin-top: 14px; border-top: 1px solid #f1f5f9; }
+        .detail-share-label { display: block; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: #94a3b8; margin-bottom: 8px; }
+        .detail-share-row { display: flex; flex-wrap: wrap; gap: 8px; }
+        .share-btn { flex: none; min-width: 36px; height: 36px; padding: 0 10px; display: inline-flex; align-items: center; justify-content: center; gap: 5px; border: 1px solid #cbd5e1; border-radius: 8px; background-color: #ffffff; font-size: 15px; font-weight: 700; color: #1e3a8a; cursor: pointer; text-decoration: none; }
+        .share-btn:hover { background-color: #eef2ff; border-color: #2563eb; }
+        .share-btn-text { font-size: 11.5px; }
         .detail-body { padding: 22px; }
         .detail-title { font-size: 19px; font-weight: 800; color: #0f172a; margin-bottom: 6px; }
         .detail-meta { font-size: 12px; color: #6b7280; margin-bottom: 14px; }
@@ -983,6 +989,7 @@
                         <a href="workshop-planner.html?viewLayout=${encodeURIComponent(post.layout_share_token)}" class="mini-btn primary" style="flex:none;" target="_blank" rel="noopener">Open Layout &rarr;</a>
                     </div>`
                     : '';
+                const shareUrl = `${window.location.origin}${window.location.pathname}?post=${encodeURIComponent(id)}`;
 
                 box.innerHTML = `
                     ${heroUrl ? `<img class="detail-image" id="detailHeroImage" src="${heroUrl}" alt="">` : `<div class="detail-placeholder">&#128247;</div>`}
@@ -994,6 +1001,18 @@
                         ${post.description ? `<div class="detail-desc">${escapeHtml(post.description)}</div>` : ''}
                         ${tagsHtml ? `<div class="post-tags">${tagsHtml}</div>` : ''}
                         ${layoutCardHtml}
+                        <div class="detail-share">
+                            <span class="detail-share-label">Share this shop</span>
+                            <div class="detail-share-row">
+                                <button type="button" class="share-btn" id="detailShareNativeBtn" style="display:none;">&#128228; <span class="share-btn-text">Share</span></button>
+                                <button type="button" class="share-btn" id="detailShareCopyBtn" title="Copy link">&#128279;</button>
+                                <a class="share-btn" href="https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}" target="_blank" rel="noopener" title="Share on Facebook">f</a>
+                                <a class="share-btn" href="https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&amp;text=${encodeURIComponent(post.title)}" target="_blank" rel="noopener" title="Share on X">&#120143;</a>
+                                ${heroUrl ? `<a class="share-btn" href="https://www.pinterest.com/pin/create/button/?url=${encodeURIComponent(shareUrl)}&amp;media=${encodeURIComponent(new URL(heroUrl, window.location.href).href)}&amp;description=${encodeURIComponent(post.title)}" target="_blank" rel="noopener" title="Pin it">&#128204;</a>` : ''}
+                                <a class="share-btn" href="https://www.reddit.com/submit?url=${encodeURIComponent(shareUrl)}&amp;title=${encodeURIComponent(post.title)}" target="_blank" rel="noopener" title="Share on Reddit"><span class="share-btn-text">Reddit</span></a>
+                                <a class="share-btn" href="mailto:?subject=${encodeURIComponent(post.title)}&amp;body=${encodeURIComponent((post.description || '') + '\n\n' + shareUrl)}" title="Share by email">&#9993;&#65039;</a>
+                            </div>
+                        </div>
                         <div class="detail-actions">
                             <button type="button" class="detail-like-btn${isLiked ? ' active' : ''}" id="detailLikeBtn">&#9829; ${post.likes_count || 0} Like${post.likes_count === 1 ? '' : 's'}</button>
                             ${isSignedIn() && kerphGetCachedUser().id === post.user_id ? '<button type="button" class="mini-btn danger" id="detailDeleteBtn" style="flex:none;">Delete Post</button>' : ''}
@@ -1008,6 +1027,24 @@
                 `;
 
                 document.getElementById('detailLikeBtn').addEventListener('click', async () => { await toggleLike(id); draw(); renderShowcase(); });
+
+                document.getElementById('detailShareCopyBtn').addEventListener('click', async () => {
+                    try {
+                        await navigator.clipboard.writeText(shareUrl);
+                        showToast('Link copied.');
+                    } catch (e) {
+                        showToast('Could not copy the link — copy it from the address bar instead.');
+                    }
+                });
+                if (navigator.share) {
+                    const nativeBtn = document.getElementById('detailShareNativeBtn');
+                    nativeBtn.style.display = '';
+                    nativeBtn.addEventListener('click', async () => {
+                        try {
+                            await navigator.share({ title: post.title, text: post.description || '', url: shareUrl });
+                        } catch (e) { /* user cancelled the share sheet — nothing to do */ }
+                    });
+                }
 
                 const heroImage = document.getElementById('detailHeroImage');
                 box.querySelectorAll('.detail-thumb').forEach((thumb) => {
@@ -1214,9 +1251,10 @@
                         }
                     }
 
-                    const { error } = await kerphCreateShowcasePost({
+                    const description = descInput.value.trim();
+                    const { data, error } = await kerphCreateShowcasePost({
                         title,
-                        description: descInput.value.trim(),
+                        description,
                         imagePath,
                         galleryPaths,
                         videoPath,
@@ -1227,6 +1265,20 @@
                         author: authorInput.value.trim() || 'Anonymous'
                     });
                     if (error) { showToast('Could not create your post.'); return; }
+
+                    // Showcase posts go live the moment they're created (no separate publish
+                    // toggle like Portfolio's is_public), so every new post queues a Kerph
+                    // Facebook/Instagram post — same social_posts pipeline garage-tips.html and
+                    // portfolio.html already use.
+                    kerphQueueSocialPost({
+                        source: 'showcase',
+                        sourceId: data.id,
+                        title: data.title,
+                        excerpt: description,
+                        url: `https://kerphplans.com/shop-showcase.html?post=${data.id}`,
+                        imageUrl: imagePath ? kerphShowcaseImageUrl(imagePath) : null
+                    }).catch(() => {});
+
                     overlay.style.display = 'none';
                     showToast('Posted to the showcase.');
                     renderShowcase();
@@ -1263,12 +1315,15 @@
             kerphLoadSavedLayouts().then(({ data }) => { cachedSavedLayouts = data || []; });
         });
 
-        kerphAuthReady.then(() => {
+        kerphAuthReady.then(async () => {
             initHeaderSignIn();
             initAccountPanel();
             // Public content â€” renders for signed-out visitors too, just needed auth to
             // resolve first so kerphLoadMyShowcaseLikes() reflects the right (or no) user.
-            renderShowcase();
+            await renderShowcase();
+
+            const postId = new URLSearchParams(window.location.search).get('post');
+            if (postId) openPostDetail(postId);
         });
 
         initPostModal();
