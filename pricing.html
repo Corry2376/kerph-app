@@ -229,6 +229,19 @@
             text-align: center;
         }
 
+        .pricing-intro-banner {
+            max-width: 680px;
+            margin: 14px auto 0;
+            font-size: 13px;
+            font-weight: 700;
+            color: #15803d;
+            background-color: #dcfce7;
+            border: 1px solid #86efac;
+            border-radius: 8px;
+            padding: 10px 16px;
+            text-align: center;
+        }
+
         .pricing-cards {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -498,6 +511,7 @@
 
         <div class="pricing-locked-banner" id="pricingLockedBanner" style="display:none;"></div>
         <div class="pricing-preview-note">Pro and Premier now go through real Lemon Squeezy checkout â€” your card will be charged. Free stays a one-click local preview toggle, no account or card needed.</div>
+        <div class="pricing-intro-banner" id="introOfferBanner" style="display:none;"></div>
 
         <div class="billing-toggle" id="billingToggle">
             <button type="button" class="billing-toggle-btn" data-cycle="monthly">Monthly</button>
@@ -621,6 +635,26 @@
             pro: { productUuid: '0922ac82-41dc-4655-917b-5d54aae8f5b3', monthly: '1956245', annual: '1956244' },
             premier: { productUuid: 'c7026ad4-b170-4cea-956c-9d25576adccd', monthly: '1956259', annual: '1956248' }
         };
+
+        // Introductory discount codes â€” set the `code` values once the matching discount is
+        // created in the Lemon Squeezy dashboard (Store > Discounts), restricted to the
+        // Pro/Premier MONTHLY variants for the monthly code and the Pro/Premier ANNUAL variants
+        // for the annual code (a single code can't carry two different percentages). Auto-
+        // applied via checkout[discount_code] based on the billing-cycle toggle so visitors
+        // never type anything. Null code = not configured yet: checkout proceeds at full price,
+        // no error, and the banner below stays hidden.
+        const KERPH_INTRO_DISCOUNT = {
+            monthly: { code: null, percent: 15, months: 3 },
+            annual: { code: null, percent: 20, months: 12 }
+        };
+        function renderIntroOfferBanner() {
+            const banner = document.getElementById('introOfferBanner');
+            if (!banner) return;
+            const m = KERPH_INTRO_DISCOUNT.monthly, a = KERPH_INTRO_DISCOUNT.annual;
+            if (!m.code && !a.code) { banner.style.display = 'none'; return; }
+            banner.style.display = 'block';
+            banner.textContent = `\u{1F389} Intro offer: ${m.percent}% off your first ${m.months} months on monthly, or ${a.percent}% off your first year on annual — applied automatically at checkout.`;
+        }
         function launchLemonSqueezyCheckout(tier) {
             const user = (typeof kerphGetCachedUser === 'function') ? kerphGetCachedUser() : null;
             if (!user) {
@@ -638,6 +672,8 @@
             params.set('enabled', variantId);
             params.set('checkout[email]', user.email || '');
             params.set('checkout[custom][user_id]', user.id);
+            const introCode = KERPH_INTRO_DISCOUNT[billingCycle].code;
+            if (introCode) params.set('checkout[discount_code]', introCode);
             const checkoutUrl = `https://${LS_STORE_SLUG}.lemonsqueezy.com/checkout/buy/${checkout.productUuid}?${params.toString()}`;
             if (window.LemonSqueezy && window.LemonSqueezy.Url) {
                 window.LemonSqueezy.Url.Open(checkoutUrl);
@@ -1200,6 +1236,7 @@
         initPlanSelector();
         initBillingToggle();
         initLockedBanner();
+        renderIntroOfferBanner();
 
         kerphOnAuthChange(() => {
             updateHeaderSignInState();
