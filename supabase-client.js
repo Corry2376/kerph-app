@@ -902,6 +902,13 @@
     // is ignored outright, so a signed-in Free user can no longer grant themselves Pro/Premier
     // by editing a browser value.
     function kerphGetCachedEffectivePlan() {
+        // Admins (profiles.is_admin, e.g. the site owner's own account) keep the old
+        // toggle-driven preview behavior even while signed in — they need to see every
+        // tier's UI without buying a real subscription on their own account. Every other
+        // signed-in user is locked to their real plan; this is the one deliberate exception.
+        if (state.user && state.profile && state.profile.is_admin) {
+            return localStorage.getItem('kerphPlan') || 'free';
+        }
         return state.user ? cachedEffectivePlan.plan : (localStorage.getItem('kerphPlan') || 'free');
     }
 
@@ -916,6 +923,7 @@
     // exempt — nothing to verify against, and that's the intended anonymous-preview path.
     async function kerphEnforceRealTierGate() {
         if (!state.user) return;
+        if (state.profile && state.profile.is_admin) return; // admins preview via the local toggle instead
         const page = location.pathname.split('/').pop();
         const requiredTier = kerphRequiredTierFor(page);
         if (!requiredTier) return;
