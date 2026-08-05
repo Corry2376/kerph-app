@@ -1110,8 +1110,45 @@
         return { data: data || [], error };
     }
 
+    // ---------- Project Designer: "Import from Photo" (Premier) ----------
+    // Sends a photo of a cabinet/bookcase/furniture piece to the identify-furniture Edge
+    // Function (Claude vision, server-side — the API key never touches the browser) and
+    // returns a rough starting build spec (estimated dimensions, shelf/door/drawer counts,
+    // construction style, material guess, confidence, caveats) for Project Designer to turn
+    // into starter panels. Real per-photo cost, so this is Premier-gated; see
+    // supabase/functions/identify-furniture. referenceMeasurementIn/referenceDescription are
+    // optional — e.g. {referenceMeasurementIn: 30, referenceDescription: 'overall width'} —
+    // and meaningfully improve estimate accuracy when supplied, since a single photo has no
+    // real-world scale reference on its own.
+    async function kerphIdentifyFurniture(imageBase64, mediaType, referenceMeasurementIn, referenceDescription) {
+        const { data: { session } } = await kerphSupabase.auth.getSession();
+        if (!session) return { error: { message: 'Not signed in.' } };
+        try {
+            const resp = await fetch(`${kerphSupabase.supabaseUrl}/functions/v1/identify-furniture`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+                body: JSON.stringify({ imageBase64, mediaType, referenceMeasurementIn, referenceDescription })
+            });
+            const result = await resp.json().catch(() => ({}));
+            if (!resp.ok || result.error) return { error: { message: result.error || 'Could not analyze that photo.' } };
+            return { data: result, error: null };
+        } catch (e) {
+            return { error: { message: e.message || 'Could not analyze that photo.' } };
+        }
+    }
+
+    async function kerphGetMyFurnitureLookupHistory() {
+        if (!state.user) return { data: [], error: null };
+        const { data, error } = await kerphSupabase
+            .from('furniture_lookups').select('*').eq('user_id', state.user.id)
+            .order('created_at', { ascending: false }).limit(20);
+        return { data: data || [], error };
+    }
+
     window.kerphIdentifyPart = kerphIdentifyPart;
     window.kerphGetMyPartLookupHistory = kerphGetMyPartLookupHistory;
+    window.kerphIdentifyFurniture = kerphIdentifyFurniture;
+    window.kerphGetMyFurnitureLookupHistory = kerphGetMyFurnitureLookupHistory;
 
     window.kerphGetMyTeam = kerphGetMyTeam;
     window.kerphInviteTeamMember = kerphInviteTeamMember;
