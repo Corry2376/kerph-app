@@ -77,7 +77,7 @@
         }
 
         .logo-tm {
-            /* Lower-right corner, inside the logo's own white background â€” clear of both the
+            /* Lower-right corner, inside the logo's own white background — clear of both the
                navy border below it and the wordmark above it, so it doesn't need a badge/outline
                to stay legible the way the earlier top-right placement did. */
             position: absolute;
@@ -301,7 +301,7 @@
         }
 
         /* The account modal has grown a lot more content than a typical modal (stats, plan,
-           saved layouts, danger zone) â€” wider and independently scrollable so it never runs
+           saved layouts, danger zone) — wider and independently scrollable so it never runs
            off the bottom of a shorter viewport. */
         .account-modal-box { width: 380px; max-height: 88vh; overflow-y: auto; }
         .account-member-since { font-size: 10.5px; color: #94a3b8; font-weight: 600; margin-top: 6px; }
@@ -423,7 +423,7 @@
         .empty-hint { font-size: 11px; color: #9ca3af; font-style: italic; padding: 6px 2px; }
 
         /* ---------- COLLAPSIBLE SIDEBAR SECTIONS ----------
-           Same <details>/<summary> pattern as workshop-planner.html's catalog categories â€”
+           Same <details>/<summary> pattern as workshop-planner.html's catalog categories —
            reused here so My Tools/My Wishlist/Small Power Tools can each be closed to cut
            down on sidebar clutter, without needing a separate JS toggle (native <details>
            handles open/closed state and the [open] selector alone drives the chevron). */
@@ -454,7 +454,7 @@
 
         /* ---------- HAND & POWER TOOLS SEARCH ----------
            Routers, sanders, drills, etc. never get placed on the shop floor layout, so they
-           stay out of the drag-and-drop catalog entirely â€” this is a separate, search-only
+           stay out of the drag-and-drop catalog entirely — this is a separate, search-only
            list (nothing renders until the user actually searches) that just needs to feed the
            same kerphToolStatus store My Tools/Wishlist/the insurance report already read from. */
         .tool-search-wrap { margin: 6px 0 8px; }
@@ -494,8 +494,8 @@
         /* ---------- Per-card collapse/expand (My Tools / My Wishlist) ---------- */
         /* flex:1 lets this row shrink to make room for the remove button instead of the whole
            row wrapping onto a second line; the title itself truncates with an ellipsis rather
-           than wrapping its own text, which is what actually keeps the card's top line â€” chevron,
-           name, remove button â€” a single consistent height across every card regardless of name
+           than wrapping its own text, which is what actually keeps the card's top line — chevron,
+           name, remove button — a single consistent height across every card regardless of name
            length (full name is still available via the title="" tooltip, see buildToolCard). */
         .tool-card-header { display: flex; align-items: center; gap: 6px; cursor: pointer; min-width: 0; flex: 1 1 auto; }
         .tool-card-header .tool-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
@@ -569,7 +569,7 @@
 
         /* ---------- INSURANCE INVENTORY (Premier) ----------
            Value entry itself is open to every plan (no reason to block someone from typing a
-           number in), but generating the actual report is gated â€” see requirePremierAccess. */
+           number in), but generating the actual report is gated — see requirePremierAccess. */
         .tool-value-row {
             flex: 1 0 100%;
             display: flex;
@@ -825,7 +825,7 @@
             transform: translateY(-1px);
         }
 
-        /* Premier-only perk callout inside the snapshot panel â€” the first thing anyone sees
+        /* Premier-only perk callout inside the snapshot panel — the first thing anyone sees
            on the home page, and a much more discoverable spot for a Premier-gated action than
            a plain button buried in the sidebar's My Tools list (which is where the same report
            button also lives, for people already looking at their owned-tools list). */
@@ -916,7 +916,7 @@
             padding: 14px;
             text-decoration: none;
             color: inherit;
-            /* Resting state needs to read as a raised card on its own, not just on hover â€” an
+            /* Resting state needs to read as a raised card on its own, not just on hover — an
                inset top highlight (light catching the upper bevel) plus three graduated outer
                shadow layers (tight contact, mid, and a soft far one) do that; hover just scales
                the outer layers further rather than swapping to a different shape. */
@@ -971,7 +971,7 @@
 
         /* Non-featured tiles: icon sits beside the title instead of stacked above it, so each
            tile reads as one compact header row + description rather than three vertically
-           stacked blocks â€” shortens every tile and tightens the grid's overall vertical feel.
+           stacked blocks — shortens every tile and tightens the grid's overall vertical feel.
            The featured tile is untouched (its own flex layout already puts icon beside title
            +desc together). */
         .tool-card:not(.tool-card-featured) {
@@ -997,7 +997,7 @@
         }
 
         /* Gated tools (see kerphApplyToolCardTierLocks in supabase-client.js) stay clickable
-           â€” the destination page's own top-of-head redirect is the actual gate â€” this just
+           — the destination page's own top-of-head redirect is the actual gate — this just
            sets the right expectation before the click happens. */
         .tool-card.tool-card-locked {
             opacity: 0.6;
@@ -1496,7 +1496,7 @@
     <script src="supabase-client.js"></script>
     <script>
         /* ---------- SHARED STATE KEYS (must match workshop-planner.html exactly) ----------
-           kerphAccount/kerphSignedIn are gone â€” sign-in and profile data are now real,
+           kerphAccount/kerphSignedIn are gone — sign-in and profile data are now real,
            Supabase-backed state (see supabase-client.js), not localStorage flags. */
         const PLAN_KEY = 'kerphPlan';
         const TOOL_STATUS_KEY = 'kerphToolStatus';
@@ -1504,14 +1504,14 @@
         const CURRENT_LAYOUT_KEY = 'kerphCurrentLayout';
 
         /* ---------- HAND & POWER TOOLS ----------
-           A shop has hundreds of tools that never get a footprint on the floor plan â€” routers,
-           sanders, drills, hand tools â€” so unlike the Workshop Layout Planner's drag-and-drop
+           A shop has hundreds of tools that never get a footprint on the floor plan — routers,
+           sanders, drills, hand tools — so unlike the Workshop Layout Planner's drag-and-drop
            catalog, this never renders as a browsable list (that's exactly the clutter it's meant
            to avoid). It only shows up as search results, and writes into the same kerphToolStatus
            store as everything else, so it flows into My Tools/Wishlist/the Insurance Report for
-           free. This is a starter set covering common categories, not an exhaustive catalog â€”
+           free. This is a starter set covering common categories, not an exhaustive catalog —
            built to be extended, not a claim of covering "every tool" out of the gate. */
-        // Source of truth for the "Small Power Tools" sidebar section â€” portable power tools
+        // Source of truth for the "Small Power Tools" sidebar section — portable power tools
         // that never sit on the shop floor, searchable so they can still be added to My Tools/
         // Wishlist and counted in the Insurance Report.
         const SMALL_TOOLS = [
@@ -1555,10 +1555,10 @@
         ];
 
         // Same machinery catalog as the Workshop Layout Planner's draggable sidebar (kept in
-        // sync) â€” floor-standing tools that DO sit on the shop floor, so placing them on a
+        // sync) — floor-standing tools that DO sit on the shop floor, so placing them on a
         // layout still happens over there, but they're just as ownable/wishlist-able from here.
         // widthFt/lengthFt/heightFt match the Workshop Layout Planner's real footprints, so an
-        // owned floor tool's Insurance Report row shows real dimensions, not "â€”".
+        // owned floor tool's Insurance Report row shows real dimensions, not "—".
         const FLOOR_TOOLS = [
             { name: 'SawStop PCS175 Cabinet Saw', category: 'Table Saws', widthFt: 3.0, lengthFt: 5.2, heightFt: 2.9 },
             { name: 'SawStop ICS Industrial Cabinet Saw', category: 'Table Saws', widthFt: 3.2, lengthFt: 5.5, heightFt: 3.0 },
@@ -1644,7 +1644,7 @@
 
         function applyPlanGating() {
             // The Insurance Inventory Report lives only in the My Workspace snapshot panel
-            // now, gated by simply not rendering unless isPremium() â€” so switching plans just
+            // now, gated by simply not rendering unless isPremium() — so switching plans just
             // needs the snapshot re-rendered, nothing else to toggle here.
             if (typeof renderHomeSnapshot === 'function') renderHomeSnapshot();
         }
@@ -1692,7 +1692,7 @@
         }
 
         /* ---------- LOCAL ACCOUNT PREVIEW (username + avatar) ---------- */
-        // Thin wrapper over the real Supabase-backed profile cache (supabase-client.js) â€”
+        // Thin wrapper over the real Supabase-backed profile cache (supabase-client.js) —
         // shape-compatible with the old kerphAccount localStorage record ({username, avatar,
         // memberSince}) so every other call site on this page keeps working unmodified.
         function loadAccount() {
@@ -1722,7 +1722,7 @@
             if (btn) btn.className = 'account-btn plan-' + (plan === 'pro' || plan === 'premier' ? plan : 'free');
         }
 
-        /* ---------- SAVED LAYOUTS (read-only view from here â€” editing lives in Workshop
+        /* ---------- SAVED LAYOUTS (read-only view from here — editing lives in Workshop
            Layout Planner) + account stats/plan/member-since. Shares kerphSavedLayouts with
            that page so a layout saved there shows up here too. ---------- */
         const LAYOUTS_KEY = 'kerphSavedLayouts';
@@ -1764,7 +1764,7 @@
         }
 
         // Turns the dead space beside the hero intro into a live read of the user's own
-        // data â€” same stat tiles as the account modal, plus whatever's in the shared
+        // data — same stat tiles as the account modal, plus whatever's in the shared
         // kerphCurrentLayout (the same key workshop-planner.html/shop-3d-viewer.html use).
         async function renderHomeSnapshot() {
             const statsRow = document.getElementById('homeStatsRow');
@@ -1795,7 +1795,7 @@
             if (subtitleEl) subtitleEl.textContent = acc.username ? 'Jump back into your shop, or explore another tool below.' : 'Pick a tool to get started. More will show up here over time.';
 
             // Surfaced here (not just the sidebar button) since this is the first thing
-            // anyone sees on the home page â€” a Premier subscriber who just upgraded shouldn't
+            // anyone sees on the home page — a Premier subscriber who just upgraded shouldn't
             // have to go hunting through My Tools to find what they unlocked.
             const perkEl = document.getElementById('snapshotPremierPerk');
             if (perkEl) {
@@ -1895,7 +1895,7 @@
             avatarInput.addEventListener('change', () => {
                 const file = avatarInput.files[0];
                 if (!file) return;
-                // Downscaled client-side (supabase-client.js) â€” the avatar now travels over
+                // Downscaled client-side (supabase-client.js) — the avatar now travels over
                 // the network on every page load via the profile row, so an unresized phone
                 // photo is a real cost it wasn't back when this was pure localStorage.
                 kerphDownscaleImage(file, 200).then((dataUrl) => {
@@ -1922,7 +1922,7 @@
                     showToast(error.message || 'Could not save your profile.');
                     return;
                 }
-                // No manual re-render here â€” kerphSaveProfile's own change notification
+                // No manual re-render here — kerphSaveProfile's own change notification
                 // (via the kerphOnAuthChange listener at the bottom of this script) already
                 // refreshes renderAccountBadge/renderToolLists/renderHomeSnapshot.
                 localStorage.setItem('kerphUnitSystem', unitsSelect.value);
@@ -2026,7 +2026,7 @@
         }
 
         async function signOut() {
-            // No manual re-render here â€” the kerphOnAuthChange listener (registered once,
+            // No manual re-render here — the kerphOnAuthChange listener (registered once,
             // bottom of this script) fires and updates every dependent bit of UI for us.
             await kerphSignOut();
         }
@@ -2131,7 +2131,7 @@
             renderToolLists();
         }
 
-        // User-entered replacement value, feeding the Insurance Inventory Report â€” never
+        // User-entered replacement value, feeding the Insurance Inventory Report — never
         // auto-filled from a catalog price, since no real product-price data exists yet (see
         // the launch report's tool-database section). A blank/invalid entry just clears it.
         function updateToolValue(name, value) {
@@ -2146,7 +2146,7 @@
             saveToolStatuses(current);
         }
 
-        // Same idea as updateToolValue â€” user-entered, feeds the Insurance Inventory Report.
+        // Same idea as updateToolValue — user-entered, feeds the Insurance Inventory Report.
         // Serial numbers matter for an insurance claim (proves a specific unit was owned, not
         // just "a table saw of this model"), so worth capturing even though nothing in this
         // app can look one up or verify it.
@@ -2258,7 +2258,7 @@
         }
 
         // Cards default to collapsed (name/model only) so a long My Tools/Wishlist doesn't
-        // turn into a wall of inputs â€” this set just tracks which ones the user has expanded,
+        // turn into a wall of inputs — this set just tracks which ones the user has expanded,
         // keyed by tool name (a tool is only ever owned OR wishlisted at once, per
         // setToolStatus, so names never collide between the two lists).
         const expandedToolCards = new Set();
@@ -2272,13 +2272,13 @@
             header.className = 'tool-card-header';
             const chevron = document.createElement('span');
             chevron.className = 'tool-card-chevron';
-            chevron.textContent = 'â–¶';
+            chevron.textContent = '▶';
             header.appendChild(chevron);
             const title = document.createElement('div');
             title.className = 'tool-title';
             const fullTitleText = entry.nickname ? `${name} (${entry.nickname})` : name;
             title.textContent = fullTitleText;
-            title.title = fullTitleText; // native tooltip â€” the ellipsis truncation below hides the full name visually, not the data
+            title.title = fullTitleText; // native tooltip — the ellipsis truncation below hides the full name visually, not the data
             header.appendChild(title);
             header.addEventListener('click', () => {
                 if (expandedToolCards.has(name)) expandedToolCards.delete(name); else expandedToolCards.add(name);
@@ -2354,7 +2354,7 @@
         }
 
         // Reflects whether every currently-listed name in this section is expanded, and wires
-        // the button to flip all of them the other way â€” reused by both My Tools and Wishlist
+        // the button to flip all of them the other way — reused by both My Tools and Wishlist
         // rather than two near-identical copies.
         function wireSectionToggleAll(btnId, names) {
             const btn = document.getElementById(btnId);
@@ -2392,14 +2392,14 @@
             wireSectionToggleAll('wishlistToggleAllBtn', wishlist.map(([name]) => name));
 
             // Search-result cards for small power tools and floor tools show live Owned/Wishlist
-            // state on their own buttons â€” keep them in sync whenever the underlying status store
+            // state on their own buttons — keep them in sync whenever the underlying status store
             // changes, same as My Tools/Wishlist just did above.
             if (typeof renderPowerToolSearchResults === 'function') renderPowerToolSearchResults();
             if (typeof renderFloorToolSection === 'function') renderFloorToolSection();
         }
 
         // A genuine, working link (a retailer search for the exact tool name) rather than a fake
-        // "Buy Now" button â€” there's no real affiliate/product catalog behind this yet, and a
+        // "Buy Now" button — there's no real affiliate/product catalog behind this yet, and a
         // button that looks like it purchases something but doesn't would be actively misleading.
         function shopSearchUrl(name) {
             return `https://www.amazon.com/s?k=${encodeURIComponent(name)}`;
@@ -2408,15 +2408,15 @@
         function setToolStatus(name, category, status, extraFields) {
             const current = loadToolStatuses();
             const existing = current[name];
-            // Clicking the already-active state again clears it â€” standard toggle-button feel,
-            // and matches the existing "âœ• remove" affordance My Tools/Wishlist cards already have.
+            // Clicking the already-active state again clears it — standard toggle-button feel,
+            // and matches the existing "✕ remove" affordance My Tools/Wishlist cards already have.
             if (existing && existing.status === status) {
                 delete current[name];
                 showToast('Removed.');
             } else {
                 // extraFields carries widthFt/lengthFt/heightFt for floor tools (real footprint,
                 // matching the Workshop Layout Planner's catalog) so the Insurance Report can show
-                // real dimensions instead of "â€”" â€” small power tools just omit it.
+                // real dimensions instead of "—" — small power tools just omit it.
                 current[name] = Object.assign({ status, category }, extraFields || {});
                 showToast(status === 'owned' ? 'Added to My Tools.' : 'Added to your Wishlist.');
             }
@@ -2462,7 +2462,7 @@
             shopLink.href = shopSearchUrl(tool.name);
             shopLink.target = '_blank';
             shopLink.rel = 'noopener noreferrer';
-            shopLink.textContent = 'ðŸ” Shop';
+            shopLink.textContent = '🔍 Shop';
             shopLink.title = `Search for "${tool.name}" (opens in a new tab)`;
             actions.appendChild(shopLink);
 
@@ -2471,7 +2471,7 @@
             return card;
         }
 
-        // With no query, browse the full catalog grouped by category â€” the section itself is
+        // With no query, browse the full catalog grouped by category — the section itself is
         // still collapsed by default (see the <details> in the sidebar), so this only costs
         // space once someone actually opens it, and it's what makes the list discoverable
         // instead of requiring you to already know a tool's exact name to find it. Typing
@@ -2504,7 +2504,7 @@
 
         function initPowerToolSearch() {
             // The category badge is the size of the searchable catalog (a fixed, informational
-            // count), not a live result count â€” it shouldn't flicker between numbers as someone
+            // count), not a live result count — it shouldn't flicker between numbers as someone
             // types, only My Tools/Wishlist's badges reflect what's actually been added.
             document.getElementById('smallPowerToolsCount').textContent = SMALL_TOOLS.length;
             document.getElementById('smallPowerToolSearchInput').addEventListener('input', renderPowerToolSearchResults);
@@ -2512,7 +2512,7 @@
 
         // Same card as buildToolResultCard, but floor tools have a real footprint worth
         // showing (and worth saving into the status entry so the Insurance Report shows real
-        // dimensions) â€” small power tools don't have one, hence the separate builder rather
+        // dimensions) — small power tools don't have one, hence the separate builder rather
         // than overloading buildToolResultCard with an optional dims argument.
         function buildFloorToolResultCard(tool) {
             const statuses = loadToolStatuses();
@@ -2554,7 +2554,7 @@
             shopLink.href = shopSearchUrl(tool.name);
             shopLink.target = '_blank';
             shopLink.rel = 'noopener noreferrer';
-            shopLink.textContent = 'ðŸ” Shop';
+            shopLink.textContent = '🔍 Shop';
             shopLink.title = `Search for "${tool.name}" (opens in a new tab)`;
             actions.appendChild(shopLink);
 
@@ -2563,7 +2563,7 @@
             return card;
         }
 
-        // Same catalog/categories as the Workshop Layout Planner's draggable sidebar â€” browsable
+        // Same catalog/categories as the Workshop Layout Planner's draggable sidebar — browsable
         // and searchable here too, so marking a table saw owned doesn't require switching pages.
         // Placing it on an actual shop floor layout still only happens over there.
         function renderFloorToolSection() {
@@ -2598,12 +2598,12 @@
         }
 
         /* ---------- INSURANCE INVENTORY REPORT (Premier) ----------
-           Reuses the same window.print() pattern as the PDF exports elsewhere in the app â€”
+           Reuses the same window.print() pattern as the PDF exports elsewhere in the app —
            no PDF library. Builds a dedicated print-only element (#insuranceReportPrintArea)
            and toggles a body class that CSS uses to hide everything else during print (see
            the @media print block). Every value in the report is either the tool's catalog
            name/category/dimensions (already real, entered when it was placed) or the
-           replacementValue the user typed in themselves â€” nothing here is an invented price. */
+           replacementValue the user typed in themselves — nothing here is an invented price. */
         function generateInsuranceReport() {
             const statuses = loadToolStatuses();
             const owned = Object.entries(statuses).filter(([, e]) => e.status === 'owned');
@@ -2666,7 +2666,7 @@
         function initInsuranceReport() {
             // The snapshot-panel button is re-created on every renderHomeSnapshot()
             // call (its parent's innerHTML gets replaced), so a listener attached once here
-            // would be lost on the next render â€” delegate to the panel itself instead, which
+            // would be lost on the next render — delegate to the panel itself instead, which
             // is never replaced.
             const perkEl = document.getElementById('snapshotPremierPerk');
             if (perkEl) {
@@ -2678,7 +2678,7 @@
             window.addEventListener('afterprint', () => document.body.classList.remove('printing-insurance-report'));
         }
 
-        // Tool status/saved layouts/current layout are all real, Supabase-backed data now â€”
+        // Tool status/saved layouts/current layout are all real, Supabase-backed data now —
         // cross-tab sync for those goes through kerphOnAuthChange + kerphOnVisible, not this
         // listener. MAINTENANCE_REMINDERS_KEY is still a local-only preference for now.
         window.addEventListener('storage', (e) => {
@@ -2687,7 +2687,7 @@
 
         /* ---------- HOME PAGE TILE REORDER ----------
            The Workshop Layout Planner's featured tile is pinned first (see the CSS comment
-           above .tool-card-featured â€” it's deliberately the one non-equal-weight tile) and
+           above .tool-card-featured — it's deliberately the one non-equal-weight tile) and
            isn't part of the reorderable/draggable set. Every other tile can be dragged into
            whatever order the user wants; that order is cached locally for an instant paint
            and synced to the account (home_tile_order on profiles) so it follows them across
@@ -2699,9 +2699,9 @@
             return grid ? Array.from(grid.querySelectorAll('.tool-card:not(.tool-card-featured)')) : [];
         }
 
-        // No saved order yet (or a saved order is missing a tile â€” e.g. a new tool shipped
+        // No saved order yet (or a saved order is missing a tile — e.g. a new tool shipped
         // since the user last arranged things) falls back to this: unlocked tiles first in
-        // their catalog order, then locked ones â€” computed live off the current plan rather
+        // their catalog order, then locked ones — computed live off the current plan rather
         // than ever being persisted itself, so a plan upgrade naturally surfaces a
         // newly-unlocked tile without touching whatever the user has actually arranged.
         function splitByLock(hrefs) {
@@ -2722,7 +2722,7 @@
             const missing = liveHrefs.filter((h) => !known.includes(h));
             if (!missing.length) return known;
             // Any missing hrefs (a new tool shipped since this order was saved) get slotted
-            // in via the same unlocked/locked split â€” unlocked ones ahead of the user's
+            // in via the same unlocked/locked split — unlocked ones ahead of the user's
             // saved order (so a new free tool doesn't hide at the bottom), locked ones behind.
             const plan = localStorage.getItem(PLAN_KEY) || 'free';
             const missingUnlocked = [], missingLocked = [];
@@ -2901,7 +2901,7 @@
             });
         }
 
-        // Single reactive point for sign-in/account changes â€” fires in every open tab
+        // Single reactive point for sign-in/account changes — fires in every open tab
         // whenever auth state changes anywhere (sign in, sign up, sign out, profile save),
         // replacing the old AUTH_KEY/ACCOUNT_KEY storage-event branches this listener used
         // to have back when sign-in was purely a local flag.
@@ -2917,7 +2917,7 @@
         });
 
         // Instant-paint from whatever's cached locally (or the live unlocked-first default
-        // if nothing's cached yet) â€” runs immediately since the tool grid is already in the
+        // if nothing's cached yet) — runs immediately since the tool grid is already in the
         // DOM by the time this inline script executes, well before kerphAuthReady resolves.
         (function paintInitialTileOrder() {
             let cached = null;
@@ -2956,7 +2956,7 @@
             initPowerToolSearch();
             initFloorToolSearch();
             // Syncs the account's real preferences in on a different device than the one
-            // that set them â€” the localStorage reads above are only an instant-paint
+            // that set them — the localStorage reads above are only an instant-paint
             // fallback to avoid a flash of the wrong value before auth resolves.
             const profile = kerphGetCachedProfile();
             if (profile.unitSystem) localStorage.setItem('kerphUnitSystem', profile.unitSystem);
@@ -2964,7 +2964,7 @@
                 localStorage.setItem(MAINTENANCE_REMINDERS_KEY, profile.maintenanceRemindersEnabled ? 'true' : 'false');
             }
             // The account's real saved order (if any) takes over from whatever the local
-            // instant-paint above used â€” e.g. an order set on another device â€” and refreshes
+            // instant-paint above used — e.g. an order set on another device — and refreshes
             // the local cache to match so the next load's instant-paint is already correct.
             if (profile.homeTileOrder && profile.homeTileOrder.length) {
                 const resolved = resolveTileOrder(profile.homeTileOrder);

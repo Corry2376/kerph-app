@@ -8453,7 +8453,7 @@
                     const parts = [];
                     if (need240) parts.push(`${result.outletsNeeded240} tools need 240V, ${result.outletsPlaced240} placed`);
                     if (need120) parts.push(`${result.outletsNeeded120} tools need 120V, ${result.outletsPlaced120} placed`);
-                    html += `<div class="elec-outlet-flag">&#9888; ${parts.join(' Â· ')}</div>`;
+                    html += `<div class="elec-outlet-flag">&#9888; ${parts.join(' · ')}</div>`;
                 } else {
                     html += `<div class="elec-outlet-flag ok">&#10003; Enough outlets placed for every powered tool</div>`;
                 }
@@ -9065,7 +9065,7 @@
         function formatCabinetDimsText(t) {
             let text = `${t.widthIn}"W x ${t.depthIn}"D x ${t.heightIn}"H`;
             if (t.hasDrawers && t.drawers && t.drawers.length) {
-                text += ` Â· ${summarizeDrawers(t.drawers)}`;
+                text += ` · ${summarizeDrawers(t.drawers)}`;
             }
             return text;
         }

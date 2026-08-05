@@ -344,7 +344,7 @@
     <div class="modal-overlay" id="accountModalOverlay" style="display:none;">
         <div class="modal-box account-modal-box">
             <div class="modal-title">Account Settings</div>
-            <div class="modal-warning">Your account (username, avatar, sign-in) is real and synced via Kerph. Saved layouts, projects, tools, Showcase posts, and reviews are synced too â€” available on any device you sign into.</div>
+            <div class="modal-warning">Your account (username, avatar, sign-in) is real and synced via Kerph. Saved layouts, projects, tools, Showcase posts, and reviews are synced too — available on any device you sign into.</div>
 
             <div class="header-field" style="align-items:center; display:flex; flex-direction:column; gap:4px;">
                 <div class="account-avatar-large" id="accountAvatarLarge">&#128100;</div>
@@ -396,7 +396,7 @@
 
             <div class="account-backup-zone">
                 <div class="account-backup-title">Local Device Settings</div>
-                <div class="account-backup-desc">Your layouts, projects, tools, Showcase posts, and reviews live on your account now â€” no backup needed. This just covers a couple of local display preferences still cached in this browser.</div>
+                <div class="account-backup-desc">Your layouts, projects, tools, Showcase posts, and reviews live on your account now — no backup needed. This just covers a couple of local display preferences still cached in this browser.</div>
                 <div style="display:flex; gap:8px;">
                     <button type="button" id="accountExportBtn" class="mini-btn" style="flex:1;">&#11015;&#65039; Export</button>
                     <button type="button" id="accountImportBtn" class="mini-btn" style="flex:1;">&#11014;&#65039; Import&hellip;</button>
@@ -418,13 +418,13 @@
         <div class="jig-breadcrumb"><a href="shop-jigs.html">Shop Jigs</a> / Add &amp; Subtract Fractions</div>
         <div class="help-eyebrow">Shop Jig</div>
         <div class="help-title">Add &amp; Subtract Fractions</div>
-        <div class="help-subtitle">Stack up measurements the way you'd actually work them at the bench â€” whole inches plus a fraction, added or subtracted line by line â€” and get a running total.</div>
+        <div class="help-subtitle">Stack up measurements the way you'd actually work them at the bench — whole inches plus a fraction, added or subtracted line by line — and get a running total.</div>
 
         <div class="help-article">
             <div class="jig-fraction-rows" id="fracRows"></div>
             <div style="display:flex; gap:8px;">
                 <button type="button" class="mini-btn" id="fracAddRowBtn" style="flex:none; padding:8px 16px; color:#16a34a;">+ Add Line</button>
-                <button type="button" class="mini-btn" id="fracSubtractRowBtn" style="flex:none; padding:8px 16px; color:#b91c1c;">âˆ’ Subtract Line</button>
+                <button type="button" class="mini-btn" id="fracSubtractRowBtn" style="flex:none; padding:8px 16px; color:#b91c1c;">− Subtract Line</button>
             </div>
 
             <div class="jig-input-row" style="margin-top:18px;">
@@ -763,7 +763,7 @@
         });
 
         /* =====================================================================
-           ADD FRACTIONS â€” same conversion math as the Fraction Converter jig,
+           ADD FRACTIONS — same conversion math as the Fraction Converter jig,
            duplicated here (each jig page is fully self-contained, matching how
            every other page in this site duplicates its own shared helpers).
            ===================================================================== */
@@ -784,7 +784,7 @@
         }
 
         function formatFraction(f) {
-            const signStr = f.sign < 0 && (f.whole > 0 || f.num > 0) ? 'âˆ’' : '';
+            const signStr = f.sign < 0 && (f.whole > 0 || f.num > 0) ? '−' : '';
             if (f.num === 0) return `${signStr}${f.whole}"`;
             if (f.whole === 0) return `${signStr}${f.num}/${f.den}"`;
             return `${signStr}${f.whole} ${f.num}/${f.den}"`;
@@ -796,13 +796,13 @@
         }
         function fmtSigned(n, places, suffix) {
             const rounded = Math.abs(n) < Math.pow(10, -places) / 2 ? 0 : n;
-            const sign = rounded > 0 ? '+' : rounded < 0 ? 'âˆ’' : 'Â±';
+            const sign = rounded > 0 ? '+' : rounded < 0 ? '−' : '±';
             return `${sign}${fmtNum(Math.abs(rounded), places)}${suffix}`;
         }
 
         const IN_PER_MM = 1 / 25.4;
 
-        // Widens a whole/numerator box to fit however many digits are actually typed in it â€”
+        // Widens a whole/numerator box to fit however many digits are actually typed in it —
         // "3" and "24" both read cleanly instead of the box staying a fixed width sized for
         // one digit and clipping anything longer.
         function autoSizeFracInput(el) {
@@ -818,7 +818,7 @@
             row.className = 'jig-fraction-row';
             row.dataset.rowId = id;
             row.innerHTML = `
-                <button type="button" class="sign-toggle ${sign < 0 ? 'negative' : ''}" data-role="sign" title="Click to switch between adding and subtracting this line">${sign < 0 ? 'âˆ’' : '+'}</button>
+                <button type="button" class="sign-toggle ${sign < 0 ? 'negative' : ''}" data-role="sign" title="Click to switch between adding and subtracting this line">${sign < 0 ? '−' : '+'}</button>
                 <div class="frac-value-group">
                     <input type="number" min="0" value="${whole}" data-role="whole" title="Whole inches">
                     <input type="number" min="0" value="${num}" data-role="num" title="Numerator">
@@ -838,7 +838,7 @@
                 const btn = e.currentTarget;
                 const negative = !btn.classList.contains('negative');
                 btn.classList.toggle('negative', negative);
-                btn.textContent = negative ? 'âˆ’' : '+';
+                btn.textContent = negative ? '−' : '+';
                 runFractionAdder();
             });
             const numberInputs = row.querySelectorAll('input[type="number"]');

@@ -905,7 +905,7 @@
                 result = await kerphCreatePortfolioProject(project);
             }
             if (result.error) { showToast(result.error.message || 'Could not save project.'); return; }
-            // Only the transition into public fires a social post â€” re-saving an already-public
+            // Only the transition into public fires a social post — re-saving an already-public
             // project (swapping a photo, say) must not re-post it.
             if (project.isPublic && !editingProjectWasPublic) {
                 kerphQueueSocialPost({
@@ -969,7 +969,7 @@
             await initPortfolio();
 
             // Deep link from Project Designer's Share modal ("Create Portfolio Entry from
-            // This") hands off a thumbnail URL + title rather than a storage path â€” the
+            // This") hands off a thumbnail URL + title rather than a storage path — the
             // thumbnail lives in the project-thumbnails bucket, a different one than
             // portfolio-photos, so it needs a real re-upload here to become an actual cover
             // photo rather than a cross-bucket path that kerphPortfolioImageUrl can't resolve.
@@ -984,7 +984,7 @@
                     const blob = await resp.blob();
                     const { data, error } = await kerphUploadPortfolioPhoto(blob);
                     if (!error && data) { pendingCoverPath = data.path; renderCoverThumb(); }
-                } catch { /* best-effort â€” the modal still opens with the title prefilled even if this fails */ }
+                } catch { /* best-effort — the modal still opens with the title prefilled even if this fails */ }
             }
         });
     </script>

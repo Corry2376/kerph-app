@@ -311,7 +311,7 @@
     <div class="modal-overlay" id="accountModalOverlay" style="display:none;">
         <div class="modal-box account-modal-box">
             <div class="modal-title">Account Settings</div>
-            <div class="modal-warning">Your account (username, avatar, sign-in) is real and synced via Kerph. Saved layouts, projects, tools, Showcase posts, and reviews are synced too â€” available on any device you sign into.</div>
+            <div class="modal-warning">Your account (username, avatar, sign-in) is real and synced via Kerph. Saved layouts, projects, tools, Showcase posts, and reviews are synced too — available on any device you sign into.</div>
 
             <div class="header-field" style="align-items:center; display:flex; flex-direction:column; gap:4px;">
                 <div class="account-avatar-large" id="accountAvatarLarge">&#128100;</div>
@@ -363,7 +363,7 @@
 
             <div class="account-backup-zone">
                 <div class="account-backup-title">Local Device Settings</div>
-                <div class="account-backup-desc">Your layouts, projects, tools, Showcase posts, and reviews live on your account now â€” no backup needed. This just covers a couple of local display preferences still cached in this browser.</div>
+                <div class="account-backup-desc">Your layouts, projects, tools, Showcase posts, and reviews live on your account now — no backup needed. This just covers a couple of local display preferences still cached in this browser.</div>
                 <div style="display:flex; gap:8px;">
                     <button type="button" id="accountExportBtn" class="mini-btn" style="flex:1;">&#11015;&#65039; Export</button>
                     <button type="button" id="accountImportBtn" class="mini-btn" style="flex:1;">&#11014;&#65039; Import&hellip;</button>
@@ -385,7 +385,7 @@
         <div class="jig-breadcrumb"><a href="shop-jigs.html">Shop Jigs</a> / Fraction Converter</div>
         <div class="help-eyebrow">Shop Jig</div>
         <div class="help-title">Fraction Converter</div>
-        <div class="help-subtitle">Convert between millimeters, decimal inches, and real woodworking fractions â€” down to 1/64". Shows the nearest usable fraction at your chosen precision and how far off it actually is.</div>
+        <div class="help-subtitle">Convert between millimeters, decimal inches, and real woodworking fractions — down to 1/64". Shows the nearest usable fraction at your chosen precision and how far off it actually is.</div>
 
         <div class="help-article">
             <div class="jig-radio-group">
@@ -732,7 +732,7 @@
         });
 
         /* =====================================================================
-           FRACTION CONVERTER â€” mm / decimal-inch / fraction conversion math
+           FRACTION CONVERTER — mm / decimal-inch / fraction conversion math
            ===================================================================== */
 
         function gcd(a, b) { a = Math.abs(a); b = Math.abs(b); return b === 0 ? (a || 1) : gcd(b, a % b); }
@@ -754,7 +754,7 @@
         }
 
         function formatFraction(f) {
-            const signStr = f.sign < 0 && (f.whole > 0 || f.num > 0) ? 'âˆ’' : '';
+            const signStr = f.sign < 0 && (f.whole > 0 || f.num > 0) ? '−' : '';
             if (f.num === 0) return `${signStr}${f.whole}"`;
             if (f.whole === 0) return `${signStr}${f.num}/${f.den}"`;
             return `${signStr}${f.whole} ${f.num}/${f.den}"`;
@@ -766,7 +766,7 @@
         }
         function fmtSigned(n, places, suffix) {
             const rounded = Math.abs(n) < Math.pow(10, -places) / 2 ? 0 : n;
-            const sign = rounded > 0 ? '+' : rounded < 0 ? 'âˆ’' : 'Â±';
+            const sign = rounded > 0 ? '+' : rounded < 0 ? '−' : '±';
             return `${sign}${fmtNum(Math.abs(rounded), places)}${suffix}`;
         }
 

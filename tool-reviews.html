@@ -573,7 +573,7 @@
     <script>
         /* ---------- SHARED STATE KEYS (must match workshop-planner.html / index.html exactly) ---------- */
         const PLAN_KEY = 'kerphPlan';
-        /* ACCOUNT_KEY/AUTH_KEY removed â€” account + sign-in are now real, Supabase-backed
+        /* ACCOUNT_KEY/AUTH_KEY removed — account + sign-in are now real, Supabase-backed
            (see supabase-client.js) instead of localStorage flags. */
         const TOOL_STATUS_KEY = 'kerphToolStatus';
         const LAYOUTS_KEY = 'kerphSavedLayouts';
@@ -864,7 +864,7 @@
         }
 
         /* ---------- TOOL REVIEWS ----------
-           Real, Supabase-backed multi-user content now â€” tool_reviews (public-read) +
+           Real, Supabase-backed multi-user content now — tool_reviews (public-read) +
            tool_review_votes (real per-user "helpful" votes, denormalized onto helpful_count
            via a DB trigger). cachedReviews/cachedMyVotes are refreshed on every renderReviews()
            call, not just once, since this is now real multi-user data other people can change
@@ -1175,7 +1175,7 @@
         kerphAuthReady.then(() => {
             initHeaderSignIn();
             initAccountPanel();
-            // Public content â€” renders for signed-out visitors too, just needed auth to
+            // Public content — renders for signed-out visitors too, just needed auth to
             // resolve first so kerphLoadMyReviewVotes() reflects the right (or no) user.
             renderReviews();
         });
