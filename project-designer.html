@@ -4109,6 +4109,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
         // opens don't leak memory.
         let arObjectUrl = null;
         async function openArViewer() {
+            if (getPlan() !== 'premier') { showToast('AR view is a Premier feature -- upgrade to unlock it.'); return; }
             if (!panels.length) { showToast('Add some panels first.'); return; }
             const glb = (typeof window.exportProjectGLB === 'function') ? await window.exportProjectGLB() : null;
             if (!glb) { showToast('Could not export the 3D model â€” open the 3D Preview tab first.'); return; }
@@ -4133,6 +4134,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
         document.getElementById('viewInArBtn').addEventListener('click', openArViewer);
 
         async function recordAssembly() {
+            if (getPlan() !== 'premier') { showToast('Animated assembly video export is a Premier feature -- upgrade to unlock it.'); return; }
             if (!panels.length) { showToast('Add some panels first.'); return; }
             const btn = document.getElementById('recordAssemblyBtn');
             btn.disabled = true;
