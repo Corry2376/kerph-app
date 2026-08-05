@@ -317,10 +317,13 @@
             border-radius: 12px;
             padding: 24px;
             width: 320px;
+            max-width: calc(100vw - 32px);
+            max-height: calc(100vh - 40px);
+            overflow-y: auto;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
         }
 
-        .account-modal-box { width: 380px; max-height: 88vh; overflow-y: auto; }
+        .account-modal-box { width: 380px; max-width: calc(100vw - 32px); max-height: 88vh; overflow-y: auto; }
         .account-member-since { font-size: 10.5px; color: #94a3b8; font-weight: 600; margin-top: 6px; }
         .account-stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
         .account-stat { text-align: center; background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 4px; }
@@ -393,10 +396,10 @@
            discussed as its own multi-session feature, not a one-shot build. */
         #sidebar-panel {
             position: absolute;
-            top: 150px;
+            top: var(--header-h, 150px);
             left: 0;
             width: 300px;
-            height: calc(100vh - 150px);
+            height: calc(100vh - var(--header-h, 150px));
             background-color: #ffffff;
             background-image: radial-gradient(circle at 1px 1px, rgba(15, 23, 42, 0.06) 1px, transparent 0);
             background-size: 16px 16px;
@@ -439,10 +442,10 @@
 
         #canvas-area {
             position: absolute;
-            top: 150px;
+            top: var(--header-h, 150px);
             left: 300px;
             width: calc(100vw - 300px);
-            height: calc(100vh - 150px);
+            height: calc(100vh - var(--header-h, 150px));
             overflow-y: auto;
             padding: 40px;
         }
@@ -463,10 +466,10 @@
            panel and showing this instead, rather than hiding one parent. */
         #projectDesignerPaywall {
             position: absolute;
-            top: 150px;
+            top: var(--header-h, 150px);
             left: 0;
             width: 100%;
-            height: calc(100vh - 150px);
+            height: calc(100vh - var(--header-h, 150px));
             display: none;
             align-items: center;
             justify-content: center;
@@ -651,7 +654,7 @@
            looking at the cut list) ---------- */
         .notes-panel {
             position: fixed;
-            top: 170px;
+            top: calc(var(--header-h, 150px) + 20px);
             /* .floating-panel sets left:14px; without resetting it here, left+width+right are
                all non-auto and the box is over-constrained, so the browser drops `right` per
                spec and pins this to the left edge instead â€” left:auto is what actually makes
@@ -746,6 +749,71 @@
         .selection-pos-labels-row span { width: 33%; text-align: center; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: #6b7280; }
         .selection-pos-row { display: flex; gap: 5px; margin-bottom: 8px; }
         .selection-pos-row .input-box { width: 33%; padding: 5px 4px; font-size: 11.5px; text-align: center; font-variant-numeric: tabular-nums; }
+
+        /* ---------- 3D PREVIEW: TOUCH EDIT MODE (coarse-pointer only â€” see IS_COARSE_POINTER
+           in the module script) ----------
+           Default touch behavior is plain OrbitControls one-finger orbit, same as it's always
+           been; these only appear once a panel is selected on a touch device, giving Move/
+           Rotate a deliberate on/off switch instead of hijacking every drag over a piece.
+           Deliberately laid out in normal flow *below* #preview3DCanvasWrap (see the HTML)
+           rather than as another absolutely-positioned floating-panel overlay inside it â€” the
+           existing top-left selection panel already fills a large chunk of a phone-width canvas
+           (position fields + Free Rotate/Align/Copy/Remove + hint text), and a second overlay
+           anchored to a canvas corner ends up colliding with it instead of sitting cleanly
+           "alongside" it the way a fixed d-pad would on a bigger screen. */
+        .preview3d-touch-controls {
+            display: none;
+            flex-wrap: wrap;
+            align-items: flex-start;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .preview3d-touch-bar {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            background-color: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            padding: 10px;
+            box-shadow: 0 8px 20px -6px rgba(15, 23, 42, 0.15);
+        }
+        .preview3d-touch-bar .mini-btn { flex: none; padding: 10px 16px; white-space: nowrap; }
+        .preview3d-dpad {
+            display: grid;
+            grid-template-columns: repeat(3, 40px);
+            grid-template-rows: repeat(3, 40px);
+            gap: 4px;
+            background-color: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            padding: 10px;
+            box-shadow: 0 8px 20px -6px rgba(15, 23, 42, 0.15);
+        }
+        .dpad-btn {
+            flex: none;
+            padding: 0;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .dpad-label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 9px;
+            font-weight: 700;
+            color: #9ca3af;
+        }
+        .dpad-yup { grid-column: 1; grid-row: 1; }
+        .dpad-up { grid-column: 2; grid-row: 1; }
+        .dpad-left { grid-column: 1; grid-row: 2; }
+        .dpad-home { grid-column: 2; grid-row: 2; }
+        .dpad-right { grid-column: 3; grid-row: 2; }
+        .dpad-down { grid-column: 2; grid-row: 3; }
+        .dpad-ydown { grid-column: 3; grid-row: 3; }
             .header-quick-links { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; font-size: 11px; }
             .header-quick-links-row { display: flex; align-items: center; gap: 6px; }
         .header-quick-links a { color: #6b7280; font-weight: 600; text-decoration: none; }
@@ -796,6 +864,49 @@
         }
         .jigs-dropdown-menu a:hover { background-color: #eef2ff; color: #1e3a8a; }
         .jigs-dropdown-menu-sep { height: 1px; background-color: #e2e8f0; margin: 5px 2px; }
+
+        /* ---------- MOBILE LAYOUT (this page was excluded from the site-wide CSS-only
+           responsive pass because of the 3D tab's interaction needs, so the form side never
+           got even this basic pass either â€” see the touch-specific 3D Preview rules further
+           down for the real work). Header collapse itself is handled by the shared
+           site-header-brand.js/tail.js <1100px rules; --header-h (set by the small script
+           right after </header>) is what keeps #sidebar-panel/#canvas-area/etc. from being
+           hidden under that now-taller header instead of assuming a fixed 150px. Below this,
+           the sidebar + canvas-area side-by-side desktop layout stops fitting, so it switches
+           to a stacked, normal-flow, page-scrolling layout instead. */
+        @media (max-width: 900px) {
+            body { overflow: auto; height: auto; min-height: 100vh; }
+            #sidebar-panel, #canvas-area, #projectDesignerPaywall {
+                position: static;
+                width: 100%;
+                height: auto;
+            }
+            #sidebar-panel {
+                /* First static-flow block after the still-absolutely-positioned header â€” since
+                   header no longer occupies flow space to push this down naturally, it needs its
+                   own top offset here (canvas-area/notes-panel/etc. just follow it in flow after
+                   this, so they don't need one of their own). */
+                margin-top: var(--header-h, 150px);
+                max-height: 42vh;
+                overflow-y: auto;
+                border-right: none;
+                border-bottom: 1px solid #cbd5e1;
+            }
+            #canvas-area { padding: 20px 14px 40px; }
+            #projectDesignerPaywall { margin-top: var(--header-h, 150px); padding: 40px 16px; }
+            .notes-panel {
+                position: static;
+                width: 100%;
+                right: auto;
+                margin: 16px 20px 0;
+            }
+            .project-fields-group, .header-field-wide { width: 100%; }
+            .header-compound-row { flex-wrap: wrap; }
+            .mini-btn { padding: 10px 12px; }
+            #preview3DCanvasWrap { height: 62vh; min-height: 340px; }
+            .preview-summary-grid { grid-template-columns: repeat(2, 1fr); }
+            .floating-panel { max-width: calc(100% - 28px); }
+        }
     </style>
 </head>
 <body>
@@ -824,6 +935,30 @@
         </div>
         <script src="site-header-tail.js"></script>
     </header>
+
+    <script>
+        // Keeps --header-h in sync with the header's *actual* rendered height instead of the
+        // 150px this page's layout otherwise assumes. Desktop header height really is a fixed
+        // 150px, so this is a no-op there, but the shared mobile header rules (site-header-
+        // brand.js / site-header-tail.js, <1100px) make it wrap into a much taller column
+        // layout, and its height also shifts with sign-in-form-vs-account-button state. Every
+        // absolutely-positioned block below the header (#sidebar-panel, #canvas-area,
+        // #projectDesignerPaywall, .notes-panel) reads this var for its top offset so none of
+        // them end up hidden under (or floating short of) the header at any width.
+        (function () {
+            var headerEl = document.querySelector('header');
+            if (!headerEl) return;
+            function syncHeaderHeight() {
+                document.documentElement.style.setProperty('--header-h', headerEl.offsetHeight + 'px');
+            }
+            syncHeaderHeight();
+            if (window.ResizeObserver) {
+                new ResizeObserver(syncHeaderHeight).observe(headerEl);
+            } else {
+                window.addEventListener('resize', syncHeaderHeight);
+            }
+        })();
+    </script>
 
     <div class="modal-overlay" id="accountModalOverlay" style="display:none;">
         <div class="modal-box account-modal-box">
@@ -1075,6 +1210,58 @@
         </div>
     </div>
 
+    <div class="modal-overlay" id="photoImportModalOverlay" style="display:none;">
+        <div class="modal-box" style="width:380px; max-height:calc(100vh - 40px); overflow-y:auto;">
+            <div class="modal-title">Import From Photo</div>
+            <p style="font-size:11.5px; color:#6b7280; line-height:1.5; margin:0 0 12px;">Snap or upload a photo of a cabinet, bookcase, or similar piece &mdash; the AI drafts a rough starting spec (estimated size, shelf/door/drawer count, likely style) that pre-fills a template below for you to review and adjust. Not an exact reconstruction: a single photo can't reveal hidden joinery or give millimeter-accurate scale.</p>
+
+            <div id="photoImportLockedNote" style="display:none; font-size:12.5px; color:#6b7280; line-height:1.6; background:#fffbeb; border:1px solid #fde68a; border-radius:8px; padding:10px 12px; margin-bottom:12px;">
+                Import From Photo is a Premier feature.
+                <div style="margin-top:8px;">
+                    <button type="button" class="mini-btn modal-primary-btn" id="photoImportUpgradeBtn">Switch to Premier (preview)</button>
+                </div>
+            </div>
+
+            <div id="photoImportForm">
+                <input type="file" id="photoImportFileInput" accept="image/*" capture="environment" style="display:none;">
+                <div id="photoImportPreviewWrap" style="display:none; text-align:center; margin-bottom:10px;">
+                    <img id="photoImportPreview" alt="Selected photo" style="max-width:100%; max-height:220px; border-radius:8px; border:1px solid #e2e8f0;">
+                </div>
+                <button type="button" class="mini-btn" id="photoImportChooseBtn" style="width:100%;">&#128247; Choose or Take a Photo</button>
+
+                <div class="header-field" style="width:100%; margin-top:10px;">
+                    <label class="header-field-label" for="photoImportRefMeasurement">Reference measurement (optional, improves accuracy)</label>
+                    <div style="display:flex; gap:6px;">
+                        <input type="number" class="input-box" id="photoImportRefMeasurement" placeholder="e.g. 30" step="0.125" style="flex:1;">
+                        <select class="select-box" id="photoImportRefDescription" style="flex:1;">
+                            <option value="overall width">is the width (in)</option>
+                            <option value="overall height">is the height (in)</option>
+                            <option value="overall depth">is the depth (in)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button type="button" class="mini-btn modal-primary-btn" id="photoImportAnalyzeBtn" style="width:100%; margin-top:12px;" disabled>Analyze Photo</button>
+                <div id="photoImportLoading" style="display:none; font-size:12.5px; color:#6b7280; text-align:center; margin-top:10px;">Looking closely at your photo&hellip;</div>
+                <div id="photoImportError" style="display:none; font-size:12px; color:#b91c1c; margin-top:8px;"></div>
+            </div>
+
+            <div id="photoImportResults" style="display:none; margin-top:14px; padding-top:12px; border-top:1px solid #e5e7eb;">
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+                    <div style="font-size:14px; font-weight:800; color:#0f172a;" id="photoImportItemType"></div>
+                    <span id="photoImportConfidenceBadge" style="font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:0.04em; border-radius:4px; padding:3px 8px;"></span>
+                </div>
+                <div style="font-size:12.5px; color:#374151; line-height:1.6;" id="photoImportSummary"></div>
+                <div style="font-size:11.5px; color:#92400e; background:#fffbeb; border:1px solid #fde68a; border-radius:6px; padding:8px 10px; margin-top:8px; line-height:1.5;" id="photoImportNotes"></div>
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" id="photoImportCancelBtn" class="mini-btn">Cancel</button>
+                <button type="button" id="photoImportUseBtn" class="mini-btn modal-primary-btn" style="display:none;">Use As Starting Point &rarr;</button>
+            </div>
+        </div>
+    </div>
+
     <div class="modal-overlay" id="confirmModalOverlay" style="display:none;">
         <div class="modal-box">
             <div class="modal-title">Are you sure?</div>
@@ -1205,6 +1392,7 @@
             <button type="button" class="mini-btn" id="addPanelBtn" style="flex:1;">+ Add Panel</button>
             <button type="button" class="mini-btn" id="addTemplateBtn" style="flex:1;">&#128208; From Template</button>
         </div>
+        <button type="button" class="mini-btn" id="importFromPhotoBtn" style="width:100%; margin-top:6px;" title="Premier &mdash; draft a starting template from a photo of a cabinet, bookcase, or similar piece">&#128247; Import From Photo</button>
     </div>
 
     <div class="floating-panel notes-panel" id="notesPanel">
@@ -1328,6 +1516,31 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
                         <button type="button" class="mini-btn" id="quickAddCancelBtn" style="flex:1;">Cancel</button>
                         <button type="button" class="mini-btn modal-primary-btn" id="quickAddAddBtn" style="flex:1;">Add</button>
                     </div>
+                </div>
+            </div>
+            <!-- Touch-only Edit mode controls (coarse pointer): default is plain one-finger
+                 orbit, same as always; tapping a panel selects it, and these two extras appear
+                 so Move/Rotate become deliberate on-screen modes instead of hijacking every drag
+                 over a piece. Deliberately placed in normal flow below the canvas rather than as
+                 another floating-panel overlay inside it â€” the existing selection panel already
+                 fills most of the canvas's top-left on a phone-width canvas, and a second
+                 absolutely-positioned overlay there collides with it instead of sitting
+                 "alongside" it. Hidden on desktop mouse/keyboard â€” see the IS_COARSE_POINTER
+                 gate in the module script below. -->
+            <div class="preview3d-touch-controls" id="preview3DTouchControls">
+                <div class="preview3d-touch-bar" id="preview3DTouchActionBar">
+                    <button type="button" class="mini-btn" id="touchMoveBtn" title="Drag on the model to move the selected piece">&#9995;&#65039; Move</button>
+                    <button type="button" class="mini-btn" id="touchRotateBtn" title="Drag on the model to rotate the selected piece">&#128260; Rotate</button>
+                    <button type="button" class="mini-btn" id="touchDoneBtn" title="Deselect">Done</button>
+                </div>
+                <div class="preview3d-dpad" id="preview3DDpad">
+                    <button type="button" class="mini-btn dpad-btn dpad-yup" id="dpadYUpBtn" title="Nudge up">&#8673;</button>
+                    <button type="button" class="mini-btn dpad-btn dpad-up" id="dpadUpBtn" title="Nudge back">&#8593;</button>
+                    <button type="button" class="mini-btn dpad-btn dpad-left" id="dpadLeftBtn" title="Nudge left">&#8592;</button>
+                    <span class="dpad-label dpad-home">nudge</span>
+                    <button type="button" class="mini-btn dpad-btn dpad-right" id="dpadRightBtn" title="Nudge right">&#8594;</button>
+                    <button type="button" class="mini-btn dpad-btn dpad-down" id="dpadDownBtn" title="Nudge forward">&#8595;</button>
+                    <button type="button" class="mini-btn dpad-btn dpad-ydown" id="dpadYDownBtn" title="Nudge down">&#8675;</button>
                 </div>
             </div>
             <div class="preview3d-hint">Drag a piece near another's edge to snap them flush â€” the outline turns green when it locks. Hold Alt while dragging (or Alt+arrow keys) to bypass snapping for micro-adjustments. Type exact X/Y/Z above, or use the panel's Edit form on the left, for precise placement.</div>
@@ -3611,6 +3824,157 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
         document.getElementById('templateGenerateBtn').addEventListener('click', generatePartsFromTemplate);
         document.getElementById('templateTypeSelect').addEventListener('change', renderTemplateFields);
 
+        // ---------- Import From Photo (Premier) ----------
+        // Drafts a rough starting spec from a photo (see supabase-client.js's
+        // kerphIdentifyFurniture / supabase/functions/identify-furniture), then pre-fills the
+        // EXISTING Add-From-Template flow above rather than generating panels directly â€” the
+        // user always reviews/adjusts real template fields before anything is added, same as
+        // any other template use. Never auto-generates panels straight from the AI response.
+        let photoImportDataUrl = null;
+        let photoImportDraft = null;
+
+        function openPhotoImportModal() {
+            const isPremium = getPlan() === 'premier';
+            document.getElementById('photoImportLockedNote').style.display = isPremium ? 'none' : 'block';
+            document.getElementById('photoImportForm').style.display = isPremium ? 'block' : 'none';
+            document.getElementById('photoImportResults').style.display = 'none';
+            document.getElementById('photoImportUseBtn').style.display = 'none';
+            document.getElementById('photoImportError').style.display = 'none';
+            document.getElementById('photoImportPreviewWrap').style.display = 'none';
+            document.getElementById('photoImportAnalyzeBtn').disabled = true;
+            document.getElementById('photoImportRefMeasurement').value = '';
+            photoImportDataUrl = null;
+            photoImportDraft = null;
+            document.getElementById('photoImportModalOverlay').style.display = 'flex';
+        }
+        function closePhotoImportModal() {
+            document.getElementById('photoImportModalOverlay').style.display = 'none';
+        }
+
+        document.getElementById('importFromPhotoBtn').addEventListener('click', openPhotoImportModal);
+        document.getElementById('photoImportCancelBtn').addEventListener('click', closePhotoImportModal);
+
+        document.getElementById('photoImportUpgradeBtn').addEventListener('click', () => {
+            localStorage.setItem(PLAN_KEY, 'premier');
+            const headerSelect = document.getElementById('planSelector');
+            if (headerSelect) headerSelect.value = 'premier';
+            if (typeof kerphRefreshTierLocks === 'function') kerphRefreshTierLocks();
+            openPhotoImportModal();
+            showToast('Switched to the Premier plan (preview).');
+        });
+
+        document.getElementById('photoImportChooseBtn').addEventListener('click', () => {
+            document.getElementById('photoImportFileInput').click();
+        });
+        document.getElementById('photoImportFileInput').addEventListener('change', async () => {
+            const input = document.getElementById('photoImportFileInput');
+            const file = input.files[0];
+            if (!file) return;
+            document.getElementById('photoImportError').style.display = 'none';
+            document.getElementById('photoImportResults').style.display = 'none';
+            document.getElementById('photoImportUseBtn').style.display = 'none';
+            try {
+                const dataUrl = await kerphDownscaleImage(file, 1024);
+                photoImportDataUrl = dataUrl;
+                const previewImg = document.getElementById('photoImportPreview');
+                previewImg.src = dataUrl;
+                document.getElementById('photoImportPreviewWrap').style.display = 'block';
+                document.getElementById('photoImportAnalyzeBtn').disabled = false;
+            } catch (e) {
+                showToast('Could not read that photo â€” try a different one.');
+            }
+            input.value = '';
+        });
+
+        document.getElementById('photoImportAnalyzeBtn').addEventListener('click', async () => {
+            if (!photoImportDataUrl) return;
+            const errorEl = document.getElementById('photoImportError');
+            errorEl.style.display = 'none';
+            document.getElementById('photoImportResults').style.display = 'none';
+            document.getElementById('photoImportUseBtn').style.display = 'none';
+            document.getElementById('photoImportLoading').style.display = 'block';
+            document.getElementById('photoImportAnalyzeBtn').disabled = true;
+
+            const refVal = parseFloat(document.getElementById('photoImportRefMeasurement').value);
+            const refMeasurement = (refVal > 0) ? refVal : undefined;
+            const refDescription = document.getElementById('photoImportRefDescription').value;
+            const base64Only = photoImportDataUrl.split(',')[1];
+
+            const { data, error } = await kerphIdentifyFurniture(base64Only, 'image/jpeg', refMeasurement, refDescription);
+            document.getElementById('photoImportLoading').style.display = 'none';
+            document.getElementById('photoImportAnalyzeBtn').disabled = false;
+
+            if (error) {
+                errorEl.textContent = error.message || 'Could not analyze that photo.';
+                errorEl.style.display = 'block';
+                return;
+            }
+            photoImportDraft = data;
+            renderPhotoImportResult(data);
+        });
+
+        const CONFIDENCE_COLORS = {
+            high: { bg: '#dcfce7', fg: '#166534' },
+            medium: { bg: '#fef3c7', fg: '#92400e' },
+            low: { bg: '#fee2e2', fg: '#991b1b' }
+        };
+        function renderPhotoImportResult(draft) {
+            document.getElementById('photoImportItemType').textContent = draft.item_type || 'Furniture piece';
+            const badge = document.getElementById('photoImportConfidenceBadge');
+            const conf = draft.confidence || 'low';
+            const colors = CONFIDENCE_COLORS[conf] || CONFIDENCE_COLORS.low;
+            badge.textContent = conf + ' confidence';
+            badge.style.background = colors.bg;
+            badge.style.color = colors.fg;
+
+            const dims = `${fmtNum(draft.estimated_width_in)}"W x ${fmtNum(draft.estimated_height_in)}"H x ${fmtNum(draft.estimated_depth_in)}"D`;
+            const counts = [
+                draft.shelf_count ? `${draft.shelf_count} ${draft.shelf_count === 1 ? 'shelf' : 'shelves'}` : null,
+                draft.door_count ? `${draft.door_count} door${draft.door_count === 1 ? '' : 's'}` : null,
+                draft.drawer_count ? `${draft.drawer_count} drawer${draft.drawer_count === 1 ? '' : 's'}` : null
+            ].filter(Boolean).join(', ') || 'no shelves/doors/drawers detected';
+            document.getElementById('photoImportSummary').innerHTML =
+                `<strong>${escapeHtml(dims)}</strong> &mdash; ${escapeHtml(counts)}<br>` +
+                `${escapeHtml(draft.construction_style || 'Style not determined')} &mdash; ${escapeHtml(draft.material_guess || 'material not determined')}`;
+            document.getElementById('photoImportNotes').textContent = draft.notes || '';
+
+            document.getElementById('photoImportResults').style.display = 'block';
+            document.getElementById('photoImportUseBtn').style.display = 'inline-block';
+        }
+        function fmtNum(n) {
+            return (typeof n === 'number' && isFinite(n)) ? (Math.round(n * 100) / 100).toString() : '?';
+        }
+
+        // Cabinet-carcass first even when drawers are present â€” a piece with drawers still has
+        // an outer case the drawers slide into, so that's the more useful starting point; the
+        // user adds a separate Drawer Box template afterward for the drawers themselves.
+        function bestTemplateTypeForDraft(draft) {
+            if ((draft.door_count || 0) > 0 || (draft.drawer_count || 0) > 0) return 'cabinet';
+            if ((draft.shelf_count || 0) > 0) return 'shelving';
+            return 'box';
+        }
+        function templateOverridesForDraft(type, draft) {
+            const w = draft.estimated_width_in, h = draft.estimated_height_in, d = draft.estimated_depth_in;
+            if (type === 'shelving') return { width: w, height: h, depth: d, shelfCount: draft.shelf_count };
+            return { width: w, height: h, depth: d };
+        }
+        document.getElementById('photoImportUseBtn').addEventListener('click', () => {
+            if (!photoImportDraft) return;
+            const type = bestTemplateTypeForDraft(photoImportDraft);
+            const overrides = templateOverridesForDraft(type, photoImportDraft);
+            closePhotoImportModal();
+            populateMaterialSelect(document.getElementById('templateMaterialSelect'));
+            document.getElementById('templateTypeSelect').value = type;
+            renderTemplateFields();
+            Object.keys(overrides).forEach(key => {
+                const val = overrides[key];
+                const el = document.getElementById('tplField_' + key);
+                if (el && typeof val === 'number' && val > 0) el.value = Math.round(val * 1000) / 1000;
+            });
+            document.getElementById('templateModalOverlay').style.display = 'flex';
+            showToast('Draft loaded into the template below â€” review and adjust before generating parts.');
+        });
+
         document.getElementById('panelMaterialSelect').addEventListener('change', (e) => {
             const mat = MATERIALS[e.target.value];
             if (mat) document.getElementById('panelThicknessInput').value = mat.thicknessIn;
@@ -4335,6 +4699,17 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
         const FACE_SNAP_THRESHOLD_IN = 1.5;
         const SELECT_COLOR = 0x7c3aed;
         const SNAP_COLOR = 0x16a34a;
+
+        // ---------- TOUCH EDIT MODE ----------
+        // Same mode-toggle pattern as shop-3d-viewer.html's touch support: default is plain
+        // one-finger orbit (OrbitControls' own default touch behavior, untouched below), and
+        // selecting a panel on a touch device surfaces Move/Rotate as deliberate on-screen
+        // modes rather than hijacking every drag over a piece the way mouse users get for free.
+        // Computed once at load â€” matches a real touchscreen and stays stable for the session
+        // rather than trying to react to, say, a mouse being plugged into a tablet mid-session.
+        const IS_COARSE_POINTER = !!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches);
+        let touchEditTool = null; // null | 'move' | 'rotate' â€” which on-screen action is armed
+        let touchRotateState = null; // active only mid touch-rotate drag; see armTouchRotate
 
         // Labels/measurements have no cut-list relevance, so unlike panels they're read/written
         // directly here, entirely module-local â€” except for the 3 small bridge functions below,
@@ -5396,6 +5771,35 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
             label: 'Drag to reposition Â· Shift+drag to move up/down Â· click empty space to deselect.',
             measurement: 'Click empty space to deselect.'
         };
+        const TOUCH_SELECTION_HINTS = {
+            panel: 'Tap Move or Rotate below, then drag anywhere on the model Â· use the nudge pad for fine adjustments Â· tap empty space to deselect.',
+            label: 'Tap Move, then drag anywhere on the model Â· tap empty space to deselect.',
+            measurement: 'Tap empty space to deselect.'
+        };
+
+        // Shows/hides the touch-only action bar (Move/Rotate/Done) and nudge d-pad for the
+        // current selection â€” no-op setup when !IS_COARSE_POINTER since the elements just stay
+        // display:none forever on a mouse+keyboard device. Mirrors the same type/explodedView
+        // gating already applied to the desktop selection panel's Free Rotate/Align buttons just
+        // above: measurements never move, only real panels rotate, nothing is editable while
+        // exploded.
+        function updateTouchControls(mesh) {
+            if (!IS_COARSE_POINTER) return;
+            const wrap = document.getElementById('preview3DTouchControls');
+            const bar = document.getElementById('preview3DTouchActionBar');
+            const dpad = document.getElementById('preview3DDpad');
+            const rotateBtn = document.getElementById('touchRotateBtn');
+            if (!wrap || !bar || !dpad || !rotateBtn) return;
+            const type = mesh ? (mesh.userData.type || 'panel') : null;
+            const canMove = !!mesh && type !== 'measurement' && !explodedView;
+            const canRotate = !!mesh && type === 'panel' && !explodedView;
+            wrap.style.display = (mesh && !explodedView) ? 'flex' : 'none';
+            dpad.style.display = canMove ? 'grid' : 'none';
+            rotateBtn.style.display = canRotate ? 'inline-block' : 'none';
+            document.getElementById('touchMoveBtn').style.display = canMove ? 'inline-block' : 'none';
+            document.getElementById('touchMoveBtn').classList.toggle('mini-btn-active', touchEditTool === 'move');
+            rotateBtn.classList.toggle('mini-btn-active', touchEditTool === 'rotate');
+        }
 
         function selectMesh(mesh) {
             selectedMesh = mesh;
@@ -5404,10 +5808,15 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
                 selectionHelper.dispose();
                 selectionHelper = null;
             }
+            // A new selection (or a deselect) always starts back in plain-orbit touch mode â€”
+            // Move/Rotate are per-selection deliberate choices, not something that should carry
+            // over and surprise the user on the next piece they tap.
+            touchEditTool = null;
             const panelEl = document.getElementById('preview3DSelectionPanel');
             if (!mesh) {
                 panelEl.style.display = 'none';
                 if (transformControls) transformControls.detach();
+                updateTouchControls(null);
                 return;
             }
             const type = mesh.userData.type || 'panel';
@@ -5415,7 +5824,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
             document.getElementById('preview3DSelectionName').textContent = mesh.userData.name || 'Panel';
             document.getElementById('preview3DSelectionHint').textContent = explodedView
                 ? 'Exploded view is read-only â€” switch back to Assembled to drag, rotate, or remove.'
-                : (SELECTION_HINTS[type] || SELECTION_HINTS.panel);
+                : ((IS_COARSE_POINTER ? TOUCH_SELECTION_HINTS[type] : null) || SELECTION_HINTS[type] || SELECTION_HINTS.panel);
             // Rotation and removal both write back to the real panel â€” neither makes sense on a
             // synthetic exploded position, so both stay hidden until back in Assembled view.
             // A billboard label or two-point measurement never gets Free Rotate either way.
@@ -5424,6 +5833,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
             document.getElementById('preview3DDuplicateBtn').style.display = (type === 'panel' && !explodedView) ? 'block' : 'none';
             document.getElementById('preview3DRemoveBtn').style.display = explodedView ? 'none' : 'block';
             updateSelectionCoords(mesh);
+            updateTouchControls(mesh);
             // Purple to match the selection outline used everywhere else in the app (e.g. the
             // 2D planners' .selected-node dashed outline) â€” makes it unambiguous which box is
             // actually selected instead of having to infer it from the floating panel alone.
@@ -5464,6 +5874,53 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
             } else {
                 transformControls.attach(selectedMesh);
             }
+        }
+
+        // ---------- TOUCH ROTATE ----------
+        // Touch equivalent of the Free Rotate gizmo above, reachable via the Rotate button in
+        // the touch action bar (see updateTouchControls / init3DPreviewScene's touch button
+        // wiring). Deliberately doesn't attach the real TransformControls gizmo â€” its handles
+        // are a few pixels wide, which is a fine target for a mouse cursor but not reliably
+        // hittable with a fingertip, and the whole point of "Edit mode" here is that any
+        // one-finger drag on the model rotates it once Rotate is armed, not just a drag that
+        // lands exactly on a ring. What IS reused from the gizmo path: the same
+        // push3DUndoSnapshot()-on-start / commitFreeRotation()-on-end persistence the
+        // dragging-changed handler above uses, so a touch rotate is undoable and saved exactly
+        // the same way a gizmo rotate is.
+        const TOUCH_ROTATE_SENSITIVITY = 0.012; // radians per pixel of drag
+
+        function armTouchRotate(e) {
+            const mesh = selectedMesh;
+            if (!mesh || mesh.userData.type !== 'panel' || explodedView) return;
+            push3DUndoSnapshot();
+            touchRotateState = { startX: e.clientX, startY: e.clientY, startRotX: mesh.rotation.x, startRotY: mesh.rotation.y };
+            controls.enabled = false;
+            window.addEventListener('pointermove', onTouchRotateMove);
+            window.addEventListener('pointerup', onTouchRotateEnd);
+        }
+
+        function onTouchRotateMove(e) {
+            if (!touchRotateState || !selectedMesh) return;
+            const dxPix = e.clientX - touchRotateState.startX;
+            const dyPix = e.clientY - touchRotateState.startY;
+            // Horizontal drag spins around the vertical (Y) axis, vertical drag tips it around
+            // the camera-facing (X) axis â€” the same two-axis feel as dragging the free-rotate
+            // gizmo's outer rings, just driven from anywhere on the canvas instead of needing to
+            // land on a specific ring.
+            selectedMesh.rotation.y = touchRotateState.startRotY + dxPix * TOUCH_ROTATE_SENSITIVITY;
+            selectedMesh.rotation.x = touchRotateState.startRotX + dyPix * TOUCH_ROTATE_SENSITIVITY;
+            updateSelectionCoords(selectedMesh);
+        }
+
+        function onTouchRotateEnd() {
+            window.removeEventListener('pointermove', onTouchRotateMove);
+            window.removeEventListener('pointerup', onTouchRotateEnd);
+            controls.enabled = true;
+            if (touchRotateState && selectedMesh) {
+                commitFreeRotation();
+                rebuildDimensionMeshes();
+            }
+            touchRotateState = null;
         }
 
         // Box3().setFromObject(mesh) would also sweep in any hole-marker children (see
@@ -5591,8 +6048,67 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
             if (created) selectMesh(created.mesh);
         }
 
+        // Arms the same planar/vertical drag-to-move dragState the mouse path has always used
+        // (see onDragMove/onDragEnd below) â€” factored out so touch's Move mode can trigger it
+        // against whatever's already selected without needing a fresh raycast hit on the mesh
+        // itself (see the touch branch at the top of onPointerDown).
+        function armMoveDrag(e) {
+            const mesh = selectedMesh;
+            if (!mesh) return;
+            push3DUndoSnapshot();
+
+            // Shift+drag moves the item up/down instead of along the floor â€” without this the
+            // only way to change a panel's height was typing into the Y field by hand, which
+            // was most of what made "moving pieces" feel incomplete rather than klunky.
+            // Uses raw screen-Y delta rather than raycasting against a camera-facing plane â€”
+            // the plane approach is what real 3D tools use, but its up/down correspondence to
+            // screen-Y flips depending on which side of the plane the camera ends up on for a
+            // given orbit angle, which measured as *inverted* drag direction here. Screen-delta
+            // is unambiguous: dragging up always raises the item, regardless of camera angle.
+            // (Touch never sets shiftKey, so touch Move always takes the planar branch â€” vertical
+            // movement on touch goes through the nudge d-pad's Up/Down instead, same role
+            // Shift+Arrow plays for the keyboard nudge.)
+            if (e.shiftKey) {
+                const dist = camera.position.distanceTo(mesh.position);
+                const vFOV = THREE.MathUtils.degToRad(camera.fov);
+                const visibleHeightAtDist = 2 * Math.tan(vFOV / 2) * dist;
+                const sensitivity = visibleHeightAtDist / renderer.domElement.clientHeight;
+                dragState = { vertical: true, startClientY: e.clientY, startY: mesh.position.y, sensitivity };
+            } else {
+                if (!raycaster.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0), -mesh.position.y), dragPoint)) return;
+                dragState = {
+                    vertical: false,
+                    offsetX: mesh.position.x - dragPoint.x,
+                    offsetZ: mesh.position.z - dragPoint.z,
+                    planeY: mesh.position.y,
+                    originalColor: mesh.userData.type === 'panel' ? mesh.material.color.getHex() : null
+                };
+            }
+            controls.enabled = false;
+            renderer.domElement.style.cursor = 'grabbing';
+            window.addEventListener('pointermove', onDragMove);
+            window.addEventListener('pointerup', onDragEnd);
+        }
+
         function onPointerDown(e) {
             const canvas = renderer.domElement;
+
+            // Touch Edit mode: once Move or Rotate is armed via the on-screen action bar, the
+            // *next* one-finger drag anywhere on the canvas drives that action against whatever
+            // is already selected, instead of re-raycasting for a hit under the finger â€” after
+            // the camera's been orbited, landing exactly back on a (possibly small, possibly
+            // rotated) panel is unreliable on a phone, so the whole canvas becomes the drag
+            // surface once a mode button is pressed. This is also what suspends camera-orbit for
+            // the gesture (armMoveDrag/armTouchRotate both disable `controls`), mirroring how
+            // Shift+drag/drag-a-panel already suspend it for mouse users.
+            const isTouchEvent = IS_COARSE_POINTER && e.pointerType !== 'mouse';
+            if (isTouchEvent && !activeTool && touchEditTool && selectedMesh && !explodedView) {
+                raycastFromEvent(e, canvas); // armMoveDrag's planar branch needs a current ray
+                if (touchEditTool === 'rotate') armTouchRotate(e);
+                else armMoveDrag(e);
+                return;
+            }
+
             raycastFromEvent(e, canvas);
 
             if (activeTool === 'label') {
@@ -5646,36 +6162,13 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
             // (for Remove) but not draggable, so stop here rather than arming a drag.
             if (mesh.userData.type === 'measurement') return;
 
-            push3DUndoSnapshot();
+            // On touch, a plain tap only selects (and shows the action bar) â€” Move/Rotate are
+            // separate, deliberate steps (see the touch branch at the top of this function), so
+            // a drag that starts on a piece without either armed still orbits the camera as
+            // normal instead of yanking the piece around.
+            if (isTouchEvent) return;
 
-            // Shift+drag moves the item up/down instead of along the floor â€” without this the
-            // only way to change a panel's height was typing into the Y field by hand, which
-            // was most of what made "moving pieces" feel incomplete rather than klunky.
-            // Uses raw screen-Y delta rather than raycasting against a camera-facing plane â€”
-            // the plane approach is what real 3D tools use, but its up/down correspondence to
-            // screen-Y flips depending on which side of the plane the camera ends up on for a
-            // given orbit angle, which measured as *inverted* drag direction here. Screen-delta
-            // is unambiguous: dragging up always raises the item, regardless of camera angle.
-            if (e.shiftKey) {
-                const dist = camera.position.distanceTo(mesh.position);
-                const vFOV = THREE.MathUtils.degToRad(camera.fov);
-                const visibleHeightAtDist = 2 * Math.tan(vFOV / 2) * dist;
-                const sensitivity = visibleHeightAtDist / renderer.domElement.clientHeight;
-                dragState = { vertical: true, startClientY: e.clientY, startY: mesh.position.y, sensitivity };
-            } else {
-                if (!raycaster.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0), -mesh.position.y), dragPoint)) return;
-                dragState = {
-                    vertical: false,
-                    offsetX: mesh.position.x - dragPoint.x,
-                    offsetZ: mesh.position.z - dragPoint.z,
-                    planeY: mesh.position.y,
-                    originalColor: mesh.userData.type === 'panel' ? mesh.material.color.getHex() : null
-                };
-            }
-            controls.enabled = false;
-            renderer.domElement.style.cursor = 'grabbing';
-            window.addEventListener('pointermove', onDragMove);
-            window.addEventListener('pointerup', onDragEnd);
+            armMoveDrag(e);
         }
 
         function onDragMove(e) {
@@ -5766,11 +6259,37 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
         // more" adjustment once the piece is already close.
         const FINE_NUDGE_IN = 0.0625;
 
+        // Shared by the keyboard arrow-key handler below and the touch nudge d-pad (see
+        // preview3DDpad's button wiring in init3DPreviewScene) â€” one mechanism for "move the
+        // selection by a small fixed amount," triggered either by a keystroke or a tap.
+        // Measurements aren't nudgeable (same reasoning as the drag skip in armMoveDrag).
+        function applyNudge(dx, dy, dz) {
+            if (!selectedMesh || selectedMesh.userData.type === 'measurement' || explodedView) return;
+
+            // Coalesces a held-down/rapid-repeat arrow key (or rapid taps) into a single undo
+            // step instead of one per keystroke â€” same reasoning as commit-on-blur for the typed
+            // position fields, applied to nudging: only the state right before the *burst* is
+            // worth rewinding to.
+            const now = Date.now();
+            if (now - lastNudgeUndoTime > 600 || lastNudgeUndoMeshId !== selectedMesh.uuid) {
+                push3DUndoSnapshot();
+            }
+            lastNudgeUndoTime = now;
+            lastNudgeUndoMeshId = selectedMesh.uuid;
+
+            selectedMesh.position.x += dx;
+            selectedMesh.position.z += dz;
+            selectedMesh.position.y = Math.max(0, selectedMesh.position.y + dy);
+            syncAttachments(selectedMesh);
+            updateSelectionCoords(selectedMesh);
+            persistMeshPosition(selectedMesh);
+            rebuildDimensionMeshes();
+        }
+
         // Arrow keys nudge whatever's selected by one snap increment â€” precise, mouse-free
         // fine-tuning, the same role keyboard nudging plays in real CAD tools. Shift+Up/Down
         // moves vertically instead of front/back, matching the Shift+drag convention above.
-        // Alt swaps the increment to FINE_NUDGE_IN for micro-adjustments. Measurements aren't
-        // nudgeable (same reasoning as the drag skip above).
+        // Alt swaps the increment to FINE_NUDGE_IN for micro-adjustments.
         function onKeyDown(e) {
             if (document.getElementById('projectPreview3D').style.display === 'none') return;
             const tag = document.activeElement && document.activeElement.tagName;
@@ -5795,25 +6314,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
             else return;
 
             e.preventDefault();
-
-            // Coalesces a held-down/rapid-repeat arrow key into a single undo step instead of
-            // one per keystroke â€” same reasoning as commit-on-blur for the typed position
-            // fields, applied to nudging: only the state right before the *burst* is worth
-            // rewinding to.
-            const now = Date.now();
-            if (now - lastNudgeUndoTime > 600 || lastNudgeUndoMeshId !== selectedMesh.uuid) {
-                push3DUndoSnapshot();
-            }
-            lastNudgeUndoTime = now;
-            lastNudgeUndoMeshId = selectedMesh.uuid;
-
-            selectedMesh.position.x += dx;
-            selectedMesh.position.z += dz;
-            selectedMesh.position.y = Math.max(0, selectedMesh.position.y + dy);
-            syncAttachments(selectedMesh);
-            updateSelectionCoords(selectedMesh);
-            persistMeshPosition(selectedMesh);
-            rebuildDimensionMeshes();
+            applyNudge(dx, dy, dz);
         }
 
         function showTempMeasureMarker(point) {
@@ -6061,6 +6562,28 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
             document.getElementById('preview3DAlignBtn').addEventListener('click', autoAlignSelected);
             document.getElementById('preview3DDuplicateBtn').addEventListener('click', duplicateSelected);
             document.getElementById('preview3DUndoBtn').addEventListener('click', undo3D);
+
+            // Touch-only Edit mode controls â€” see updateTouchControls, armMoveDrag/armTouchRotate,
+            // and applyNudge. Wiring lives entirely behind IS_COARSE_POINTER so a mouse+keyboard
+            // user never gets a listener attached to these (they also just stay display:none, but
+            // this keeps the desktop path from ever running touch-only code at all).
+            if (IS_COARSE_POINTER) {
+                document.getElementById('touchMoveBtn').addEventListener('click', () => {
+                    touchEditTool = touchEditTool === 'move' ? null : 'move';
+                    updateTouchControls(selectedMesh);
+                });
+                document.getElementById('touchRotateBtn').addEventListener('click', () => {
+                    touchEditTool = touchEditTool === 'rotate' ? null : 'rotate';
+                    updateTouchControls(selectedMesh);
+                });
+                document.getElementById('touchDoneBtn').addEventListener('click', () => selectMesh(null));
+                document.getElementById('dpadUpBtn').addEventListener('click', () => applyNudge(0, 0, -SNAP_IN));
+                document.getElementById('dpadDownBtn').addEventListener('click', () => applyNudge(0, 0, SNAP_IN));
+                document.getElementById('dpadLeftBtn').addEventListener('click', () => applyNudge(-SNAP_IN, 0, 0));
+                document.getElementById('dpadRightBtn').addEventListener('click', () => applyNudge(SNAP_IN, 0, 0));
+                document.getElementById('dpadYUpBtn').addEventListener('click', () => applyNudge(0, SNAP_IN, 0));
+                document.getElementById('dpadYDownBtn').addEventListener('click', () => applyNudge(0, -SNAP_IN, 0));
+            }
             document.getElementById('dimensionsToggleBtn').addEventListener('click', () => {
                 showDimensions = !showDimensions;
                 document.getElementById('dimensionsToggleBtn').classList.toggle('mini-btn-active', showDimensions);
