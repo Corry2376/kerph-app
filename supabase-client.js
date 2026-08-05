@@ -816,8 +816,8 @@
         'project-designer.html': 'pro',
         'shop-3d-viewer.html': 'pro',
         'quote-builder.html': 'premier',
-        'portfolio.html': 'premier',
-        'shop-jigs-part-finder.html': 'premier'
+        'portfolio.html': 'pro',
+        'shop-jigs-part-finder.html': 'pro'
     };
     const KERPH_TIER_LABELS = { pro: 'Pro', premier: 'Premier' };
 
@@ -985,7 +985,7 @@
     // and RLS — Postgres, not this file, is what actually stops a non-Premier user from
     // inviting anyone, the same "browser can't self-grant" principle as kerphGetMySubscription.
     const TEAM_INCLUDED_SEATS = 4;
-    const TEAM_EXTRA_SEAT_PRICE = 5;
+    const TEAM_EXTRA_SEAT_PRICE = 7;
 
     async function kerphGetMyTeam() {
         const fallback = { team: null, members: [], isOwner: false, includedSeats: TEAM_INCLUDED_SEATS, extraSeatPrice: TEAM_EXTRA_SEAT_PRICE };
@@ -1072,11 +1072,11 @@
         return direct;
     }
 
-    // ---------- Part Finder (Premier) ----------
+    // ---------- Part Finder (Pro/Premier, tiered daily cap) ----------
     // Sends a photo to the identify-part Edge Function (which calls Claude's vision API
     // server-side — the API key never touches the browser) and returns the identification
-    // plus generated retailer search links. Real per-photo cost, so this is Premier-gated;
-    // see supabase/functions/identify-part.
+    // plus generated retailer search links. Real per-photo cost, so this is Pro+-gated with
+    // a per-tier daily cap enforced server-side; see supabase/functions/identify-part.
     async function kerphIdentifyPart(imageBase64, mediaType) {
         const { data: { session } } = await kerphSupabase.auth.getSession();
         if (!session) return { error: { message: 'Not signed in.' } };

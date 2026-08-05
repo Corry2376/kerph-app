@@ -5,9 +5,9 @@
 //
 // Deploy with JWT verification ON — the caller must be a real signed-in Kerph user. This is
 // deliberately NOT built like every other free, unlimited Shop Jig: it has real per-photo
-// API cost, so it's gated to an entitled Premier subscription (checked server-side against
-// the real subscriptions table, not the local plan-preview toggle a browser could self-grant)
-// plus a generous daily cap as abuse/cost protection.
+// API cost, so it's gated to an entitled Pro or Premier subscription (checked server-side
+// against the real subscriptions table, not the local plan-preview toggle a browser could
+// self-grant) with a per-tier daily cap as abuse/cost protection.
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
@@ -32,7 +32,7 @@ function json(body: unknown, status = 200) {
 // tradeoff worth it later — this is the only line that needs to change.
 const MODEL = 'claude-opus-5';
 
-const INCLUDED_DAILY_LOOKUPS = 30;
+const DAILY_LOOKUP_CAP: Record<string, number> = { pro: 3, premier: 20 };
 
 const IDENTIFY_SCHEMA = {
   type: 'object',
@@ -74,17 +74,18 @@ Deno.serve(async (req) => {
       .select('plan, status')
       .eq('user_id', user.id)
       .maybeSingle();
-    const entitled = !!sub && sub.plan === 'premier' && ['active', 'on_trial', 'past_due'].includes(sub.status);
-    if (!entitled) {
-      return json({ error: 'Part Finder is a Premier feature.' }, 403);
+    const statusOk = !!sub && ['active', 'on_trial', 'past_due'].includes(sub.status);
+    const dailyCap = statusOk ? DAILY_LOOKUP_CAP[sub.plan] : undefined;
+    if (!dailyCap) {
+      return json({ error: 'Part Finder is a Pro or Premier feature.' }, 403);
     }
 
     const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
     const { count } = await supabaseAdmin
       .from('part_lookups').select('id', { count: 'exact', head: true })
       .eq('user_id', user.id).gte('created_at', since);
-    if ((count ?? 0) >= INCLUDED_DAILY_LOOKUPS) {
-      return json({ error: `Daily limit reached (${INCLUDED_DAILY_LOOKUPS} lookups/day) — try again tomorrow.` }, 429);
+    if ((count ?? 0) >= dailyCap) {
+      return json({ error: `Daily limit reached (${dailyCap} lookups/day) — try again tomorrow.` }, 429);
     }
 
     const { imageBase64, mediaType } = await req.json();

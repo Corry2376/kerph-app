@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <script>if (localStorage.getItem('kerphComingSoonBypass') !== 'true') { location.replace('coming-soon.html'); }</script>
-    <script>(function(){var r={free:0,pro:1,premier:2};if((r[localStorage.getItem('kerphPlan')||'free']||0)<r.premier){location.replace('pricing.html?locked=shop-jigs-part-finder.html');}})();</script>
+    <script>(function(){var r={free:0,pro:1,premier:2};if((r[localStorage.getItem('kerphPlan')||'free']||0)<r.pro){location.replace('pricing.html?locked=shop-jigs-part-finder.html');}})();</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kerph - Part Finder</title>
@@ -273,6 +273,7 @@
         }
 
         .premier-badge { display: inline-block; background: #fef3c7; color: #92400e; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; border-radius: 4px; padding: 3px 8px; margin-bottom: 12px; }
+        .pro-badge { display: inline-block; background: #dbeafe; color: #1e40af; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; border-radius: 4px; padding: 3px 8px; margin-bottom: 12px; }
 
         /* ---------- PART FINDER ---------- */
         .pf-photo-zone {
@@ -421,9 +422,9 @@
 
     <div class="jig-page-layout">
         <div class="jig-breadcrumb"><a href="shop-jigs.html">Shop Jigs</a> / Part Finder</div>
-        <div class="premier-badge">&#128274; Premier</div>
+        <div class="pro-badge">&#128274; Pro</div>
         <div class="help-title">Part Finder</div>
-        <div class="help-subtitle">Snap a photo of a mystery screw, bracket, or part â€” a vision model identifies it and links to where you can buy a match. Unlike the other free Shop Jigs, this one costs real money per photo, so it's a Premier feature with a generous daily limit.</div>
+        <div class="help-subtitle">Snap a photo of a mystery screw, bracket, or part â€” a vision model identifies it and links to where you can buy a match. Unlike the other free Shop Jigs, this one costs real money per photo, so it's a Pro feature with a daily limit: 3 lookups a day on Pro, 20 a day on Premier.</div>
 
         <div class="help-article">
             <div class="pf-photo-zone" id="pfPhotoZone">
