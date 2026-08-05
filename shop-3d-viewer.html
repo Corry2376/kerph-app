@@ -348,6 +348,39 @@
         #toolHoverPreview .preview-category { font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 8px; }
         #toolHoverPreview .preview-row { display: flex; justify-content: space-between; gap: 10px; font-size: 12px; color: #334155; padding: 4px 0; border-top: 1px solid #f1f5f9; }
         #toolHoverPreview .preview-row span:first-child { color: #94a3b8; }
+
+        /* ---------- TOUCH EDIT MODE BAR (coarse-pointer/touch only, see initTouchEditBar) ----------
+           Fixed to the bottom-center so it never sits over the same screen real-estate as the
+           floating side panels, and stays clear of the header/controls at the top of the view.
+           Only ever shown when a selection was made via a touch pointerdown (touchSelectionActive
+           in the module script) â€” mouse users never see this, see onPointerDownCapture. */
+        .touch-edit-bar {
+            position: fixed;
+            left: 50%;
+            bottom: 18px;
+            transform: translateX(-50%);
+            width: min(92vw, 420px);
+            background-color: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 12px;
+            box-shadow: 0 12px 30px -8px rgba(15, 23, 42, 0.35);
+            padding: 10px 12px;
+            z-index: 1900;
+        }
+        .touch-edit-bar-name {
+            font-size: 12px;
+            font-weight: 700;
+            color: #0f172a;
+            text-align: center;
+            margin-bottom: 8px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .touch-edit-bar-actions { display: flex; gap: 6px; }
+        .touch-edit-bar-actions .mini-btn { flex: 1; padding: 14px 4px; font-size: 12px; min-height: 44px; }
+        .touch-edit-bar-actions .mini-btn.active { background-color: #1e3a8a; color: #ffffff; border-color: #1e3a8a; }
+
             .header-quick-links { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; font-size: 11px; }
             .header-quick-links-row { display: flex; align-items: center; gap: 6px; }
         .header-quick-links a { color: #6b7280; font-weight: 600; text-decoration: none; }
@@ -539,6 +572,20 @@
     </div>
 
     <div id="toolHoverPreview"></div>
+
+    <!-- Touch-only mode-switching action bar (see initTouchEditBar / onPointerDownCapture in the
+         module script below). Hidden by default; only ever shown after a touch tap selects a
+         placed item â€” mouse/desktop users never see this, the existing #selectionPanel above
+         still serves them exactly as before. -->
+    <div class="touch-edit-bar" id="touchEditBar" style="display:none;">
+        <div class="touch-edit-bar-name" id="touchEditBarName"></div>
+        <div class="touch-edit-bar-actions">
+            <button type="button" id="touchMoveBtn" class="mini-btn">&#9995;&#65039; Move</button>
+            <button type="button" id="touchRotateBtn" class="mini-btn">&#8635; Rotate</button>
+            <button type="button" id="touchDeleteBtn" class="mini-btn danger">Delete</button>
+            <button type="button" id="touchDoneBtn" class="mini-btn">Done</button>
+        </div>
+    </div>
 
     <script src="catalog-data.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.7/dist/umd/supabase.js"></script>
@@ -994,6 +1041,16 @@
         let selectedMesh = null;
         let selectionHelper = null;
         let dragState = null;
+        // ---- Touch mode system (see onPointerDownCapture / syncTouchEditBar) ----
+        // Gated entirely on e.pointerType === 'touch' at the point of interaction (not a static
+        // matchMedia check), so a touchscreen laptop's mouse/trackpad still gets the exact
+        // original desktop click-to-select-and-drag flow below, untouched. touchSelectionActive
+        // is true only while the current selection was made via a touch tap (drives which of
+        // #selectionPanel / #touchEditBar is shown, see selectMesh/syncTouchEditBar).
+        // touchMoveArmed is true only while the touch action bar's "Move" button is toggled on â€”
+        // that's what turns the next 1-finger drag into "move the selection" instead of "orbit".
+        let touchSelectionActive = false;
+        let touchMoveArmed = false;
         const dragPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
         const dragPoint = new THREE.Vector3();
         let currentShopWidthFt = 20, currentShopLengthFt = 24;
@@ -2101,6 +2158,41 @@
             } else {
                 panel.style.display = 'none';
             }
+
+            // ---- Touch edit bar sync (no-op for the mouse flow, see syncTouchEditBar) ----
+            if (!mesh) {
+                touchSelectionActive = false;
+                touchMoveArmed = false;
+            }
+            syncTouchEditBar();
+        }
+
+        // Shows/hides the touch-only action bar to match touchSelectionActive/selectedMesh, and
+        // (only while it's showing) hides the desktop #selectionPanel so a touch user isn't left
+        // with two overlapping panels fighting for the same small viewport. Called from the tail
+        // of selectMesh() so every path that changes selection (touch tap, a Rotate/Delete
+        // triggered reselect via persistAndRebuild, Done, deselect) stays in sync automatically â€”
+        // mouse selections always leave touchSelectionActive false, so this is a no-op for them
+        // and #selectionPanel's own display logic above is untouched.
+        function syncTouchEditBar() {
+            const bar = document.getElementById('touchEditBar');
+            if (!bar) return;
+            if (touchSelectionActive && selectedMesh && selectedMesh.userData.draggable) {
+                const panel = document.getElementById('selectionPanel');
+                if (panel) panel.style.display = 'none';
+
+                document.getElementById('touchEditBarName').textContent = selectedMesh.userData.name || 'Item';
+                // Wall features slide along their wall instead of rotating in place â€” same
+                // restriction the desktop rotateSelectedBtn already applies, see selectMesh above.
+                const isWallFeature = selectedMesh.userData.wallFeatureId != null;
+                const rotateBtn = document.getElementById('touchRotateBtn');
+                if (rotateBtn) rotateBtn.style.display = isWallFeature ? 'none' : '';
+                const moveBtn = document.getElementById('touchMoveBtn');
+                if (moveBtn) moveBtn.classList.toggle('active', touchMoveArmed);
+                bar.style.display = 'block';
+            } else {
+                bar.style.display = 'none';
+            }
         }
 
         // Persists the current in-memory sharedLayout and rebuilds the scene from that
@@ -2122,13 +2214,94 @@
             }
         }
 
+        // Shared by the desktop mouse flow below (immediate select+drag on pointerdown) and the
+        // touch "Move" flow (armed explicitly via the touch action bar, see onPointerDownCapture) â€”
+        // builds dragState for `mesh` from the current pointer event's ray and wires up the drag
+        // listeners. Pulled out unchanged from the original onPointerDownCapture body so both
+        // entry points share one implementation instead of drifting apart. Calling
+        // e.stopPropagation() here is what keeps this drag from also starting a camera orbit â€”
+        // see the comment on onPointerDownCapture's own registration for why that works.
+        function beginDragOnMesh(mesh, e) {
+            hideHoverPreview();
+            e.stopPropagation();
+            e.preventDefault();
+            raycaster.ray.intersectPlane(dragPlane, dragPoint);
+
+            if (mesh.userData.wallFeatureId != null) {
+                const f = (sharedLayout.wallFeatures || []).find(wf => wf.id === mesh.userData.wallFeatureId);
+                const line = f ? findWallLineForFeature(f) : null;
+                if (line) {
+                    const t0 = (mesh.position.x - line.ax) * line.ux + (mesh.position.z - line.az) * line.uz;
+                    const tp0 = (dragPoint.x - line.ax) * line.ux + (dragPoint.z - line.az) * line.uz;
+                    dragState = { isWallFeature: true, wallFeatureId: mesh.userData.wallFeatureId, line, tOffset: t0 - tp0 };
+                }
+            } else {
+                dragState = {
+                    offsetX: mesh.position.x - dragPoint.x,
+                    offsetZ: mesh.position.z - dragPoint.z,
+                    // Cached so the collision soft-warning tint (onDragMove) can be
+                    // reverted without guessing what color the mesh started as.
+                    originalColor: mesh.material && mesh.material.color ? mesh.material.color.getHex() : null
+                };
+            }
+
+            if (dragState) {
+                controls.enabled = false;
+                renderer.domElement.style.cursor = 'grabbing';
+                window.addEventListener('pointermove', onDragMove);
+                window.addEventListener('pointerup', onDragEnd);
+            }
+        }
+
         // Registered on canvasWrap (an ANCESTOR of the renderer's canvas) in the capture
         // phase, so this always runs before OrbitControls' own pointerdown listener (which
-        // it attaches directly on the canvas, in the bubble phase) â€” stopPropagation() here
-        // stops that event from ever reaching OrbitControls, which is what keeps a drag on a
-        // draggable item from also starting a camera orbit.
+        // it attaches directly on the canvas, in the bubble phase) â€” stopPropagation() in
+        // beginDragOnMesh() stops that event from ever reaching OrbitControls, which is what
+        // keeps a drag on a draggable item from also starting a camera orbit. The touch branch
+        // below deliberately skips that stopPropagation for a plain select-tap (see its own
+        // comments), which is what leaves OrbitControls free to orbit on 1-finger drag whenever
+        // "Move" isn't explicitly armed.
         function onPointerDownCapture(e) {
             if (e.button !== 0) return;
+
+            // ---- Touch mode system ----
+            // e.pointerType is the runtime signal (not a static matchMedia check), so a mouse/
+            // trackpad click on a touchscreen laptop still falls through to the untouched
+            // desktop branch below instead of ever entering this one.
+            if (e.pointerType === 'touch') {
+                if (touchMoveArmed && selectedMesh && selectedMesh.userData.draggable) {
+                    // "Move" is armed from the touch action bar â€” this drag moves the current
+                    // selection instead of orbiting the camera, regardless of exactly where on
+                    // the canvas the finger lands (reuses the exact same dragState/onDragMove/
+                    // onDragEnd the desktop drag-to-move already uses, just started from
+                    // selectedMesh instead of a fresh raycast hit).
+                    beginDragOnMesh(selectedMesh, e);
+                    return;
+                }
+
+                raycastFromEvent(e);
+                const touchHits = raycaster.intersectObjects(clickableMeshes, false);
+                if (!touchHits.length) {
+                    // Tap on empty space while nothing is armed: deselect and fall through with
+                    // no stopPropagation/preventDefault, so OrbitControls still receives this
+                    // pointerdown and a 1-finger drag orbits the camera as normal (default mode).
+                    selectMesh(null);
+                    hideHoverPreview();
+                    return;
+                }
+                // Tapping a placed item selects it and opens the touch action bar (Edit mode),
+                // but does NOT start a drag and does NOT stop propagation â€” OrbitControls still
+                // sees this same pointerdown, so dragging right off the tap without first hitting
+                // "Move" still orbits the camera, exactly like tapping empty space would. Only
+                // explicit "Move" (above) suspends orbit for a drag.
+                touchSelectionActive = true;
+                touchMoveArmed = false;
+                selectMesh(touchHits[0].object);
+                return;
+            }
+
+            // ---- Original desktop mouse flow (unchanged) ----
+            touchSelectionActive = false;
             raycastFromEvent(e);
             const hits = raycaster.intersectObjects(clickableMeshes, false);
 
@@ -2146,35 +2319,7 @@
             // addWallFeatureMesh), so there's no remaining non-draggable case here; the hover
             // preview card (onHoverMove) covers the old click-for-tooltip info for all of them.
             if (obj.userData.draggable) {
-                hideHoverPreview();
-                e.stopPropagation();
-                e.preventDefault();
-                raycaster.ray.intersectPlane(dragPlane, dragPoint);
-
-                if (obj.userData.wallFeatureId != null) {
-                    const f = (sharedLayout.wallFeatures || []).find(wf => wf.id === obj.userData.wallFeatureId);
-                    const line = f ? findWallLineForFeature(f) : null;
-                    if (line) {
-                        const t0 = (obj.position.x - line.ax) * line.ux + (obj.position.z - line.az) * line.uz;
-                        const tp0 = (dragPoint.x - line.ax) * line.ux + (dragPoint.z - line.az) * line.uz;
-                        dragState = { isWallFeature: true, wallFeatureId: obj.userData.wallFeatureId, line, tOffset: t0 - tp0 };
-                    }
-                } else {
-                    dragState = {
-                        offsetX: obj.position.x - dragPoint.x,
-                        offsetZ: obj.position.z - dragPoint.z,
-                        // Cached so the collision soft-warning tint (onDragMove) can be
-                        // reverted without guessing what color the mesh started as.
-                        originalColor: obj.material && obj.material.color ? obj.material.color.getHex() : null
-                    };
-                }
-
-                if (dragState) {
-                    controls.enabled = false;
-                    renderer.domElement.style.cursor = 'grabbing';
-                    window.addEventListener('pointermove', onDragMove);
-                    window.addEventListener('pointerup', onDragEnd);
-                }
+                beginDragOnMesh(obj, e);
             }
         }
 
@@ -2393,29 +2538,65 @@
             }
         }
 
+        // Extracted from the desktop rotateSelectedBtn/removeSelectedBtn handlers (below) so the
+        // touch action bar's Rotate/Delete buttons (initTouchEditBar) call the exact same logic
+        // instead of a second copy â€” "Rotate" on touch is a tap-per-90Â° action mapped onto this
+        // same existing button mechanism, per the touch mode plan (no separate drag-to-rotate
+        // gesture, since a small drag target on a mobile screen is fiddly; Free Rotate's gizmo
+        // remains mouse/desktop-only, unaffected).
+        function rotateSelected90() {
+            if (!selectedMesh || !selectedMesh.userData.draggable) return;
+            const idx = selectedMesh.userData.toolIndex;
+            const t = sharedLayout.tools[idx];
+            if (!t) return;
+            t.rotation = ((parseFloat(t.rotation) || 0) + 90) % 360;
+            persistAndRebuild(idx);
+        }
+
+        function removeSelected() {
+            if (!selectedMesh || !selectedMesh.userData.draggable) return;
+            if (selectedMesh.userData.wallFeatureId != null) {
+                sharedLayout.wallFeatures = (sharedLayout.wallFeatures || []).filter(f => f.id !== selectedMesh.userData.wallFeatureId);
+            } else {
+                // toolIndex is a real array index (0 is valid) â€” must check with != null,
+                // not truthiness, or item 0 could never be removed this way.
+                if (selectedMesh.userData.toolIndex == null) return;
+                sharedLayout.tools.splice(selectedMesh.userData.toolIndex, 1);
+            }
+            persistAndRebuild();
+            showToast('Removed.');
+        }
+
+        // Touch-only action bar (Move/Rotate/Delete/Done) â€” see the touch mode system state
+        // (touchSelectionActive/touchMoveArmed) and syncTouchEditBar for how it's shown/hidden.
+        // Its buttons live outside canvasWrap in the DOM, so their own pointerdown/click events
+        // never reach onPointerDownCapture's capture-phase listener â€” no risk of a tap on this
+        // bar itself being misread as a canvas tap.
+        function initTouchEditBar() {
+            const moveBtn = document.getElementById('touchMoveBtn');
+            const rotateBtn = document.getElementById('touchRotateBtn');
+            const deleteBtn = document.getElementById('touchDeleteBtn');
+            const doneBtn = document.getElementById('touchDoneBtn');
+            if (!moveBtn || !rotateBtn || !deleteBtn || !doneBtn) return;
+
+            moveBtn.addEventListener('click', () => {
+                touchMoveArmed = !touchMoveArmed;
+                syncTouchEditBar();
+            });
+            rotateBtn.addEventListener('click', rotateSelected90);
+            deleteBtn.addEventListener('click', () => {
+                touchSelectionActive = false;
+                touchMoveArmed = false;
+                removeSelected();
+                syncTouchEditBar();
+            });
+            doneBtn.addEventListener('click', () => { selectMesh(null); });
+        }
+
         function initSelectionPanel() {
             document.getElementById('freeRotateBtn').addEventListener('click', toggleFreeRotate);
-            document.getElementById('rotateSelectedBtn').addEventListener('click', () => {
-                if (!selectedMesh || !selectedMesh.userData.draggable) return;
-                const idx = selectedMesh.userData.toolIndex;
-                const t = sharedLayout.tools[idx];
-                if (!t) return;
-                t.rotation = ((parseFloat(t.rotation) || 0) + 90) % 360;
-                persistAndRebuild(idx);
-            });
-            document.getElementById('removeSelectedBtn').addEventListener('click', () => {
-                if (!selectedMesh || !selectedMesh.userData.draggable) return;
-                if (selectedMesh.userData.wallFeatureId != null) {
-                    sharedLayout.wallFeatures = (sharedLayout.wallFeatures || []).filter(f => f.id !== selectedMesh.userData.wallFeatureId);
-                } else {
-                    // toolIndex is a real array index (0 is valid) â€” must check with != null,
-                    // not truthiness, or item 0 could never be removed this way.
-                    if (selectedMesh.userData.toolIndex == null) return;
-                    sharedLayout.tools.splice(selectedMesh.userData.toolIndex, 1);
-                }
-                persistAndRebuild();
-                showToast('Removed.');
-            });
+            document.getElementById('rotateSelectedBtn').addEventListener('click', rotateSelected90);
+            document.getElementById('removeSelectedBtn').addEventListener('click', removeSelected);
 
             // "Attach" here means position, not a real port-snap (this view has no
             // port-snapping engine â€” see the plan) â€” a drop's top and bottom are two known
@@ -2699,6 +2880,7 @@
 
         initThree();
         initSelectionPanel();
+        initTouchEditBar();
         initAddItemPanel();
         initLayerVisibilityCheckboxes();
     </script>

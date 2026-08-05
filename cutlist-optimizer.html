@@ -558,9 +558,21 @@
             height: auto;
             border-radius: 4px;
             display: block;
+            transform-origin: 0 0;
         }
 
         .cut-diagram-linear { max-height: 40px; }
+
+        /* Touch pan/zoom viewport wrapping each diagram SVG (see initDiagramPanZoom in the
+           script below). Clips the SVG once it's scaled/panned past this box's natural
+           (unzoomed) size so a zoomed diagram never blows out the card layout. Sized/laid
+           out purely by its child SVG at scale 1 â€” the wrapper itself never gets an explicit
+           width/height, so this is a no-op visually until a pinch gesture actually happens. */
+        .cut-diagram-viewport {
+            position: relative;
+            overflow: hidden;
+            max-width: 640px;
+        }
 
         /* ---------- Kerf blade-preset quickpicks ---------- */
         .kerf-quickpicks { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
@@ -688,6 +700,82 @@
         }
         .jigs-dropdown-menu a:hover { background-color: #eef2ff; color: #1e3a8a; }
         .jigs-dropdown-menu-sep { height: 1px; background-color: #e2e8f0; margin: 5px 2px; }
+
+        /* ---------- MOBILE / TOUCH LAYOUT ----------
+           Desktop keeps the fixed-viewport app shell as-is (header + sidebar + canvas each
+           position:absolute against a non-scrolling body). The shared header (site-header-
+           brand.js / site-header-tail.js) already wraps itself onto multiple rows and grows
+           taller than 150px starting at max-width:1100px (see those files' own @media rules,
+           which win the cascade over this page's desktop `header{height:150px}` since they're
+           document.write()'d in after this <style> block). If this page only re-flowed the
+           sidebar/canvas at a narrower breakpoint than 1100px, there'd be a tablet-width gap
+           range where the header has already grown taller but sidebar-panel/canvas-area are
+           still pinned to the old hardcoded `top: 150px` â€” confirmed live: at 375px wide the
+           header renders ~247px tall, which buries the top of the sidebar underneath it and
+           squeezes canvas-area into an ~80px sliver. Matching this page's own breakpoint to
+           the SAME 1100px the header already uses avoids that gap entirely, and switching
+           everything to normal document flow (instead of computing/guessing the header's new
+           pixel height) means there's no magic number to keep in sync if the header's mobile
+           markup ever changes height again. */
+        @media (max-width: 1100px) {
+            body { height: auto; min-height: 100vh; width: 100%; overflow: visible; }
+            header { position: static; }
+            #sidebar-panel {
+                position: static;
+                top: auto;
+                left: auto;
+                width: 100%;
+                height: auto;
+                max-height: none;
+                border-right: none;
+                border-bottom: 1px solid #cbd5e1;
+            }
+            #canvas-area {
+                position: static;
+                top: auto;
+                left: auto;
+                width: 100%;
+                height: auto;
+                overflow: visible;
+                padding: 24px 20px 60px;
+            }
+            .modal-box { width: 100%; max-width: 92vw; }
+            .account-modal-box { width: 100%; max-width: 92vw; }
+        }
+
+        /* Phone-width refinements layered on top of the 1100px re-flow above: touch-sized tap
+           targets (~40px+), a denser 2-up defect-field grid instead of 4 cramped inputs in a
+           row, and a 2-column summary grid instead of 3 squeezed stat cards. Font-size 16px on
+           text/number inputs specifically avoids iOS Safari's auto-zoom-on-focus (it zooms the
+           whole page in whenever a focused input's font-size computes under 16px). */
+        @media (max-width: 700px) {
+            #canvas-area { padding: 18px 14px 50px; }
+            #sidebar-panel { padding: 16px; }
+
+            .input-box, .select-box {
+                min-height: 40px;
+                padding: 8px 12px;
+                font-size: 16px;
+            }
+
+            .mini-btn { min-height: 40px; font-size: 13px; }
+            .panel-item-actions .mini-btn { min-height: 38px; }
+            .new-layout-btn { min-height: 44px; font-size: 13px; }
+            .kerf-quickpick { min-height: 30px; padding: 6px 12px; font-size: 12px; display: inline-flex; align-items: center; }
+            .help-tip { width: 20px; height: 20px; font-size: 11px; }
+            .defect-remove-btn, .account-layout-del { min-width: 28px; min-height: 28px; }
+
+            /* Not `display: grid` here on purpose â€” JS (toggleDefectFieldsForMaterial)
+               toggles these two field rows between inline style.display 'flex'/'none', and an
+               inline style always wins over a stylesheet rule regardless of media query, so a
+               `display` change here would be silently ignored on the visible one. flex-wrap
+               achieves the same 2-up phone layout without touching the property JS owns. */
+            .defect-add-fields { flex-wrap: wrap; gap: 8px; }
+            .defect-add-fields input { flex: 1 1 calc(50% - 4px); min-width: 120px; }
+
+            .preview-summary-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+            .material-result-card { padding: 14px; }
+        }
     </style>
 </head>
 <body>
@@ -1866,6 +1954,154 @@
             return `<svg viewBox="0 0 ${boardLenIn} ${barHeight}" class="cut-diagram-svg cut-diagram-linear"><rect x="0" y="0" width="${boardLenIn}" height="${barHeight}" fill="#f1f5f9" stroke="#94a3b8" stroke-width="0.5"/>${rects}</svg>`;
         }
 
+        /* ---------- TOUCH: PINCH-TO-ZOOM + ONE-FINGER PAN ON NESTING DIAGRAMS ----------
+           These diagrams are a VIEWING surface, not something a user drags parts around in
+           (the algorithm places them) â€” so the only touch gap is inspecting a dense diagram
+           on a small screen. There's no pre-existing desktop wheel-zoom/drag behavior on these
+           SVGs to preserve (nothing in this file attached to 'wheel' before this), so this is
+           purely additive and gated to pointerType 'touch'/'pen' â€” mouse users get zero
+           behavior change, and #canvas-area's normal scroll (wheel or touch) is untouched.
+           Standard two-pointer pinch math via raw Pointer Events, no library: track up to two
+           active pointers per diagram in a Map, and on every move recompute the distance
+           between them (-> scale, relative to the distance/scale captured when the gesture
+           last changed pointer count) and their midpoint (-> pan), applied together as one
+           CSS transform on the <svg> so the point under the fingers stays under the fingers
+           (see the anchor-in-content-space math in onPointerMove below).
+
+           touch-action on the wrapper starts as 'pan-y': that blocks the browser's native
+           pinch-zoom (so two-finger gestures reach this code instead) while still letting a
+           single-finger vertical swipe scroll the PAGE natively â€” these diagrams can render
+           taller than a phone screen, so a permanent touch-action:none would trap scrolling
+           under whichever diagram the user's thumb happens to land on. Once a pinch actually
+           zooms past 1x, the wrapper switches to touch-action:none so a subsequent one-finger
+           drag pans the zoomed diagram instead of scrolling the page; it switches back to
+           'pan-y' once the user pinches back down to 1x. */
+        const DIAGRAM_MIN_SCALE = 1;
+        const DIAGRAM_MAX_SCALE = 6;
+
+        function initDiagramPanZoom(svgEl) {
+            const wrapper = svgEl.parentElement;
+            if (!wrapper || !wrapper.classList.contains('cut-diagram-viewport')) return;
+
+            let scale = 1, tx = 0, ty = 0;
+            const active = new Map(); // pointerId -> {x, y}, wrapper-local coordinates
+            let mode = null;          // 'pan' | 'pinch' | null
+            let start = null;         // baseline snapshot for the gesture currently in progress
+
+            wrapper.style.touchAction = 'pan-y';
+
+            function localPoint(e) {
+                const rect = wrapper.getBoundingClientRect();
+                return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+            }
+
+            function apply() {
+                svgEl.style.transform = `translate(${tx}px, ${ty}px) scale(${scale})`;
+            }
+
+            // Keeps the diagram covering the wrapper edge-to-edge at every scale instead of
+            // panning it off into blank space â€” at scale 1 this pins tx/ty to exactly 0.
+            function clampPan() {
+                const rect = wrapper.getBoundingClientRect();
+                const maxX = Math.max(0, (scale - 1) * rect.width);
+                const maxY = Math.max(0, (scale - 1) * rect.height);
+                tx = Math.min(0, Math.max(-maxX, tx));
+                ty = Math.min(0, Math.max(-maxY, ty));
+            }
+
+            // Re-snapshots the gesture baseline from whatever pointers are currently down.
+            // Called on every pointerdown/up so a finger added or removed mid-gesture (1 <-> 2)
+            // picks up cleanly from the current on-screen state instead of jumping.
+            function rebase() {
+                const pts = Array.from(active.values());
+                if (pts.length === 1) {
+                    mode = 'pan';
+                    start = { p0: pts[0], tx, ty };
+                } else if (pts.length >= 2) {
+                    mode = 'pinch';
+                    const [p0, p1] = pts;
+                    const dx = p1.x - p0.x, dy = p1.y - p0.y;
+                    start = {
+                        dist: Math.sqrt(dx * dx + dy * dy),
+                        mid: { x: (p0.x + p1.x) / 2, y: (p0.y + p1.y) / 2 },
+                        scale, tx, ty
+                    };
+                } else {
+                    mode = null;
+                    start = null;
+                }
+            }
+
+            function onPointerDown(e) {
+                if (e.pointerType !== 'touch' && e.pointerType !== 'pen') return;
+                try { wrapper.setPointerCapture(e.pointerId); } catch (err) {}
+                active.set(e.pointerId, localPoint(e));
+                rebase();
+            }
+
+            function onPointerMove(e) {
+                if (!active.has(e.pointerId)) return;
+                active.set(e.pointerId, localPoint(e));
+
+                if (mode === 'pan' && active.size === 1) {
+                    const p = active.get(e.pointerId);
+                    tx = start.tx + (p.x - start.p0.x);
+                    ty = start.ty + (p.y - start.p0.y);
+                    clampPan();
+                    apply();
+                } else if (mode === 'pinch' && active.size >= 2) {
+                    const pts = Array.from(active.values()).slice(0, 2);
+                    const dx = pts[1].x - pts[0].x, dy = pts[1].y - pts[0].y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    const mid = { x: (pts[0].x + pts[1].x) / 2, y: (pts[0].y + pts[1].y) / 2 };
+
+                    // Guard against a divide-by-zero (or a wild scale spike) if the two
+                    // pointers happened to start on top of each other.
+                    if (start.dist > 1) {
+                        const rawScale = start.scale * (dist / start.dist);
+                        scale = Math.min(DIAGRAM_MAX_SCALE, Math.max(DIAGRAM_MIN_SCALE, rawScale));
+                    }
+
+                    // Anchor math: find the content-space point that was under the gesture's
+                    // starting midpoint (screen = content*scale + translate, transform-origin
+                    // 0 0), then re-solve tx/ty so that SAME content point stays under the
+                    // CURRENT midpoint at the new scale. Handles simultaneous pinch + drift
+                    // (fingers moving together) in one formula.
+                    const anchorX = (start.mid.x - start.tx) / start.scale;
+                    const anchorY = (start.mid.y - start.ty) / start.scale;
+                    tx = mid.x - anchorX * scale;
+                    ty = mid.y - anchorY * scale;
+                    clampPan();
+                    apply();
+                }
+            }
+
+            function endPointer(e) {
+                if (!active.has(e.pointerId)) return;
+                active.delete(e.pointerId);
+                try { wrapper.releasePointerCapture(e.pointerId); } catch (err) {}
+                rebase();
+                if (active.size === 0) {
+                    if (scale <= 1.01) {
+                        scale = 1; tx = 0; ty = 0;
+                        apply();
+                        wrapper.style.touchAction = 'pan-y';
+                    } else {
+                        wrapper.style.touchAction = 'none';
+                    }
+                }
+            }
+
+            wrapper.addEventListener('pointerdown', onPointerDown);
+            wrapper.addEventListener('pointermove', onPointerMove);
+            wrapper.addEventListener('pointerup', endPointer);
+            wrapper.addEventListener('pointercancel', endPointer);
+            // Fallback cleanup only â€” a genuinely captured pointer keeps delivering move/up
+            // events to this element regardless of where it physically is, so this shouldn't
+            // normally fire mid-gesture; it's here in case setPointerCapture silently failed.
+            wrapper.addEventListener('pointerleave', endPointer);
+        }
+
         function sheetWasteFraction(sheet, sheetW, sheetH) {
             const used = sheet.shelves.reduce((sum, shelf) => sum + shelf.parts.reduce((s2, p) => s2 + p.w * p.h, 0), 0);
             return 1 - (used / (sheetW * sheetH));
@@ -2018,7 +2254,7 @@
                         return `
                         <div class="cut-diagram-block">
                             <div class="cut-diagram-label">Sheet ${i + 1} of ${sheets.length} &mdash; ${(sheetWasteFraction(sheet, sheetW, sheetH) * 100).toFixed(0)}% waste</div>
-                            ${buildSheetSvg(sheet, sheetW, sheetH, labelColorMap, sheetDefects)}
+                            <div class="cut-diagram-viewport">${buildSheetSvg(sheet, sheetW, sheetH, labelColorMap, sheetDefects)}</div>
                             ${sequence.length ? `<div class="cut-sequence-title">Cut Sequence</div><ol class="cut-sequence-list">${sequence.map(s => `<li>${escapeHtml(s)}</li>`).join('')}</ol>` : ''}
                             ${offcuts.length ? `<div class="offcuts-title">Usable Offcuts</div><div class="offcuts-list">${offcuts.map(o => `${fmtIn(o.w)}" x ${fmtIn(o.h)}"`).join(' &middot; ')} &mdash; worth keeping.</div>` : ''}
                         </div>
@@ -2051,7 +2287,7 @@
                         return `
                         <div class="cut-diagram-block">
                             <div class="cut-diagram-label">Board ${i + 1} of ${boards.length} &mdash; ${(boardWasteFraction(board, boardLenIn, kerf) * 100).toFixed(0)}% waste</div>
-                            ${buildBoardSvg(board, boardLenIn, labelColorMap)}
+                            <div class="cut-diagram-viewport">${buildBoardSvg(board, boardLenIn, labelColorMap)}</div>
                             ${sequence.length ? `<div class="cut-sequence-title">Cut Sequence</div><ol class="cut-sequence-list">${sequence.map(s => `<li>${escapeHtml(s)}</li>`).join('')}</ol>` : ''}
                             ${offcut != null ? `<div class="offcuts-title">Usable Offcut</div><div class="offcuts-list">${fmtIn(offcut)}" leftover &mdash; worth keeping.</div>` : ''}
                         </div>
@@ -2099,6 +2335,11 @@
 
             document.getElementById('emptyOptimizerState').style.display = 'none';
             document.getElementById('resultsWrap').style.display = 'block';
+
+            // innerHTML above just replaced every diagram <svg> with a fresh element, so
+            // (re)wire touch pan/zoom on all of them â€” the old elements and their listeners
+            // are gone with the old DOM, nothing to tear down first.
+            document.querySelectorAll('#resultsWrap .cut-diagram-svg').forEach(initDiagramPanZoom);
         }
 
         document.getElementById('optimizeBtn').addEventListener('click', runOptimization);

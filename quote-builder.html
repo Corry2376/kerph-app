@@ -316,6 +316,8 @@
             border: 5px solid transparent; border-top-color: #0f172a;
         }
         .help-tip:hover .help-tip-bubble, .help-tip:focus .help-tip-bubble { display: block; }
+        /* Touch has no hover — tapping toggles the same bubble via JS (see initHelpTips). */
+        .help-tip.tip-active .help-tip-bubble { display: block; }
 
         /* Top-of-content primary action button â€” same raised-card shadow language as the
            home page tiles, so the "do the main thing on this page" button reads consistently
@@ -363,6 +365,67 @@
 
         .print-only-header { display: none; }
         .print-watermark { display: none; }
+
+        /* ==========================================================================
+           MOBILE / TOUCH
+           The desktop layout is an absolutely-positioned app shell (fixed-height
+           header + a 300px sidebar + a canvas area that fill the viewport, each
+           scrolling independently). Below 1100px â€” the same breakpoint the shared
+           header (site-header-brand.js / site-header-tail.js) switches to a
+           variable-height stacked header at â€” that hardcoded "top: 150px" offset
+           would no longer match the real header height, so the whole shell converts
+           to a normal stacked, page-scrolling document instead.
+           ========================================================================== */
+        @media (max-width: 1100px) {
+            body { height: auto; width: 100%; overflow-x: hidden; overflow-y: auto; }
+
+            #sidebar-panel {
+                position: static;
+                width: 100%;
+                height: auto;
+                border-right: none;
+                border-bottom: 1px solid #cbd5e1;
+            }
+            #canvas-area {
+                position: static;
+                width: 100%;
+                height: auto;
+                overflow: visible;
+                padding: 20px 16px 40px;
+            }
+            .quote-canvas-columns { flex-direction: column; max-width: 100%; }
+            #quoteWrap { max-width: 100%; width: 100%; }
+            #quoteDashboardPanel { width: 100%; position: static; top: auto; margin-top: 24px; }
+
+            #sidebarMyQuotesSection { display: none; }
+
+            /* Touch targets: desktop-dense ~28px controls become >=40px. */
+            .mini-btn { padding: 12px 14px; font-size: 13px; min-height: 40px; }
+            .panel-item-actions .mini-btn { padding: 10px 12px; font-size: 12px; min-height: 40px; }
+            .new-layout-btn { padding: 13px 16px; font-size: 13px; min-height: 44px; }
+            .page-action-btn { padding: 13px 16px; font-size: 14px; min-height: 44px; }
+            .input-box, .select-box, .actual-field input { padding: 11px 12px; font-size: 16px; min-height: 42px; }
+            .header-sign-in-input { min-height: 36px; }
+            .help-tip { width: 20px; height: 20px; font-size: 11px; }
+            .account-layout-del { padding: 9px; font-size: 15px; }
+
+            .quote-action-row { flex-direction: column; align-items: stretch; }
+            .quote-action-row .page-action-btn { width: 100%; justify-content: center; }
+
+            .modal-overlay { padding: 16px; }
+            .modal-box { width: 100%; max-width: 360px; }
+        }
+
+        /* Below ~700px the list rows (quotes, materials) collapse from a
+           label+buttons row into a stacked card so action buttons get a full-width
+           tap target instead of being squeezed next to the label text. */
+        @media (max-width: 700px) {
+            .panel-item { flex-direction: column; align-items: stretch; gap: 10px; }
+            .panel-item-actions { justify-content: flex-end; }
+            .panel-item-actions .mini-btn { flex: 1; }
+            .actual-input-row { flex-direction: column; }
+            .actual-field { min-width: 100%; }
+        }
 
         @media print {
             @page { size: portrait; margin: 0.6in; }
@@ -571,13 +634,18 @@
 
         <button type="button" id="saveQuoteBtn" class="new-layout-btn" style="width:100%; margin-top:10px;">Save Quote</button>
 
-        <div class="sidebar-title" style="margin-top:20px;">My Quotes</div>
-        <div class="quotes-subgroup-title" style="margin-top:0;">Open</div>
-        <div class="empty-hint" id="openQuotesEmptyHint">No open quotes.</div>
-        <div id="openQuotesList"></div>
-        <div class="quotes-subgroup-title">Past</div>
-        <div class="empty-hint" id="pastQuotesEmptyHint">No past quotes yet.</div>
-        <div id="pastQuotesList"></div>
+        <!-- Hidden below 1100px (see mobile media query) once #quoteDashboardPanel
+             renders the same Open/Past lists full-width in normal document flow â€”
+             keeps quotes from being listed twice on a stacked mobile layout. -->
+        <div id="sidebarMyQuotesSection">
+            <div class="sidebar-title" style="margin-top:20px;">My Quotes</div>
+            <div class="quotes-subgroup-title" style="margin-top:0;">Open</div>
+            <div class="empty-hint" id="openQuotesEmptyHint">No open quotes.</div>
+            <div id="openQuotesList"></div>
+            <div class="quotes-subgroup-title">Past</div>
+            <div class="empty-hint" id="pastQuotesEmptyHint">No past quotes yet.</div>
+            <div id="pastQuotesList"></div>
+        </div>
     </div>
 
     <div class="print-only-header" id="printOnlyHeader"></div>
@@ -586,7 +654,7 @@
     <div id="canvas-area">
         <div class="quote-canvas-columns">
         <div id="quoteWrap">
-            <div style="display:flex; justify-content:flex-end; gap:10px; margin-bottom:14px;">
+            <div class="quote-action-row" style="display:flex; justify-content:flex-end; gap:10px; margin-bottom:14px;">
                 <button type="button" id="shareQuoteBtn" class="page-action-btn">&#128279; Share With Client</button>
                 <button type="button" id="emailQuoteBtn" class="page-action-btn">&#128231; Email to Client</button>
                 <button type="button" id="exportQuotePdfBtn" class="page-action-btn">&#128196; Export Client PDF</button>
@@ -937,6 +1005,23 @@
                 if (!dropdown.contains(e.target)) dropdown.classList.remove('open');
             });
         }
+        // Overhead/Margin help bubbles are hover/focus-only in CSS, which touch
+        // devices have no equivalent for â€” tapping the "?" toggles the same bubble
+        // instead so the explanation is reachable without a mouse.
+        function initHelpTips() {
+            document.querySelectorAll('.help-tip').forEach(tip => {
+                tip.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const wasActive = tip.classList.contains('tip-active');
+                    document.querySelectorAll('.help-tip.tip-active').forEach(t => t.classList.remove('tip-active'));
+                    if (!wasActive) tip.classList.add('tip-active');
+                });
+            });
+            document.addEventListener('click', () => {
+                document.querySelectorAll('.help-tip.tip-active').forEach(t => t.classList.remove('tip-active'));
+            });
+        }
+        initHelpTips();
         initJigsDropdown();
         initPlanSelector();
 
