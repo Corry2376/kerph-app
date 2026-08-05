@@ -2037,6 +2037,10 @@
             border-style: dashed;
         }
 
+        .placed-cabinet-node.cabinet-shelving {
+            border-style: dotted;
+        }
+
         .cabinet-item {
             border-left-color: #b45309;
         }
@@ -3907,7 +3911,7 @@
     </div>
 
     <div class="floating-panel cabinet-panel collapsed" id="cabinetPanel">
-        <div class="floating-panel-title">Custom Cabinetry <span class="panel-toggle-chevron">&#9656;</span></div>
+        <div class="floating-panel-title">Custom Cabinetry &amp; Shelving <span class="panel-toggle-chevron">&#9656;</span></div>
         <div class="panel-body">
         <div class="form-group">
             <label class="header-field-label" for="cabNameInput">Name</label>
@@ -3933,22 +3937,38 @@
                 <select class="select-box" id="cabTypeSelect">
                     <option value="base">Base Cabinet</option>
                     <option value="wall">Wall Cabinet</option>
+                    <option value="shelving">Shelving Unit</option>
                 </select>
             </div>
         </div>
 
-        <label class="checkbox-label" style="margin-top:10px;">
-            <input type="checkbox" id="cabHasDrawersCheckbox"> Has Drawers
-        </label>
-        <div id="cabDrawerFields" style="display:none; margin-top:8px;">
-            <div id="cabDrawerList" style="display:flex; flex-direction:column; gap:6px;"></div>
-            <button type="button" id="cabAddDrawerBtn" class="mini-btn" style="width:100%; margin-top:8px;">+ Add Drawer</button>
+        <div id="cabDrawerSection">
+            <label class="checkbox-label" style="margin-top:10px;">
+                <input type="checkbox" id="cabHasDrawersCheckbox"> Has Drawers
+            </label>
+            <div id="cabDrawerFields" style="display:none; margin-top:8px;">
+                <div id="cabDrawerList" style="display:flex; flex-direction:column; gap:6px;"></div>
+                <button type="button" id="cabAddDrawerBtn" class="mini-btn" style="width:100%; margin-top:8px;">+ Add Drawer</button>
+            </div>
+        </div>
+
+        <div id="cabShelfSection" style="display:none;">
+            <div class="dim-inputs" style="margin-top:10px;">
+                <div class="header-field">
+                    <label class="header-field-label" for="cabShelfCountInput"># of Shelves</label>
+                    <input type="number" class="input-box" id="cabShelfCountInput" value="5" min="0" step="1">
+                </div>
+                <div class="header-field">
+                    <label class="header-field-label" for="cabShelfSpacingInput">Shelf Spacing (in)</label>
+                    <input type="number" class="input-box" id="cabShelfSpacingInput" value="14" min="1">
+                </div>
+            </div>
         </div>
 
         <button type="button" id="addCabinetBtn" class="mini-btn" style="width:100%; margin-top:10px;">Save Cabinet</button>
 
         <div id="cabinetPicker" style="display:none; margin-top:12px;">
-            <div class="sidebar-title" style="margin-top:0;">Your Cabinets</div>
+            <div class="sidebar-title" style="margin-top:0;">Your Cabinets &amp; Shelving</div>
             <div class="dim-inputs">
                 <select class="select-box" id="cabinetPaletteSelect"></select>
                 <button type="button" id="removeCabinetBtn" class="cabinet-remove-btn" title="Remove this cabinet">&#10005;</button>
@@ -4730,6 +4750,9 @@
                 cabType: item.getAttribute('data-cab-type'),
                 hasDrawers: item.getAttribute('data-has-drawers') === 'true',
                 drawers: JSON.parse(item.getAttribute('data-drawers') || '[]'),
+                hasShelves: item.getAttribute('data-has-shelves') === 'true',
+                shelfCount: parseInt(item.getAttribute('data-shelf-count'), 10) || 0,
+                shelfSpacingIn: parseFloat(item.getAttribute('data-shelf-spacing-in')) || 0,
                 layer: item.getAttribute('data-layer') || 'tools',
                 clearanceCategory: (categoryEl && categoryEl.dataset.clearanceCategory) || null
             };
@@ -5922,6 +5945,9 @@
                 displayDims = `${widthIn}"W x ${depthIn}"D`;
                 if (placement.hasDrawers && placement.drawers.length) {
                     displayDims += ` +${placement.drawers.length} drwrs`;
+                }
+                if (placement.hasShelves && placement.shelfCount) {
+                    displayDims += ` +${placement.shelfCount} shlvs`;
                 }
                 if (placement.cabType === 'wall' && mountHeightIn) {
                     displayDims += ` @ ${mountHeightIn}"H`;
@@ -9040,8 +9066,10 @@
         const CABINET_TEMPLATES_KEY = 'kerphCabinetTemplates';
         const CABINET_DEFAULTS = {
             base: { width: 24, depth: 24, height: 34.5 },
-            wall: { width: 24, depth: 12, height: 30 }
+            wall: { width: 24, depth: 12, height: 30 },
+            shelving: { width: 36, depth: 18, height: 72 }
         };
+        const SHELF_DEFAULTS = { count: 5, spacingIn: 14 };
 
         let cachedCabinetTemplates = [];
         function loadCabinetTemplates() {
@@ -9062,10 +9090,18 @@
             return `${drawers.length} drawers (varies)`;
         }
 
+        function summarizeShelves(shelfCount, shelfSpacingIn) {
+            if (!shelfCount) return '';
+            return `${shelfCount} ${shelfCount === 1 ? 'shelf' : 'shelves'} @ ${shelfSpacingIn}" spacing`;
+        }
+
         function formatCabinetDimsText(t) {
             let text = `${t.widthIn}"W x ${t.depthIn}"D x ${t.heightIn}"H`;
             if (t.hasDrawers && t.drawers && t.drawers.length) {
                 text += ` · ${summarizeDrawers(t.drawers)}`;
+            }
+            if (t.hasShelves && t.shelfCount) {
+                text += ` · ${summarizeShelves(t.shelfCount, t.shelfSpacingIn)}`;
             }
             return text;
         }
@@ -9084,6 +9120,9 @@
             chip.setAttribute('data-height', selected.heightFeet);
             chip.setAttribute('data-has-drawers', selected.hasDrawers ? 'true' : 'false');
             chip.setAttribute('data-drawers', JSON.stringify(selected.drawers || []));
+            chip.setAttribute('data-has-shelves', selected.hasShelves ? 'true' : 'false');
+            chip.setAttribute('data-shelf-count', selected.shelfCount || 0);
+            chip.setAttribute('data-shelf-spacing-in', selected.shelfSpacingIn || 0);
             document.getElementById('cabinetChipTitle').textContent = selected.name;
             document.getElementById('cabinetChipDims').textContent = formatCabinetDimsText(selected);
         }
@@ -9147,6 +9186,16 @@
             const select = document.getElementById('cabinetPaletteSelect');
             const hasDrawersCheckbox = document.getElementById('cabHasDrawersCheckbox');
             const drawerFields = document.getElementById('cabDrawerFields');
+            const drawerSection = document.getElementById('cabDrawerSection');
+            const shelfSection = document.getElementById('cabShelfSection');
+            const shelfCountInput = document.getElementById('cabShelfCountInput');
+            const shelfSpacingInput = document.getElementById('cabShelfSpacingInput');
+
+            function applyTypeSectionVisibility() {
+                const isShelving = typeSelect.value === 'shelving';
+                drawerSection.style.display = isShelving ? 'none' : 'block';
+                shelfSection.style.display = isShelving ? 'block' : 'none';
+            }
 
             typeSelect.addEventListener('change', () => {
                 const defaults = CABINET_DEFAULTS[typeSelect.value];
@@ -9155,7 +9204,13 @@
                     depthInput.value = defaults.depth;
                     heightInput.value = defaults.height;
                 }
+                if (typeSelect.value === 'shelving') {
+                    shelfCountInput.value = SHELF_DEFAULTS.count;
+                    shelfSpacingInput.value = SHELF_DEFAULTS.spacingIn;
+                }
+                applyTypeSectionVisibility();
             });
+            applyTypeSectionVisibility();
 
             hasDrawersCheckbox.addEventListener('change', () => {
                 drawerFields.style.display = hasDrawersCheckbox.checked ? 'block' : 'none';
@@ -9176,19 +9231,27 @@
                 const depthIn = parseFloat(depthInput.value);
                 const heightIn = parseFloat(heightInput.value);
                 const type = typeSelect.value;
-                const hasDrawers = hasDrawersCheckbox.checked;
+                const isShelving = type === 'shelving';
+                const hasDrawers = !isShelving && hasDrawersCheckbox.checked;
+                const shelfCount = isShelving ? parseInt(shelfCountInput.value, 10) || 0 : 0;
+                const shelfSpacingIn = isShelving ? parseFloat(shelfSpacingInput.value) || 0 : 0;
+                const hasShelves = isShelving && shelfCount > 0;
 
                 if (!widthIn || !depthIn || !heightIn || widthIn <= 0 || depthIn <= 0 || heightIn <= 0) {
-                    showToast('Enter a positive width, depth, and height for the cabinet.');
+                    showToast('Enter a positive width, depth, and height for the unit.');
                     return;
                 }
                 if (hasDrawers && !drawerRows.length) {
                     showToast('Add at least one drawer, or uncheck Has Drawers.');
                     return;
                 }
+                if (isShelving && shelfCount > 0 && shelfSpacingIn <= 0) {
+                    showToast('Enter a positive shelf spacing.');
+                    return;
+                }
 
-                const typeLabel = type === 'wall' ? 'Wall Cabinet' : 'Base Cabinet';
-                const name = nameInput.value.trim() || `${typeLabel} (${widthIn}"x${depthIn}")`;
+                const typeLabels = { base: 'Base Cabinet', wall: 'Wall Cabinet', shelving: 'Shelving Unit' };
+                const name = nameInput.value.trim() || `${typeLabels[type]} (${widthIn}"x${depthIn}")`;
                 const template = {
                     id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
                     type: type,
@@ -9198,7 +9261,10 @@
                     depthFeet: depthIn / 12,
                     heightFeet: heightIn / 12,
                     hasDrawers,
-                    drawers: hasDrawers ? drawerRows.map(d => ({ heightIn: d.heightIn })) : []
+                    drawers: hasDrawers ? drawerRows.map(d => ({ heightIn: d.heightIn })) : [],
+                    hasShelves,
+                    shelfCount,
+                    shelfSpacingIn
                 };
 
                 const templates = loadCabinetTemplates();
