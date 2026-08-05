@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <script>if (localStorage.getItem('kerphComingSoonBypass') !== 'true') { location.replace('coming-soon.html'); }</script>
+    <script>(function(){var t=new URLSearchParams(location.search).get('kerphPreview');if(t==='ls-review-bm0j8zf5qs'){localStorage.setItem('kerphComingSoonBypass','true');}if(localStorage.getItem('kerphComingSoonBypass')!=='true'){location.replace('coming-soon.html');}})();</script>
     <script>(function(){var r={free:0,pro:1,premier:2};if((r[localStorage.getItem('kerphPlan')||'free']||0)<r.pro){location.replace('pricing.html?locked=project-designer.html');}})();</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
