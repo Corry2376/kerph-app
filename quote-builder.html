@@ -655,7 +655,7 @@
             return div.innerHTML;
         }
 
-        function getPlan() { return localStorage.getItem(PLAN_KEY) || 'free'; }
+        function getPlan() { return kerphGetCachedEffectivePlan(); }
         function initPlanSelector() {
             const select = document.getElementById('planSelector');
             select.value = getPlan();
@@ -946,6 +946,11 @@
             kerphLoadToolStatus().then(({ data }) => { cachedToolStatuses = data || {}; });
             kerphLoadSavedLayouts().then(({ data }) => { cachedSavedLayouts = data || []; });
         });
+
+        // Real (not localStorage-preview) re-check — the synchronous redirect at the top of
+        // <head> is a fast first pass that can't see the real subscription (it runs before
+        // this file even loads); this is what actually closes the loophole once auth resolves.
+        kerphAuthReady.then(kerphEnforceRealTierGate);
 
         kerphAuthReady.then(async () => {
             initHeaderSignIn();

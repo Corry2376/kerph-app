@@ -755,7 +755,7 @@
             return div.innerHTML;
         }
 
-        function getPlan() { return localStorage.getItem(PLAN_KEY) || 'free'; }
+        function getPlan() { return kerphGetCachedEffectivePlan(); }
         function initPlanSelector() {
             const select = document.getElementById('planSelector');
             select.value = getPlan();

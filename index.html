@@ -1637,7 +1637,7 @@
 
         /* ---------- PLAN / TIER (local preview only, not real billing) ---------- */
         function getPlan() {
-            return localStorage.getItem(PLAN_KEY) || 'free';
+            return kerphGetCachedEffectivePlan();
         }
 
         function isPremium() { return getPlan() === 'premier'; }

@@ -934,7 +934,7 @@
         }
 
         function getPlan() {
-            return localStorage.getItem(PLAN_KEY) || 'free';
+            return kerphGetCachedEffectivePlan();
         }
 
         function initPlanSelector() {

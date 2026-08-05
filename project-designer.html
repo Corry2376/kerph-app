@@ -1402,7 +1402,7 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
         }
 
         function getPlan() {
-            return localStorage.getItem(PLAN_KEY) || 'free';
+            return kerphGetCachedEffectivePlan();
         }
 
         function initPlanSelector() {
@@ -1760,6 +1760,11 @@ Use the toolbar above for bold, italic, headings, and lists â€” or type mar
                 if (typeof renderSavedProjectsPicker === 'function') renderSavedProjectsPicker();
             });
         });
+
+        // Real (not localStorage-preview) re-check — the synchronous redirect at the top of
+        // <head> is a fast first pass that can't see the real subscription (it runs before
+        // this file even loads); this is what actually closes the loophole once auth resolves.
+        kerphAuthReady.then(kerphEnforceRealTierGate);
 
         kerphAuthReady.then(() => {
             initHeaderSignIn();

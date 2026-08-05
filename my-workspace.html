@@ -419,7 +419,7 @@
             return new Date(iso).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
         }
 
-        function getPlan() { return localStorage.getItem(PLAN_KEY) || 'free'; }
+        function getPlan() { return kerphGetCachedEffectivePlan(); }
         function initPlanSelector() {
             const select = document.getElementById('planSelector');
             select.value = getPlan();

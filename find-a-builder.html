@@ -636,7 +636,7 @@
             showToast._timer = setTimeout(() => nudge.classList.remove('visible'), 3500);
         }
 
-        function getPlan() { return localStorage.getItem(PLAN_KEY) || 'free'; }
+        function getPlan() { return kerphGetCachedEffectivePlan(); }
 
         function initPlanSelector() {
             const select = document.getElementById('planSelector');

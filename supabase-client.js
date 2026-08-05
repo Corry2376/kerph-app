@@ -17,6 +17,11 @@
     // needing every call site converted to async/await.
     const state = { user: null, profile: null, ready: false };
 
+    // Real (not localStorage-preview) entitlement, refreshed on every auth event — see
+    // kerphGetCachedEffectivePlan() below for why this is a synchronous-readable cache rather
+    // than something the ~26 pages' worth of call sites each await individually.
+    let cachedEffectivePlan = { plan: 'free', viaTeam: false };
+
     let resolveReady;
     // Every page's init sequence should `await kerphAuthReady` before rendering
     // signed-in/signed-out UI, or an actually-signed-in user sees a flash of the
@@ -55,6 +60,15 @@
             const wasReady = state.ready;
             state.user = session ? session.user : null;
             await refreshProfile(state.user ? state.user.id : null);
+            // Real entitlement resolution — direct subscription, or Premier inherited via an
+            // active team membership. Refreshed on every auth event (sign-in, sign-out, token
+            // refresh) so it never lags behind who's actually signed in.
+            if (state.user) {
+                const { data: eff } = await kerphGetMyEffectivePlan();
+                cachedEffectivePlan = { plan: eff.plan, viaTeam: !!eff.viaTeam };
+            } else {
+                cachedEffectivePlan = { plan: 'free', viaTeam: false };
+            }
             // Only on the very first ready-resolution of a real sign-in (not every later
             // auth event) — kerphRunLocalMigration itself is a fast no-op after the first
             // time via its own sentinel, but this also skips it during INITIAL_SESSION
@@ -67,6 +81,7 @@
                 state.ready = true;
                 resolveReady();
             }
+            kerphRefreshTierLocks();
             notifyChange();
         }, 0);
     });
@@ -823,7 +838,7 @@
     function kerphApplyNavTierLocks() {
         const select = document.getElementById('pageNavSelect');
         if (!select) return;
-        const plan = localStorage.getItem('kerphPlan') || 'free';
+        const plan = kerphGetCachedEffectivePlan();
         const options = Array.from(select.options);
         options.forEach((opt) => {
             const tier = KERPH_TOOL_TIER_MAP[opt.value];
@@ -853,7 +868,7 @@
     function kerphApplyToolCardTierLocks() {
         const cards = document.querySelectorAll('.tool-card[href]');
         if (!cards.length) return;
-        const plan = localStorage.getItem('kerphPlan') || 'free';
+        const plan = kerphGetCachedEffectivePlan();
         cards.forEach((card) => {
             const tier = KERPH_TOOL_TIER_MAP[card.getAttribute('href')];
             if (!tier) return;
@@ -876,6 +891,37 @@
     function kerphRefreshTierLocks() {
         kerphApplyNavTierLocks();
         kerphApplyToolCardTierLocks();
+    }
+
+    // The actual fix for "a browser toggle grants paid access": every page's local getPlan()
+    // (previously a bare localStorage read, copy-pasted into ~26 files) now delegates here.
+    // Signed OUT, the localStorage preview toggle is still the whole story — there's no
+    // subscription to check, and pricing.html's "Preview" buttons are explicitly meant to let
+    // someone browse a tier's UI before creating an account. Signed IN, the real subscription
+    // (cachedEffectivePlan, refreshed on every auth event above) governs and the local toggle
+    // is ignored outright, so a signed-in Free user can no longer grant themselves Pro/Premier
+    // by editing a browser value.
+    function kerphGetCachedEffectivePlan() {
+        return state.user ? cachedEffectivePlan.plan : (localStorage.getItem('kerphPlan') || 'free');
+    }
+
+    // Second-pass gate for the 5 tier-gated pages (project-designer.html, shop-3d-viewer.html,
+    // quote-builder.html, portfolio.html, shop-jigs-part-finder.html). Each of those pages
+    // still has its own synchronous, localStorage-only redirect at the very top of <head> — has
+    // to stay, since it runs before this file even loads — which is a fast first pass with zero
+    // flash for the common case. This is what actually closes the loophole: called once
+    // kerphAuthReady resolves, it re-checks against the REAL subscription and kicks a signed-in
+    // user back out if their real plan doesn't cover the page, regardless of what got them past
+    // the first-pass check (a spoofed localStorage value, most likely). Signed-out visitors are
+    // exempt — nothing to verify against, and that's the intended anonymous-preview path.
+    async function kerphEnforceRealTierGate() {
+        if (!state.user) return;
+        const page = location.pathname.split('/').pop();
+        const requiredTier = kerphRequiredTierFor(page);
+        if (!requiredTier) return;
+        if (!kerphPlanMeetsTier(cachedEffectivePlan.plan, requiredTier)) {
+            location.replace(`pricing.html?locked=${page}`);
+        }
     }
 
     document.addEventListener('DOMContentLoaded', kerphRefreshTierLocks);
@@ -1072,6 +1118,8 @@
     window.kerphPlanMeetsTier = kerphPlanMeetsTier;
     window.kerphRequiredTierFor = kerphRequiredTierFor;
     window.kerphRefreshTierLocks = kerphRefreshTierLocks;
+    window.kerphGetCachedEffectivePlan = kerphGetCachedEffectivePlan;
+    window.kerphEnforceRealTierGate = kerphEnforceRealTierGate;
 
     window.kerphSupabase = kerphSupabase;
     window.kerphAuthReady = kerphAuthReady;

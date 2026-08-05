@@ -395,7 +395,7 @@
             return div.innerHTML;
         }
 
-        function getPlan() { return localStorage.getItem(PLAN_KEY) || 'free'; }
+        function getPlan() { return kerphGetCachedEffectivePlan(); }
         function initPlanSelector() {
             const select = document.getElementById('planSelector');
             select.value = getPlan();
@@ -955,6 +955,13 @@
                 if (match) openProjectView(match);
             }
         }
+
+        // Real (not localStorage-preview) re-check — the synchronous redirect at the top of
+        // <head> is a fast first pass that can't see the real subscription (it runs before
+        // this file even loads); this is what actually closes the loophole once auth resolves.
+        // Skipped in the same ?user= public-view case the head redirect itself exempts —
+        // ownerMode (defined above from the same ?user= param) is what this page's own gate applies to.
+        if (ownerMode) kerphAuthReady.then(kerphEnforceRealTierGate);
 
         kerphAuthReady.then(async () => {
             initHeaderSignIn();
