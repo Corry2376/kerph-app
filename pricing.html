@@ -343,7 +343,7 @@
 
         .pricing-footnote { font-size: 11.5px; color: #9ca3af; line-height: 1.6; margin-top: 18px; padding: 0 20px 16px; }
 
-        /* ---------- TEAM (PREMIER SEATS) PANEL ---------- */
+        /* ---------- TEAM (PRO/PREMIER SEATS) PANEL ---------- */
         .team-panel {
             margin-top: 24px;
             background-color: #ffffff;
@@ -641,11 +641,11 @@
                     <tr class="feature-row"><td>Auto-generated insurance inventory report</td><td class="plan-cell dash">&mdash;</td><td class="plan-cell dash">&mdash;</td><td class="plan-cell check">&#10003;</td></tr>
 
                     <tr class="section-row"><td colspan="4">Account</td></tr>
-                    <tr class="feature-row"><td>Team seats</td><td class="plan-cell dash">&mdash;</td><td class="plan-cell dash">&mdash;</td><td class="plan-cell">4, then $7/mo each additional</td></tr>
+                    <tr class="feature-row"><td>Team seats</td><td class="plan-cell dash">&mdash;</td><td class="plan-cell">2, then $7/mo each additional</td><td class="plan-cell">4, then $7/mo each additional</td></tr>
                     <tr class="feature-row"><td>Price</td><td class="plan-cell">$0</td><td class="plan-cell">$10/mo<div style="font-size:10.5px; color:#9ca3af; font-weight:600;">$8/mo billed annually</div></td><td class="plan-cell">$19/mo<div style="font-size:10.5px; color:#9ca3af; font-weight:600;">$17/mo billed annually</div></td></tr>
                 </tbody>
             </table>
-            <div class="pricing-footnote">Pro and Premier checkout above is real (Lemon Squeezy) and feature access is enforced against your actual subscription once you're signed in. Team seat invites for Premier are managed from the panel below once you're on a real Premier subscription.</div>
+            <div class="pricing-footnote">Pro and Premier checkout above is real (Lemon Squeezy) and feature access is enforced against your actual subscription once you're signed in. Team seat invites are managed from the panel below once you're on a real Pro or Premier subscription.</div>
         </div>
 
         <div class="team-panel" id="teamPanel" style="display:none;"></div>
@@ -1164,7 +1164,7 @@
             banner.style.display = 'block';
         }
 
-        // ---------- Team panel (Premier seat management) ----------
+        // ---------- Team panel (Pro/Premier seat management) ----------
         // Hidden entirely unless the signed-in user's REAL subscription (not the local
         // kerphPlan preview toggle — that's trivially self-editable) is an entitled Premier
         // plan, since seat invites are only meaningful once real billing is behind them.
@@ -1179,7 +1179,7 @@
             const user = (typeof kerphGetCachedUser === 'function') ? kerphGetCachedUser() : null;
             if (!user) { panel.style.display = 'none'; return; }
             const { data: sub } = await kerphGetMySubscription();
-            if (!sub || sub.plan !== 'premier') { panel.style.display = 'none'; return; }
+            if (!sub || (sub.plan !== 'pro' && sub.plan !== 'premier')) { panel.style.display = 'none'; return; }
 
             const { data: teamData } = await kerphGetMyTeam();
             panel.style.display = 'block';
@@ -1187,7 +1187,7 @@
             if (!teamData.isOwner && teamData.team) {
                 panel.innerHTML = `
                     <div class="team-panel-title">Your Team</div>
-                    <div class="team-not-premier">You have Premier access as a teammate on someone else's plan. Seat management is done by the account owner.</div>
+                    <div class="team-not-premier">You have paid access as a teammate on someone else's plan. Seat management is done by the account owner.</div>
                 `;
                 return;
             }
@@ -1268,7 +1268,7 @@
                 const { data, error } = await kerphAcceptTeamInvite(token);
                 if (error) showToast(error.message || 'Could not accept that invite.');
                 else if (data && data.alreadyActive) showToast("You're already on this team.");
-                else { showToast("You're in! Premier access is now active on your account."); renderTeamPanel(); }
+                else { showToast("You're in! Team access is now active on your account."); renderTeamPanel(); }
             }
             params.delete('acceptInvite');
             const cleanUrl = location.pathname + (params.toString() ? `?${params}` : '');

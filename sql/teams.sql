@@ -1,8 +1,9 @@
--- Kerph teams: lets a Premier subscriber invite up to 3 additional teammates (4 total
--- seats, owner included) at no extra cost, then $5/mo per seat beyond that — synced to
--- Lemon Squeezy's "Extra Seats" variant via the sync-team-seats Edge Function. A team
--- member without their own subscription inherits Premier access through team membership
--- (see kerphGetMyEffectivePlan in supabase-client.js).
+-- Kerph teams: lets a Pro or Premier subscriber invite teammates for free up to their
+-- plan's included seat count (2 total seats on Pro, 4 total on Premier, owner included),
+-- then $7/mo per seat beyond that — synced to Lemon Squeezy's "Extra Seats" variant via
+-- the sync-team-seats Edge Function. A team member without their own subscription inherits
+-- the owner's plan tier through team membership (see kerphGetMyEffectivePlan in
+-- supabase-client.js).
 --
 -- Safe to re-run — every statement is guarded. Run this whole script in the Supabase SQL
 -- Editor after sql/lemon-squeezy-subscriptions.sql (this file's RLS depends on the
@@ -63,17 +64,18 @@ create policy "team member select own roster" on public.team_members
     );
 
 -- Only the owner can invite, and only while their own subscription is a currently-entitled
--- Premier plan. This is the real enforcement point (same principle as sql/lemon-squeezy-
--- subscriptions.sql: a browser can't grant itself paid access by calling the table
+-- Pro or Premier plan. This is the real enforcement point (same principle as sql/lemon-
+-- squeezy-subscriptions.sql: a browser can't grant itself paid access by calling the table
 -- directly — Postgres checks the owner's real subscription row here, not anything the
--- client claims).
+-- client claims). Per-plan seat limits (2 for Pro, 4 for Premier) are enforced in the
+-- application layer (sync-team-seats), not here — this policy only gates "paid at all".
 drop policy if exists "team owner invite" on public.team_members;
 create policy "team owner invite" on public.team_members
     for insert with check (
         team_id in (select id from public.teams where owner_id = auth.uid())
         and exists (
             select 1 from public.my_current_subscription
-            where user_id = auth.uid() and plan = 'premier' and status in ('active', 'on_trial', 'past_due')
+            where user_id = auth.uid() and plan in ('pro', 'premier') and status in ('active', 'on_trial', 'past_due')
         )
     );
 
@@ -86,3 +88,33 @@ create policy "team owner remove" on public.team_members
 drop policy if exists "team member leave" on public.team_members;
 create policy "team member leave" on public.team_members
     for delete using (auth.uid() = user_id);
+
+-- Lets a team member (or the owner) find out which plan tier they've inherited via team
+-- membership (Pro vs Premier — the seat count and gated features differ) without exposing
+-- the owner's full subscription row. RLS on subscriptions/my_current_subscription is
+-- "auth.uid() = user_id" only, so a member's browser can't otherwise see the owner's plan
+-- at all — same reasoning as kerph_is_admin() in sql/admin-dashboard.sql: a narrow
+-- SECURITY DEFINER function instead of a broader read grant. Returns null (never over-
+-- grants) if the caller isn't actually the owner or an active member of that team, or if
+-- the owner has no currently-entitled subscription.
+create or replace function public.kerph_team_owner_plan(p_team_id uuid)
+returns text
+language sql
+security definer
+set search_path = public
+stable
+as $$
+    select ms.plan
+    from public.teams t
+    join public.my_current_subscription ms on ms.user_id = t.owner_id
+    where t.id = p_team_id
+      and ms.status in ('active', 'on_trial', 'past_due')
+      and (
+          t.owner_id = auth.uid()
+          or exists (
+              select 1 from public.team_members tm
+              where tm.team_id = t.id and tm.user_id = auth.uid() and tm.status = 'active'
+          )
+      )
+$$;
+grant execute on function public.kerph_team_owner_plan(uuid) to authenticated;

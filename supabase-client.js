@@ -1272,14 +1272,18 @@
     }
     window.kerphGetMySubscription = kerphGetMySubscription;
 
-    // ---------- Teams (Premier seat management) ----------
-    // A Premier subscriber can invite up to 3 additional teammates (4 total seats, owner
-    // included) for free; each seat beyond that is $5/mo, synced to Lemon Squeezy's "Extra
-    // Seats" variant by the sync-team-seats Edge Function. See sql/teams.sql for the schema
-    // and RLS — Postgres, not this file, is what actually stops a non-Premier user from
-    // inviting anyone, the same "browser can't self-grant" principle as kerphGetMySubscription.
+    // ---------- Teams (Pro/Premier seat management) ----------
+    // A Pro or Premier subscriber can invite teammates for free up to their plan's included
+    // seat count (2 total seats on Pro, 4 total on Premier, owner included); each seat beyond
+    // that is $7/mo, synced to Lemon Squeezy's "Extra Seats" variant by the sync-team-seats
+    // Edge Function. See sql/teams.sql for the schema and RLS — Postgres, not this file, is
+    // what actually stops a non-Pro/Premier user from inviting anyone, the same "browser can't
+    // self-grant" principle as kerphGetMySubscription.
     const TEAM_INCLUDED_SEATS = 4;
     const TEAM_EXTRA_SEAT_PRICE = 7;
+    function kerphTeamIncludedSeatsForPlan(plan) {
+        return plan === 'premier' ? 4 : 2;
+    }
 
     async function kerphGetMyTeam() {
         const fallback = { team: null, members: [], isOwner: false, includedSeats: TEAM_INCLUDED_SEATS, extraSeatPrice: TEAM_EXTRA_SEAT_PRICE };
@@ -1287,7 +1291,9 @@
         const { data: ownedTeam } = await kerphSupabase.from('teams').select('*').eq('owner_id', state.user.id).maybeSingle();
         if (ownedTeam) {
             const { data: members } = await kerphSupabase.from('team_members').select('*').eq('team_id', ownedTeam.id).order('invited_at', { ascending: true });
-            return { data: { team: ownedTeam, members: members || [], isOwner: true, includedSeats: TEAM_INCLUDED_SEATS, extraSeatPrice: TEAM_EXTRA_SEAT_PRICE }, error: null };
+            const { data: ownerSub } = await kerphGetMySubscription();
+            const includedSeats = kerphTeamIncludedSeatsForPlan(ownerSub && ownerSub.plan);
+            return { data: { team: ownedTeam, members: members || [], isOwner: true, includedSeats, extraSeatPrice: TEAM_EXTRA_SEAT_PRICE }, error: null };
         }
         // Not an owner — maybe an accepted member of someone else's team.
         const { data: membership } = await kerphSupabase.from('team_members').select('*, teams(*)').eq('user_id', state.user.id).eq('status', 'active').maybeSingle();
@@ -1353,16 +1359,21 @@
     }
 
     // The real (not localStorage-preview) effective plan for this user: their own direct
-    // subscription, or — if that's free/none — the Premier tier inherited from an active
-    // team membership. Nothing calls this yet, same "build it ahead of the cutover" reasoning
-    // as kerphGetMySubscription: the day the local kerphPlan preview toggle is retired in
-    // favor of real entitlement checks, this already accounts for both paths.
+    // subscription, or — if that's free/none — the plan tier (Pro or Premier) inherited from
+    // an active team membership. Wired into cachedEffectivePlan on every auth event above, so
+    // this drives real page-gating — it must reflect the owner's ACTUAL plan, not assume
+    // Premier, now that Pro teams exist too. RLS can't let a member read the owner's
+    // subscription row directly, so kerph_team_owner_plan() (sql/teams.sql) does that lookup
+    // narrowly server-side.
     async function kerphGetMyEffectivePlan() {
         const direct = await kerphGetMySubscription();
         if (direct.data.plan !== 'free' || !state.user) return direct;
         const { data: membership } = await kerphSupabase
-            .from('team_members').select('status').eq('user_id', state.user.id).eq('status', 'active').maybeSingle();
-        if (membership) return { data: { ...direct.data, plan: 'premier', viaTeam: true }, error: null };
+            .from('team_members').select('status, team_id').eq('user_id', state.user.id).eq('status', 'active').maybeSingle();
+        if (membership) {
+            const { data: ownerPlan } = await kerphSupabase.rpc('kerph_team_owner_plan', { p_team_id: membership.team_id });
+            return { data: { ...direct.data, plan: ownerPlan || 'free', viaTeam: !!ownerPlan }, error: null };
+        }
         return direct;
     }
 

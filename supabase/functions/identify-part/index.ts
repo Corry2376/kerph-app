@@ -69,13 +69,23 @@ Deno.serve(async (req) => {
 
     const supabaseAdmin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
 
+    // Admins preview every paid feature the same way they preview paid UI/pages client-side
+    // (kerphGetCachedEffectivePlan in supabase-client.js) — without this, the site owner's own
+    // admin account, with no real paid subscription row, would be locked out of testing a
+    // server-enforced feature like this one even with "Premier" selected in the preview toggle.
+    const { data: profile } = await supabaseAdmin
+      .from('profiles')
+      .select('is_admin')
+      .eq('id', user.id)
+      .maybeSingle();
+
     const { data: sub } = await supabaseAdmin
       .from('my_current_subscription')
       .select('plan, status')
       .eq('user_id', user.id)
       .maybeSingle();
     const statusOk = !!sub && ['active', 'on_trial', 'past_due'].includes(sub.status);
-    const dailyCap = statusOk ? DAILY_LOOKUP_CAP[sub.plan] : undefined;
+    const dailyCap = profile?.is_admin ? DAILY_LOOKUP_CAP.premier : (statusOk ? DAILY_LOOKUP_CAP[sub.plan] : undefined);
     if (!dailyCap) {
       return json({ error: 'Part Finder is a Pro or Premier feature.' }, 403);
     }

@@ -16,9 +16,12 @@ const SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY')!;
 const LEMON_SQUEEZY_API_KEY = Deno.env.get('LEMON_SQUEEZY_API_KEY')!;
 
-// Owner + 3 free teammates = 4 total seats included. Keep this in sync with
-// TEAM_INCLUDED_SEATS in supabase-client.js if that constant ever changes.
-const INCLUDED_SEATS = 4;
+// Included seats depend on the owner's plan: Pro = 2 total (owner + 1 free teammate),
+// Premier = 4 total (owner + 3 free teammates). Keep this in sync with
+// kerphTeamIncludedSeatsForPlan in supabase-client.js if these numbers ever change.
+function includedSeatsForPlan(plan: string | undefined) {
+  return plan === 'premier' ? 4 : 2;
+}
 
 async function lemonSqueezyFetch(path: string, init: RequestInit = {}) {
   const resp = await fetch(`https://api.lemonsqueezy.com/v1${path}`, {
@@ -47,10 +50,14 @@ Deno.serve(async (req) => {
       .from('teams').select('*').eq('owner_id', user.id).maybeSingle();
     if (teamError || !team) return new Response(JSON.stringify({ error: 'No team found for this account.' }), { status: 404 });
 
+    const { data: ownerSub } = await supabaseAdmin
+      .from('my_current_subscription').select('plan').eq('user_id', user.id).maybeSingle();
+    const includedSeats = includedSeatsForPlan(ownerSub?.plan);
+
     const { count } = await supabaseAdmin
       .from('team_members').select('id', { count: 'exact', head: true })
       .eq('team_id', team.id).eq('status', 'active');
-    const extraSeats = Math.max(0, (count ?? 0) - (INCLUDED_SEATS - 1));
+    const extraSeats = Math.max(0, (count ?? 0) - (includedSeats - 1));
 
     if (extraSeats === team.extra_seats_quantity) {
       return new Response(JSON.stringify({ extraSeats, requiresCheckout: false, unchanged: true }), { status: 200 });

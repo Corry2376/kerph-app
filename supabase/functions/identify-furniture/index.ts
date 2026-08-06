@@ -71,12 +71,19 @@ Deno.serve(async (req) => {
 
     const supabaseAdmin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
 
+    // Same admin-preview exception as identify-part — see that file's comment.
+    const { data: profile } = await supabaseAdmin
+      .from('profiles')
+      .select('is_admin')
+      .eq('id', user.id)
+      .maybeSingle();
+
     const { data: sub } = await supabaseAdmin
       .from('my_current_subscription')
       .select('plan, status')
       .eq('user_id', user.id)
       .maybeSingle();
-    const entitled = !!sub && sub.plan === 'premier' && ['active', 'on_trial', 'past_due'].includes(sub.status);
+    const entitled = !!profile?.is_admin || (!!sub && sub.plan === 'premier' && ['active', 'on_trial', 'past_due'].includes(sub.status));
     if (!entitled) {
       return json({ error: '"Import from Photo" is a Premier feature.' }, 403);
     }
