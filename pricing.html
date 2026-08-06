@@ -690,9 +690,21 @@
             monthly: { code: null, percent: 15, months: 3 },
             annual: { code: null, percent: 20, months: 12 }
         };
+        // A single discount code carried in via ?promo=CODE — e.g. from a win-back email
+        // (see recordCancellationAndSendWinBack in supabase/functions/lemon-squeezy-webhook)
+        // or any future lifecycle campaign email. Unlike KERPH_INTRO_DISCOUNT this isn't
+        // split by billing cycle (a campaign email links to one flat code regardless of
+        // which plan/cycle the visitor picks here), and it takes priority over the intro
+        // offer if both are somehow present.
+        const urlPromoCode = new URLSearchParams(location.search).get('promo') || null;
         function renderIntroOfferBanner() {
             const banner = document.getElementById('introOfferBanner');
             if (!banner) return;
+            if (urlPromoCode) {
+                banner.style.display = 'block';
+                banner.textContent = `\u{1F389} Welcome back — your discount is applied automatically at checkout.`;
+                return;
+            }
             const m = KERPH_INTRO_DISCOUNT.monthly, a = KERPH_INTRO_DISCOUNT.annual;
             if (!m.code && !a.code) { banner.style.display = 'none'; return; }
             banner.style.display = 'block';
@@ -715,7 +727,7 @@
             params.set('enabled', variantId);
             params.set('checkout[email]', user.email || '');
             params.set('checkout[custom][user_id]', user.id);
-            const introCode = KERPH_INTRO_DISCOUNT[billingCycle].code;
+            const introCode = urlPromoCode || KERPH_INTRO_DISCOUNT[billingCycle].code;
             if (introCode) params.set('checkout[discount_code]', introCode);
             const checkoutUrl = `https://${LS_STORE_SLUG}.lemonsqueezy.com/checkout/buy/${checkout.productUuid}?${params.toString()}`;
             if (window.LemonSqueezy && window.LemonSqueezy.Url) {

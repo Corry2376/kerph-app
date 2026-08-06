@@ -351,6 +351,14 @@
                 </div>
                 <div id="adminSubscriberList"></div>
             </div>
+
+            <div class="admin-section">
+                <div class="admin-section-head">
+                    <div class="admin-section-title"><span class="emoji">&#128148;</span> Cancellations &amp; Win-Back</div>
+                    <span class="admin-section-note" id="adminCancellationCount"></span>
+                </div>
+                <div id="adminCancellationList"></div>
+            </div>
         </div>
     </div>
 
@@ -742,6 +750,15 @@
             subs.push({ user_id: 'demo-user-16', plan: 'premier', status: 'cancelled', created_at: new Date(now - 60 * day).toISOString(), updated_at: new Date(now - 6 * day).toISOString() });
             subs.sort((a, b) => b.updated_at.localeCompare(a.updated_at));
 
+            // Mirrors the two cancellations above -- one with a win-back email successfully
+            // sent, one still pending (shows both states in the demo UI). Not every
+            // cancellation appears here in real data either, until KERPH_WINBACK_DISCOUNT_CODE
+            // is actually configured server-side.
+            const cancellations = [
+                { id: 'demo-cancel-1', user_id: 'demo-user-15', plan: 'pro', cancelled_at: new Date(now - 3 * day).toISOString(), winback_email_sent_at: new Date(now - 3 * day + 5 * 60 * 1000).toISOString(), winback_email_error: null },
+                { id: 'demo-cancel-2', user_id: 'demo-user-16', plan: 'premier', cancelled_at: new Date(now - 6 * day).toISOString(), winback_email_sent_at: null, winback_email_error: null },
+            ];
+
             const events = [];
             for (let d = 0; d < 14; d++) {
                 const activeCount = 4 + Math.floor(Math.random() * 10);
@@ -761,14 +778,14 @@
                 });
             }
 
-            return { profiles, subs, events };
+            return { profiles, subs, events, cancellations };
         }
         function KERPH_referralPoolForDemo() {
             return ['Google / Search', 'Instagram', 'Facebook', 'YouTube', 'Pinterest', 'X (Twitter)', 'Word of mouth', 'Reddit', 'Woodworking forum', 'Other', 'Prefer not to say'];
         }
 
         async function loadAdminDashboard() {
-            let profiles, allSubs, events;
+            let profiles, allSubs, events, cancellations;
 
             if (DEMO_MODE) {
                 document.getElementById('adminDemoBanner').style.display = 'block';
@@ -776,20 +793,23 @@
                 profiles = demo.profiles;
                 allSubs = demo.subs;
                 events = demo.events;
+                cancellations = demo.cancellations;
             } else {
                 const since30 = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
-                const [profilesRes, subsRes, eventsRes] = await Promise.all([
+                const [profilesRes, subsRes, eventsRes, cancelRes] = await Promise.all([
                     kerphSupabase.from('profiles').select('id, username, referral_source'),
                     kerphSupabase.from('subscriptions').select('user_id, plan, status, created_at, updated_at').order('updated_at', { ascending: false }),
-                    kerphSupabase.from('analytics_events').select('event_type, path, user_id, session_id, created_at').gte('created_at', since30)
+                    kerphSupabase.from('analytics_events').select('event_type, path, user_id, session_id, created_at').gte('created_at', since30),
+                    kerphSupabase.from('cancellation_events').select('id, user_id, plan, cancelled_at, winback_email_sent_at, winback_email_error').order('cancelled_at', { ascending: false })
                 ]);
-                if (profilesRes.error || subsRes.error || eventsRes.error) {
+                if (profilesRes.error || subsRes.error || eventsRes.error || cancelRes.error) {
                     showToast('Could not load dashboard data.');
                     return;
                 }
                 profiles = profilesRes.data || [];
                 allSubs = subsRes.data || [];
                 events = eventsRes.data || [];
+                cancellations = cancelRes.data || [];
             }
 
             const currentSubs = currentSubscriptionPerUser(allSubs);
@@ -802,6 +822,7 @@
             renderReferralStats(profiles);
             renderSubscriberDeltas(allSubs);
             renderSubscriberList(currentSubs, profileById);
+            renderCancellationsList(cancellations, profileById);
         }
 
         function renderReferralStats(profiles) {
@@ -882,6 +903,45 @@
                         }).join('')}
                     </tbody>
                 </table>
+            `;
+        }
+
+        function renderCancellationsList(cancellations, profileById) {
+            const countEl = document.getElementById('adminCancellationCount');
+            const wrap = document.getElementById('adminCancellationList');
+            if (countEl) countEl.textContent = `${cancellations.length} total`;
+            if (!cancellations.length) {
+                wrap.innerHTML = '<div class="admin-empty">No cancellations yet.</div>';
+                return;
+            }
+            wrap.innerHTML = `
+                <table class="admin-table">
+                    <thead><tr><th>User</th><th>Plan</th><th>Cancelled</th><th>Win-Back Email</th></tr></thead>
+                    <tbody>
+                        ${cancellations.map(c => {
+                            const profile = profileById[c.user_id];
+                            const name = (profile && profile.username) ? profile.username : `user-${c.user_id.slice(0, 8)}`;
+                            const cancelledDate = c.cancelled_at ? new Date(c.cancelled_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : '—';
+                            let winbackStatus;
+                            if (c.winback_email_sent_at) {
+                                winbackStatus = `<span style="color:#166534;">Sent ${new Date(c.winback_email_sent_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span>`;
+                            } else if (c.winback_email_error) {
+                                winbackStatus = '<span style="color:#b91c1c;">Failed to send</span>';
+                            } else {
+                                winbackStatus = '<span style="color:#9ca3af;">Not configured</span>';
+                            }
+                            return `
+                                <tr>
+                                    <td>${escapeHtml(name)}</td>
+                                    <td style="text-transform:capitalize;">${escapeHtml(c.plan)}</td>
+                                    <td>${cancelledDate}</td>
+                                    <td>${winbackStatus}</td>
+                                </tr>
+                            `;
+                        }).join('')}
+                    </tbody>
+                </table>
+                <div class="admin-section-note" style="margin-top:10px; display:block;">"Not configured" means KERPH_WINBACK_DISCOUNT_CODE isn't set yet — the cancellation is still logged, no email goes out until a real discount exists to offer.</div>
             `;
         }
 
