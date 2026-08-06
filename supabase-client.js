@@ -61,6 +61,10 @@
             state.user = session ? session.user : null;
             if (state.user) kerphLogDailyActiveUser(state.user.id);
             await refreshProfile(state.user ? state.user.id : null);
+            if (state.user && state.profile && !state.profile.referral_source && !referralPromptShownThisLoad) {
+                referralPromptShownThisLoad = true;
+                kerphShowReferralPrompt();
+            }
             // Real entitlement resolution — direct subscription, or Premier inherited via an
             // active team membership. Refreshed on every auth event (sign-in, sign-out, token
             // refresh) so it never lags behind who's actually signed in.
@@ -136,7 +140,7 @@
     // upsert (not update) so a missing profile row — trigger failure, edge case, whatever —
     // never permanently locks a signed-in user out of saving; the INSERT RLS policy exists
     // specifically to make this self-healing path work.
-    async function kerphSaveProfile({ username, avatarDataUrl, unitSystem, maintenanceRemindersEnabled, homeTileOrder, homeTileHidden } = {}) {
+    async function kerphSaveProfile({ username, avatarDataUrl, unitSystem, maintenanceRemindersEnabled, homeTileOrder, homeTileHidden, referralSource } = {}) {
         if (!state.user) return { error: { message: 'Not signed in.' } };
         const updates = { id: state.user.id, username };
         if (avatarDataUrl !== undefined) updates.avatar_data_url = avatarDataUrl;
@@ -144,6 +148,7 @@
         if (maintenanceRemindersEnabled !== undefined) updates.maintenance_reminders_enabled = maintenanceRemindersEnabled;
         if (homeTileOrder !== undefined) updates.home_tile_order = homeTileOrder;
         if (homeTileHidden !== undefined) updates.home_tile_hidden = homeTileHidden;
+        if (referralSource !== undefined) updates.referral_source = referralSource;
         const { data, error } = await kerphSupabase.from('profiles').upsert(updates).select().maybeSingle();
         if (!error && data) {
             state.profile = data;
@@ -230,6 +235,50 @@
         el.addEventListener('click', (e) => { if (e.target === el) close(); });
         document.body.appendChild(el);
     }
+
+    // "How did you hear about us?" -- asked once per account, feeding the admin dashboard's
+    // referral-source breakdown. A small corner card rather than a centered overlay like the
+    // subscribe prompt above, specifically so the two can never visually collide if both would
+    // otherwise fire around the same time (fresh signup + first profile load). Shown on
+    // kerphOnAuthChange whenever a signed-in user's profile has no referral_source yet --
+    // catches both the immediate-signup case and someone who needed email confirmation and
+    // only completes their first real sign-in later. Skipping still records a 'skipped' value
+    // so it only ever asks once, which keeps this a single-column, no-extra-flag design.
+    const KERPH_REFERRAL_OPTIONS = ['Google / Search', 'YouTube', 'Instagram', 'Facebook', 'Reddit', 'A friend or colleague', 'Woodworking forum', 'Other'];
+    function kerphShowReferralPrompt() {
+        if (document.getElementById('kerphReferralPrompt')) return;
+        const el = document.createElement('div');
+        el.id = 'kerphReferralPrompt';
+        el.style.cssText = 'position:fixed; bottom:20px; right:20px; z-index:4000; width:260px; background:#ffffff; border:1px solid #cbd5e1; border-radius:12px; box-shadow:0 20px 45px rgba(15,23,42,0.25); padding:14px 16px; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;';
+        el.innerHTML = `
+            <button type="button" aria-label="Dismiss" style="position:absolute; top:8px; right:8px; background:none; border:none; color:#9ca3af; font-size:15px; line-height:1; cursor:pointer; padding:2px;">&times;</button>
+            <div style="font-size:13px; font-weight:800; color:#0f172a; margin-bottom:8px; padding-right:16px;">How did you hear about Kerph?</div>
+            <select style="width:100%; padding:7px 8px; border:1px solid #cbd5e1; border-radius:6px; font-size:12.5px; font-weight:600; background:#f8fafc; margin-bottom:8px;">
+                <option value="" disabled selected>Choose one&hellip;</option>
+                ${KERPH_REFERRAL_OPTIONS.map(o => `<option value="${o}">${o}</option>`).join('')}
+            </select>
+            <input type="text" placeholder="Where, specifically?" style="display:none; width:100%; padding:7px 8px; border:1px solid #cbd5e1; border-radius:6px; font-size:12.5px; font-weight:600; margin-bottom:8px;">
+            <button type="button" data-submit style="display:block; width:100%; text-align:center; background:#1e3a8a; color:#fff; border:none; font-weight:700; font-size:12.5px; padding:8px; border-radius:6px; cursor:pointer;">Submit</button>
+        `;
+        const select = el.querySelector('select');
+        const otherInput = el.querySelector('input');
+        select.addEventListener('change', () => {
+            otherInput.style.display = select.value === 'Other' ? 'block' : 'none';
+        });
+        function close() { el.remove(); }
+        function submit(value) {
+            kerphSaveProfile({ referralSource: value }).catch(() => {});
+            close();
+        }
+        el.querySelector('button[aria-label="Dismiss"]').addEventListener('click', () => submit('skipped'));
+        el.querySelector('button[data-submit]').addEventListener('click', () => {
+            if (!select.value) return;
+            const value = select.value === 'Other' ? (otherInput.value.trim() || 'Other') : select.value;
+            submit(value);
+        });
+        document.body.appendChild(el);
+    }
+    let referralPromptShownThisLoad = false;
 
     /* ---------- Singleton domains: one row per user, upsert-only ---------- */
 
@@ -1178,6 +1227,7 @@
     window.kerphOnAuthChange = kerphOnAuthChange;
     window.kerphDownscaleImage = kerphDownscaleImage;
     window.kerphShowSubscribePrompt = kerphShowSubscribePrompt;
+    window.kerphShowReferralPrompt = kerphShowReferralPrompt;
     window.kerphOnVisible = kerphOnVisible;
 
     window.kerphLoadCurrentLayout = kerphLoadCurrentLayout;

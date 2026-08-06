@@ -193,8 +193,13 @@
 
         .admin-empty { font-size: 12.5px; color: #9ca3af; font-style: italic; padding: 14px; text-align: center; }
 
+        .admin-stats-row-6 { grid-template-columns: repeat(6, 1fr); }
+        .admin-stat-delta.negative .admin-stat-value { color: #b91c1c; }
+        .admin-stat-delta.positive .admin-stat-value { color: #16a34a; }
+
         @media (max-width: 900px) {
             .admin-stats-row { grid-template-columns: repeat(2, 1fr); }
+            .admin-stats-row-6 { grid-template-columns: repeat(3, 1fr); }
         }
 
         /* ---------- MOBILE ---------- */
@@ -318,6 +323,30 @@
                     <span class="admin-section-note">Page views, last 30 days</span>
                 </div>
                 <div id="adminPageUsageTable"></div>
+            </div>
+
+            <div class="admin-section">
+                <div class="admin-section-head">
+                    <div class="admin-section-title"><span class="emoji">&#128172;</span> How Users Found Us</div>
+                    <span class="admin-section-note">From new-account sign-up prompt</span>
+                </div>
+                <div id="adminReferralChart"></div>
+            </div>
+
+            <div class="admin-section">
+                <div class="admin-section-head">
+                    <div class="admin-section-title"><span class="emoji">&#128200;</span> Subscriber Deltas</div>
+                    <span class="admin-section-note">Approximated from subscription created/updated timestamps</span>
+                </div>
+                <div id="adminSubscriberDeltas"></div>
+            </div>
+
+            <div class="admin-section">
+                <div class="admin-section-head">
+                    <div class="admin-section-title"><span class="emoji">&#128100;</span> Current Subscribers</div>
+                    <span class="admin-section-note" id="adminSubscriberCount"></span>
+                </div>
+                <div id="adminSubscriberList"></div>
             </div>
         </div>
     </div>
@@ -654,12 +683,30 @@
             loadAdminDashboard();
         }
 
+        const LOST_SUB_STATUSES = ['cancelled', 'expired', 'unpaid'];
+
+        // Collapses the full subscriptions history down to one row per user -- whichever row
+        // was updated most recently -- replicating my_current_subscription's own "distinct on
+        // (user_id) order by updated_at desc" logic client-side, since deltas below need the
+        // *full* history (every row, every user) in the same fetch that the current-state views
+        // (tier counts, subscriber list) need only the latest row from.
+        function currentSubscriptionPerUser(rowsSortedByUpdatedAtDesc) {
+            const seen = new Set();
+            const result = [];
+            rowsSortedByUpdatedAtDesc.forEach(r => {
+                if (seen.has(r.user_id)) return;
+                seen.add(r.user_id);
+                result.push(r);
+            });
+            return result;
+        }
+
         async function loadAdminDashboard() {
             const since30 = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
 
             const [profilesRes, subsRes, eventsRes] = await Promise.all([
-                kerphSupabase.from('profiles').select('id', { count: 'exact', head: true }),
-                kerphSupabase.from('my_current_subscription').select('user_id, plan, status'),
+                kerphSupabase.from('profiles').select('id, username, referral_source'),
+                kerphSupabase.from('subscriptions').select('user_id, plan, status, created_at, updated_at').order('updated_at', { ascending: false }),
                 kerphSupabase.from('analytics_events').select('event_type, path, user_id, session_id, created_at').gte('created_at', since30)
             ]);
 
@@ -668,9 +715,99 @@
                 return;
             }
 
-            renderTierStats(profilesRes.count || 0, subsRes.data || []);
+            const profiles = profilesRes.data || [];
+            const allSubs = subsRes.data || [];
+            const currentSubs = currentSubscriptionPerUser(allSubs);
+            const profileById = {};
+            profiles.forEach(p => { profileById[p.id] = p; });
+
+            renderTierStats(profiles.length, currentSubs);
             renderActiveUsersChart(eventsRes.data || []);
             renderPageUsageTable(eventsRes.data || []);
+            renderReferralStats(profiles);
+            renderSubscriberDeltas(allSubs);
+            renderSubscriberList(currentSubs, profileById);
+        }
+
+        function renderReferralStats(profiles) {
+            const counts = {};
+            let unanswered = 0;
+            profiles.forEach(p => {
+                if (!p.referral_source || p.referral_source === 'skipped') { unanswered++; return; }
+                counts[p.referral_source] = (counts[p.referral_source] || 0) + 1;
+            });
+            const rows = Object.entries(counts).map(([label, count]) => ({ label, count })).sort((a, b) => b.count - a.count);
+            const wrap = document.getElementById('adminReferralChart');
+            if (!rows.length) {
+                wrap.innerHTML = '<div class="admin-empty">No answers yet — this fills in as new users answer the sign-up prompt.</div>';
+                return;
+            }
+            const maxCount = Math.max(1, ...rows.map(r => r.count));
+            let html = rows.map(r => barRow(r.label, r.count, maxCount)).join('');
+            if (unanswered > 0) {
+                html += `<div style="margin-top:6px; padding-top:8px; border-top:1px solid #f1f5f9; font-size:11px; color:#9ca3af;">${unanswered} user${unanswered === 1 ? '' : 's'} haven't answered or skipped the question.</div>`;
+            }
+            wrap.innerHTML = html;
+        }
+
+        function renderSubscriberDeltas(allSubs) {
+            function deltaFor(days) {
+                const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
+                const newCount = allSubs.filter(s => s.created_at >= since).length;
+                const lostCount = allSubs.filter(s => LOST_SUB_STATUSES.includes(s.status) && s.updated_at >= since).length;
+                return { newCount, lostCount, net: newCount - lostCount };
+            }
+            const d7 = deltaFor(7);
+            const d30 = deltaFor(30);
+            function deltaStat(label, value) {
+                const cls = value > 0 ? 'positive' : (value < 0 ? 'negative' : '');
+                const sign = value > 0 ? '+' : '';
+                return `<div class="admin-stat admin-stat-delta ${cls}"><div class="admin-stat-value">${sign}${value}</div><div class="admin-stat-label">${escapeHtml(label)}</div></div>`;
+            }
+            document.getElementById('adminSubscriberDeltas').innerHTML = `
+                <div class="admin-stats-row admin-stats-row-6" style="margin:0;">
+                    ${deltaStat('New (7d)', d7.newCount)}
+                    ${deltaStat('Lost (7d)', -d7.lostCount)}
+                    ${deltaStat('Net (7d)', d7.net)}
+                    ${deltaStat('New (30d)', d30.newCount)}
+                    ${deltaStat('Lost (30d)', -d30.lostCount)}
+                    ${deltaStat('Net (30d)', d30.net)}
+                </div>
+            `;
+        }
+
+        function renderSubscriberList(currentSubs, profileById) {
+            const subscribers = currentSubs
+                .filter(s => (s.plan === 'pro' || s.plan === 'premier') && ACTIVE_SUB_STATUSES.includes(s.status))
+                .sort((a, b) => (b.created_at || '').localeCompare(a.created_at || ''));
+
+            document.getElementById('adminSubscriberCount').textContent = `${subscribers.length} active`;
+
+            const wrap = document.getElementById('adminSubscriberList');
+            if (!subscribers.length) {
+                wrap.innerHTML = '<div class="admin-empty">No paid subscribers yet.</div>';
+                return;
+            }
+            wrap.innerHTML = `
+                <table class="admin-table">
+                    <thead><tr><th>User</th><th>Plan</th><th>Status</th><th>Subscriber Since</th></tr></thead>
+                    <tbody>
+                        ${subscribers.map(s => {
+                            const profile = profileById[s.user_id];
+                            const name = (profile && profile.username) ? profile.username : `user-${s.user_id.slice(0, 8)}`;
+                            const since = s.created_at ? new Date(s.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : '—';
+                            return `
+                                <tr>
+                                    <td>${escapeHtml(name)}</td>
+                                    <td style="text-transform:capitalize;">${escapeHtml(s.plan)}</td>
+                                    <td style="text-transform:capitalize;">${escapeHtml(s.status.replace('_', ' '))}</td>
+                                    <td>${since}</td>
+                                </tr>
+                            `;
+                        }).join('')}
+                    </tbody>
+                </table>
+            `;
         }
 
         function renderTierStats(totalUsers, subscriptions) {
