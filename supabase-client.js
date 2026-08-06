@@ -59,6 +59,7 @@
         setTimeout(async () => {
             const wasReady = state.ready;
             state.user = session ? session.user : null;
+            if (state.user) kerphLogDailyActiveUser(state.user.id);
             await refreshProfile(state.user ? state.user.id : null);
             // Real entitlement resolution — direct subscription, or Premier inherited via an
             // active team membership. Refreshed on every auth event (sign-in, sign-out, token
@@ -1278,6 +1279,19 @@
                 keepalive: true, // lets the request finish even during page unload/navigation
             }).catch(() => {}); // never let telemetry reporting itself throw
         } catch (e) { /* ditto */ }
+    }
+
+    // Feeds the admin dashboard's "active users per day" number. Deduped client-side (one log
+    // per signed-in user per calendar day per browser) rather than firing on every auth event —
+    // see log-telemetry's 'login' handler comment for why that's the more useful metric.
+    function kerphLogDailyActiveUser(userId) {
+        try {
+            const today = new Date().toISOString().slice(0, 10);
+            const key = 'kerphLastActiveLogDate:' + userId;
+            if (localStorage.getItem(key) === today) return;
+            localStorage.setItem(key, today);
+            kerphSendTelemetry({ type: 'login' });
+        } catch (e) { /* best-effort — never let this block the auth flow */ }
     }
 
     function kerphGetAnonSessionId() {

@@ -55,6 +55,22 @@ Deno.serve(async (req) => {
       return json({ ok: true });
     }
 
+    // Fired once per signed-in user per calendar day (deduped client-side) -- feeds the admin
+    // dashboard's "active users per day" chart. Not a raw sign-in-event log: a user who keeps
+    // an existing session open across many page loads only logs one of these a day, which is
+    // the more useful "how many distinct people used Kerph today" number, not noisy auth-event
+    // counting. No anonymous case -- there's no such thing as a signed-out "active user" here.
+    if (body.type === 'login') {
+      if (!body.userId) return json({ error: 'No userId.' }, 400);
+      const { error } = await supabaseAdmin.from('analytics_events').insert({
+        event_type: 'login',
+        path: 'auth:active',
+        user_id: body.userId,
+      });
+      if (error) return json({ error: error.message }, 500);
+      return json({ ok: true });
+    }
+
     return json({ error: 'Unknown telemetry type.' }, 400);
   } catch (e) {
     return json({ error: e instanceof Error ? e.message : 'error' }, 500);

@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script>(function(){var t=new URLSearchParams(location.search).get('kerphPreview');if(t==='ls-review-bm0j8zf5qs'){localStorage.setItem('kerphComingSoonBypass','true');}if(localStorage.getItem('kerphComingSoonBypass')!=='true'){location.replace('coming-soon.html');}})();</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Kerph - Admin Dashboard</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            background-color: #eef1f6;
+            color: #0f172a;
+            min-height: 100vh;
+            width: 100vw;
+        }
+
+        header {
+            background-color: #ffffff;
+            background-image:
+                linear-gradient(135deg, #ffffff 0%, #eef2ff 60%, #e0e7ff 100%),
+                repeating-linear-gradient(120deg, rgba(30, 58, 138, 0.04) 0px, rgba(30, 58, 138, 0.04) 2px, transparent 2px, transparent 14px);
+            border-bottom: 2px solid #1e3a8a;
+            border-top: 3px solid #b23b3b;
+            padding: 10px 20px;
+            height: 150px;
+            width: 100%;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .brand-assembly { display: flex; align-items: center; gap: 15px; height: 100%; flex-shrink: 0; }
+        .logo-spotlight { position: relative; display: flex; align-items: center; justify-content: center; width: 382px; height: 105px; }
+        .logo-link { display: block; line-height: 0; }
+        .logo-image {
+            position: relative; z-index: 1; width: 382px; height: 105px; object-fit: contain; border-radius: 4px;
+            filter: drop-shadow(0 12px 22px rgba(15, 23, 42, 0.4)); transition: transform 0.3s ease, filter 0.3s ease;
+        }
+        .logo-image:hover { transform: scale(1.03); filter: drop-shadow(0 18px 30px rgba(15, 23, 42, 0.5)); }
+        .logo-tm { position: absolute; bottom: 6px; right: 22px; z-index: 2; font-size: 12px; font-weight: 800; color: #1e3a8a; line-height: 1; pointer-events: none; }
+
+        .page-title-select {
+            font-size: 13px; font-weight: 700; color: #1e3a8a; background-color: #ffffff; border: 1px solid #cbd5e1;
+            border-radius: 8px; padding: 8px 12px; cursor: pointer; white-space: nowrap;
+        }
+        .page-title-select:hover { background-color: #eef2ff; border-color: #1e3a8a; }
+
+        .header-field-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #6b7280; }
+
+        .plan-badge-group { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; flex-shrink: 0; }
+        .plan-select { padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background-color: #ffffff; font-size: 13px; font-weight: 700; color: #1e3a8a; cursor: pointer; }
+
+        .account-btn {
+            display: flex; align-items: center; gap: 8px; padding: 5px 14px 5px 5px; border: 3px solid #cbd5e1;
+            border-radius: 999px; background-color: #ffffff; cursor: pointer; transition: background-color 0.15s ease;
+        }
+        .account-btn:hover { background-color: #eef2ff; }
+        .account-btn.plan-free { border-color: #16a34a; }
+        .account-btn.plan-pro { border-color: #2563eb; }
+        .account-btn.plan-premier { border-color: #ca8a04; }
+        .account-btn-text { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.2; }
+        .account-btn-name { font-size: 13px; font-weight: 700; color: #1e3a8a; }
+        .account-btn-plan { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: #6b7280; }
+        .account-avatar {
+            width: 28px; height: 28px; border-radius: 50%; background-color: #e0e7ff; background-size: cover; background-position: center;
+            display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0;
+        }
+        .account-avatar-large {
+            width: 72px; height: 72px; border-radius: 50%; background-color: #e0e7ff; background-size: cover; background-position: center;
+            display: flex; align-items: center; justify-content: center; font-size: 32px;
+        }
+
+        .header-sign-in { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+        .header-sign-in-row { display: flex; align-items: center; gap: 4px; }
+        .header-sign-in-mode-toggle { font-size: 10px; font-weight: 600; color: #1e3a8a; text-decoration: none; }
+        .header-sign-in-mode-toggle:hover { text-decoration: underline; }
+        .header-sign-in-input { width: 84px; padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 11px; font-weight: 600; }
+        .header-sign-in .mini-btn { flex: none; padding: 6px 10px; font-size: 11px; }
+
+        .mini-btn {
+            flex: 1; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; background-color: #ffffff;
+            font-size: 12px; font-weight: 700; color: #1e3a8a; cursor: pointer;
+        }
+        .mini-btn:hover { background-color: #eef2ff; border-color: #2563eb; }
+        .mini-btn.danger { color: #b91c1c; }
+        .mini-btn.danger:hover { background-color: #fef2f2; border-color: #b91c1c; }
+        .mini-btn.primary { background-color: #1e3a8a; color: #ffffff; border-color: #1e3a8a; }
+
+        .input-box { width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; font-weight: 600; }
+        .select-box { width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; font-weight: 600; background: #f8fafc; }
+
+        .modal-overlay { position: fixed; inset: 0; background-color: rgba(15, 23, 42, 0.5); z-index: 3000; display: flex; align-items: center; justify-content: center; padding: 24px; overflow-y: auto; }
+        .modal-box { background-color: #ffffff; border-radius: 12px; padding: 24px; width: 320px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4); }
+        .account-modal-box { width: 380px; max-height: 88vh; overflow-y: auto; }
+        .account-member-since { font-size: 10.5px; color: #94a3b8; font-weight: 600; margin-top: 6px; }
+        .account-stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
+        .account-stat { text-align: center; background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 4px; }
+        .account-stat-value { font-size: 16px; font-weight: 800; color: #1e3a8a; font-variant-numeric: tabular-nums; }
+        .account-stat-label { font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: #6b7280; margin-top: 2px; }
+        .account-plan-card { margin-top: 12px; background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px; }
+        .account-plan-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+        .account-plan-name { font-size: 15px; font-weight: 800; color: #0f172a; }
+        .account-plan-upsell { font-size: 11px; color: #92400e; margin-top: 8px; padding-top: 8px; border-top: 1px dashed #fde68a; }
+        .account-layouts-list { max-height: 150px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px; margin-top: 4px; }
+        .account-layout-item { display: flex; align-items: center; gap: 6px; padding: 7px 9px; border-bottom: 1px solid #f1f5f9; font-size: 11.5px; }
+        .account-layout-item:last-child { border-bottom: none; }
+        .account-layout-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 700; color: #1e293b; }
+        .account-layout-type { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; color: #6b7280; background-color: #eef2ff; border-radius: 4px; padding: 2px 5px; flex-shrink: 0; }
+        .account-layout-del { flex-shrink: 0; border: none; background: none; color: #b91c1c; cursor: pointer; font-size: 13px; padding: 0 2px; }
+        .account-layouts-empty { font-size: 11.5px; color: #9ca3af; font-style: italic; padding: 10px; text-align: center; }
+        .account-backup-zone { margin-top: 18px; padding-top: 14px; border-top: 1px solid #e2e8f0; }
+        .account-backup-title { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: #1e3a8a; margin-bottom: 4px; }
+        .account-backup-desc { font-size: 11px; color: #6b7280; margin-bottom: 8px; line-height: 1.5; }
+        .account-danger-zone { margin-top: 18px; padding-top: 14px; border-top: 1px solid #fecaca; }
+        .account-danger-title { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: #b91c1c; margin-bottom: 4px; }
+        .account-danger-desc { font-size: 11px; color: #6b7280; margin-bottom: 8px; line-height: 1.5; }
+        .modal-title { font-size: 16px; font-weight: 800; color: #0f172a; margin-bottom: 8px; }
+        .modal-warning { font-size: 12px; color: #b45309; background-color: #fffbeb; border: 1px solid #fde68a; border-radius: 6px; padding: 8px 10px; margin-bottom: 16px; }
+        .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+        .modal-actions .mini-btn { flex: 1; }
+        .modal-primary-btn { background-color: #1e3a8a !important; color: #ffffff !important; border-color: #1e3a8a !important; }
+
+        .upgrade-nudge {
+            position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px); background-color: #0f172a; color: #ffffff;
+            font-size: 13px; font-weight: 600; padding: 10px 12px 10px 18px; border-radius: 8px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+            opacity: 0; pointer-events: none; transition: opacity 0.2s ease, transform 0.2s ease; z-index: 2000; max-width: 400px;
+        }
+        .upgrade-nudge.visible { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
+
+        .header-quick-links { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; font-size: 11px; }
+        .header-quick-links-row { display: flex; align-items: center; gap: 6px; }
+        .header-quick-links a { color: #6b7280; font-weight: 600; text-decoration: none; }
+        .header-quick-links a:hover { color: #1e3a8a; text-decoration: underline; }
+        .header-quick-links-sep { color: #cbd5e1; }
+
+        .jigs-dropdown { position: relative; margin-left: 30px; }
+        .jigs-dropdown-btn {
+            display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; color: #1e3a8a;
+            background-color: #ffffff; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; cursor: pointer; white-space: nowrap;
+        }
+        .jigs-dropdown-btn:hover { background-color: #eef2ff; border-color: #1e3a8a; }
+        .jigs-dropdown-caret { font-size: 9px; transition: transform 0.15s ease; }
+        .jigs-dropdown.open .jigs-dropdown-caret { transform: rotate(180deg); }
+        .jigs-dropdown-menu {
+            display: none; position: absolute; top: calc(100% + 8px); left: 0; background-color: #ffffff; border: 1px solid #cbd5e1;
+            border-radius: 10px; box-shadow: 0 12px 30px -8px rgba(15, 23, 42, 0.3); padding: 6px; min-width: 230px; z-index: 2500;
+        }
+        .jigs-dropdown.open .jigs-dropdown-menu { display: block; }
+        .jigs-dropdown-menu a { display: block; padding: 8px 10px; border-radius: 6px; font-size: 13px; font-weight: 600; color: #1e293b; text-decoration: none; }
+        .jigs-dropdown-menu a:hover { background-color: #eef2ff; color: #1e3a8a; }
+        .jigs-dropdown-menu-sep { height: 1px; background-color: #e2e8f0; margin: 5px 2px; }
+
+        /* ---------- ADMIN DASHBOARD PAGE LAYOUT ---------- */
+        .admin-layout { max-width: 1100px; margin: 0 auto; padding: 32px 24px 100px; }
+        .admin-hero-title { font-size: 27px; font-weight: 800; color: #0f172a; }
+        .admin-hero-sub { font-size: 13.5px; color: #6b7280; margin-top: 4px; line-height: 1.5; }
+        .admin-gate { text-align: center; padding: 80px 20px; color: #6b7280; }
+        .admin-gate-icon { font-size: 42px; margin-bottom: 14px; }
+
+        .admin-stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 24px 0 36px; }
+        .admin-stat { background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px 10px; text-align: center; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04); }
+        .admin-stat-value { font-size: 26px; font-weight: 800; color: #1e3a8a; font-variant-numeric: tabular-nums; }
+        .admin-stat-label { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: #6b7280; margin-top: 4px; }
+        .admin-stat.tier-free .admin-stat-value { color: #16a34a; }
+        .admin-stat.tier-pro .admin-stat-value { color: #2563eb; }
+        .admin-stat.tier-premier .admin-stat-value { color: #ca8a04; }
+
+        .admin-section { margin-bottom: 34px; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 18px 20px; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04); }
+        .admin-section-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 14px; flex-wrap: wrap; gap: 6px; }
+        .admin-section-title { font-size: 15.5px; font-weight: 800; color: #0f172a; display: flex; align-items: center; gap: 8px; }
+        .admin-section-title .emoji { font-size: 16px; }
+        .admin-section-note { font-size: 11.5px; color: #9ca3af; }
+
+        .admin-bar-row { display: grid; grid-template-columns: 90px 1fr 46px; align-items: center; gap: 10px; padding: 5px 0; font-size: 12px; }
+        .admin-bar-row-label { color: #475569; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .admin-bar-track { background-color: #f1f5f9; border-radius: 5px; height: 16px; overflow: hidden; }
+        .admin-bar-fill { background-color: #1e3a8a; height: 100%; border-radius: 5px; min-width: 2px; transition: width 0.3s ease; }
+        .admin-bar-row-value { text-align: right; font-weight: 700; color: #1e293b; font-variant-numeric: tabular-nums; }
+
+        .admin-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+        .admin-table th { text-align: left; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; color: #6b7280; padding: 6px 8px; border-bottom: 2px solid #e2e8f0; }
+        .admin-table td { padding: 7px 8px; border-bottom: 1px solid #f1f5f9; color: #1e293b; }
+        .admin-table td.num, .admin-table th.num { text-align: right; font-variant-numeric: tabular-nums; }
+        .admin-table tr:last-child td { border-bottom: none; }
+
+        .admin-empty { font-size: 12.5px; color: #9ca3af; font-style: italic; padding: 14px; text-align: center; }
+
+        @media (max-width: 900px) {
+            .admin-stats-row { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        /* ---------- MOBILE ---------- */
+        @media (max-width: 640px) {
+            .admin-layout { padding: 20px 16px 72px; }
+            .admin-hero-title { font-size: 22px; }
+            .admin-bar-row { grid-template-columns: 70px 1fr 36px; }
+            .modal-overlay { padding: 16px; overflow-y: auto; }
+            .modal-box, .account-modal-box { width: 100%; max-width: 340px; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <script src="site-header-brand.js"></script>
+        <script src="site-header-tail.js"></script>
+    </header>
+
+    <div class="modal-overlay" id="accountModalOverlay" style="display:none;">
+        <div class="modal-box account-modal-box">
+            <div class="modal-title">Account Settings</div>
+            <div class="modal-warning">Your account (username, avatar, sign-in) is real and synced via Kerph. Saved layouts, projects, tools, Showcase posts, and reviews are synced too — available on any device you sign into.</div>
+
+            <div class="header-field" style="align-items:center; display:flex; flex-direction:column; gap:4px;">
+                <div class="account-avatar-large" id="accountAvatarLarge">&#128100;</div>
+                <input type="file" id="accountAvatarInput" accept="image/*" style="display:none;">
+                <button type="button" id="accountAvatarBtn" class="mini-btn" style="margin-top:10px; flex:none;">Upload Photo</button>
+                <div class="account-member-since" id="accountMemberSince"></div>
+            </div>
+
+            <div class="header-field" style="display:flex; flex-direction:column; gap:4px; margin-top:12px;">
+                <label class="header-field-label" for="accountUsernameInput">Username</label>
+                <input type="text" class="input-box" id="accountUsernameInput" placeholder="Choose a username">
+            </div>
+
+            <div class="account-stats-row" id="accountStatsRow"></div>
+
+            <div class="account-plan-card">
+                <div class="account-plan-row">
+                    <div>
+                        <div class="header-field-label" style="margin-bottom:3px;">Plan</div>
+                        <div class="account-plan-name" id="accountPlanName">Free</div>
+                    </div>
+                    <select class="select-box" id="accountPlanSelect" style="width:auto;">
+                        <option value="free">Free</option>
+                        <option value="pro">Pro</option>
+                        <option value="premier">Premier</option>
+                    </select>
+                </div>
+                <div class="account-plan-upsell" id="accountPlanUpsell" style="display:none;">See the full <a href="pricing.html" style="color:#92400e; font-weight:700;">plan comparison</a> to find out what unlocks on Pro.</div>
+            </div>
+
+            <div class="header-field" style="display:flex; flex-direction:column; gap:4px; margin-top:10px;">
+                <label class="header-field-label" for="accountUnitsSelect">Preferred Units</label>
+                <select class="select-box" id="accountUnitsSelect">
+                    <option value="imperial">Imperial (ft / in)</option>
+                    <option value="metric">Metric (m / cm)</option>
+                </select>
+            </div>
+
+            <div class="header-field" style="display:flex; flex-direction:column; gap:4px; margin-top:14px;">
+                <label class="header-field-label">Saved Layouts</label>
+                <div id="accountLayoutsList" class="account-layouts-list"></div>
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" id="accountCancelBtn" class="mini-btn">Close</button>
+                <button type="button" id="accountSaveBtn" class="mini-btn modal-primary-btn">Save</button>
+            </div>
+            <button type="button" id="accountSignOutBtn" class="mini-btn danger" style="width:100%; margin-top:8px;">Sign Out</button>
+
+            <div class="account-backup-zone">
+                <div class="account-backup-title">Local Device Settings</div>
+                <div class="account-backup-desc">Your layouts, projects, tools, Showcase posts, and reviews live on your account now — no backup needed. This just covers a couple of local display preferences still cached in this browser.</div>
+                <div style="display:flex; gap:8px;">
+                    <button type="button" id="accountExportBtn" class="mini-btn" style="flex:1;">&#11015;&#65039; Export</button>
+                    <button type="button" id="accountImportBtn" class="mini-btn" style="flex:1;">&#11014;&#65039; Import&hellip;</button>
+                </div>
+                <input type="file" id="accountImportInput" accept="application/json" style="display:none;">
+            </div>
+
+            <div class="account-danger-zone">
+                <div class="account-danger-title">Danger Zone</div>
+                <div class="account-danger-desc">Resets your local plan-preview selection and cached display preferences on this browser. Your account, layouts, projects, tools, and posts are not affected.</div>
+                <button type="button" id="accountResetAllBtn" class="mini-btn danger" style="width:100%;">Reset All Local Data&hellip;</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="upgrade-nudge" id="upgradeNudge"></div>
+
+    <div class="admin-layout">
+        <div class="admin-hero-title">Admin Dashboard</div>
+        <div class="admin-hero-sub">Not linked anywhere in the site nav — bookmark this page. Real access control is server-side (every query below is admin-only at the database level), this is just the view.</div>
+
+        <div id="adminSignedOut" class="admin-gate" style="display:none;">
+            <div class="admin-gate-icon">&#128272;</div>
+            <div>Sign in (top right) with your admin account to see this dashboard.</div>
+        </div>
+
+        <div id="adminNotAdmin" class="admin-gate" style="display:none;">
+            <div class="admin-gate-icon">&#9940;</div>
+            <div>This account isn't an admin.</div>
+        </div>
+
+        <div id="adminDashboard" style="display:none;">
+            <div class="admin-stats-row" id="adminStatsRow"></div>
+
+            <div class="admin-section">
+                <div class="admin-section-head">
+                    <div class="admin-section-title"><span class="emoji">&#128101;</span> Active Users Per Day</div>
+                    <span class="admin-section-note">Last 14 days &middot; distinct signed-in users, once per user per day</span>
+                </div>
+                <div id="adminActiveUsersChart"></div>
+            </div>
+
+            <div class="admin-section">
+                <div class="admin-section-head">
+                    <div class="admin-section-title"><span class="emoji">&#128202;</span> Where Time Is Spent</div>
+                    <span class="admin-section-note">Page views, last 30 days</span>
+                </div>
+                <div id="adminPageUsageTable"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.7/dist/umd/supabase.js"></script>
+    <script src="supabase-client.js"></script>
+    <script>
+        const PLAN_KEY = 'kerphPlan';
+
+        function showToast(message) {
+            const nudge = document.getElementById('upgradeNudge');
+            nudge.textContent = message;
+            nudge.classList.add('visible');
+            clearTimeout(showToast._timer);
+            showToast._timer = setTimeout(() => nudge.classList.remove('visible'), 3500);
+        }
+
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str == null ? '' : String(str);
+            return div.innerHTML;
+        }
+
+        function getPlan() { return kerphGetCachedEffectivePlan(); }
+        function initPlanSelector() {
+            const select = document.getElementById('planSelector');
+            select.value = getPlan();
+            select.addEventListener('change', () => { localStorage.setItem(PLAN_KEY, select.value); });
+        }
+
+        function loadAccount() {
+            return (typeof kerphGetCachedProfile === 'function') ? kerphGetCachedProfile() : {};
+        }
+        function applyAvatarTo(el, dataUrl) {
+            if (dataUrl) { el.style.backgroundImage = `url(${dataUrl})`; el.textContent = ''; }
+            else { el.style.backgroundImage = ''; el.textContent = '\u{1F464}'; }
+        }
+        function renderAccountBadge() {
+            const acc = loadAccount();
+            document.getElementById('accountBtnLabel').textContent = acc.username || 'Account';
+            applyAvatarTo(document.getElementById('accountAvatarPreview'), acc.avatar);
+            const plan = getPlan();
+            const planLabels = { free: 'Free', pro: 'Pro', premier: 'Premier' };
+            const planEl = document.getElementById('accountBtnPlan');
+            if (planEl) planEl.textContent = planLabels[plan] || 'Free';
+            const btn = document.getElementById('accountBtn');
+            if (btn) btn.className = 'account-btn plan-' + (plan === 'pro' || plan === 'premier' ? plan : 'free');
+        }
+
+        let cachedToolStatuses = {};
+        let cachedSavedLayouts = [];
+        const LAYOUT_TYPE_LABELS = { workshop: 'Workshop', 'dust-collection': 'Dust Collection', lighting: 'Lighting' };
+
+        function renderAccountStats() {
+            const row = document.getElementById('accountStatsRow');
+            if (!row) return;
+            let owned = 0, wishlist = 0;
+            Object.values(cachedToolStatuses).forEach(s => {
+                if (s.status === 'owned') owned++;
+                else if (s.status === 'wishlist') wishlist++;
+            });
+            row.innerHTML = `
+                <div class="account-stat"><div class="account-stat-value">${owned}</div><div class="account-stat-label">Owned</div></div>
+                <div class="account-stat"><div class="account-stat-value">${wishlist}</div><div class="account-stat-label">Wishlist</div></div>
+                <div class="account-stat"><div class="account-stat-value">${cachedSavedLayouts.length}</div><div class="account-stat-label">Layouts</div></div>
+            `;
+        }
+        function renderAccountPlanCard() {
+            const nameEl = document.getElementById('accountPlanName');
+            const select = document.getElementById('accountPlanSelect');
+            const upsell = document.getElementById('accountPlanUpsell');
+            if (!nameEl || !select) return;
+            const plan = getPlan();
+            const labels = { free: 'Free', pro: 'Pro', premier: 'Premier' };
+            nameEl.textContent = labels[plan] || 'Free';
+            select.value = plan;
+            upsell.style.display = plan === 'free' ? 'block' : 'none';
+        }
+        function renderAccountLayoutsList() {
+            const list = document.getElementById('accountLayoutsList');
+            if (!list) return;
+            if (!cachedSavedLayouts.length) { list.innerHTML = '<div class="account-layouts-empty">No saved layouts yet.</div>'; return; }
+            list.innerHTML = cachedSavedLayouts.slice().reverse().map(l => {
+                const typeLabel = LAYOUT_TYPE_LABELS[l.layoutType] || 'Workshop';
+                return `
+                    <div class="account-layout-item">
+                        <span class="account-layout-type">${typeLabel}</span>
+                        <span class="account-layout-name" title="${escapeHtml(l.name)}">${escapeHtml(l.name)}</span>
+                        <button type="button" class="account-layout-del" data-id="${l.id}" title="Delete this layout">&#10005;</button>
+                    </div>
+                `;
+            }).join('');
+            list.querySelectorAll('.account-layout-del').forEach(delBtn => {
+                delBtn.addEventListener('click', async () => {
+                    const id = delBtn.getAttribute('data-id');
+                    await kerphDeleteSavedLayout(id);
+                    cachedSavedLayouts = cachedSavedLayouts.filter(l => l.id !== id);
+                    renderAccountLayoutsList();
+                    renderAccountStats();
+                    showToast('Layout deleted.');
+                });
+            });
+        }
+        function renderAccountMemberSince() {
+            const el = document.getElementById('accountMemberSince');
+            if (!el) return;
+            const acc = loadAccount();
+            el.textContent = acc.memberSince
+                ? `Member since ${new Date(acc.memberSince).toLocaleDateString(undefined, { year: 'numeric', month: 'long' })}`
+                : '';
+        }
+
+        function initAccountPanel() {
+            const btn = document.getElementById('accountBtn');
+            const overlay = document.getElementById('accountModalOverlay');
+            const cancelBtn = document.getElementById('accountCancelBtn');
+            const saveBtn = document.getElementById('accountSaveBtn');
+            const usernameInput = document.getElementById('accountUsernameInput');
+            const avatarInput = document.getElementById('accountAvatarInput');
+            const avatarBtn = document.getElementById('accountAvatarBtn');
+            const avatarLarge = document.getElementById('accountAvatarLarge');
+            const unitsSelect = document.getElementById('accountUnitsSelect');
+            const planSelect = document.getElementById('accountPlanSelect');
+            const resetAllBtn = document.getElementById('accountResetAllBtn');
+            let pendingAvatar = null;
+
+            btn.addEventListener('click', async () => {
+                const acc = loadAccount();
+                usernameInput.value = acc.username || '';
+                pendingAvatar = acc.avatar || null;
+                applyAvatarTo(avatarLarge, pendingAvatar);
+                unitsSelect.value = kerphGetCachedProfile().unitSystem || 'imperial';
+                const [toolStatusRes, layoutsRes] = await Promise.all([kerphLoadToolStatus(), kerphLoadSavedLayouts()]);
+                cachedToolStatuses = toolStatusRes.data || {};
+                cachedSavedLayouts = layoutsRes.data || [];
+                renderAccountMemberSince();
+                renderAccountStats();
+                renderAccountPlanCard();
+                renderAccountLayoutsList();
+                overlay.style.display = 'flex';
+            });
+
+            avatarBtn.addEventListener('click', () => avatarInput.click());
+            avatarInput.addEventListener('change', () => {
+                const file = avatarInput.files[0];
+                if (!file) return;
+                kerphDownscaleImage(file, 200).then((dataUrl) => {
+                    pendingAvatar = dataUrl;
+                    applyAvatarTo(avatarLarge, pendingAvatar);
+                });
+            });
+
+            cancelBtn.addEventListener('click', () => { overlay.style.display = 'none'; });
+
+            saveBtn.addEventListener('click', async () => {
+                const username = usernameInput.value.trim();
+                if (!username) { showToast('Enter a username to save your profile.'); return; }
+                localStorage.setItem('kerphUnitSystem', unitsSelect.value);
+                const { error } = await kerphSaveProfile({ username, avatarDataUrl: pendingAvatar, unitSystem: unitsSelect.value });
+                if (error) { showToast(error.message || 'Could not save profile.'); return; }
+                overlay.style.display = 'none';
+                showToast('Profile saved.');
+            });
+
+            if (planSelect) {
+                planSelect.addEventListener('change', () => {
+                    localStorage.setItem(PLAN_KEY, planSelect.value);
+                    const headerSelect = document.getElementById('planSelector');
+                    if (headerSelect) headerSelect.value = planSelect.value;
+                    renderAccountPlanCard();
+                    renderAccountBadge();
+                    showToast(`Switched to the ${planSelect.value[0].toUpperCase()}${planSelect.value.slice(1)} plan (preview).`);
+                });
+            }
+
+            if (resetAllBtn) {
+                resetAllBtn.addEventListener('click', () => {
+                    if (!confirm('This permanently deletes every saved layout, tool status, and preference stored in this browser for Kerph. This cannot be undone. Continue?')) return;
+                    Object.keys(localStorage).filter(k => k.startsWith('kerph')).forEach(k => localStorage.removeItem(k));
+                    overlay.style.display = 'none';
+                    window.location.reload();
+                });
+            }
+
+            const exportBtn = document.getElementById('accountExportBtn');
+            const importBtn = document.getElementById('accountImportBtn');
+            const importInput = document.getElementById('accountImportInput');
+            if (exportBtn) exportBtn.addEventListener('click', exportAllKerphData);
+            if (importBtn && importInput) {
+                importBtn.addEventListener('click', () => importInput.click());
+                importInput.addEventListener('change', () => {
+                    const file = importInput.files[0];
+                    if (file) importAllKerphData(file);
+                    importInput.value = '';
+                });
+            }
+
+            document.getElementById('accountSignOutBtn').addEventListener('click', () => { overlay.style.display = 'none'; signOut(); });
+
+            renderAccountBadge();
+        }
+
+        function exportAllKerphData() {
+            const data = {};
+            Object.keys(localStorage).filter(k => k.startsWith('kerph')).forEach(k => { data[k] = localStorage.getItem(k); });
+            const blob = new Blob([JSON.stringify({ exportedAt: new Date().toISOString(), data }, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `kerph-backup-${new Date().toISOString().slice(0, 10)}.json`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+        }
+
+        function importAllKerphData(file) {
+            const reader = new FileReader();
+            reader.onload = () => {
+                let parsed;
+                try { parsed = JSON.parse(reader.result); } catch (e) { alert('That file could not be read as a valid Kerph backup.'); return; }
+                const data = parsed && parsed.data ? parsed.data : null;
+                if (!data || typeof data !== 'object') { alert('That file could not be read as a valid Kerph backup.'); return; }
+                if (!confirm('This will overwrite your current Kerph data (layouts, tool statuses, account, preferences) with the contents of this backup. Continue?')) return;
+                Object.keys(localStorage).filter(k => k.startsWith('kerph')).forEach(k => localStorage.removeItem(k));
+                Object.keys(data).forEach(k => { if (k.startsWith('kerph')) localStorage.setItem(k, data[k]); });
+                window.location.reload();
+            };
+            reader.readAsText(file);
+        }
+
+        function isSignedIn() {
+            return typeof kerphGetCachedUser === 'function' && !!kerphGetCachedUser();
+        }
+        function updateHeaderSignInState() {
+            const signedIn = isSignedIn();
+            document.getElementById('headerSignIn').style.display = signedIn ? 'none' : 'flex';
+            document.getElementById('accountBtn').style.display = signedIn ? 'flex' : 'none';
+        }
+        async function signOut() { await kerphSignOut(); }
+        function initHeaderSignIn() {
+            const emailInput = document.getElementById('headerSignInEmail');
+            const passwordInput = document.getElementById('headerSignInPassword');
+            const signInBtn = document.getElementById('headerSignInBtn');
+            const modeToggle = document.getElementById('headerSignInModeToggle');
+
+            let mode = 'signin';
+            function applyMode() {
+                signInBtn.textContent = mode === 'signin' ? 'Sign In' : 'Sign Up';
+                modeToggle.textContent = mode === 'signin' ? 'New here? Create an account' : 'Already have an account? Sign in';
+            }
+            applyMode();
+            modeToggle.addEventListener('click', (e) => { e.preventDefault(); mode = mode === 'signin' ? 'signup' : 'signin'; applyMode(); });
+
+            async function attemptSubmit() {
+                const email = emailInput.value.trim();
+                const password = passwordInput.value;
+                if (!email || !password) { showToast('Enter an email and password.'); return; }
+                signInBtn.disabled = true;
+                try {
+                    if (mode === 'signin') {
+                        const { error } = await kerphSignIn(email, password);
+                        if (error) { showToast(error.message || 'Sign in failed.'); return; }
+                        passwordInput.value = '';
+                        showToast('Signed in.');
+                    } else {
+                        const { error, needsConfirmation } = await kerphSignUp(email, password);
+                        if (error) { showToast(error.message || 'Sign up failed.'); return; }
+                        passwordInput.value = '';
+                        if (needsConfirmation) {
+                            showToast('Check your email to confirm your account, then sign in.');
+                            mode = 'signin';
+                            applyMode();
+                        } else {
+                            showToast('Account created.');
+                        }
+                    }
+                } finally {
+                    signInBtn.disabled = false;
+                }
+            }
+
+            signInBtn.addEventListener('click', attemptSubmit);
+            [emailInput, passwordInput].forEach(input => {
+                input.addEventListener('keydown', (e) => { if (e.key === 'Enter') attemptSubmit(); });
+            });
+            updateHeaderSignInState();
+        }
+
+        document.getElementById('pageNavSelect').addEventListener('change', (e) => { window.location.href = e.target.value; });
+
+        function initJigsDropdown() {
+            const dropdown = document.getElementById('jigsDropdown');
+            const btn = document.getElementById('jigsDropdownBtn');
+            if (!dropdown || !btn) return;
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                dropdown.classList.toggle('open');
+            });
+            document.addEventListener('click', (e) => {
+                if (!dropdown.contains(e.target)) dropdown.classList.remove('open');
+            });
+        }
+        initJigsDropdown();
+        initPlanSelector();
+
+        kerphOnAuthChange(() => {
+            updateHeaderSignInState();
+            renderAccountBadge();
+            applyAdminGate();
+        });
+
+        /* =====================================================================
+           ADMIN DASHBOARD — subscriber counts by tier, active users per day, and
+           page-view usage. Client-side gate below is UX only; the real access
+           control is the admin-only RLS policies on profiles/subscriptions/
+           analytics_events (sql/admin-dashboard.sql, sql/telemetry.sql) — a non-
+           admin who bypassed this gate would just get empty query results.
+           ===================================================================== */
+
+        const ACTIVE_SUB_STATUSES = ['active', 'on_trial', 'past_due'];
+
+        function applyAdminGate() {
+            const signedOutEl = document.getElementById('adminSignedOut');
+            const notAdminEl = document.getElementById('adminNotAdmin');
+            const dashboardEl = document.getElementById('adminDashboard');
+            signedOutEl.style.display = 'none';
+            notAdminEl.style.display = 'none';
+            dashboardEl.style.display = 'none';
+
+            if (!isSignedIn()) { signedOutEl.style.display = 'block'; return; }
+            if (!kerphIsAdmin()) { notAdminEl.style.display = 'block'; return; }
+            dashboardEl.style.display = 'block';
+            loadAdminDashboard();
+        }
+
+        async function loadAdminDashboard() {
+            const since30 = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+
+            const [profilesRes, subsRes, eventsRes] = await Promise.all([
+                kerphSupabase.from('profiles').select('id', { count: 'exact', head: true }),
+                kerphSupabase.from('my_current_subscription').select('user_id, plan, status'),
+                kerphSupabase.from('analytics_events').select('event_type, path, user_id, session_id, created_at').gte('created_at', since30)
+            ]);
+
+            if (profilesRes.error || subsRes.error || eventsRes.error) {
+                showToast('Could not load dashboard data.');
+                return;
+            }
+
+            renderTierStats(profilesRes.count || 0, subsRes.data || []);
+            renderActiveUsersChart(eventsRes.data || []);
+            renderPageUsageTable(eventsRes.data || []);
+        }
+
+        function renderTierStats(totalUsers, subscriptions) {
+            let pro = 0, premier = 0;
+            subscriptions.forEach(s => {
+                if (!ACTIVE_SUB_STATUSES.includes(s.status)) return;
+                if (s.plan === 'pro') pro++;
+                else if (s.plan === 'premier') premier++;
+            });
+            const free = Math.max(0, totalUsers - pro - premier);
+            const row = document.getElementById('adminStatsRow');
+            row.innerHTML = `
+                <div class="admin-stat"><div class="admin-stat-value">${totalUsers}</div><div class="admin-stat-label">Total Users</div></div>
+                <div class="admin-stat tier-free"><div class="admin-stat-value">${free}</div><div class="admin-stat-label">Free</div></div>
+                <div class="admin-stat tier-pro"><div class="admin-stat-value">${pro}</div><div class="admin-stat-label">Pro</div></div>
+                <div class="admin-stat tier-premier"><div class="admin-stat-value">${premier}</div><div class="admin-stat-label">Premier</div></div>
+            `;
+        }
+
+        function barRow(label, value, maxValue) {
+            const pct = maxValue > 0 ? Math.max(2, Math.round((value / maxValue) * 100)) : 2;
+            return `
+                <div class="admin-bar-row">
+                    <div class="admin-bar-row-label" title="${escapeHtml(label)}">${escapeHtml(label)}</div>
+                    <div class="admin-bar-track"><div class="admin-bar-fill" style="width:${pct}%;"></div></div>
+                    <div class="admin-bar-row-value">${value}</div>
+                </div>
+            `;
+        }
+
+        function renderActiveUsersChart(events) {
+            const byDay = {};
+            events.filter(e => e.event_type === 'login').forEach(e => {
+                const day = e.created_at.slice(0, 10);
+                if (!byDay[day]) byDay[day] = new Set();
+                if (e.user_id) byDay[day].add(e.user_id);
+            });
+            const days = [];
+            for (let i = 13; i >= 0; i--) {
+                const d = new Date(Date.now() - i * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+                days.push({ date: d, count: byDay[d] ? byDay[d].size : 0 });
+            }
+            const maxCount = Math.max(1, ...days.map(d => d.count));
+            const wrap = document.getElementById('adminActiveUsersChart');
+            const hasAny = days.some(d => d.count > 0);
+            if (!hasAny) {
+                wrap.innerHTML = '<div class="admin-empty">No active-user data yet — this fills in as people sign in once the "logins per day" tracking is deployed (see log-telemetry Edge Function).</div>';
+                return;
+            }
+            wrap.innerHTML = days.map(d => {
+                const label = new Date(d.date + 'T00:00:00Z').toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+                return barRow(label, d.count, maxCount);
+            }).join('');
+        }
+
+        function renderPageUsageTable(events) {
+            const byPath = {};
+            events.filter(e => e.event_type === 'pageview').forEach(e => {
+                if (!byPath[e.path]) byPath[e.path] = { views: 0, visitors: new Set() };
+                byPath[e.path].views++;
+                if (e.user_id) byPath[e.path].visitors.add('u:' + e.user_id);
+                else if (e.session_id) byPath[e.path].visitors.add('s:' + e.session_id);
+            });
+            const rows = Object.entries(byPath)
+                .map(([path, v]) => ({ path, views: v.views, visitors: v.visitors.size }))
+                .sort((a, b) => b.views - a.views);
+
+            const wrap = document.getElementById('adminPageUsageTable');
+            if (!rows.length) {
+                wrap.innerHTML = '<div class="admin-empty">No page-view data in the last 30 days yet.</div>';
+                return;
+            }
+            wrap.innerHTML = `
+                <table class="admin-table">
+                    <thead><tr><th>Page</th><th class="num">Views</th><th class="num">Unique Visitors</th></tr></thead>
+                    <tbody>
+                        ${rows.map(r => `
+                            <tr>
+                                <td>${escapeHtml(r.path)}</td>
+                                <td class="num">${r.views}</td>
+                                <td class="num">${r.visitors}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        kerphAuthReady.then(() => {
+            initHeaderSignIn();
+            initAccountPanel();
+            applyAdminGate();
+        });
+    </script>
+</body>
+</html>
