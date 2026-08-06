@@ -244,7 +244,9 @@
     // catches both the immediate-signup case and someone who needed email confirmation and
     // only completes their first real sign-in later. Skipping still records a 'skipped' value
     // so it only ever asks once, which keeps this a single-column, no-extra-flag design.
-    const KERPH_REFERRAL_OPTIONS = ['Google / Search', 'YouTube', 'Instagram', 'Facebook', 'Reddit', 'A friend or colleague', 'Woodworking forum', 'Other'];
+    // Kept in sync with the real accounts listed in follow.html's SOCIAL_PLATFORMS -- update
+    // both places together if an account is ever added, renamed, or dropped.
+    const KERPH_REFERRAL_OPTIONS = ['Google / Search', 'Instagram', 'Facebook', 'YouTube', 'Pinterest', 'X (Twitter)', 'Word of mouth', 'Reddit', 'Woodworking forum', 'Other'];
     function kerphShowReferralPrompt() {
         if (document.getElementById('kerphReferralPrompt')) return;
         const el = document.createElement('div');
