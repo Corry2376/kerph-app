@@ -65,6 +65,7 @@
                 referralPromptShownThisLoad = true;
                 kerphShowReferralPrompt();
             }
+            kerphSyncAdminDashboardLink();
             // Real entitlement resolution — direct subscription, or Premier inherited via an
             // active team membership. Refreshed on every auth event (sign-in, sign-out, token
             // refresh) so it never lags behind who's actually signed in.
@@ -135,6 +136,31 @@
 
     function kerphIsAdmin() {
         return kerphGetCachedProfile().isAdmin === true;
+    }
+
+    // Admin-only link to admin.html, injected into the Account Settings modal rather than the
+    // shared site nav (which is loaded for every visitor on every page) -- keeps the dashboard
+    // undiscoverable to non-admins while still being reachable without remembering a bare URL.
+    // #accountSignOutBtn exists in all 27 pages' account-modal markup (verified), so it's a
+    // reliable anchor regardless of which page this runs on. Called on every auth event rather
+    // than once, so it's added/removed correctly if the same browser session ever switches
+    // between an admin and a non-admin account without a full page reload.
+    function kerphSyncAdminDashboardLink() {
+        const signOutBtn = document.getElementById('accountSignOutBtn');
+        if (!signOutBtn) return;
+        const existing = document.getElementById('accountAdminDashboardLink');
+        if (kerphIsAdmin()) {
+            if (existing) return;
+            const link = document.createElement('a');
+            link.id = 'accountAdminDashboardLink';
+            link.href = 'admin.html';
+            link.className = 'mini-btn';
+            link.style.cssText = 'display:block; width:100%; margin-top:8px; text-align:center; text-decoration:none; box-sizing:border-box;';
+            link.textContent = '\u{1F4CA} Admin Dashboard';
+            signOutBtn.insertAdjacentElement('beforebegin', link);
+        } else if (existing) {
+            existing.remove();
+        }
     }
 
     // upsert (not update) so a missing profile row — trigger failure, edge case, whatever —
@@ -1230,6 +1256,7 @@
     window.kerphDownscaleImage = kerphDownscaleImage;
     window.kerphShowSubscribePrompt = kerphShowSubscribePrompt;
     window.kerphShowReferralPrompt = kerphShowReferralPrompt;
+    window.kerphSyncAdminDashboardLink = kerphSyncAdminDashboardLink;
     window.kerphOnVisible = kerphOnVisible;
 
     window.kerphLoadCurrentLayout = kerphLoadCurrentLayout;
