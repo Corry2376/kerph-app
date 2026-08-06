@@ -307,6 +307,9 @@
         </div>
 
         <div id="adminDashboard" style="display:none;">
+            <div id="adminDemoBanner" style="display:none; background:#fef3c7; border:1px solid #fde68a; color:#92400e; font-size:12.5px; font-weight:700; padding:10px 14px; border-radius:8px; margin-bottom:20px; text-align:center;">
+                &#9888;&#65039; DEMO DATA &mdash; everything below is fake, for layout preview only. Set <code>DEMO_MODE = false</code> in this page's script once ready to show real data.
+            </div>
             <div class="admin-stats-row" id="adminStatsRow"></div>
 
             <div class="admin-section">
@@ -701,29 +704,101 @@
             return result;
         }
 
-        async function loadAdminDashboard() {
-            const since30 = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+        // ============================================================================
+        // DEMO MODE -- fake data so the dashboard layout/charts can be visually checked
+        // before there's real traffic to look at. Set to false (or delete this whole
+        // block and the `if (DEMO_MODE) {...}` branch in loadAdminDashboard below) once
+        // ready to show real collected data instead.
+        // ============================================================================
+        const DEMO_MODE = true;
 
-            const [profilesRes, subsRes, eventsRes] = await Promise.all([
-                kerphSupabase.from('profiles').select('id, username, referral_source'),
-                kerphSupabase.from('subscriptions').select('user_id, plan, status, created_at, updated_at').order('updated_at', { ascending: false }),
-                kerphSupabase.from('analytics_events').select('event_type, path, user_id, session_id, created_at').gte('created_at', since30)
-            ]);
-
-            if (profilesRes.error || subsRes.error || eventsRes.error) {
-                showToast('Could not load dashboard data.');
-                return;
+        function buildDemoData() {
+            const day = 24 * 60 * 60 * 1000;
+            const now = Date.now();
+            const referralPool = [...KERPH_referralPoolForDemo()];
+            const profiles = [];
+            for (let i = 1; i <= 34; i++) {
+                profiles.push({
+                    id: 'demo-user-' + i,
+                    username: 'demo_user_' + i,
+                    referral_source: referralPool[i % referralPool.length],
+                });
             }
 
-            const profiles = profilesRes.data || [];
-            const allSubs = subsRes.data || [];
+            const paths = ['index.html', 'workshop-planner.html', 'project-designer.html', 'pricing.html', 'cutlist-optimizer.html', 'shop-showcase.html', 'garage-tips.html', 'tool-reviews.html'];
+            const subs = [];
+            // 5 premier, 9 pro, all active, spread across the last 45 days so deltas have
+            // something to show
+            for (let i = 1; i <= 5; i++) {
+                const created = new Date(now - Math.floor(Math.random() * 45) * day).toISOString();
+                subs.push({ user_id: 'demo-user-' + i, plan: 'premier', status: 'active', created_at: created, updated_at: created });
+            }
+            for (let i = 6; i <= 14; i++) {
+                const created = new Date(now - Math.floor(Math.random() * 45) * day).toISOString();
+                subs.push({ user_id: 'demo-user-' + i, plan: 'pro', status: 'active', created_at: created, updated_at: created });
+            }
+            // a couple of cancellations in the last week, for the "lost" side of the delta
+            subs.push({ user_id: 'demo-user-15', plan: 'pro', status: 'cancelled', created_at: new Date(now - 40 * day).toISOString(), updated_at: new Date(now - 3 * day).toISOString() });
+            subs.push({ user_id: 'demo-user-16', plan: 'premier', status: 'cancelled', created_at: new Date(now - 60 * day).toISOString(), updated_at: new Date(now - 6 * day).toISOString() });
+            subs.sort((a, b) => b.updated_at.localeCompare(a.updated_at));
+
+            const events = [];
+            for (let d = 0; d < 14; d++) {
+                const activeCount = 4 + Math.floor(Math.random() * 10);
+                for (let u = 1; u <= activeCount; u++) {
+                    const ts = new Date(now - d * day - Math.floor(Math.random() * day)).toISOString();
+                    events.push({ event_type: 'login', user_id: 'demo-user-' + u, path: 'auth:active', created_at: ts });
+                }
+            }
+            for (let d = 0; d < 30; d++) {
+                paths.forEach((path) => {
+                    const viewCount = Math.floor(Math.random() * 12) + (path === 'index.html' ? 8 : 1);
+                    for (let v = 0; v < viewCount; v++) {
+                        const ts = new Date(now - d * day - Math.floor(Math.random() * day)).toISOString();
+                        const userId = Math.random() > 0.3 ? 'demo-user-' + (1 + Math.floor(Math.random() * 34)) : null;
+                        events.push({ event_type: 'pageview', path, user_id: userId, session_id: userId ? null : 'anon-' + Math.floor(Math.random() * 12), created_at: ts });
+                    }
+                });
+            }
+
+            return { profiles, subs, events };
+        }
+        function KERPH_referralPoolForDemo() {
+            return ['Google / Search', 'Instagram', 'Facebook', 'YouTube', 'Pinterest', 'X (Twitter)', 'Word of mouth', 'Reddit', 'Woodworking forum', 'Other', 'Prefer not to say'];
+        }
+
+        async function loadAdminDashboard() {
+            let profiles, allSubs, events;
+
+            if (DEMO_MODE) {
+                document.getElementById('adminDemoBanner').style.display = 'block';
+                const demo = buildDemoData();
+                profiles = demo.profiles;
+                allSubs = demo.subs;
+                events = demo.events;
+            } else {
+                const since30 = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+                const [profilesRes, subsRes, eventsRes] = await Promise.all([
+                    kerphSupabase.from('profiles').select('id, username, referral_source'),
+                    kerphSupabase.from('subscriptions').select('user_id, plan, status, created_at, updated_at').order('updated_at', { ascending: false }),
+                    kerphSupabase.from('analytics_events').select('event_type, path, user_id, session_id, created_at').gte('created_at', since30)
+                ]);
+                if (profilesRes.error || subsRes.error || eventsRes.error) {
+                    showToast('Could not load dashboard data.');
+                    return;
+                }
+                profiles = profilesRes.data || [];
+                allSubs = subsRes.data || [];
+                events = eventsRes.data || [];
+            }
+
             const currentSubs = currentSubscriptionPerUser(allSubs);
             const profileById = {};
             profiles.forEach(p => { profileById[p.id] = p; });
 
             renderTierStats(profiles.length, currentSubs);
-            renderActiveUsersChart(eventsRes.data || []);
-            renderPageUsageTable(eventsRes.data || []);
+            renderActiveUsersChart(events);
+            renderPageUsageTable(events);
             renderReferralStats(profiles);
             renderSubscriberDeltas(allSubs);
             renderSubscriberList(currentSubs, profileById);

@@ -1237,8 +1237,6 @@
                     <a href="pricing.html">Plan Comparison</a>
                     <span class="header-quick-links-sep">&middot;</span>
                     <a href="follow.html">Follow Us</a>
-                    <span class="header-quick-links-sep">&middot;</span>
-                    <a href="terms.html">Terms &amp; Privacy</a>
                 </div>
                 <a href="help.html">Trouble with the Kerph</a>
             </div>
@@ -1791,8 +1789,9 @@
             const acc = loadAccount();
             const titleEl = document.getElementById('heroTitle');
             const subtitleEl = document.getElementById('heroSubtitle');
-            if (titleEl) titleEl.textContent = acc.username ? `Welcome back, ${acc.username}` : 'Workshop & project tools';
-            if (subtitleEl) subtitleEl.textContent = acc.username ? 'Jump back into your shop, or explore another tool below.' : 'Pick a tool to get started. More will show up here over time.';
+            const greetName = acc.fullName || acc.username;
+            if (titleEl) titleEl.textContent = greetName ? `Welcome back, ${greetName}` : 'Workshop & project tools';
+            if (subtitleEl) subtitleEl.textContent = greetName ? 'Jump back into your shop, or explore another tool below.' : 'Pick a tool to get started. More will show up here over time.';
 
             // Surfaced here (not just the sidebar button) since this is the first thing
             // anyone sees on the home page — a Premier subscriber who just upgraded shouldn't

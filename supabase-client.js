@@ -61,9 +61,8 @@
             state.user = session ? session.user : null;
             if (state.user) kerphLogDailyActiveUser(state.user.id);
             await refreshProfile(state.user ? state.user.id : null);
-            if (state.user && state.profile && !state.profile.referral_source && !referralPromptShownThisLoad) {
-                referralPromptShownThisLoad = true;
-                kerphShowReferralPrompt();
+            if (state.user) {
+                await kerphApplyPendingSignupProfile();
             }
             kerphSyncAdminDashboardLink();
             // Real entitlement resolution — direct subscription, or Premier inherited via an
@@ -124,6 +123,7 @@
         if (!state.profile) return {};
         return {
             username: state.profile.username || '',
+            fullName: state.profile.full_name || '',
             avatar: state.profile.avatar_data_url || null,
             memberSince: state.profile.created_at || null,
             unitSystem: state.profile.unit_system || 'imperial',
@@ -166,9 +166,10 @@
     // upsert (not update) so a missing profile row — trigger failure, edge case, whatever —
     // never permanently locks a signed-in user out of saving; the INSERT RLS policy exists
     // specifically to make this self-healing path work.
-    async function kerphSaveProfile({ username, avatarDataUrl, unitSystem, maintenanceRemindersEnabled, homeTileOrder, homeTileHidden, referralSource } = {}) {
+    async function kerphSaveProfile({ username, fullName, avatarDataUrl, unitSystem, maintenanceRemindersEnabled, homeTileOrder, homeTileHidden, referralSource } = {}) {
         if (!state.user) return { error: { message: 'Not signed in.' } };
         const updates = { id: state.user.id, username };
+        if (fullName !== undefined) updates.full_name = fullName;
         if (avatarDataUrl !== undefined) updates.avatar_data_url = avatarDataUrl;
         if (unitSystem !== undefined) updates.unit_system = unitSystem;
         if (maintenanceRemindersEnabled !== undefined) updates.maintenance_reminders_enabled = maintenanceRemindersEnabled;
@@ -262,51 +263,258 @@
         document.body.appendChild(el);
     }
 
-    // "How did you hear about us?" -- asked once per account, feeding the admin dashboard's
-    // referral-source breakdown. A small corner card rather than a centered overlay like the
-    // subscribe prompt above, specifically so the two can never visually collide if both would
-    // otherwise fire around the same time (fresh signup + first profile load). Shown on
-    // kerphOnAuthChange whenever a signed-in user's profile has no referral_source yet --
-    // catches both the immediate-signup case and someone who needed email confirmation and
-    // only completes their first real sign-in later. Skipping still records a 'skipped' value
-    // so it only ever asks once, which keeps this a single-column, no-extra-flag design.
+    // Full sign-up modal: name, email, password, and "how did you hear about us" all collected
+    // in one step at account creation -- replaces both the old bare header-form signup (which
+    // only asked for email/password) and a separate post-signup referral nag (which kept
+    // resurfacing on every sign-in until answered, which is exactly the "shows all the time"
+    // problem this replaces). Triggered by intercepting the header sign-in form's Sign-Up path
+    // (see the capture-phase listeners below) rather than editing every page's own copy of that
+    // form, since that markup/JS is independently duplicated across ~26 pages.
     // Kept in sync with the real accounts listed in follow.html's SOCIAL_PLATFORMS -- update
     // both places together if an account is ever added, renamed, or dropped.
-    const KERPH_REFERRAL_OPTIONS = ['Google / Search', 'Instagram', 'Facebook', 'YouTube', 'Pinterest', 'X (Twitter)', 'Word of mouth', 'Reddit', 'Woodworking forum', 'Other'];
-    function kerphShowReferralPrompt() {
-        if (document.getElementById('kerphReferralPrompt')) return;
+    const KERPH_REFERRAL_OPTIONS = ['Google / Search', 'Instagram', 'Facebook', 'YouTube', 'Pinterest', 'X (Twitter)', 'Word of mouth', 'Reddit', 'Woodworking forum', 'Other', 'Prefer not to say'];
+    const KERPH_MODAL_LABEL_STYLE = 'display:block; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; color:#6b7280; margin:12px 0 4px;';
+    const KERPH_MODAL_INPUT_STYLE = 'width:100%; padding:9px 10px; border:1px solid #cbd5e1; border-radius:6px; font-size:13.5px; font-weight:600; box-sizing:border-box;';
+    function kerphShowSignUpModal(prefillEmail, prefillPassword) {
+        if (document.getElementById('kerphSignUpModal')) return;
         const el = document.createElement('div');
-        el.id = 'kerphReferralPrompt';
-        el.style.cssText = 'position:fixed; bottom:20px; right:20px; z-index:4000; width:260px; background:#ffffff; border:1px solid #cbd5e1; border-radius:12px; box-shadow:0 20px 45px rgba(15,23,42,0.25); padding:14px 16px; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;';
+        el.id = 'kerphSignUpModal';
+        el.style.cssText = 'position:fixed; inset:0; background:rgba(15,23,42,0.55); z-index:5000; display:flex; align-items:center; justify-content:center; padding:20px; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;';
         el.innerHTML = `
-            <button type="button" aria-label="Dismiss" style="position:absolute; top:8px; right:8px; background:none; border:none; color:#9ca3af; font-size:15px; line-height:1; cursor:pointer; padding:2px;">&times;</button>
-            <div style="font-size:13px; font-weight:800; color:#0f172a; margin-bottom:8px; padding-right:16px;">How did you hear about Kerph?</div>
-            <select style="width:100%; padding:7px 8px; border:1px solid #cbd5e1; border-radius:6px; font-size:12.5px; font-weight:600; background:#f8fafc; margin-bottom:8px;">
-                <option value="" disabled selected>Choose one&hellip;</option>
-                ${KERPH_REFERRAL_OPTIONS.map(o => `<option value="${o}">${o}</option>`).join('')}
-            </select>
-            <input type="text" placeholder="Where, specifically?" style="display:none; width:100%; padding:7px 8px; border:1px solid #cbd5e1; border-radius:6px; font-size:12.5px; font-weight:600; margin-bottom:8px;">
-            <button type="button" data-submit style="display:block; width:100%; text-align:center; background:#1e3a8a; color:#fff; border:none; font-weight:700; font-size:12.5px; padding:8px; border-radius:6px; cursor:pointer;">Submit</button>
+            <div style="background:#fff; border-radius:14px; box-shadow:0 25px 60px rgba(0,0,0,0.4); max-width:380px; width:100%; padding:24px; position:relative; max-height:90vh; overflow-y:auto; box-sizing:border-box;">
+                <button type="button" aria-label="Close" style="position:absolute; top:12px; right:12px; background:none; border:none; color:#9ca3af; font-size:18px; line-height:1; cursor:pointer; padding:4px;">&times;</button>
+                <div style="font-size:18px; font-weight:800; color:#0f172a; margin-bottom:2px;">Create your Kerph account</div>
+                <div style="font-size:12.5px; color:#6b7280;">Free to start &mdash; no card needed.</div>
+
+                <label style="${KERPH_MODAL_LABEL_STYLE}" for="signupNameInput">Name</label>
+                <input type="text" id="signupNameInput" placeholder="Your name" style="${KERPH_MODAL_INPUT_STYLE}">
+
+                <label style="${KERPH_MODAL_LABEL_STYLE}" for="signupEmailInput">Email</label>
+                <input type="email" id="signupEmailInput" placeholder="you@example.com" style="${KERPH_MODAL_INPUT_STYLE}">
+
+                <label style="${KERPH_MODAL_LABEL_STYLE}" for="signupPasswordInput">Password</label>
+                <input type="password" id="signupPasswordInput" style="${KERPH_MODAL_INPUT_STYLE}">
+
+                <label style="${KERPH_MODAL_LABEL_STYLE}" for="signupReferralSelect">How did you hear about us?</label>
+                <select id="signupReferralSelect" style="${KERPH_MODAL_INPUT_STYLE} background:#f8fafc;">
+                    <option value="" disabled selected>Choose one&hellip;</option>
+                    ${KERPH_REFERRAL_OPTIONS.map(o => `<option value="${o}">${o}</option>`).join('')}
+                </select>
+                <input type="text" id="signupReferralOther" placeholder="Where, specifically?" style="display:none; margin-top:6px; ${KERPH_MODAL_INPUT_STYLE}">
+
+                <div id="signupModalStatus" style="display:none; margin-top:12px; font-size:12px; padding:8px 10px; border-radius:6px;"></div>
+                <button type="button" id="signupModalSubmit" style="display:block; width:100%; text-align:center; background:#1e3a8a; color:#fff; border:none; font-weight:700; font-size:14px; padding:11px; border-radius:8px; cursor:pointer; margin-top:16px;">Create Account</button>
+            </div>
         `;
-        const select = el.querySelector('select');
-        const otherInput = el.querySelector('input');
-        select.addEventListener('change', () => {
-            otherInput.style.display = select.value === 'Other' ? 'block' : 'none';
+        const nameInput = el.querySelector('#signupNameInput');
+        const emailInput = el.querySelector('#signupEmailInput');
+        const passwordInput = el.querySelector('#signupPasswordInput');
+        const referralSelect = el.querySelector('#signupReferralSelect');
+        const referralOther = el.querySelector('#signupReferralOther');
+        const statusEl = el.querySelector('#signupModalStatus');
+        const submitBtn = el.querySelector('#signupModalSubmit');
+        emailInput.value = prefillEmail || '';
+        passwordInput.value = prefillPassword || '';
+
+        referralSelect.addEventListener('change', () => {
+            referralOther.style.display = referralSelect.value === 'Other' ? 'block' : 'none';
         });
+
         function close() { el.remove(); }
-        function submit(value) {
-            kerphSaveProfile({ referralSource: value }).catch(() => {});
-            close();
+        function showStatus(message, ok) {
+            statusEl.textContent = message;
+            statusEl.style.display = 'block';
+            statusEl.style.color = ok ? '#166534' : '#b91c1c';
+            statusEl.style.background = ok ? '#f0fdf4' : '#fef2f2';
+            statusEl.style.border = `1px solid ${ok ? '#bbf7d0' : '#fecaca'}`;
         }
-        el.querySelector('button[aria-label="Dismiss"]').addEventListener('click', () => submit('skipped'));
-        el.querySelector('button[data-submit]').addEventListener('click', () => {
-            if (!select.value) return;
-            const value = select.value === 'Other' ? (otherInput.value.trim() || 'Other') : select.value;
-            submit(value);
+
+        async function submit() {
+            const name = nameInput.value.trim();
+            const email = emailInput.value.trim();
+            const password = passwordInput.value;
+            const referral = referralSelect.value === 'Other' ? (referralOther.value.trim() || 'Other') : referralSelect.value;
+
+            if (!name) { showStatus('Enter your name.'); return; }
+            if (!email || !password) { showStatus('Enter an email and password.'); return; }
+            if (!referral) { showStatus('Choose how you heard about us.'); return; }
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Creating…';
+            try {
+                const { error, needsConfirmation } = await kerphSignUp(email, password);
+                if (error) { showStatus(error.message || 'Sign up failed.'); return; }
+
+                if (needsConfirmation) {
+                    // Not signed in yet -- state.user doesn't exist until they confirm and sign
+                    // in for real, so this can't be saved via kerphSaveProfile right now.
+                    // Applied automatically on that first real sign-in (see the auth listener).
+                    localStorage.setItem('kerphPendingSignupProfile', JSON.stringify({ username: name, fullName: name, referralSource: referral }));
+                    showStatus('Check your email to confirm your account, then sign in.', true);
+                    setTimeout(close, 3000);
+                } else {
+                    await kerphSaveProfile({ username: name, fullName: name, referralSource: referral });
+                    close();
+                    kerphShowSubscribePrompt();
+                }
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Create Account';
+            }
+        }
+
+        el.querySelector('button[aria-label="Close"]').addEventListener('click', close);
+        el.addEventListener('click', (e) => { if (e.target === el) close(); });
+        submitBtn.addEventListener('click', submit);
+        [nameInput, emailInput, passwordInput, referralOther].forEach((input) => {
+            input.addEventListener('keydown', (e) => { if (e.key === 'Enter') submit(); });
         });
         document.body.appendChild(el);
+        nameInput.focus();
     }
-    let referralPromptShownThisLoad = false;
+
+    // Every page's header sign-in form is independently duplicated markup+JS (~26 copies), so
+    // rather than edit the Sign-Up path into all of them, this intercepts it centrally: the
+    // header button's own text ("Sign Up" vs "Sign In") is the one reliable signal of which
+    // mode a given page's form is currently in, readable from outside that page's closure.
+    // Capture-phase + stopImmediatePropagation() so the page's own attemptSubmit() (bound in
+    // the bubble phase, direct on the button/inputs) never runs for a sign-up attempt -- Sign
+    // In is untouched and still goes through each page's normal flow.
+    function kerphIsSignUpModeActive() {
+        const btn = document.getElementById('headerSignInBtn');
+        return !!btn && btn.textContent.trim() === 'Sign Up';
+    }
+    function kerphInterceptSignUp(e) {
+        if (!kerphIsSignUpModeActive()) return;
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        const emailInput = document.getElementById('headerSignInEmail');
+        const passwordInput = document.getElementById('headerSignInPassword');
+        kerphShowSignUpModal(emailInput ? emailInput.value.trim() : '', passwordInput ? passwordInput.value : '');
+    }
+    document.addEventListener('click', (e) => {
+        if (e.target && e.target.id === 'headerSignInBtn') kerphInterceptSignUp(e);
+    }, true);
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && e.target && (e.target.id === 'headerSignInEmail' || e.target.id === 'headerSignInPassword')) {
+            kerphInterceptSignUp(e);
+        }
+    }, true);
+
+    // Applies a name/referral-source captured at sign-up but deferred because email
+    // confirmation was required (no session existed yet to save against). Runs once per real
+    // sign-in; harmless no-op for every other case since the localStorage key is absent.
+    async function kerphApplyPendingSignupProfile() {
+        let pending;
+        try { pending = JSON.parse(localStorage.getItem('kerphPendingSignupProfile') || 'null'); } catch (e) { pending = null; }
+        if (!pending) return;
+        localStorage.removeItem('kerphPendingSignupProfile');
+        await kerphSaveProfile(pending).catch(() => {});
+    }
+
+    // Sitewide footer -- injected here (not added to ~26 pages' own HTML) for the same reason
+    // as the sign-up interception above: one shared source of truth instead of duplicated
+    // markup. Normal document flow (not position:fixed), so it can never overlap the floating
+    // toolbars/panels several canvas-heavy pages already have.
+    function kerphInjectFooter() {
+        if (document.getElementById('kerphSiteFooter')) return;
+        const el = document.createElement('footer');
+        el.id = 'kerphSiteFooter';
+        el.style.cssText = 'text-align:center; padding:22px 16px; margin-top:20px; border-top:1px solid #e2e8f0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; font-size:12px; color:#9ca3af;';
+        el.innerHTML = `
+            <div>
+                <a href="terms.html" style="color:#6b7280; font-weight:600; text-decoration:none;">Terms &amp; Privacy</a>
+                <span style="color:#cbd5e1; margin:0 8px;">&middot;</span>
+                <a href="#" id="kerphFooterContactLink" style="color:#6b7280; font-weight:600; text-decoration:none;">Contact Us</a>
+            </div>
+            <div style="margin-top:6px;">&copy; ${new Date().getFullYear()} Kerph</div>
+        `;
+        document.body.appendChild(el);
+        el.querySelector('#kerphFooterContactLink').addEventListener('click', (e) => {
+            e.preventDefault();
+            kerphShowContactModal();
+        });
+    }
+
+    const KERPH_CONTACT_REASONS = ['Suggest a feature', 'Report a bug or issue', 'Billing or subscription question', 'Partnership or business inquiry', 'Press or media inquiry', 'General question', 'Other'];
+    function kerphShowContactModal() {
+        if (document.getElementById('kerphContactModal')) return;
+        const el = document.createElement('div');
+        el.id = 'kerphContactModal';
+        el.style.cssText = 'position:fixed; inset:0; background:rgba(15,23,42,0.55); z-index:5000; display:flex; align-items:center; justify-content:center; padding:20px; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;';
+        const cachedUser = (typeof kerphGetCachedUser === 'function') ? kerphGetCachedUser() : null;
+        el.innerHTML = `
+            <div style="background:#fff; border-radius:14px; box-shadow:0 25px 60px rgba(0,0,0,0.4); max-width:380px; width:100%; padding:24px; position:relative; max-height:90vh; overflow-y:auto; box-sizing:border-box;">
+                <button type="button" aria-label="Close" style="position:absolute; top:12px; right:12px; background:none; border:none; color:#9ca3af; font-size:18px; line-height:1; cursor:pointer; padding:4px;">&times;</button>
+                <div style="font-size:18px; font-weight:800; color:#0f172a; margin-bottom:2px;">Contact Us</div>
+                <div style="font-size:12.5px; color:#6b7280;">We'll reply to the email address you enter below.</div>
+
+                <label style="${KERPH_MODAL_LABEL_STYLE}" for="contactEmailInput">Your email</label>
+                <input type="email" id="contactEmailInput" placeholder="you@example.com" style="${KERPH_MODAL_INPUT_STYLE}">
+
+                <label style="${KERPH_MODAL_LABEL_STYLE}" for="contactReasonSelect">Reason for contacting us</label>
+                <select id="contactReasonSelect" style="${KERPH_MODAL_INPUT_STYLE} background:#f8fafc;">
+                    <option value="" disabled selected>Choose one&hellip;</option>
+                    ${KERPH_CONTACT_REASONS.map(o => `<option value="${o}">${o}</option>`).join('')}
+                </select>
+
+                <label style="${KERPH_MODAL_LABEL_STYLE}" for="contactMessageInput">Message</label>
+                <textarea id="contactMessageInput" rows="4" style="${KERPH_MODAL_INPUT_STYLE} resize:vertical; font-family:inherit;"></textarea>
+
+                <div id="contactModalStatus" style="display:none; margin-top:12px; font-size:12px; padding:8px 10px; border-radius:6px;"></div>
+                <button type="button" id="contactModalSubmit" style="display:block; width:100%; text-align:center; background:#1e3a8a; color:#fff; border:none; font-weight:700; font-size:14px; padding:11px; border-radius:8px; cursor:pointer; margin-top:16px;">Send</button>
+            </div>
+        `;
+        const emailInput = el.querySelector('#contactEmailInput');
+        const reasonSelect = el.querySelector('#contactReasonSelect');
+        const messageInput = el.querySelector('#contactMessageInput');
+        const statusEl = el.querySelector('#contactModalStatus');
+        const submitBtn = el.querySelector('#contactModalSubmit');
+        if (cachedUser && cachedUser.email) emailInput.value = cachedUser.email;
+
+        function close() { el.remove(); }
+        function showStatus(message, ok) {
+            statusEl.textContent = message;
+            statusEl.style.display = 'block';
+            statusEl.style.color = ok ? '#166534' : '#b91c1c';
+            statusEl.style.background = ok ? '#f0fdf4' : '#fef2f2';
+            statusEl.style.border = `1px solid ${ok ? '#bbf7d0' : '#fecaca'}`;
+        }
+
+        async function submit() {
+            const email = emailInput.value.trim();
+            const reason = reasonSelect.value;
+            const message = messageInput.value.trim();
+            if (!email || !email.includes('@')) { showStatus('Enter a valid email.'); return; }
+            if (!reason) { showStatus('Choose a reason for contacting us.'); return; }
+            if (!message) { showStatus('Enter a message.'); return; }
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Sending…';
+            try {
+                const resp = await fetch(`${kerphSupabase.supabaseUrl}/functions/v1/contact-us`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, reason, message, pageContext: location.pathname, userId: cachedUser ? cachedUser.id : null }),
+                });
+                const result = await resp.json().catch(() => ({}));
+                if (!resp.ok || result.error) { showStatus(result.error || 'Could not send your message.'); return; }
+                showStatus("Message sent — we'll get back to you soon.", true);
+                setTimeout(close, 2000);
+            } catch (err) {
+                showStatus('Could not send your message. Try again in a moment.');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Send';
+            }
+        }
+
+        el.querySelector('button[aria-label="Close"]').addEventListener('click', close);
+        el.addEventListener('click', (e) => { if (e.target === el) close(); });
+        submitBtn.addEventListener('click', submit);
+        document.body.appendChild(el);
+    }
+    kerphInjectFooter();
 
     /* ---------- Singleton domains: one row per user, upsert-only ---------- */
 
@@ -1255,7 +1463,8 @@
     window.kerphOnAuthChange = kerphOnAuthChange;
     window.kerphDownscaleImage = kerphDownscaleImage;
     window.kerphShowSubscribePrompt = kerphShowSubscribePrompt;
-    window.kerphShowReferralPrompt = kerphShowReferralPrompt;
+    window.kerphShowSignUpModal = kerphShowSignUpModal;
+    window.kerphShowContactModal = kerphShowContactModal;
     window.kerphSyncAdminDashboardLink = kerphSyncAdminDashboardLink;
     window.kerphOnVisible = kerphOnVisible;
 

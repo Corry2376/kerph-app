@@ -45,8 +45,6 @@ document.write(`
             <a href="pricing.html">Plan Comparison</a>
             <span class="header-quick-links-sep">&middot;</span>
             <a href="follow.html">Follow Us</a>
-            <span class="header-quick-links-sep">&middot;</span>
-            <a href="terms.html">Terms &amp; Privacy</a>
         </div>
         <a href="help.html">Trouble with the Kerph</a>
     </div>
