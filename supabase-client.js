@@ -384,7 +384,8 @@
             const referral = referralSelect.value === 'Other' ? (referralOther.value.trim() || 'Other') : referralSelect.value;
 
             if (!name) { showStatus('Enter your name.'); return; }
-            if (!email || !password) { showStatus('Enter an email and password.'); return; }
+            if (!email) { showStatus('Enter an email address.'); return; }
+            if (!password) { showStatus('Enter a password.'); return; }
             if (!referral) { showStatus('Choose how you heard about us.'); return; }
 
             submitBtn.disabled = true;
