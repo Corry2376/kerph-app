@@ -272,6 +272,48 @@
     // form, since that markup/JS is independently duplicated across ~26 pages.
     // Kept in sync with the real accounts listed in follow.html's SOCIAL_PLATFORMS -- update
     // both places together if an account is ever added, renamed, or dropped.
+    // Adds a click-to-reveal eye icon to any password field, wired to any input regardless
+    // of its surrounding layout (the tiny 84px header field and the full-width sign-up modal
+    // field need different wrapper behavior). Never touches the input's own width -- some
+    // callers (the header field) have responsive CSS keyed off width via media queries, and
+    // an inline style would win over that and break it. Idempotent, safe to call more than
+    // once on the same input.
+    function kerphAddPasswordToggle(inputEl, opts) {
+        if (!inputEl || inputEl.dataset.kerphToggleAdded === 'true') return;
+        inputEl.dataset.kerphToggleAdded = 'true';
+        const block = !!(opts && opts.block);
+
+        const wrapper = document.createElement(block ? 'div' : 'span');
+        wrapper.style.position = 'relative';
+        wrapper.style.display = block ? 'block' : 'inline-block';
+        if (block) wrapper.style.width = '100%';
+        inputEl.parentNode.insertBefore(wrapper, inputEl);
+        wrapper.appendChild(inputEl);
+
+        const existingPaddingRight = parseInt(getComputedStyle(inputEl).paddingRight, 10) || 0;
+        inputEl.style.paddingRight = (existingPaddingRight + 22) + 'px';
+        inputEl.style.boxSizing = 'border-box';
+
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.textContent = '\u{1F441}️';
+        btn.title = 'Show password';
+        btn.setAttribute('aria-label', 'Show password');
+        btn.style.cssText = 'position:absolute; right:4px; top:50%; transform:translateY(-50%); border:none; background:none; cursor:pointer; padding:2px; font-size:13px; line-height:1; opacity:0.55;';
+        btn.addEventListener('mouseenter', () => { btn.style.opacity = '1'; });
+        btn.addEventListener('mouseleave', () => { btn.style.opacity = '0.55'; });
+        btn.addEventListener('click', () => {
+            const revealing = inputEl.type === 'password';
+            inputEl.type = revealing ? 'text' : 'password';
+            btn.textContent = revealing ? '\u{1F648}' : '\u{1F441}️';
+            const label = revealing ? 'Hide password' : 'Show password';
+            btn.title = label;
+            btn.setAttribute('aria-label', label);
+        });
+        wrapper.appendChild(btn);
+    }
+    window.kerphAddPasswordToggle = kerphAddPasswordToggle;
+
     const KERPH_REFERRAL_OPTIONS = ['Google / Search', 'Instagram', 'Facebook', 'YouTube', 'Pinterest', 'X (Twitter)', 'Word of mouth', 'Reddit', 'Woodworking forum', 'Other', 'Prefer not to say'];
     const KERPH_MODAL_LABEL_STYLE = 'display:block; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; color:#6b7280; margin:12px 0 4px;';
     const KERPH_MODAL_INPUT_STYLE = 'width:100%; padding:9px 10px; border:1px solid #cbd5e1; border-radius:6px; font-size:13.5px; font-weight:600; box-sizing:border-box;';
@@ -315,6 +357,7 @@
         const submitBtn = el.querySelector('#signupModalSubmit');
         emailInput.value = prefillEmail || '';
         passwordInput.value = prefillPassword || '';
+        kerphAddPasswordToggle(passwordInput, { block: true });
 
         referralSelect.addEventListener('change', () => {
             referralOther.style.display = referralSelect.value === 'Other' ? 'block' : 'none';
@@ -515,6 +558,10 @@
         document.body.appendChild(el);
     }
     kerphInjectFooter();
+    // The shared header's password field (site-header-tail.js, and index.html's own copy of
+    // the same markup/ID) is present in the DOM by the time this script runs, since the header
+    // is injected via a synchronous document.write earlier in <body>.
+    kerphAddPasswordToggle(document.getElementById('headerSignInPassword'));
 
     /* ---------- Singleton domains: one row per user, upsert-only ---------- */
 
