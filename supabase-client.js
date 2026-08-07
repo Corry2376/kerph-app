@@ -291,15 +291,20 @@
         wrapper.appendChild(inputEl);
 
         const existingPaddingRight = parseInt(getComputedStyle(inputEl).paddingRight, 10) || 0;
-        inputEl.style.paddingRight = (existingPaddingRight + 22) + 'px';
+        inputEl.style.paddingRight = (existingPaddingRight + 30) + 'px';
         inputEl.style.boxSizing = 'border-box';
 
+        // Touch target is deliberately bigger than the visible icon (32x32 vs. a ~13px
+        // glyph) -- a mobile audit found the original tight-padding version rendered at
+        // ~22x17px, well under the ~44px minimum tap-target guidance from Apple/Google/WCAG.
+        // Centering the small icon in a larger invisible hit area is the standard fix rather
+        // than making the icon itself bigger, which would look oversized in these tight fields.
         const btn = document.createElement('button');
         btn.type = 'button';
         btn.textContent = '\u{1F441}️';
         btn.title = 'Show password';
         btn.setAttribute('aria-label', 'Show password');
-        btn.style.cssText = 'position:absolute; right:4px; top:50%; transform:translateY(-50%); border:none; background:none; cursor:pointer; padding:2px; font-size:13px; line-height:1; opacity:0.55;';
+        btn.style.cssText = 'position:absolute; right:0; top:50%; transform:translateY(-50%); display:flex; align-items:center; justify-content:center; min-width:32px; min-height:32px; border:none; background:none; cursor:pointer; padding:0; font-size:13px; line-height:1; opacity:0.55;';
         btn.addEventListener('mouseenter', () => { btn.style.opacity = '1'; });
         btn.addEventListener('mouseleave', () => { btn.style.opacity = '0.55'; });
         btn.addEventListener('click', () => {
