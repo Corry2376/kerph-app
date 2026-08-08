@@ -569,6 +569,43 @@
     // is injected via a synchronous document.write earlier in <body>.
     kerphAddPasswordToggle(document.getElementById('headerSignInPassword'));
 
+    // Retrofits a "Your Name" field into the Account Settings modal (identical markup
+    // duplicated across ~27 pages) without editing every page's own copy -- same pattern
+    // as kerphInjectFooter. Needed because the sign-up modal only collects a name for
+    // brand-new accounts; anyone who already had an account before that shipped had no
+    // way to add one afterward, and the "Welcome back" greeting silently fell back to
+    // their username with no indication anything was missing.
+    function kerphInjectFullNameField() {
+        const usernameField = document.getElementById('accountUsernameInput');
+        if (!usernameField || document.getElementById('accountFullNameInput')) return;
+        const usernameWrapper = usernameField.closest('.header-field');
+        if (!usernameWrapper || !usernameWrapper.parentNode) return;
+        const fullNameWrapper = document.createElement('div');
+        fullNameWrapper.className = 'header-field';
+        fullNameWrapper.style.cssText = 'display:flex; flex-direction:column; gap:4px; margin-top:12px;';
+        fullNameWrapper.innerHTML = `
+            <label class="header-field-label" for="accountFullNameInput">Your Name</label>
+            <input type="text" class="input-box" id="accountFullNameInput" placeholder="Used for &quot;Welcome back&quot; on the home page">
+        `;
+        usernameWrapper.parentNode.insertBefore(fullNameWrapper, usernameWrapper);
+    }
+    kerphInjectFullNameField();
+
+    // These fire on document, so they always run *after* each page's own click handler
+    // bound directly to the button (target-phase listeners fire before the event bubbles
+    // up to document) -- by the time these run, the modal is already open/populated or
+    // the page's own Save call has already fired, so this only needs to handle the one
+    // field it owns.
+    document.addEventListener('click', (e) => {
+        const fullNameInput = document.getElementById('accountFullNameInput');
+        if (!fullNameInput) return;
+        if (e.target.closest('#accountBtn')) {
+            fullNameInput.value = (kerphGetCachedProfile().fullName) || '';
+        } else if (e.target.closest('#accountSaveBtn')) {
+            kerphSaveProfile({ fullName: fullNameInput.value.trim() });
+        }
+    });
+
     /* ---------- Singleton domains: one row per user, upsert-only ---------- */
 
     function makeSingletonDomain(table, column, defaultValue) {
