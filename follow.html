@@ -273,6 +273,19 @@
 
         .follow-note { margin-top: 40px; font-size: 12.5px; color: #9ca3af; }
 
+        .follow-newsletter {
+            margin-top: 40px; background-color: #ffffff; border: 1px solid #cbd5e1; border-radius: 14px;
+            padding: 24px 28px; box-shadow: 0 8px 20px -10px rgba(15, 23, 42, 0.15); text-align: center;
+        }
+        .follow-newsletter-title { font-size: 17px; font-weight: 800; color: #0f172a; margin-bottom: 6px; }
+        .follow-newsletter-desc { font-size: 13px; color: #4b5563; line-height: 1.5; max-width: 46ch; margin: 0 auto 16px; }
+        .follow-newsletter-form { display: flex; gap: 8px; max-width: 380px; margin: 0 auto; }
+        .follow-newsletter-form .input-box { flex: 1; }
+        .follow-newsletter-form .mini-btn { flex: none; padding: 8px 18px; }
+        .follow-newsletter-status { font-size: 12px; font-weight: 600; margin-top: 10px; min-height: 16px; }
+        .follow-newsletter-status.success { color: #16a34a; }
+        .follow-newsletter-status.error { color: #b91c1c; }
+
         /* ---------- MOBILE LAYOUT ----------
            Header rules are untouched (out of scope). The platform-card grid already uses
            auto-fit/minmax so it collapses on its own; this just tightens page padding and
@@ -370,6 +383,17 @@
         <div class="follow-title">Follow Kerph</div>
         <div class="follow-subtitle">Shop builds, feature previews, and the occasional sawdust photo. Follow along wherever you already are.</div>
         <div class="follow-grid" id="followGrid"></div>
+
+        <div class="follow-newsletter">
+            <div class="follow-newsletter-title">Prefer your inbox?</div>
+            <div class="follow-newsletter-desc">Get shop tips, Garage Tips highlights, and new feature drops straight to your email &mdash; no spam, unsubscribe any time.</div>
+            <form class="follow-newsletter-form" id="newsletterForm">
+                <input type="email" class="input-box" id="newsletterEmail" placeholder="you@email.com" required autocomplete="email">
+                <button type="submit" class="mini-btn modal-primary-btn" id="newsletterSubmitBtn">Subscribe</button>
+            </form>
+            <div class="follow-newsletter-status" id="newsletterStatus"></div>
+        </div>
+
         <div class="follow-note">More platforms coming as we launch them.</div>
     </div>
 
@@ -705,6 +729,44 @@
             }).join('');
         }
         renderFollowGrid();
+
+        function initNewsletterForm() {
+            const form = document.getElementById('newsletterForm');
+            const emailInput = document.getElementById('newsletterEmail');
+            const submitBtn = document.getElementById('newsletterSubmitBtn');
+            const statusEl = document.getElementById('newsletterStatus');
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = emailInput.value.trim();
+                statusEl.textContent = '';
+                statusEl.className = 'follow-newsletter-status';
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Subscribing…';
+                try {
+                    const resp = await fetch(`${kerphSupabase.supabaseUrl}/functions/v1/subscribe-newsletter`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email, source: 'follow_page' }),
+                    });
+                    const result = await resp.json().catch(() => ({}));
+                    if (!resp.ok || result.error) {
+                        statusEl.textContent = result.error || 'Something went wrong. Please try again.';
+                        statusEl.classList.add('error');
+                        return;
+                    }
+                    statusEl.textContent = result.alreadyOnList ? "You're already subscribed." : "You're subscribed!";
+                    statusEl.classList.add('success');
+                    emailInput.value = '';
+                } catch (err) {
+                    statusEl.textContent = 'Something went wrong. Please try again.';
+                    statusEl.classList.add('error');
+                } finally {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Subscribe';
+                }
+            });
+        }
+        initNewsletterForm();
 
         kerphOnAuthChange(() => {
             updateHeaderSignInState();
