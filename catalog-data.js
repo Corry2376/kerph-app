@@ -221,7 +221,15 @@
         'Powermatic 1791001K': { power: '1.75 HP', voltage: '115V / 230V', weight: '~465 lbs', buyUrl: 'https://www.homedepot.com/p/Powermatic-PM1000-115-Volt-1-3-4-HP-1PH-Table-Saw-with-52-in-Accu-Fence-System-1791001K/308567961' },
         'Powermatic PM23150K': { power: '3 HP', voltage: '230V', weight: '~500 lbs', buyUrl: 'https://www.powermatic.com/us/en/p/2000b-table-saw-3hp-1ph-230v-50-rip-w-accu-fence/PM23150K' },
         'Powermatic PM25130K': { power: '5 HP', voltage: '230V', weight: '~490 lbs', buyUrl: 'https://www.powermatic.com/us/en/p/2000b-table-saw-5hp-1ph-230v-30-rip-w-accu-fence/PM25130K' },
-        'Powermatic PM375350K': { power: '7.5 HP', voltage: '230V / 460V (3-phase)', weight: '~738 lbs', buyUrl: 'https://www.powermatic.com/pm375350k' }
+        'Powermatic PM375350K': { power: '7.5 HP', voltage: '230V / 460V (3-phase)', weight: '~738 lbs', buyUrl: 'https://www.powermatic.com/pm375350k' },
+
+        // Table Saws -- Rikon and King Canada (2026-08-09). Harbor Freight's BAUER brand
+        // sells zero table saws (confirmed against harborfreight.com/brands/bauer) -- excluded.
+        'Rikon 10-205': { power: '1-3/4 HP (15A/7.5A)', voltage: '120/240V', weight: '~260 lbs', buyUrl: 'https://rikontools.com/product/model-10-205-10-contractor-saw/' },
+        'King Canada KC-10HCX': { power: '1.75 HP (15A@120V / 7.5A@240V)', voltage: '120V/240V', weight: '~236 lbs', buyUrl: 'https://www.kingcanada.com/en/products/woodworking/table-saws/kc-10hcx-10-cabinet-table-saw' },
+        'King Canada KC-5100NS': { power: '15A', voltage: '120V', weight: '~70 lbs', buyUrl: 'https://www.kingcanada.com/en/products/woodworking/table-saws/kc-5100ns-10-jobsite-saw-with-folding-stand' },
+        'King Canada KC-5016C': { power: '15A', voltage: '120V', weight: '~65 lbs', buyUrl: 'https://www.kingcanada.com/en/products/woodworking/table-saws/kc-5016c-10-portable-jobsite-table-saw' },
+        'King Canada KC-5006R': { power: '15A', voltage: '120V', weight: '~48 lbs', buyUrl: 'https://www.kingcanada.com/en/products/woodworking/table-saws/kc-5006r-10-table-saw-with-riving-knife' }
     };
 
     // { name, category, layer, widthFt, lengthFt, heightFt } for every non-cabinet catalog
@@ -386,6 +394,11 @@
         { name: 'Powermatic PM23150K', category: 'Table Saws', layer: 'tools', widthFt: 3.3, lengthFt: 7.1, heightFt: 3.4 },
         { name: 'Powermatic PM25130K', category: 'Table Saws', layer: 'tools', widthFt: 3.3, lengthFt: 5.6, heightFt: 3.4 },
         { name: 'Powermatic PM375350K', category: 'Table Saws', layer: 'tools', widthFt: 3.4, lengthFt: 7.1, heightFt: 3.4 },
+        { name: 'Rikon 10-205', category: 'Table Saws', layer: 'tools', widthFt: 4.3, lengthFt: 3.3, heightFt: 3.8 },
+        { name: 'King Canada KC-10HCX', category: 'Table Saws', layer: 'tools', widthFt: 3.3, lengthFt: 5.1, heightFt: 3.5 },
+        { name: 'King Canada KC-5100NS', category: 'Table Saws', layer: 'tools', widthFt: 2.5, lengthFt: 4.8, heightFt: 3.5 },
+        { name: 'King Canada KC-5016C', category: 'Table Saws', layer: 'tools', widthFt: 2.1, lengthFt: 3.4, heightFt: 1.7 },
+        { name: 'King Canada KC-5006R', category: 'Table Saws', layer: 'tools', widthFt: 2.4, lengthFt: 2.2, heightFt: 3.4 },
         { name: 'DeWalt DWS779', category: 'Crosscut & Miter', layer: 'tools', widthFt: 1.6, lengthFt: 2.7, heightFt: 1.9 },
         { name: 'Bosch GCM12SD', category: 'Crosscut & Miter', layer: 'tools', widthFt: 1.0, lengthFt: 1.9, heightFt: 1.6 },
         { name: 'Makita LS1019L', category: 'Crosscut & Miter', layer: 'tools', widthFt: 2.1, lengthFt: 2.6, heightFt: 2.2 },
