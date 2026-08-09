@@ -282,6 +282,42 @@
         .review-model-card-buy { display: inline-block; margin-top: 8px; font-size: 11.5px; font-weight: 700; color: #1e3a8a; text-decoration: none; }
         .review-model-card-buy:hover { text-decoration: underline; }
 
+        /* Full catalog browser -- the page's default/primary view, always visible (not gated
+           behind picking a category first). One collapsible block per category so 700+ items
+           across 26 categories doesn't dump onto the page at once, but every category is
+           scannable by name+count without any filtering. */
+        .catalog-browse-section { margin-bottom: 24px; }
+        .catalog-category-block {
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            margin-bottom: 8px;
+            background-color: #ffffff;
+            overflow: hidden;
+        }
+        .catalog-category-summary {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            cursor: pointer;
+            font-size: 13.5px;
+            font-weight: 700;
+            color: #0f172a;
+            list-style: none;
+        }
+        .catalog-category-summary::-webkit-details-marker { display: none; }
+        .catalog-category-summary:hover { background-color: #f8fafc; }
+        .catalog-category-count { font-size: 11.5px; font-weight: 700; color: #6b7280; display: flex; align-items: center; gap: 6px; }
+        .catalog-category-chevron { font-size: 10px; color: #6b7280; transition: transform 0.15s ease; }
+        .catalog-category-block[open] .catalog-category-chevron { transform: rotate(90deg); }
+        .catalog-category-body {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+            padding: 12px 16px 16px;
+            border-top: 1px solid #e5e7eb;
+        }
+
         .reviews-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -554,7 +590,7 @@
     <main>
         <div class="reviews-eyebrow">Community</div>
         <div class="reviews-title">Tool Catalog &amp; Reviews</div>
-        <div class="reviews-subtitle">Browse every tool in the Kerph catalog &mdash; specs, buy links, and real feedback from real shops &mdash; all in one place. Search or pick a category to browse; every review here is visible to the whole Kerph community.</div>
+        <div class="reviews-subtitle">Every tool in the Kerph catalog, grouped by category below &mdash; specs, buy links, and real feedback from real shops, all in one place. Expand a category to browse it, or search/filter to jump straight to a tool.</div>
 
         <div class="reviews-toolbar">
             <input type="text" class="input-box" id="reviewSearchInput" placeholder="&#128269; Search the tool catalog&hellip;">
@@ -567,11 +603,17 @@
             <button type="button" id="writeReviewBtn" class="mini-btn primary">+ Write a Review</button>
         </div>
 
+        <div class="catalog-browse-section" id="catalogBrowseSection">
+            <div class="reviews-models-title">Full Tool Catalog</div>
+            <div id="catalogBrowseAccordion"></div>
+        </div>
+
         <div class="reviews-models-section" id="reviewsModelsSection" style="display:none;">
             <div class="reviews-models-title" id="reviewsModelsTitle">Models</div>
             <div class="reviews-models-grid" id="reviewsModelsGrid"></div>
         </div>
 
+        <div class="reviews-models-title" style="margin-top:8px;">Recent Community Reviews</div>
         <div class="reviews-grid" id="reviewsGrid"></div>
     </main>
 
@@ -949,14 +991,106 @@
             }).sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
         }
 
+        // Shared card renderer for both the always-visible full-catalog browser and the
+        // filtered rollup, so "no reviews yet" / specs / buy link / star display never drifts
+        // between the two views.
+        function buildModelCardHtml(m, showCategory) {
+            const avg = m.count ? (m.ratingSum / m.count) : 0;
+            const specLine = m.specs ? [m.specs.power, m.specs.voltage].filter(Boolean).join(' &middot; ') : '';
+            const buyLink = m.specs && m.specs.buyUrl
+                ? `<a href="${escapeHtml(m.specs.buyUrl)}" target="_blank" rel="noopener" class="review-model-card-buy" onclick="event.stopPropagation()">Buy &rarr;</a>`
+                : '';
+            return `
+                <div class="review-model-card" data-name="${escapeHtml(m.name)}">
+                    <div class="review-model-card-name">${escapeHtml(m.name)}</div>
+                    ${showCategory ? `<div class="review-model-card-category">${escapeHtml(m.category)}</div>` : ''}
+                    ${specLine ? `<div class="review-model-card-specs">${specLine}</div>` : ''}
+                    <div class="review-model-card-meta">${m.count
+                        ? `<span class="review-model-card-stars">${starsHtml(Math.round(avg))}</span> ${m.count} review${m.count === 1 ? '' : 's'}`
+                        : '<span class="review-model-card-none">No reviews yet</span>'}</div>
+                    ${buyLink}
+                </div>
+            `;
+        }
+
+        function jumpToToolReviews(name) {
+            document.getElementById('reviewSearchInput').value = name;
+            renderReviews();
+        }
+
+        // Every catalog item (plus reviewed-but-off-catalog tools) grouped by category, for the
+        // always-visible full-catalog browser -- this is the whole point of folding the catalog
+        // into this page instead of just renaming it, so it must not be gated behind a filter.
+        function computeFullCatalogGrouped() {
+            const catalogItems = Array.isArray(window.CATALOG_ITEMS) ? window.CATALOG_ITEMS : [];
+            const specs = window.TOOL_SPECS || {};
+            const reviewStats = new Map();
+            cachedReviews.forEach(r => {
+                if (!reviewStats.has(r.tool_name)) reviewStats.set(r.tool_name, { count: 0, ratingSum: 0 });
+                const s = reviewStats.get(r.tool_name);
+                s.count += 1;
+                s.ratingSum += r.rating;
+            });
+
+            const byCategory = new Map();
+            const addItem = (name, category) => {
+                if (!byCategory.has(category)) byCategory.set(category, new Map());
+                if (!byCategory.get(category).has(name)) byCategory.get(category).set(name, true);
+            };
+            catalogItems.forEach(item => addItem(item.name, item.category));
+            cachedReviews.forEach(r => addItem(r.tool_name, r.category));
+
+            return Array.from(byCategory.entries()).map(([category, namesMap]) => ({
+                category,
+                items: Array.from(namesMap.keys()).map(name => {
+                    const stats = reviewStats.get(name);
+                    return {
+                        name, category,
+                        count: stats ? stats.count : 0,
+                        ratingSum: stats ? stats.ratingSum : 0,
+                        specs: specs[name] || null
+                    };
+                }).sort((a, b) => b.count - a.count || a.name.localeCompare(b.name))
+            })).sort((a, b) => a.category.localeCompare(b.category));
+        }
+
+        function renderCatalogBrowse() {
+            const container = document.getElementById('catalogBrowseAccordion');
+            // Preserve which categories are expanded across re-renders (this re-runs after
+            // every helpful-vote click and new review, not just on load).
+            const openCategories = new Set(
+                Array.from(container.querySelectorAll('details.catalog-category-block[open]')).map(d => d.dataset.category)
+            );
+            const groups = computeFullCatalogGrouped();
+            container.innerHTML = groups.map(g => `
+                <details class="catalog-category-block" data-category="${escapeHtml(g.category)}"${openCategories.has(g.category) ? ' open' : ''}>
+                    <summary class="catalog-category-summary">
+                        <span>${escapeHtml(g.category)}</span>
+                        <span class="catalog-category-count">${g.items.length} <span class="catalog-category-chevron">&#9656;</span></span>
+                    </summary>
+                    <div class="catalog-category-body">${g.items.map(m => buildModelCardHtml(m, false)).join('')}</div>
+                </details>
+            `).join('');
+            container.querySelectorAll('.review-model-card').forEach(card => {
+                card.addEventListener('click', () => jumpToToolReviews(card.getAttribute('data-name')));
+            });
+        }
+
         function renderModelsRollup() {
             const section = document.getElementById('reviewsModelsSection');
             const grid = document.getElementById('reviewsModelsGrid');
             const title = document.getElementById('reviewsModelsTitle');
+            const browseSection = document.getElementById('catalogBrowseSection');
             const category = document.getElementById('reviewCategoryFilter').value;
             const query = document.getElementById('reviewSearchInput').value.trim();
 
-            if (!category && !query) { section.style.display = 'none'; grid.innerHTML = ''; return; }
+            if (!category && !query) {
+                section.style.display = 'none'; grid.innerHTML = '';
+                browseSection.style.display = 'block';
+                renderCatalogBrowse();
+                return;
+            }
+            browseSection.style.display = 'none';
 
             const models = computeModelsRollup(category, query);
             if (!models.length) { section.style.display = 'none'; grid.innerHTML = ''; return; }
@@ -968,31 +1102,11 @@
             }
 
             title.textContent = category ? `Browse ${category}` : 'Matching Tools';
-            grid.innerHTML = models.map(m => {
-                const avg = m.count ? (m.ratingSum / m.count) : 0;
-                const specLine = m.specs ? [m.specs.power, m.specs.voltage].filter(Boolean).join(' &middot; ') : '';
-                const buyLink = m.specs && m.specs.buyUrl
-                    ? `<a href="${escapeHtml(m.specs.buyUrl)}" target="_blank" rel="noopener" class="review-model-card-buy" onclick="event.stopPropagation()">Buy &rarr;</a>`
-                    : '';
-                return `
-                    <div class="review-model-card" data-name="${escapeHtml(m.name)}">
-                        <div class="review-model-card-name">${escapeHtml(m.name)}</div>
-                        ${!category ? `<div class="review-model-card-category">${escapeHtml(m.category)}</div>` : ''}
-                        ${specLine ? `<div class="review-model-card-specs">${specLine}</div>` : ''}
-                        <div class="review-model-card-meta">${m.count
-                            ? `<span class="review-model-card-stars">${starsHtml(Math.round(avg))}</span> ${m.count} review${m.count === 1 ? '' : 's'}`
-                            : '<span class="review-model-card-none">No reviews yet</span>'}</div>
-                        ${buyLink}
-                    </div>
-                `;
-            }).join('');
+            grid.innerHTML = models.map(m => buildModelCardHtml(m, !category)).join('');
             section.style.display = 'block';
 
             grid.querySelectorAll('.review-model-card').forEach(card => {
-                card.addEventListener('click', () => {
-                    document.getElementById('reviewSearchInput').value = card.getAttribute('data-name');
-                    renderReviews();
-                });
+                card.addEventListener('click', () => jumpToToolReviews(card.getAttribute('data-name')));
             });
         }
 
