@@ -58,7 +58,7 @@ document.write(`
         <option value="quote-builder.html">Quote Builder</option>
         <option value="find-a-builder.html">Find a Builder</option>
         <option value="shop-3d-viewer.html">3D Shop Viewer</option>
-        <option value="tool-reviews.html">Cool Tool Reviews</option>
+        <option value="tool-catalog.html">Tool Catalog &amp; Reviews</option>
         <option value="shop-showcase.html">Shop Showcase</option>
         <option value="garage-tips.html">Shop Tricks and How-To's</option>
         <option value="portfolio.html">Portfolio</option>

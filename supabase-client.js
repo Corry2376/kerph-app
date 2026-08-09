@@ -117,7 +117,7 @@
     }
 
     // Shape-compatible with the old kerphAccount localStorage record, so the ~65 existing
-    // call sites across every page (including shop-showcase.html/tool-reviews.html, which
+    // call sites across every page (including shop-showcase.html/tool-catalog.html, which
     // attribution-stamp local-only posts with loadAccount().username) keep working unmodified.
     function kerphGetCachedProfile() {
         if (!state.profile) return {};
