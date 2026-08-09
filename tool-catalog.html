@@ -224,7 +224,7 @@
         }
         .reviews-toolbar .input-box, .reviews-toolbar .select-box { width: auto; }
         #reviewSearchInput { flex: 1; min-width: 160px; }
-        #reviewCategoryFilter, #reviewSortSelect { min-width: 150px; }
+        #reviewCategoryFilter, #reviewBrandFilter, #reviewShopTypeFilter, #reviewSortSelect { min-width: 150px; }
         #writeReviewBtn { flex: none; margin-left: auto; padding: 10px 18px; }
 
         /* Tool Name typeahead in the Write a Review modal — picking a suggestion keeps entries
@@ -317,6 +317,7 @@
             padding: 12px 16px 16px;
             border-top: 1px solid #e5e7eb;
         }
+        .catalog-browse-empty { font-size: 13px; color: #6b7280; font-style: italic; padding: 16px; text-align: center; }
 
         .reviews-grid {
             display: grid;
@@ -455,6 +456,8 @@
             .reviews-toolbar { padding: 12px; }
             #reviewSearchInput,
             #reviewCategoryFilter,
+            #reviewBrandFilter,
+            #reviewShopTypeFilter,
             #reviewSortSelect,
             #writeReviewBtn { flex: 1 1 100%; min-width: 0; margin-left: 0; }
 
@@ -595,6 +598,12 @@
         <div class="reviews-toolbar">
             <input type="text" class="input-box" id="reviewSearchInput" placeholder="&#128269; Search the tool catalog&hellip;">
             <select class="select-box" id="reviewCategoryFilter"></select>
+            <select class="select-box" id="reviewBrandFilter"></select>
+            <select class="select-box" id="reviewShopTypeFilter">
+                <option value="">All Shop Types</option>
+                <option value="woodworking">Woodworking</option>
+                <option value="mechanical">Mechanical</option>
+            </select>
             <select class="select-box" id="reviewSortSelect">
                 <option value="newest">Newest</option>
                 <option value="highest">Highest Rated</option>
@@ -604,7 +613,7 @@
         </div>
 
         <div class="catalog-browse-section" id="catalogBrowseSection">
-            <div class="reviews-models-title">Full Tool Catalog</div>
+            <div class="reviews-models-title" id="catalogBrowseTitle">Full Tool Catalog</div>
             <div id="catalogBrowseAccordion"></div>
         </div>
 
@@ -932,6 +941,38 @@
         let cachedReviews = [];
         let cachedMyVotes = [];
 
+        // Brand filter -- there's no explicit brand field on catalog items (adding one to 400+
+        // existing entries by hand risked typos for little gain), so brand is parsed from the
+        // item name instead, same "derive, don't duplicate" approach as REVIEW_CATEGORIES.
+        // Multi-word brands must be listed here (checked longest-first) or they'd get chopped
+        // to their first word -- extend this list whenever a new multi-word-brand batch gets
+        // compiled into the catalog.
+        const MULTI_WORD_BRANDS = [
+            'Metabo HPT', 'General Intl', 'King Canada', 'Shop Fox', 'US General',
+            'Bambu Lab', 'Mac Tools', 'Ingersoll Rand', 'Bench Dog'
+        ];
+        // A few older catalog entries spell the same brand two different ways -- normalize
+        // rather than go rename the underlying item names.
+        const BRAND_ALIASES = { 'General': 'General Intl', 'DEWALT': 'DeWalt' };
+        // A handful of catalog items are generic (duct fittings, a work table, a shop light)
+        // with no real manufacturer brand -- these get no brand tag rather than a nonsense one
+        // like "4in" or "Adjustable".
+        const NO_BRAND_ITEMS = new Set([
+            'Blast Gate', 'Assembly Table', 'Adjustable Task Light', 'High Bay LED Fixture', 'LED Shop Light 4ft'
+        ]);
+        function extractBrand(name) {
+            if (NO_BRAND_ITEMS.has(name) || /^\d/.test(name)) return null;
+            for (const b of MULTI_WORD_BRANDS) {
+                if (name === b || name.startsWith(b + ' ')) return b;
+            }
+            const first = name.split(' ')[0];
+            return BRAND_ALIASES[first] || first;
+        }
+        function catalogDomainMap() {
+            const catalogItems = Array.isArray(window.CATALOG_ITEMS) ? window.CATALOG_ITEMS : [];
+            return new Map(catalogItems.map(i => [i.name, i.domain === 'mechanical' ? 'mechanical' : 'woodworking']));
+        }
+
         function starsHtml(rating) {
             let html = '';
             for (let i = 1; i <= 5; i++) {
@@ -949,24 +990,42 @@
             formSel.innerHTML = REVIEW_CATEGORIES.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
         }
 
+        function populateBrandSelect() {
+            const catalogItems = Array.isArray(window.CATALOG_ITEMS) ? window.CATALOG_ITEMS : [];
+            const brands = [...new Set(catalogItems.map(i => extractBrand(i.name)).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+            const sel = document.getElementById('reviewBrandFilter');
+            sel.innerHTML = '<option value="">All Brands</option>' +
+                brands.map(b => `<option value="${escapeHtml(b)}">${escapeHtml(b)}</option>`).join('');
+        }
+
         // Pool = every catalog item matching the filters, UNIONED with any reviewed tool names
         // that aren't in the catalog (custom/off-catalog tools) so a real review never
         // disappears just because its tool isn't a floor-placed catalog item. Review stats and
         // TOOL_SPECS (power/voltage/buy link) are layered on top of that pool, not the source
         // of it -- that's what makes this a real catalog browser instead of "reviewed items
         // only."
-        function computeModelsRollup(category, query) {
+        function computeModelsRollup(category, query, brand, shopType) {
             const q = (query || '').toLowerCase();
             const catalogItems = Array.isArray(window.CATALOG_ITEMS) ? window.CATALOG_ITEMS : [];
+            const domainByName = catalogDomainMap();
+            // Off-catalog reviewed tools have no domain data -- shopType can't exclude them, so
+            // they pass through rather than being incorrectly hidden.
+            const matchesExtra = (name) => {
+                if (brand && extractBrand(name) !== brand) return false;
+                if (shopType && domainByName.has(name) && domainByName.get(name) !== shopType) return false;
+                return true;
+            };
             const pool = new Map();
             catalogItems.forEach(item => {
                 if (category && item.category !== category) return;
                 if (q && !item.name.toLowerCase().includes(q)) return;
+                if (!matchesExtra(item.name)) return;
                 pool.set(item.name, { name: item.name, category: item.category });
             });
             cachedReviews.forEach(r => {
                 if (category && r.category !== category) return;
                 if (q && !r.tool_name.toLowerCase().includes(q)) return;
+                if (!matchesExtra(r.tool_name)) return;
                 if (!pool.has(r.tool_name)) pool.set(r.tool_name, { name: r.tool_name, category: r.category });
             });
 
@@ -1021,9 +1080,15 @@
         // Every catalog item (plus reviewed-but-off-catalog tools) grouped by category, for the
         // always-visible full-catalog browser -- this is the whole point of folding the catalog
         // into this page instead of just renaming it, so it must not be gated behind a filter.
-        function computeFullCatalogGrouped() {
+        function computeFullCatalogGrouped(brand, shopType) {
             const catalogItems = Array.isArray(window.CATALOG_ITEMS) ? window.CATALOG_ITEMS : [];
             const specs = window.TOOL_SPECS || {};
+            const domainByName = catalogDomainMap();
+            const matchesExtra = (name) => {
+                if (brand && extractBrand(name) !== brand) return false;
+                if (shopType && domainByName.has(name) && domainByName.get(name) !== shopType) return false;
+                return true;
+            };
             const reviewStats = new Map();
             cachedReviews.forEach(r => {
                 if (!reviewStats.has(r.tool_name)) reviewStats.set(r.tool_name, { count: 0, ratingSum: 0 });
@@ -1034,6 +1099,7 @@
 
             const byCategory = new Map();
             const addItem = (name, category) => {
+                if (!matchesExtra(name)) return;
                 if (!byCategory.has(category)) byCategory.set(category, new Map());
                 if (!byCategory.get(category).has(name)) byCategory.get(category).set(name, true);
             };
@@ -1054,14 +1120,22 @@
             })).sort((a, b) => a.category.localeCompare(b.category));
         }
 
-        function renderCatalogBrowse() {
+        function renderCatalogBrowse(brand, shopType) {
             const container = document.getElementById('catalogBrowseAccordion');
+            const titleEl = document.getElementById('catalogBrowseTitle');
             // Preserve which categories are expanded across re-renders (this re-runs after
             // every helpful-vote click and new review, not just on load).
             const openCategories = new Set(
                 Array.from(container.querySelectorAll('details.catalog-category-block[open]')).map(d => d.dataset.category)
             );
-            const groups = computeFullCatalogGrouped();
+            const groups = computeFullCatalogGrouped(brand, shopType);
+            const suffix = [brand, shopType === 'mechanical' ? 'Mechanical' : shopType === 'woodworking' ? 'Woodworking' : ''].filter(Boolean).join(', ');
+            titleEl.textContent = suffix ? `Full Tool Catalog — ${suffix}` : 'Full Tool Catalog';
+
+            if (!groups.length) {
+                container.innerHTML = '<div class="catalog-browse-empty">No tools match the selected filters.</div>';
+                return;
+            }
             container.innerHTML = groups.map(g => `
                 <details class="catalog-category-block" data-category="${escapeHtml(g.category)}"${openCategories.has(g.category) ? ' open' : ''}>
                     <summary class="catalog-category-summary">
@@ -1083,16 +1157,18 @@
             const browseSection = document.getElementById('catalogBrowseSection');
             const category = document.getElementById('reviewCategoryFilter').value;
             const query = document.getElementById('reviewSearchInput').value.trim();
+            const brand = document.getElementById('reviewBrandFilter').value;
+            const shopType = document.getElementById('reviewShopTypeFilter').value;
 
             if (!category && !query) {
                 section.style.display = 'none'; grid.innerHTML = '';
                 browseSection.style.display = 'block';
-                renderCatalogBrowse();
+                renderCatalogBrowse(brand, shopType);
                 return;
             }
             browseSection.style.display = 'none';
 
-            const models = computeModelsRollup(category, query);
+            const models = computeModelsRollup(category, query, brand, shopType);
             if (!models.length) { section.style.display = 'none'; grid.innerHTML = ''; return; }
             // Search box holds one exact tool name (e.g. right after clicking a card below) --
             // the reviews grid is already filtered down to just that tool, so a one-card rollup
@@ -1356,10 +1432,13 @@
         });
 
         populateCategorySelects();
+        populateBrandSelect();
         initReviewModal();
         initToolNameTypeahead();
         document.getElementById('reviewSearchInput').addEventListener('input', renderReviews);
         document.getElementById('reviewCategoryFilter').addEventListener('change', renderReviews);
+        document.getElementById('reviewBrandFilter').addEventListener('change', renderReviews);
+        document.getElementById('reviewShopTypeFilter').addEventListener('change', renderReviews);
         document.getElementById('reviewSortSelect').addEventListener('change', renderReviews);
     </script>
 </body>
