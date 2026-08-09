@@ -2041,6 +2041,11 @@
             border-style: dotted;
         }
 
+        .placed-cabinet-node.cabinet-project-import {
+            border-style: double;
+            border-width: 4px;
+        }
+
         .cabinet-item {
             border-left-color: #b45309;
         }
@@ -5794,6 +5799,22 @@
         </div>
     </div>
 
+    <div class="floating-panel cabinet-panel collapsed" id="projectImportPanel">
+        <div class="floating-panel-title">Import from Project Designer <span class="panel-toggle-chevron">&#9656;</span></div>
+        <div class="panel-body">
+            <div class="sidebar-title" style="margin-top:0;">Your Saved Projects</div>
+            <div id="projectImportEmpty" style="font-size:12px; color:#64748b; margin-top:6px;">No saved projects yet — build one in Project Designer.</div>
+            <div id="projectImportPicker" style="display:none;">
+                <div class="dim-inputs">
+                    <select class="select-box" id="projectImportSelect"></select>
+                </div>
+                <div class="tool-box-item cabinet-item" id="projectImportDragChip" draggable="true" style="margin-top:8px; margin-bottom:0;">
+                    <div><div class="tool-title" id="projectImportChipTitle"></div><div class="tool-dims" id="projectImportChipDims"></div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="measure-toolbar" id="measureToolbar">
         <span class="drag-handle" id="measureToolbarHandle" title="Drag to move">&#8942;&#8942;</span>
         <button type="button" id="measureToggleBtn" class="measure-btn" title="Click and drag on the grid to measure a distance">📏 Measure</button>
@@ -6562,6 +6583,7 @@
                 length: parseFloat(item.getAttribute('data-length')),
                 height: parseFloat(item.getAttribute('data-height')) || null,
                 cabType: item.getAttribute('data-cab-type'),
+                projectId: item.getAttribute('data-project-id') || null,
                 hasDrawers: item.getAttribute('data-has-drawers') === 'true',
                 drawers: JSON.parse(item.getAttribute('data-drawers') || '[]'),
                 hasShelves: item.getAttribute('data-has-shelves') === 'true',
@@ -7738,6 +7760,7 @@
                 toolNode.classList.add('placed-cabinet-node', 'cabinet-' + placement.cabType);
                 toolNode.dataset.cabType = placement.cabType;
             }
+            if (placement.projectId) toolNode.dataset.projectId = placement.projectId;
             // Cabinets are always-visible structural context regardless of placement's
             // (unset) layer — everything else carries the layer tag from its catalog item.
             toolNode.dataset.layer = placement.cabType ? 'cabinets' : (placement.layer || 'tools');
@@ -9652,6 +9675,7 @@
                 height: (parseFloat(node.style.height) || 0) * normFactor,
                 rotation: parseFloat(node.dataset.rotation) || 0,
                 cabType: node.dataset.cabType || null,
+                projectId: node.dataset.projectId || null,
                 // physicalHeight is the object's real-world vertical height in feet (for future 3D),
                 // distinct from `height` above which is the 2D footprint box's pixel size.
                 physicalHeight: node.dataset.height || null,
@@ -9718,6 +9742,7 @@
                 toolNode.classList.add('placed-cabinet-node', 'cabinet-' + t.cabType);
                 toolNode.dataset.cabType = t.cabType;
             }
+            if (t.projectId) toolNode.dataset.projectId = t.projectId;
             applyDustCollectionNodeStyling(toolNode, t.label);
             toolNode.dataset.height = t.physicalHeight || '';
             if (t.cabType === 'wall' && t.mountHeightIn) toolNode.dataset.mountHeightIn = t.mountHeightIn;
@@ -9760,6 +9785,7 @@
                 height: (parseFloat(node.style.height) || 0) * normFactor,
                 rotation: parseFloat(node.dataset.rotation) || 0,
                 cabType: node.dataset.cabType || null,
+                projectId: node.dataset.projectId || null,
                 physicalHeight: node.dataset.height || null,
                 mountHeightIn: node.dataset.mountHeightIn || null,
                 layer: node.dataset.layer || 'tools',
@@ -10977,6 +11003,118 @@
             updateCabinetChip();
         }
 
+        // Computes a Project Designer project's overall floor footprint from its raw panel
+        // list, so a saved cabinet/furniture project can be dropped into Workshop Planner as
+        // a single box without the user recreating it by hand in the Cabinet Builder. Mirrors
+        // project-designer.html's panelWorldAABB (rotation-aware, XYZ Euler order matching
+        // THREE.js's default) but reimplemented in plain JS since this page doesn't load
+        // THREE — computes all 8 corners of every panel's local box, rotates + translates them
+        // into world space, and takes the min/max across every panel. X/Z are the floor plane
+        // (width/depth), Y is vertical (matches project-designer.html's Y-up convention, where
+        // panel.heightIn maps to the Y axis).
+        function computeProjectFootprintFt(panels) {
+            if (!Array.isArray(panels) || !panels.length) return null;
+            let minX = Infinity, minY = Infinity, minZ = Infinity;
+            let maxX = -Infinity, maxY = -Infinity, maxZ = -Infinity;
+            let sawAny = false;
+            const toRad = (deg) => (deg || 0) * Math.PI / 180;
+            panels.forEach((p) => {
+                if (typeof p.xIn !== 'number') return;
+                sawAny = true;
+                const hw = (p.widthIn || 0) / 2, hh = (p.heightIn || 0) / 2, ht = (p.thicknessIn || 0) / 2;
+                const rx = toRad(p.rotXDeg), ry = toRad(p.rotYDeg), rz = toRad(p.rotZDeg);
+                const cx = Math.cos(rx), sx = Math.sin(rx);
+                const cy = Math.cos(ry), sy = Math.sin(ry);
+                const cz = Math.cos(rz), sz = Math.sin(rz);
+                // Standard XYZ Tait-Bryan rotation matrix (R = Rz * Ry * Rx).
+                const m00 = cy * cz, m01 = sx * sy * cz - cx * sz, m02 = cx * sy * cz + sx * sz;
+                const m10 = cy * sz, m11 = sx * sy * sz + cx * cz, m12 = cx * sy * sz - sx * cz;
+                const m20 = -sy, m21 = sx * cy, m22 = cx * cy;
+                for (let ix = -1; ix <= 1; ix += 2) {
+                    for (let iy = -1; iy <= 1; iy += 2) {
+                        for (let iz = -1; iz <= 1; iz += 2) {
+                            const lx = ix * hw, ly = iy * hh, lz = iz * ht;
+                            const wx = p.xIn + m00 * lx + m01 * ly + m02 * lz;
+                            const wy = p.yIn + m10 * lx + m11 * ly + m12 * lz;
+                            const wz = p.zIn + m20 * lx + m21 * ly + m22 * lz;
+                            if (wx < minX) minX = wx; if (wx > maxX) maxX = wx;
+                            if (wy < minY) minY = wy; if (wy > maxY) maxY = wy;
+                            if (wz < minZ) minZ = wz; if (wz > maxZ) maxZ = wz;
+                        }
+                    }
+                }
+            });
+            if (!sawAny) return null;
+            return {
+                widthFt: (maxX - minX) / 12,
+                heightFt: (maxY - minY) / 12,
+                depthFt: (maxZ - minZ) / 12
+            };
+        }
+
+        let cachedImportProjects = [];
+
+        async function loadProjectImportPicker() {
+            const select = document.getElementById('projectImportSelect');
+            const picker = document.getElementById('projectImportPicker');
+            const empty = document.getElementById('projectImportEmpty');
+            if (!select || typeof window.kerphLoadSavedProjects !== 'function') return;
+            const { data } = await window.kerphLoadSavedProjects();
+            cachedImportProjects = (data || []).filter(p => computeProjectFootprintFt(p.panels));
+
+            if (!cachedImportProjects.length) {
+                picker.style.display = 'none';
+                empty.style.display = 'block';
+                select.innerHTML = '';
+                return;
+            }
+
+            empty.style.display = 'none';
+            picker.style.display = 'block';
+            const previousValue = select.value;
+            select.innerHTML = cachedImportProjects.map(p => {
+                const count = Array.isArray(p.panels) ? p.panels.length : 0;
+                return `<option value="${p.id}">${escapeHtml(p.name || 'Untitled Project')} — ${count} panel${count === 1 ? '' : 's'}</option>`;
+            }).join('');
+            if (cachedImportProjects.some(p => p.id === previousValue)) {
+                select.value = previousValue;
+            } else {
+                select.value = cachedImportProjects[cachedImportProjects.length - 1].id;
+            }
+            updateProjectImportChip();
+        }
+
+        function updateProjectImportChip() {
+            const select = document.getElementById('projectImportSelect');
+            const chip = document.getElementById('projectImportDragChip');
+            if (!select || !chip) return;
+            const project = cachedImportProjects.find(p => p.id === select.value);
+            if (!project) return;
+            const footprint = computeProjectFootprintFt(project.panels);
+            if (!footprint) return;
+            const name = project.name || 'Untitled Project';
+            // Matches the cabinet chip's (quirky but established) convention: data-width holds
+            // the front-to-back depth, data-length holds the left-to-right width — see
+            // updateCabinetChip() above and the dims-swap in createTouchDragGhost().
+            chip.setAttribute('data-width', footprint.depthFt.toFixed(2));
+            chip.setAttribute('data-length', footprint.widthFt.toFixed(2));
+            chip.setAttribute('data-height', footprint.heightFt.toFixed(2));
+            chip.setAttribute('data-name', name);
+            chip.setAttribute('data-cab-type', 'project-import');
+            chip.setAttribute('data-project-id', project.id);
+            document.getElementById('projectImportChipTitle').textContent = name;
+            document.getElementById('projectImportChipDims').textContent =
+                `${footprint.widthFt.toFixed(1)}' x ${footprint.depthFt.toFixed(1)}' x ${footprint.heightFt.toFixed(1)}' tall`;
+        }
+
+        function initProjectImportPicker() {
+            const select = document.getElementById('projectImportSelect');
+            const chip = document.getElementById('projectImportDragChip');
+            if (!select || !chip) return;
+            select.addEventListener('change', updateProjectImportChip);
+            wireToolDragStart(chip);
+        }
+
         let drawerRows = [];
 
         function renderDrawerList() {
@@ -12135,11 +12273,12 @@
         // stylesheet rule, media query or not). Skipped from the stack entirely while that layout
         // is active, and any stale inline position from before a resize is cleared so the CSS
         // rule regains full control.
-        const MOBILE_SHEET_PANEL_IDS = ['cabinetPanel', 'wallFeaturePanel', 'layersPanel'];
+        const MOBILE_SHEET_PANEL_IDS = ['cabinetPanel', 'wallFeaturePanel', 'layersPanel', 'projectImportPanel'];
 
         function arrangeFloatingPanels() {
             const panels = [
                 document.getElementById('cabinetPanel'),
+                document.getElementById('projectImportPanel'),
                 document.getElementById('wallFeaturePanel'),
                 document.getElementById('layersPanel'),
                 document.getElementById('electricalPanel'),
@@ -12204,7 +12343,7 @@
         // feedback loops: arrangeFloatingPanels only ever writes top/left/right, never a size
         // property, so it can't itself trigger another resize.
         function initPanelAutoStack() {
-            const panels = ['cabinetPanel', 'wallFeaturePanel', 'layersPanel', 'electricalPanel', 'clearancePanel', 'costPanel', 'calcPanel']
+            const panels = ['cabinetPanel', 'projectImportPanel', 'wallFeaturePanel', 'layersPanel', 'electricalPanel', 'clearancePanel', 'costPanel', 'calcPanel']
                 .map(id => document.getElementById(id))
                 .filter(Boolean);
             // No rAF debounce needed: ResizeObserver already batches every observed change
@@ -12221,6 +12360,8 @@
             const layersPanel = document.getElementById('layersPanel');
 
             makeDraggable(cabinetPanel, cabinetPanel.querySelector('.floating-panel-title'), toggleCollapsedPanel(cabinetPanel), { mobileSheet: true });
+            const projectImportPanel = document.getElementById('projectImportPanel');
+            makeDraggable(projectImportPanel, projectImportPanel.querySelector('.floating-panel-title'), toggleCollapsedPanel(projectImportPanel), { mobileSheet: true });
             makeDraggable(wallFeaturePanel, wallFeaturePanel.querySelector('.floating-panel-title'), toggleCollapsedPanel(wallFeaturePanel), { mobileSheet: true });
             makeDraggable(document.getElementById('measureToolbar'), document.getElementById('measureToolbarHandle'));
             makeDraggable(layersPanel, document.getElementById('layersPanelHandle'), toggleCollapsedPanel(layersPanel), { mobileSheet: true });
@@ -12517,6 +12658,7 @@
             initCustomTools();
             cachedCabinetTemplates = (await kerphLoadCabinetTemplates()).data || [];
             initCabinetBuilder();
+            await loadProjectImportPicker();
         });
 
         initUndoRedo();
@@ -12528,6 +12670,7 @@
         initInternalWallDrawing();
         initOutletHeightModal();
         initCabinetHeightModal();
+        initProjectImportPicker();
         initZoomControls();
         initPinchZoom();
         initMobileSidebarDrawer();
