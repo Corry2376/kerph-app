@@ -1490,6 +1490,7 @@
         </div>
     </main>
 
+    <script src="catalog-data.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.7/dist/umd/supabase.js"></script>
     <script src="supabase-client.js"></script>
     <script>
@@ -1552,74 +1553,13 @@
             { name: 'Festool CT 26 Dust Extractor', category: 'Safety & Dust' }
         ];
 
-        // Same machinery catalog as the Workshop Layout Planner's draggable sidebar (kept in
-        // sync) — floor-standing tools that DO sit on the shop floor, so placing them on a
-        // layout still happens over there, but they're just as ownable/wishlist-able from here.
-        // widthFt/lengthFt/heightFt match the Workshop Layout Planner's real footprints, so an
-        // owned floor tool's Insurance Report row shows real dimensions, not "—".
-        const FLOOR_TOOLS = [
-            { name: 'SawStop PCS175 Cabinet Saw', category: 'Table Saws', widthFt: 3.0, lengthFt: 5.2, heightFt: 2.9 },
-            { name: 'SawStop ICS Industrial Cabinet Saw', category: 'Table Saws', widthFt: 3.2, lengthFt: 5.5, heightFt: 3.0 },
-            { name: 'Delta 36-L352 Unisaw', category: 'Table Saws', widthFt: 3.0, lengthFt: 5.0, heightFt: 2.9 },
-            { name: 'Laguna 14BX Bandsaw', category: 'Bandsaws', widthFt: 2.1, lengthFt: 2.5, heightFt: 5.8 },
-            { name: 'Rikon 10-326 18" Bandsaw', category: 'Bandsaws', widthFt: 2.3, lengthFt: 2.8, heightFt: 5.9 },
-            { name: 'Grizzly G0513X2 17" Bandsaw', category: 'Bandsaws', widthFt: 2.2, lengthFt: 2.6, heightFt: 5.9 },
-            { name: 'Powermatic PJ882HHT Jointer', category: 'Jointers & Planers', widthFt: 1.4, lengthFt: 7.3, heightFt: 3.0 },
-            { name: 'Powermatic 201HH 20" Planer', category: 'Jointers & Planers', widthFt: 2.6, lengthFt: 3.4, heightFt: 3.2 },
-            { name: 'Hammer A3-31 Jointer/Planer Combo', category: 'Jointers & Planers', widthFt: 2.5, lengthFt: 4.0, heightFt: 3.0 },
-            { name: 'Grizzly G0771Z Edge Sander', category: 'Sanding', widthFt: 1.8, lengthFt: 2.2, heightFt: 5.0 },
-            { name: 'JET 22-44 Oscillating Spindle Sander', category: 'Sanding', widthFt: 1.5, lengthFt: 1.5, heightFt: 3.3 },
-            { name: 'SuperMax 19-38 Drum Sander', category: 'Sanding', widthFt: 2.0, lengthFt: 3.5, heightFt: 4.0 },
-            { name: 'Powermatic PM2800B Drill Press', category: 'Drilling & Boring', widthFt: 2.0, lengthFt: 2.3, heightFt: 6.3 },
-            { name: 'General International 75-510 M1 Drill Press', category: 'Drilling & Boring', widthFt: 1.8, lengthFt: 2.0, heightFt: 5.5 },
-            { name: 'Powermatic 3520C Wood Lathe', category: 'Turning', widthFt: 2.0, lengthFt: 6.5, heightFt: 4.0 },
-            { name: 'JET JWL-1640EVS Lathe', category: 'Turning', widthFt: 1.8, lengthFt: 5.8, heightFt: 3.7 },
-            { name: 'SawStop Professional Router Table', category: 'Routing', widthFt: 2.0, lengthFt: 3.0, heightFt: 3.0 },
-            { name: 'Kreg PRS2100 Router Table', category: 'Routing', widthFt: 1.8, lengthFt: 2.8, heightFt: 3.0 },
-            { name: 'Festool Kapex KS 120 + Stand', category: 'Crosscut & Miter', widthFt: 2.5, lengthFt: 4.5, heightFt: 3.7 },
-            { name: 'Bosch GTS1041A + Gravity Stand', category: 'Crosscut & Miter', widthFt: 2.2, lengthFt: 4.0, heightFt: 3.8 },
-            { name: 'JET DC-1100VX-CK Dust Collector', category: 'Dust Collection', widthFt: 2.2, lengthFt: 2.2, heightFt: 7.2 },
-            { name: 'Oneida Super Dust Deputy XL Cyclone', category: 'Dust Collection', widthFt: 1.5, lengthFt: 1.5, heightFt: 2.8 },
-            { name: '4" Dust Duct (2ft run)', category: 'Dust Collection', widthFt: 0.35, lengthFt: 2.0, heightFt: 7.0 },
-            { name: '4" Dust Duct (4ft run)', category: 'Dust Collection', widthFt: 0.35, lengthFt: 4.0, heightFt: 7.0 },
-            { name: '4" Dust Duct (6ft run)', category: 'Dust Collection', widthFt: 0.35, lengthFt: 6.0, heightFt: 7.0 },
-            { name: '4" Dust Duct (8ft run)', category: 'Dust Collection', widthFt: 0.35, lengthFt: 8.0, heightFt: 7.0 },
-            { name: '4" Dust Duct (10ft run)', category: 'Dust Collection', widthFt: 0.35, lengthFt: 10.0, heightFt: 7.0 },
-            { name: '4" Duct Elbow (90°)', category: 'Dust Collection', widthFt: 0.6, lengthFt: 0.6, heightFt: 7.0 },
-            { name: '4" Duct Y-Joint', category: 'Dust Collection', widthFt: 0.7, lengthFt: 0.7, heightFt: 7.0 },
-            { name: '4" Duct T-Joint', category: 'Dust Collection', widthFt: 0.7, lengthFt: 0.7, heightFt: 7.0 },
-            { name: '4" Pipe Bracket', category: 'Dust Collection', widthFt: 0.5, lengthFt: 0.15, heightFt: 7.0 },
-            { name: '4" Blast Gate', category: 'Dust Collection', widthFt: 0.35, lengthFt: 0.5, heightFt: 7.0 },
-            { name: '6" Dust Duct (2ft run)', category: 'Dust Collection', widthFt: 0.5, lengthFt: 2.0, heightFt: 7.0 },
-            { name: '6" Dust Duct (4ft run)', category: 'Dust Collection', widthFt: 0.5, lengthFt: 4.0, heightFt: 7.0 },
-            { name: '6" Dust Duct (6ft run)', category: 'Dust Collection', widthFt: 0.5, lengthFt: 6.0, heightFt: 7.0 },
-            { name: '6" Dust Duct (8ft run)', category: 'Dust Collection', widthFt: 0.5, lengthFt: 8.0, heightFt: 7.0 },
-            { name: '6" Dust Duct (10ft run)', category: 'Dust Collection', widthFt: 0.5, lengthFt: 10.0, heightFt: 7.0 },
-            { name: '6" Duct Elbow (90°)', category: 'Dust Collection', widthFt: 0.8, lengthFt: 0.8, heightFt: 7.0 },
-            { name: '6" Duct Y-Joint', category: 'Dust Collection', widthFt: 0.9, lengthFt: 0.9, heightFt: 7.0 },
-            { name: '6" Duct T-Joint', category: 'Dust Collection', widthFt: 0.9, lengthFt: 0.9, heightFt: 7.0 },
-            { name: '6" Pipe Bracket', category: 'Dust Collection', widthFt: 0.7, lengthFt: 0.15, heightFt: 7.0 },
-            { name: '6" Blast Gate', category: 'Dust Collection', widthFt: 0.5, lengthFt: 0.6, heightFt: 7.0 },
-            { name: '4ft LED Shop Light', category: 'Lighting', widthFt: 0.4, lengthFt: 4.0, heightFt: 8.5 },
-            { name: 'High Bay LED Fixture', category: 'Lighting', widthFt: 1.2, lengthFt: 1.2, heightFt: 9.0 },
-            { name: 'Adjustable Task/Bench Light', category: 'Lighting', widthFt: 0.6, lengthFt: 0.6, heightFt: 5.5 },
-            { name: 'Shapeoko Pro XXL CNC', category: 'CNC & Digital Fab', widthFt: 3.0, lengthFt: 4.5, heightFt: 1.2 },
-            { name: 'Glowforge Pro Laser', category: 'CNC & Digital Fab', widthFt: 1.6, lengthFt: 2.8, heightFt: 0.7 },
-            { name: 'Bambu Lab X1 Carbon 3D Printer', category: 'CNC & Digital Fab', widthFt: 1.3, lengthFt: 1.3, heightFt: 1.5 },
-            { name: 'Prusa MK4 3D Printer', category: 'CNC & Digital Fab', widthFt: 1.5, lengthFt: 1.6, heightFt: 1.3 },
-            { name: 'Creality K1 Max 3D Printer', category: 'CNC & Digital Fab', widthFt: 1.8, lengthFt: 2.0, heightFt: 1.6 },
-            { name: 'Elegoo Saturn 4 Ultra Resin Printer', category: 'CNC & Digital Fab', widthFt: 0.8, lengthFt: 0.9, heightFt: 1.6 },
-            { name: 'Assembly / Outfeed Table', category: 'Assembly & Storage', widthFt: 3.0, lengthFt: 6.0, heightFt: 3.0 },
-            { name: 'Kreg Mobile Project Center', category: 'Assembly & Storage', widthFt: 2.0, lengthFt: 3.0, heightFt: 3.0 },
-            { name: 'Milwaukee PACKOUT Rolling Tool Box', category: 'Tool Storage', widthFt: 1.8, lengthFt: 1.3, heightFt: 1.3 },
-            { name: 'DEWALT TOUGHSYSTEM 2.0 Mobile Tool Box', category: 'Tool Storage', widthFt: 2.0, lengthFt: 1.8, heightFt: 1.7 },
-            { name: 'Craftsman 26" Rolling Tool Cabinet', category: 'Tool Storage', widthFt: 2.2, lengthFt: 1.5, heightFt: 3.2 },
-            { name: 'Kobalt 41" 9-Drawer Rolling Tool Chest', category: 'Tool Storage', widthFt: 3.4, lengthFt: 1.5, heightFt: 3.0 },
-            { name: 'US General 56" 10-Drawer Roller Cabinet', category: 'Tool Storage', widthFt: 4.7, lengthFt: 1.8, heightFt: 3.1 },
-            { name: 'Husky 52" 10-Drawer Mobile Workbench', category: 'Tool Storage', widthFt: 4.3, lengthFt: 2.1, heightFt: 3.3 },
-            { name: 'Snap-on KRL1023 Classic 78" Roll Cab', category: 'Tool Storage', widthFt: 6.5, lengthFt: 2.1, heightFt: 3.5 },
-            { name: 'Husky 72" 18-Drawer Tool Chest Combo', category: 'Tool Storage', widthFt: 2.0, lengthFt: 6.0, heightFt: 6.2 }
-        ];
+        // The exact same machinery catalog as the Workshop Layout Planner's draggable sidebar —
+        // floor-standing tools that DO sit on the shop floor, so placing them on a layout still
+        // happens over there, but they're just as ownable/wishlist-able from here. Sourced live
+        // from catalog-data.js (window.CATALOG_ITEMS), the same single source of truth used by
+        // workshop-planner.html/shop-3d-viewer.html/tool-reviews.html, so a tool added to the
+        // catalog shows up here automatically -- no separate list to remember to update.
+        const FLOOR_TOOLS = window.CATALOG_ITEMS;
 
         function maintenanceRemindersEnabled() {
             return localStorage.getItem(MAINTENANCE_REMINDERS_KEY) !== 'false';
