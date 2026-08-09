@@ -2721,6 +2721,11 @@
                 </div>
             </div>
 
+            <label style="display:flex; align-items:flex-start; gap:8px; margin-top:14px; font-size:12px; color:#4b5563; cursor:pointer;">
+                <input type="checkbox" id="customToolSuggestCheckbox" style="margin-top:2px;">
+                <span>Suggest this tool for the Kerph catalog &mdash; we'll research it and consider adding it for everyone.</span>
+            </label>
+
             <div class="modal-actions">
                 <button type="button" id="customToolCancelBtn" class="mini-btn">Cancel</button>
                 <button type="button" id="customToolSaveBtn" class="mini-btn modal-primary-btn">Add Tool</button>
@@ -7349,12 +7354,14 @@
             const widthInput = document.getElementById('customToolWidthInput');
             const depthInput = document.getElementById('customToolDepthInput');
             const heightInput = document.getElementById('customToolHeightInput');
+            const suggestCheckbox = document.getElementById('customToolSuggestCheckbox');
 
             addBtn.addEventListener('click', () => {
                 nameInput.value = '';
                 widthInput.value = '';
                 depthInput.value = '';
                 heightInput.value = '';
+                suggestCheckbox.checked = false;
                 overlay.style.display = 'flex';
             });
 
@@ -7391,8 +7398,17 @@
                 tools.push(tool);
                 saveCustomTools(tools);
                 renderCustomToolItem(tool);
+
+                // Suggestion is a separate, best-effort write -- it never blocks or reverts
+                // adding the tool locally, since that part already succeeded above.
+                if (suggestCheckbox.checked && typeof kerphSuggestTool === 'function') {
+                    kerphSuggestTool({ toolName: name, widthIn, depthIn, heightIn }).catch(() => {});
+                }
+
                 overlay.style.display = 'none';
-                showToast(`Added "${finalName}" to My Custom Tools.`);
+                showToast(suggestCheckbox.checked
+                    ? `Added "${finalName}" and sent it in as a catalog suggestion. Thanks!`
+                    : `Added "${finalName}" to My Custom Tools.`);
             });
         }
 

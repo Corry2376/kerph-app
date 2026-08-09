@@ -636,6 +636,20 @@
     const kerphLoadCustomTools = customToolsDomain.load;
     const kerphSaveCustomTools = customToolsDomain.save;
 
+    // One row per suggestion (not a singleton like the domains above) -- admin-only read,
+    // reviewed and researched by hand, never auto-published into the catalog.
+    async function kerphSuggestTool({ toolName, widthIn, depthIn, heightIn }) {
+        if (!state.user) return { error: { message: 'Not signed in.' } };
+        const { data, error } = await kerphSupabase.from('tool_suggestions').insert({
+            user_id: state.user.id,
+            tool_name: toolName,
+            width_in: widthIn ?? null,
+            depth_in: depthIn ?? null,
+            height_in: heightIn ?? null
+        }).select().maybeSingle();
+        return { data, error };
+    }
+
     const cabinetTemplatesDomain = makeSingletonDomain('cabinet_templates', 'data', []);
     const kerphLoadCabinetTemplates = cabinetTemplatesDomain.load;
     const kerphSaveCabinetTemplates = cabinetTemplatesDomain.save;
@@ -1575,6 +1589,7 @@
     window.kerphSaveToolStatus = kerphSaveToolStatus;
     window.kerphLoadCustomTools = kerphLoadCustomTools;
     window.kerphSaveCustomTools = kerphSaveCustomTools;
+    window.kerphSuggestTool = kerphSuggestTool;
     window.kerphLoadCabinetTemplates = kerphLoadCabinetTemplates;
     window.kerphSaveCabinetTemplates = kerphSaveCabinetTemplates;
     window.kerphLoadCutListParts = kerphLoadCutListParts;
