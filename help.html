@@ -511,6 +511,7 @@
                 <a href="#gs-account">Account, Plans &amp; Upgrading</a>
                 <a href="#gs-shop-type">Shop Type: Woodworking, Mechanical, or Both</a>
                 <a href="#gs-layers">Layers: Tools, Dust Collection, Lighting &amp; Plumbing</a>
+                <a href="#gs-teams">Team Seats: Inviting Teammates</a>
             </div>
             <div class="help-toc-group">
                 <div class="help-toc-group-title">Workshop Layout Planner</div>
@@ -529,6 +530,8 @@
                 <a href="#pd-panels">Panels, Hardware &amp; Cut List Handoff</a>
                 <a href="#pd-3d">3D Preview, Labels &amp; Measurements</a>
                 <a href="#pd-saved">Saved Projects</a>
+                <a href="#pd-import-photo">Import From Photo</a>
+                <a href="#pd-advanced">Templates, Revision History &amp; Exports</a>
             </div>
             <div class="help-toc-group">
                 <div class="help-toc-group-title">Cut List Optimizer</div>
@@ -539,13 +542,31 @@
                 <a href="#viewer-3d-basics">Orbiting &amp; Editing in 3D</a>
             </div>
             <div class="help-toc-group">
+                <div class="help-toc-group-title">Quote Builder</div>
+                <a href="#qb-basics">Creating &amp; Sending a Quote</a>
+            </div>
+            <div class="help-toc-group">
                 <div class="help-toc-group-title">Find a Builder</div>
                 <a href="#fab-basics">Generating a Quote Request</a>
             </div>
             <div class="help-toc-group">
+                <div class="help-toc-group-title">Shop Jigs</div>
+                <a href="#jigs-calculators">Free Calculators &amp; Charts</a>
+                <a href="#jigs-part-finder">Part Finder</a>
+            </div>
+            <div class="help-toc-group">
+                <div class="help-toc-group-title">My Workspace</div>
+                <a href="#workspace-basics">Your Workspace at a Glance</a>
+            </div>
+            <div class="help-toc-group">
                 <div class="help-toc-group-title">Community</div>
                 <a href="#comm-showcase">Shop Showcase</a>
+                <a href="#comm-portfolio">Portfolio</a>
                 <a href="#comm-reviews">Cool Tool Reviews</a>
+            </div>
+            <div class="help-toc-group">
+                <div class="help-toc-group-title">Garage Tips</div>
+                <a href="#tips-basics">Browsing Articles</a>
             </div>
             <div class="help-toc-group">
                 <div class="help-toc-group-title">Billing &amp; Refunds</div>
@@ -631,6 +652,20 @@
                     </div>
                 </div>
                 <p>Cabinets and wall features (doors, windows, outlets, interior walls) always stay visible regardless of which layer you're viewing — they're structural context for the room itself, not something you'd ever want to hide.</p>
+            </article>
+
+            <article class="help-article" id="gs-teams">
+                <h2>Team Seats: Inviting Teammates</h2>
+                <p>Pro and Premier accounts each include team seats (2 total on Pro, 4 total on Premier, owner included) — teammates inherit the owner's plan tier at no extra cost per seat until you go past what's included.</p>
+                <ol>
+                    <li>As the team owner, go to <a href="pricing.html">Plan Comparison</a> and sign in — the <b>Your Team</b> panel appears automatically for Pro/Premier accounts.</li>
+                    <li>Enter your teammate's email address and click <b>Invite</b>. They'll show up in the members list with an <b>Invited</b> status badge.</li>
+                    <li>If you're already using all your included seats, an <b>Add Extra Seat(s)</b> button appears showing the monthly cost per additional seat.</li>
+                </ol>
+                <p>Your teammate needs their own free Kerph account, signed in with the exact email address you invited. The invite email includes an <b>Accept Invite</b> link — once they click it while signed in with that email, their status flips to <b>Active</b> and they immediately get your plan's access. No payment from them is needed.</p>
+                <div class="help-callout help-callout-note">
+                    Removing a teammate (the &times; next to their name) frees their seat starting at your next billing cycle — it doesn't refund the current cycle's already-paid seat charge. See <a href="#billing-cancel">Cancelling, Annual Plans &amp; Team Seats</a> for the full billing rules.
+                </div>
             </article>
 
             <article class="help-article" id="wp-basics">
@@ -812,6 +847,37 @@
                 <p>Your current project autosaves continuously, just like the Workshop Layout Planner. Use <b>Save Project</b> to keep a named snapshot you can return to, and the account button's project picker to switch between saved projects. Free accounts can have unlimited live projects but zero saved snapshots; Pro unlocks up to 5 saved projects, and Premier is unlimited &mdash; see <a href="pricing.html">Plan Comparison</a> for current limits.</p>
             </article>
 
+            <article class="help-article" id="pd-import-photo">
+                <h2>Import From Photo</h2>
+                <p>Point your camera at an existing piece of furniture and let Kerph give you a starting-point spec instead of measuring and modeling it from scratch.</p>
+                <ol>
+                    <li>In the panel list sidebar, click <b>Import From Photo</b>.</li>
+                    <li>Choose or take a photo of the piece.</li>
+                    <li>Optional but recommended: enter a reference measurement (one known width, height, or depth) &mdash; without it, Kerph has to guess scale from typical proportions.</li>
+                    <li>Click <b>Analyze Photo</b>. You'll get back an item type, a confidence badge, estimated overall dimensions, shelf/door/drawer counts, and a construction-style guess (face-frame vs. frameless, for example).</li>
+                    <li>Click <b>Use As Starting Point</b> to pre-fill the closest matching template (Cabinet, Shelving, etc.) with those numbers, then review and generate the real panel list yourself.</li>
+                </ol>
+                <div class="help-callout help-callout-note">
+                    This is a draft to review before you cut, not an exact reconstruction. A single photo has no reliable scale reference without the optional measurement, and hidden joinery (dado vs. rabbet, pocket screw vs. mortise-and-tenon) can't be seen from outside an assembled piece &mdash; always double-check the generated dimensions against the real thing.
+                </div>
+                <p>Import From Photo is a <b>Premier</b> feature, limited to 20 photo lookups per rolling 24-hour period.</p>
+            </article>
+
+            <article class="help-article" id="pd-advanced">
+                <h2>Templates, Revision History &amp; Exports</h2>
+                <h3>Assembly templates</h3>
+                <p>Instead of adding every panel by hand, click <b>From Template</b> to start from a parametric assembly &mdash; Cabinet (with optional rabbeted back), Shelving/Bookcase, or Mitered Frame &mdash; and Kerph generates the full panel list from a few dimension fields, with real joinery already applied.</p>
+                <h3>Revision history</h3>
+                <p>Every save keeps a snapshot in your project's revision history. Open it from the project menu to review past versions, see what changed between two revisions in the diff view, or roll back if a change didn't work out.</p>
+                <h3>Exports</h3>
+                <ul>
+                    <li><b>Technical Drawing PDF</b> &mdash; front/side/top orthographic views plus a parts table, ready to print or attach to a quote.</li>
+                    <li><b>DXF Export</b> &mdash; for CNC/CAM handoff, including projected joint notches.</li>
+                    <li><b>Plan Package</b> &mdash; bundles the technical drawing, cut list, and hardware checklist into one combined export.</li>
+                    <li><b>AR "View in Your Shop"</b> and <b>Animated Assembly Video</b> &mdash; <b>Premier</b>-only exports for previewing a piece at real scale or walking through how it goes together.</li>
+                </ul>
+            </article>
+
             <article class="help-article" id="clo-basics">
                 <div class="help-article-eyebrow">Cut List Optimizer</div>
                 <h2>Sheets vs. Boards</h2>
@@ -841,6 +907,22 @@
                 </ul>
             </article>
 
+            <article class="help-article" id="qb-basics">
+                <div class="help-article-eyebrow">Quote Builder</div>
+                <h2>Creating &amp; Sending a Quote</h2>
+                <p>Quote Builder is Kerph's client-facing quoting tool &mdash; for the pieces <em>you</em> build for paying customers. It's separate from Find a Builder, which is for finding a contractor to build <em>your</em> shop.</p>
+                <ol>
+                    <li>Start from scratch by filling in the sidebar (Quote Name, Client Name, Client Email, materials, labor hours/rate, consumables) &mdash; or click <b>Send to Quote Builder</b> from a Project Designer project to pull its materials list in automatically.</li>
+                    <li>Set your <b>Overhead %</b> (shop's cost of doing business &mdash; rent, insurance, tool depreciation) and <b>Margin %</b> (your markup on top of true cost). Kerph calculates Subtotal &rarr; Cost (+ Overhead) &rarr; Total (+ Margin) automatically.</li>
+                    <li>Deliver it to your client either by <b>Share With Client</b> (copies a link) or <b>Email to Client</b> (sends the link plus a PDF attachment, and marks the quote Sent).</li>
+                    <li>Your client opens the link at a page that needs no Kerph account of their own, reviews the breakdown, and clicks <b>Accept Quote</b> or <b>Decline Quote</b> &mdash; their response shows up on your copy immediately.</li>
+                </ol>
+                <p>The <b>Open/Past Quotes</b> dashboard keeps every quote you've sent, split into open (draft/sent) and past (accepted/rejected/completed). After the job's done, log actual costs in the <b>Actual Costs</b> card to see your real profit variance against what you quoted &mdash; this stays internal and never appears on the client-facing PDF.</p>
+                <div class="help-callout help-callout-note">
+                    Quote Builder is a <b>Premier</b> feature.
+                </div>
+            </article>
+
             <article class="help-article" id="fab-basics">
                 <div class="help-article-eyebrow">Find a Builder</div>
                 <h2>Generating a Quote Request</h2>
@@ -851,6 +933,42 @@
                     <li>Add any extra notes specific to your project.</li>
                     <li>Generate a PDF of your shop layout to attach, then use the pre-filled email draft to send your request &mdash; note that email links can't attach files automatically, so you'll need to attach the downloaded PDF yourself before sending.</li>
                 </ol>
+            </article>
+
+            <article class="help-article" id="jigs-calculators">
+                <div class="help-article-eyebrow">Shop Jigs</div>
+                <h2>Free Calculators &amp; Charts</h2>
+                <p>The Shop Jigs hub links out to a set of standalone reference tools &mdash; each its own page, free to use, no sign-in required:</p>
+                <ul>
+                    <li><b>Fraction Converter</b> &mdash; mm, decimal inches, and woodworking fractions down to 1/64", with rounding error shown.</li>
+                    <li><b>Add &amp; Subtract Fractions</b> &mdash; stack whole-inch-plus-fraction measurements with a running total.</li>
+                    <li><b>Board Foot Calculator</b> &mdash; thickness &times; width &times; length &divide; 144, per-board and total board feet plus total cost.</li>
+                    <li><b>Polygon Angle Chart</b> &mdash; interior/outside/miter angles for triangles through dodecagons, plus custom side counts.</li>
+                    <li><b>Wood Movement Calculator</b> &mdash; estimated board width expansion/shrinkage by humidity and species.</li>
+                    <li><b>Speeds &amp; Feeds</b> &mdash; max router bit RPM by diameter, and surface-speed RPM for drilling/turning.</li>
+                    <li><b>Sharpening Angle Chart</b> &mdash; bevel angles for chisels, plane irons, turning tools, and knives, with a micro-bevel helper.</li>
+                </ul>
+            </article>
+
+            <article class="help-article" id="jigs-part-finder">
+                <h2>Part Finder</h2>
+                <p>Can't identify a mystery screw, bracket, or fastener? Photograph it and let Kerph take a guess.</p>
+                <ol>
+                    <li>Open Part Finder from the Shop Jigs hub and click <b>Take or Choose a Photo</b>.</li>
+                    <li>Click <b>Identify This Part</b>.</li>
+                    <li>You'll get a best-guess name, a confidence badge (high/medium/low), a short description, likely specs, and a <b>Where to buy a match</b> row of retailer search links (Amazon, Home Depot, McMaster-Carr, Grainger, Fastenal).</li>
+                </ol>
+                <div class="help-callout help-callout-note">
+                    Part Finder deliberately doesn't claim an exact brand/SKU match &mdash; hardware is often visually near-identical across brands and sizes. It gives an honest confidence level and retailer <em>search</em> links rather than a specific product page, and says so plainly when it truly can't tell.
+                </div>
+                <p>Part Finder requires <b>Pro or Premier</b> &mdash; Pro gets 3 lookups per rolling 24-hour period, Premier gets 20.</p>
+            </article>
+
+            <article class="help-article" id="workspace-basics">
+                <div class="help-article-eyebrow">My Workspace</div>
+                <h2>Your Workspace at a Glance</h2>
+                <p>My Workspace is your single dashboard across everything you've built in Kerph: My Shop, My Tools, Wishlist, My Projects, My Quotes, My Portfolio, and My Community Activity.</p>
+                <p>The home page also shows a compact snapshot of it in the sidebar &mdash; owned/wishlist/layout counts, your current shop's dimensions and item count with a quick <b>Continue editing</b> link, and (on Premier) an Insurance Inventory Report button. Click <b>Go to My Workspace</b> from that panel, or reach it directly, for the full picture.</p>
             </article>
 
             <article class="help-article" id="comm-showcase">
@@ -868,6 +986,21 @@
                 </div>
             </article>
 
+            <article class="help-article" id="comm-portfolio">
+                <h2>Portfolio</h2>
+                <p>Where Shop Showcase is a social feed, Portfolio is your durable body of work &mdash; a shareable page of projects that stays put. Every Showcase post links to its author's Portfolio.</p>
+                <ol>
+                    <li>Click <b>+ New Project</b>, add a title, description, materials, finish, and an optional "Built From This Plan" credit.</li>
+                    <li>Upload one Cover Photo and up to 15 gallery photos.</li>
+                    <li>Leave <b>Public</b> checked to include it on your shareable Portfolio link, or uncheck it to keep that project private &mdash; visible only to you.</li>
+                    <li>From a public project's detail view, use the <b>Share this project</b> row (copy-link, Facebook, X, Pinterest, Reddit, email) to send it out directly.</li>
+                </ol>
+                <p>From Project Designer, generate a share link and open the 3D Preview tab, then use <b>Create Portfolio Entry from This</b> to spin a finished project straight into a new Portfolio piece, cover photo included.</p>
+                <div class="help-callout help-callout-note">
+                    Portfolio requires <b>Pro or Premier</b> to create and manage &mdash; but anyone can browse a public Portfolio page via its shared link with no account or plan needed.
+                </div>
+            </article>
+
             <article class="help-article" id="comm-reviews">
                 <h2>Cool Tool Reviews</h2>
                 <p>Real, first-hand reviews from other woodworkers and shop owners &mdash; searchable by tool name and filterable by category.</p>
@@ -876,6 +1009,17 @@
                     <li>Mark other users' reviews as <b>Helpful</b> to surface the most useful ones; sort by newest, highest rated, or most helpful.</li>
                     <li>Your posted name on a review is snapshotted at the time you post it, so a later username change won't rewrite old reviews.</li>
                 </ul>
+            </article>
+
+            <article class="help-article" id="tips-basics">
+                <div class="help-article-eyebrow">Garage Tips</div>
+                <h2>Browsing Articles</h2>
+                <p>Garage Tips is Kerph's library of shop technique, tool care, jigs, and mistakes-you-only-learn-once &mdash; free to read, no sign-in required.</p>
+                <ul>
+                    <li>Use the search box or the category filter (Dust Collection, Finishing, Tool Maintenance, Shop Organization, Jigs &amp; Fixtures, Safety, Sharpening, Wood Selection, Beginner Basics, Other) to find something specific.</li>
+                    <li>Click any card to open the full article &mdash; cover image or embedded video, tags, and a share row (native share, copy-link, Facebook, X, Pinterest, Reddit, email, or save as PDF).</li>
+                </ul>
+                <p>Articles are written by the Kerph team, not user-submitted &mdash; if you've got a tip worth sharing, send it our way through <a href="#contact-support">Contact Support</a>.</p>
             </article>
 
             <article class="help-article" id="billing-overview">
