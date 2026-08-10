@@ -529,21 +529,12 @@
         <div class="finder-card concierge-card" id="conciergeCard">
             <div class="concierge-header">
                 <div>
-                    <div class="concierge-eyebrow">Premier</div>
                     <div class="concierge-title">Draft your builder quote request</div>
                 </div>
-                <span class="premier-badge">Premier</span>
             </div>
 
-            <div class="concierge-locked-note" id="conciergeLockedNote">
-                Premier members can generate a polished, ready-to-send quote request pulled straight from their actual shop layout — no retyping the same project description for every builder you contact.
-                <div style="margin-top:10px;">
-                    <button type="button" class="mini-btn modal-primary-btn" id="conciergeUpgradeBtn">Switch to Premier (preview)</button>
-                </div>
-            </div>
-
-            <div id="conciergeForm" style="display:none;">
-                <p class="concierge-desc">Fill this out once — we'll draft a professional inquiry, pre-filled with your actual shop dimensions where available, that you can send to any builder you find above.</p>
+            <div id="conciergeForm">
+                <p class="concierge-desc">Fill this out once to generate a project summary, pre-filled with your actual shop dimensions where available, that you can copy or email to any builder you find above.</p>
 
                 <div class="header-field" style="margin-bottom:10px;">
                     <label class="header-field-label" for="conciergeProjectType">Project</label>
@@ -992,22 +983,13 @@
             });
         }
 
-        /* ---------- CONCIERGE QUOTE REQUEST (Premier) ----------
+        /* ---------- BUILDER QUOTE REQUEST DRAFT ----------
            No real vetted-builder database or outbound email service exists yet (see the
            why-note above — this page deliberately doesn't host its own directory), so this
            can't literally "auto-send to 3 vetted builders" without either fabricating builder
            contacts or building real backend infrastructure. What it can honestly do today:
            draft the inquiry once — pulling real data from the user's own shop layout — so they
            aren't retyping the same project description into every builder's contact form. */
-        function isPremium() { return getPlan() === 'premier'; }
-
-        function applyPlanGating() {
-            const locked = !isPremium();
-            const lockedNote = document.getElementById('conciergeLockedNote');
-            const form = document.getElementById('conciergeForm');
-            if (lockedNote) lockedNote.style.display = locked ? 'block' : 'none';
-            if (form) form.style.display = locked ? 'none' : 'block';
-        }
 
         // Reads the same shared kerphCurrentLayout key the Workshop Layout Planner autosaves
         // to, so the drafted request can reference the user's real planned shop size instead
@@ -1097,18 +1079,6 @@
         }
 
         function initConcierge() {
-            const upgradeBtn = document.getElementById('conciergeUpgradeBtn');
-            if (upgradeBtn) {
-                upgradeBtn.addEventListener('click', () => {
-                    localStorage.setItem(PLAN_KEY, 'premier');
-                    const headerSelect = document.getElementById('planSelector');
-                    if (headerSelect) headerSelect.value = 'premier';
-                    applyPlanGating();
-                    renderAccountBadge();
-                    showToast('Switched to the Premier plan (preview).');
-                });
-            }
-
             const output = document.getElementById('conciergeOutput');
             const outputText = document.getElementById('conciergeOutputText');
 
@@ -1155,8 +1125,6 @@
             });
 
             pdfBtn.addEventListener('click', generateShopLayoutSummaryPDF);
-
-            applyPlanGating();
         }
 
         document.getElementById('pageNavSelect').addEventListener('change', (e) => { window.location.href = e.target.value; });
