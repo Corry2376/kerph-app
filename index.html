@@ -2539,13 +2539,20 @@
             wishBtn.addEventListener('click', () => setToolStatus(tool.name, tool.category, 'wishlist'));
             actions.appendChild(wishBtn);
 
+            const curatedBuyUrl = (window.TOOL_SPECS && window.TOOL_SPECS[tool.name] && window.TOOL_SPECS[tool.name].buyUrl) || null;
             const shopLink = document.createElement('a');
             shopLink.className = 'maintenance-mini-btn';
-            shopLink.href = shopSearchUrl(tool.name);
             shopLink.target = '_blank';
             shopLink.rel = 'noopener noreferrer';
-            shopLink.textContent = '🔍 Shop';
-            shopLink.title = `Search for "${tool.name}" (opens in a new tab)`;
+            if (curatedBuyUrl) {
+                shopLink.href = curatedBuyUrl;
+                shopLink.textContent = '🔗 Buy';
+                shopLink.title = `Go to this exact model's product page (opens in a new tab)`;
+            } else {
+                shopLink.href = shopSearchUrl(tool.name);
+                shopLink.textContent = '🔍 Shop';
+                shopLink.title = `Search for "${tool.name}" (opens in a new tab)`;
+            }
             actions.appendChild(shopLink);
 
             info.appendChild(actions);
@@ -2616,8 +2623,9 @@
                     <div class="preview-spec-row"><span class="preview-spec-label">Weight</span><span class="preview-spec-value">${escapeHtml(specs.weight || '—')}</span></div>
                     <div class="preview-spec-note">Specs are typical/representative — verify exact figures for your model before purchase.</div>
                     <div class="preview-buy-section">
-                        ${specs.buyUrl ? `<a href="${escapeHtml(specs.buyUrl)}" target="_blank" rel="noopener noreferrer" class="preview-buy-link">Check current price &rarr;</a>` : ''}
-                        <a href="${escapeHtml(shopSearchUrl(title))}" target="_blank" rel="noopener noreferrer" class="preview-buy-link">Shop on Amazon &rarr;</a>
+                        ${specs.buyUrl
+                            ? `<a href="${escapeHtml(specs.buyUrl)}" target="_blank" rel="noopener noreferrer" class="preview-buy-link">Check current price &rarr;</a>`
+                            : `<a href="${escapeHtml(shopSearchUrl(title))}" target="_blank" rel="noopener noreferrer" class="preview-buy-link">Shop on Amazon &rarr;</a>`}
                     </div>
                 `;
 
@@ -2698,13 +2706,20 @@
             wishBtn.addEventListener('click', () => setToolStatus(tool.name, tool.category, 'wishlist', extraFields));
             actions.appendChild(wishBtn);
 
+            const curatedBuyUrl = (window.TOOL_SPECS && window.TOOL_SPECS[tool.name] && window.TOOL_SPECS[tool.name].buyUrl) || null;
             const shopLink = document.createElement('a');
             shopLink.className = 'maintenance-mini-btn';
-            shopLink.href = shopSearchUrl(tool.name);
             shopLink.target = '_blank';
             shopLink.rel = 'noopener noreferrer';
-            shopLink.textContent = '🔍 Shop';
-            shopLink.title = `Search for "${tool.name}" (opens in a new tab)`;
+            if (curatedBuyUrl) {
+                shopLink.href = curatedBuyUrl;
+                shopLink.textContent = '🔗 Buy';
+                shopLink.title = `Go to this exact model's product page (opens in a new tab)`;
+            } else {
+                shopLink.href = shopSearchUrl(tool.name);
+                shopLink.textContent = '🔍 Shop';
+                shopLink.title = `Search for "${tool.name}" (opens in a new tab)`;
+            }
             actions.appendChild(shopLink);
 
             info.appendChild(actions);

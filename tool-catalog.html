@@ -1077,8 +1077,7 @@
             const specLine = m.specs ? [m.specs.power, m.specs.voltage].filter(Boolean).join(' &middot; ') : '';
             const buyLink = m.specs && m.specs.buyUrl
                 ? `<a href="${escapeHtml(m.specs.buyUrl)}" target="_blank" rel="noopener" class="review-model-card-buy" onclick="event.stopPropagation()">Buy &rarr;</a>`
-                : '';
-            const shopLink = `<a href="${escapeHtml(shopSearchUrl(m.name))}" target="_blank" rel="noopener" class="review-model-card-buy" onclick="event.stopPropagation()">Shop on Amazon &rarr;</a>`;
+                : `<a href="${escapeHtml(shopSearchUrl(m.name))}" target="_blank" rel="noopener" class="review-model-card-buy" onclick="event.stopPropagation()">Shop on Amazon &rarr;</a>`;
             const photo = m.specs && m.specs.image
                 ? `<img class="review-model-card-photo" src="${escapeHtml(m.specs.image)}" alt="" loading="lazy" onerror="this.remove()">`
                 : '';
@@ -1091,7 +1090,7 @@
                     <div class="review-model-card-meta">${m.count
                         ? `<span class="review-model-card-stars">${starsHtml(Math.round(avg))}</span> ${m.count} review${m.count === 1 ? '' : 's'}`
                         : '<span class="review-model-card-none">No reviews yet</span>'}</div>
-                    ${buyLink}${shopLink}
+                    ${buyLink}
                 </div>
             `;
         }

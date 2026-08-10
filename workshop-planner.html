@@ -11440,8 +11440,9 @@
                     <div class="preview-spec-row"><span class="preview-spec-label">Weight</span><span class="preview-spec-value">${escapeHtml(specs.weight || '—')}</span></div>
                     <div class="preview-spec-note">Specs are typical/representative — verify exact figures for your model before purchase.</div>
                     <div class="preview-buy-section">
-                        ${specs.buyUrl ? `<a href="${escapeHtml(specs.buyUrl)}" target="_blank" rel="noopener noreferrer" class="preview-buy-link">Check current price &rarr;</a>` : ''}
-                        <a href="${escapeHtml(shopSearchUrl(title))}" target="_blank" rel="noopener noreferrer" class="preview-buy-link">Shop on Amazon &rarr;</a>
+                        ${specs.buyUrl
+                            ? `<a href="${escapeHtml(specs.buyUrl)}" target="_blank" rel="noopener noreferrer" class="preview-buy-link">Check current price &rarr;</a>`
+                            : `<a href="${escapeHtml(shopSearchUrl(title))}" target="_blank" rel="noopener noreferrer" class="preview-buy-link">Shop on Amazon &rarr;</a>`}
                     </div>
                 `;
 
