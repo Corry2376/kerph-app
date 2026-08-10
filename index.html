@@ -129,7 +129,7 @@
             gap: 8px;
             padding: 5px 14px 5px 5px;
             border: 3px solid #cbd5e1;
-            border-radius: 999px;
+            border-radius: 6px;
             background-color: #ffffff;
             cursor: pointer;
             transition: background-color 0.15s ease;
@@ -1355,19 +1355,161 @@
             </div>
         </details>
 
-        <details class="tool-category" id="floorToolsCategory">
+        <div class="tool-search-wrap">
+            <input type="text" class="input-box" id="floorToolSearchInput" placeholder="&#128269; Search tools...">
+        </div>
+        <div class="empty-hint" id="floorToolSearchEmptyHint" style="display:none;">No tools match your search.</div>
+
+        <!-- Same catalog, same individual per-category dropdowns, and same visual structure as
+             the Workshop Layout Planner's sidebar (see CATALOG_CATEGORY_ORDER below) -- this is a
+             browse/mark-owned-or-wishlist view of that identical catalog, not a separate one.
+             Placing a tool on an actual shop floor layout still only happens over there. -->
+        <details class="tool-category" data-clearance-category="Table Saws">
             <summary class="category-header">
-                <span class="category-header-left">Floor Tools <span class="category-count" id="floorToolsCount">0</span></span>
+                <span class="category-header-left">Table Saws <span class="category-count">0</span></span>
                 <span class="category-chevron">&#9656;</span>
             </summary>
-            <div class="category-items">
-                <div class="empty-hint">The same machinery catalog as the Workshop Layout Planner &mdash; browse or search below to mark tools owned or wishlist them from here too. Placing them on your shop floor still happens in the Workshop Layout Planner.</div>
-                <div class="tool-search-wrap">
-                    <input type="text" class="input-box" id="floorToolSearchInput" placeholder="&#128269; Search floor tools...">
-                </div>
-                <div class="empty-hint" id="floorToolSearchEmptyHint" style="display:none;">No tools match your search.</div>
-                <div id="floorToolSearchResults"></div>
-            </div>
+            <div class="category-items"></div>
+        </details>
+        <details class="tool-category" data-clearance-category="Bandsaws">
+            <summary class="category-header">
+                <span class="category-header-left">Bandsaws <span class="category-count">0</span></span>
+                <span class="category-chevron">&#9656;</span>
+            </summary>
+            <div class="category-items"></div>
+        </details>
+        <details class="tool-category" data-clearance-category="Jointers &amp; Planers">
+            <summary class="category-header">
+                <span class="category-header-left">Jointers &amp; Planers <span class="category-count">0</span></span>
+                <span class="category-chevron">&#9656;</span>
+            </summary>
+            <div class="category-items"></div>
+        </details>
+        <details class="tool-category" data-clearance-category="Sanding">
+            <summary class="category-header">
+                <span class="category-header-left">Sanding <span class="category-count">0</span></span>
+                <span class="category-chevron">&#9656;</span>
+            </summary>
+            <div class="category-items"></div>
+        </details>
+        <details class="tool-category" data-clearance-category="Drilling &amp; Boring">
+            <summary class="category-header">
+                <span class="category-header-left">Drilling &amp; Boring <span class="category-count">0</span></span>
+                <span class="category-chevron">&#9656;</span>
+            </summary>
+            <div class="category-items"></div>
+        </details>
+        <details class="tool-category" data-clearance-category="Turning">
+            <summary class="category-header">
+                <span class="category-header-left">Turning <span class="category-count">0</span></span>
+                <span class="category-chevron">&#9656;</span>
+            </summary>
+            <div class="category-items"></div>
+        </details>
+        <details class="tool-category" data-clearance-category="Routing">
+            <summary class="category-header">
+                <span class="category-header-left">Routing <span class="category-count">0</span></span>
+                <span class="category-chevron">&#9656;</span>
+            </summary>
+            <div class="category-items"></div>
+        </details>
+        <details class="tool-category" data-clearance-category="Crosscut &amp; Miter">
+            <summary class="category-header">
+                <span class="category-header-left">Crosscut &amp; Miter <span class="category-count">0</span></span>
+                <span class="category-chevron">&#9656;</span>
+            </summary>
+            <div class="category-items"></div>
+        </details>
+        <details class="tool-category" data-clearance-category="Dust Collection">
+            <summary class="category-header">
+                <span class="category-header-left">Dust Collection <span class="category-count">0</span></span>
+                <span class="category-chevron">&#9656;</span>
+            </summary>
+            <div class="category-items"></div>
+        </details>
+        <details class="tool-category" data-clearance-category="Lighting">
+            <summary class="category-header">
+                <span class="category-header-left">Lighting <span class="category-count">0</span></span>
+                <span class="category-chevron">&#9656;</span>
+            </summary>
+            <div class="category-items"></div>
+        </details>
+        <details class="tool-category" data-clearance-category="Plumbing">
+            <summary class="category-header">
+                <span class="category-header-left">Plumbing <span class="category-count">0</span></span>
+                <span class="category-chevron">&#9656;</span>
+            </summary>
+            <div class="category-items"></div>
+        </details>
+        <details class="tool-category" data-clearance-category="CNC &amp; Digital Fab">
+            <summary class="category-header">
+                <span class="category-header-left">CNC &amp; Digital Fab <span class="category-count">0</span></span>
+                <span class="category-chevron">&#9656;</span>
+            </summary>
+            <div class="category-items"></div>
+        </details>
+        <details class="tool-category" data-clearance-category="Mini-Splits">
+            <summary class="category-header">
+                <span class="category-header-left">Mini-Splits <span class="category-count">0</span></span>
+                <span class="category-chevron">&#9656;</span>
+            </summary>
+            <div class="category-items"></div>
+        </details>
+        <details class="tool-category" data-clearance-category="Vehicle Lifts">
+            <summary class="category-header">
+                <span class="category-header-left">Vehicle Lifts <span class="category-count">0</span></span>
+                <span class="category-chevron">&#9656;</span>
+            </summary>
+            <div class="category-items"></div>
+        </details>
+        <details class="tool-category" data-clearance-category="Welding">
+            <summary class="category-header">
+                <span class="category-header-left">Welding <span class="category-count">0</span></span>
+                <span class="category-chevron">&#9656;</span>
+            </summary>
+            <div class="category-items"></div>
+        </details>
+        <details class="tool-category" data-clearance-category="Air Compressors &amp; Shop Air">
+            <summary class="category-header">
+                <span class="category-header-left">Air Compressors &amp; Shop Air <span class="category-count">0</span></span>
+                <span class="category-chevron">&#9656;</span>
+            </summary>
+            <div class="category-items"></div>
+        </details>
+        <details class="tool-category" data-clearance-category="Jacks &amp; Lifting Equipment">
+            <summary class="category-header">
+                <span class="category-header-left">Jacks &amp; Lifting Equipment <span class="category-count">0</span></span>
+                <span class="category-chevron">&#9656;</span>
+            </summary>
+            <div class="category-items"></div>
+        </details>
+        <details class="tool-category" data-clearance-category="Diagnostic &amp; Specialty Equipment">
+            <summary class="category-header">
+                <span class="category-header-left">Diagnostic &amp; Specialty Equipment <span class="category-count">0</span></span>
+                <span class="category-chevron">&#9656;</span>
+            </summary>
+            <div class="category-items"></div>
+        </details>
+        <details class="tool-category" data-clearance-category="Mechanic Tool Storage">
+            <summary class="category-header">
+                <span class="category-header-left">Mechanic Tool Storage <span class="category-count">0</span></span>
+                <span class="category-chevron">&#9656;</span>
+            </summary>
+            <div class="category-items"></div>
+        </details>
+        <details class="tool-category" data-clearance-category="Assembly &amp; Storage">
+            <summary class="category-header">
+                <span class="category-header-left">Assembly &amp; Storage <span class="category-count">0</span></span>
+                <span class="category-chevron">&#9656;</span>
+            </summary>
+            <div class="category-items"></div>
+        </details>
+        <details class="tool-category" data-clearance-category="Tool Storage">
+            <summary class="category-header">
+                <span class="category-header-left">Tool Storage <span class="category-count">0</span></span>
+                <span class="category-chevron">&#9656;</span>
+            </summary>
+            <div class="category-items"></div>
         </details>
 
         <details class="tool-category" id="smallPowerToolsCategory">
@@ -2361,6 +2503,7 @@
             }
             saveToolStatuses(current);
             renderToolLists();
+            if (typeof renderCatalogCategories === 'function') renderCatalogCategories();
         }
 
         function buildToolResultCard(tool) {
@@ -2502,38 +2645,69 @@
             return card;
         }
 
-        // Same catalog/categories as the Workshop Layout Planner's draggable sidebar — browsable
-        // and searchable here too, so marking a table saw owned doesn't require switching pages.
-        // Placing it on an actual shop floor layout still only happens over there.
-        function renderFloorToolSection() {
-            const input = document.getElementById('floorToolSearchInput');
-            const resultsEl = document.getElementById('floorToolSearchResults');
-            const emptyHint = document.getElementById('floorToolSearchEmptyHint');
-            const query = input.value.trim().toLowerCase();
-            resultsEl.innerHTML = '';
+        // Same catalog, same individual per-category dropdowns, as the Workshop Layout
+        // Planner's sidebar (data-clearance-category values below match its <details> blocks
+        // 1:1) — browsable and searchable here too, so marking a table saw owned doesn't
+        // require switching pages. Placing it on an actual shop floor layout still only
+        // happens over there, so cards here are click-to-mark, not draggable.
+        const CATALOG_CATEGORY_ORDER = [
+            'Table Saws', 'Bandsaws', 'Jointers & Planers', 'Sanding', 'Drilling & Boring',
+            'Turning', 'Routing', 'Crosscut & Miter', 'Dust Collection', 'Lighting', 'Plumbing',
+            'CNC & Digital Fab', 'Mini-Splits', 'Vehicle Lifts', 'Welding',
+            'Air Compressors & Shop Air', 'Jacks & Lifting Equipment',
+            'Diagnostic & Specialty Equipment', 'Mechanic Tool Storage', 'Assembly & Storage',
+            'Tool Storage'
+        ];
 
-            const matches = query
-                ? FLOOR_TOOLS.filter(t => t.name.toLowerCase().includes(query) || t.category.toLowerCase().includes(query))
-                : FLOOR_TOOLS;
-
-            const groups = {};
-            matches.forEach(tool => {
-                if (!groups[tool.category]) groups[tool.category] = [];
-                groups[tool.category].push(tool);
+        // Rebuilds every category's card list from the live tool-status store (so owned/
+        // wishlist button states never go stale) without touching the <details> elements
+        // themselves, so a user's open/closed state survives every refresh.
+        function renderCatalogCategories() {
+            const grouped = {};
+            FLOOR_TOOLS.forEach(tool => {
+                if (!grouped[tool.category]) grouped[tool.category] = [];
+                grouped[tool.category].push(tool);
             });
-            Object.keys(groups).forEach(category => {
-                const heading = document.createElement('div');
-                heading.className = 'tool-search-category-heading';
-                heading.textContent = category;
-                resultsEl.appendChild(heading);
-                groups[category].forEach(tool => resultsEl.appendChild(buildFloorToolResultCard(tool)));
+            CATALOG_CATEGORY_ORDER.forEach(category => {
+                const details = document.querySelector(`#sidebar-panel .tool-category[data-clearance-category="${CSS.escape(category)}"]`);
+                if (!details) return;
+                const items = grouped[category] || [];
+                details.querySelector('.category-count').textContent = items.length;
+                const itemsEl = details.querySelector('.category-items');
+                itemsEl.innerHTML = '';
+                items.forEach(tool => itemsEl.appendChild(buildFloorToolResultCard(tool)));
             });
-            emptyHint.style.display = matches.length ? 'none' : 'block';
         }
 
+        // Same filter behavior as the Workshop Layout Planner's #toolSearchInput: hides
+        // non-matching cards, hides categories with zero matches, and auto-opens any category
+        // that has a match while a query is active.
         function initFloorToolSearch() {
-            document.getElementById('floorToolsCount').textContent = FLOOR_TOOLS.length;
-            document.getElementById('floorToolSearchInput').addEventListener('input', renderFloorToolSection);
+            renderCatalogCategories();
+            const input = document.getElementById('floorToolSearchInput');
+            const emptyHint = document.getElementById('floorToolSearchEmptyHint');
+
+            input.addEventListener('input', () => {
+                const query = input.value.trim().toLowerCase();
+                let anyVisibleAtAll = false;
+
+                CATALOG_CATEGORY_ORDER.forEach(category => {
+                    const details = document.querySelector(`#sidebar-panel .tool-category[data-clearance-category="${CSS.escape(category)}"]`);
+                    if (!details) return;
+                    let categoryHasMatch = false;
+                    details.querySelectorAll('.tool-box-item').forEach(item => {
+                        const nameText = (item.querySelector('.tool-title')?.textContent || '').toLowerCase();
+                        const isMatch = !query || nameText.includes(query) || category.toLowerCase().includes(query);
+                        item.style.display = isMatch ? '' : 'none';
+                        if (isMatch) categoryHasMatch = true;
+                    });
+                    details.style.display = (!query || categoryHasMatch) ? '' : 'none';
+                    if (query && categoryHasMatch) details.open = true;
+                    if (categoryHasMatch) anyVisibleAtAll = true;
+                });
+
+                emptyHint.style.display = (query && !anyVisibleAtAll) ? 'block' : 'none';
+            });
         }
 
         /* ---------- INSURANCE INVENTORY REPORT (Premier) ----------
@@ -2850,6 +3024,7 @@
             kerphLoadToolStatus().then(({ data }) => {
                 cachedToolStatuses = data || {};
                 renderToolLists();
+                renderCatalogCategories();
                 renderHomeSnapshot();
             });
             kerphLoadSavedLayouts().then(({ data }) => { cachedSavedLayouts = data || []; });
@@ -2919,6 +3094,7 @@
             }
             cachedToolStatuses = (await kerphLoadToolStatus()).data || {};
             renderToolLists();
+            renderCatalogCategories();
             renderHomeSnapshot();
         });
     </script>
