@@ -477,6 +477,7 @@
                 <a href="#" id="kerphFooterContactLink" style="color:#6b7280; font-weight:600; text-decoration:none;">Contact Us</a>
             </div>
             <div style="margin-top:6px;">&copy; ${new Date().getFullYear()} Kerph</div>
+            <div style="margin-top:6px; max-width:480px; margin-left:auto; margin-right:auto;">As an Amazon Associate, Kerph earns from qualifying purchases.</div>
         `;
         document.body.appendChild(el);
         el.querySelector('#kerphFooterContactLink').addEventListener('click', (e) => {

@@ -2480,10 +2480,11 @@
         }
 
         // A genuine, working link (a retailer search for the exact tool name) rather than a fake
-        // "Buy Now" button — there's no real affiliate/product catalog behind this yet, and a
-        // button that looks like it purchases something but doesn't would be actively misleading.
+        // "Buy Now" button. Carries our Amazon Associates tag — disclosed sitewide via the
+        // footer (kerphInjectFooter in supabase-client.js) and in terms.html section 7.
+        const AMAZON_ASSOCIATE_TAG = 'kerphplans-20';
         function shopSearchUrl(name) {
-            return `https://www.amazon.com/s?k=${encodeURIComponent(name)}`;
+            return `https://www.amazon.com/s?k=${encodeURIComponent(name)}&tag=${AMAZON_ASSOCIATE_TAG}`;
         }
 
         function setToolStatus(name, category, status, extraFields) {

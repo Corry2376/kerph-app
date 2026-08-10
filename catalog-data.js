@@ -127,7 +127,7 @@
         'Metabo HPT C12RSH2S': { power: '15A', voltage: '120V', weight: '~109 lbs (saw + stand)', buyUrl: 'https://www.metabo-hpt.com/products/product/12-sliding-dual-compound-miter-saw-with-laser-marker-c12rsh2s-metabo-hpt' },
         'Metabo HPT C3612DRAQ4': { power: '36V MultiVolt (cordless)', voltage: '36V', weight: '~104 lbs (saw + stand)', buyUrl: 'https://www.metabo-hpt.com/products/product/36v-multivolt--12--dual-bevel-sliding-miter-saw-w--torque-boost-technology-(tool-body-only)---metabo-hpt-c3612draq4' },
         'Makita LS1219L': { power: '15A', voltage: '120V', weight: '~100 lbs (saw + stand)', buyUrl: 'https://www.coastaltool.com/products/makita-ls1219l-12-miter-saw' },
-        'Makita XSL08PT': { power: '36V (18Vx2, cordless)', voltage: '36V', weight: '~104 lbs (saw + stand)', buyUrl: 'https://www.amazon.com/Makita-XSL08PT-Lithium-Ion-Brushless-Dual-Bevel/dp/B07RJGM39V' },
+        'Makita XSL08PT': { power: '36V (18Vx2, cordless)', voltage: '36V', weight: '~104 lbs (saw + stand)', buyUrl: 'https://www.amazon.com/Makita-XSL08PT-Lithium-Ion-Brushless-Dual-Bevel/dp/B07RJGM39V?tag=kerphplans-20' },
         'DeWalt DHS790AT2': { power: '60V Max FlexVolt (cordless)', voltage: '60V', weight: '~123 lbs (saw + stand)', buyUrl: 'https://www.coastaltool.com/products/dewalt-dhs790at2-12-double-bevel-sliding-compound-flexvolt-miter-saw-kit' },
         'DeWalt DCS781X1': { power: '60V Max (cordless)', voltage: '60V', weight: '~118 lbs (saw + stand)', buyUrl: 'https://www.dewalt.com/en-us/product/dcs781x1/dewalt-60v-max-brushless-cordless-12-double-bevel-sliding-miter-saw-kit' },
         'Bosch GCM18V-12GDCN': { power: '18V (cordless)', voltage: '18V', weight: '~136 lbs (saw + stand)', buyUrl: 'https://www.boschtools.com/us/en/products/gcm18v-12gdcn-0601B43014' },
@@ -320,7 +320,7 @@
         'WEN 6508': { power: '9A', voltage: '120V', buyUrl: 'https://wenproducts.com/products/wen-6508-6-x-48-in-belt-and-9-in-disc-sander-with-stand' },
         'WEN 65911': { power: '10.5A', voltage: '120V', buyUrl: 'https://wenproducts.com/products/65911-10-1-2-amp-10-inch-drum-sander-with-rolling-stand-and-variable-speed-conveyor' },
         'WEN 6524': { power: '3.5A', voltage: '120V', buyUrl: 'https://wenproducts.com/products/wen-6524-oscillating-belt-and-spindle-sander' },
-        'WEN 4210': { power: '3.2A', voltage: '120V', weight: '~45 lbs', buyUrl: 'https://www.amazon.com/WEN-4210-Drill-Press-10-Inch/dp/B005UKGLAS' },
+        'WEN 4210': { power: '3.2A', voltage: '120V', weight: '~45 lbs', buyUrl: 'https://www.amazon.com/WEN-4210-Drill-Press-10-Inch/dp/B005UKGLAS?tag=kerphplans-20' },
         'Powermatic PM701': { power: '3/4 HP', voltage: '115V / 230V', weight: '~93 lbs', buyUrl: 'https://www.powermatic.com/pm701-mortiser-3-4hp-1ph-115-230v' },
         // Drilling & Boring -- deeper pass across JET, Grizzly, Shop Fox, Rikon, Delta, NOVA,
         // WEN, General Intl, Craftsman, Baileigh (2026-08-09). Wilton confirmed to sell zero
