@@ -506,7 +506,7 @@
             pointer-events: none;
             transition: opacity 0.12s ease, transform 0.12s ease;
         }
-        .tool-preview-popover.visible { opacity: 1; transform: translateY(0); }
+        .tool-preview-popover.visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
         .preview-photo {
             width: 100%;
             height: 90px;
@@ -2560,16 +2560,25 @@
             return card;
         }
 
-        // With no query, browse the full catalog grouped by category — the section itself is
-        // still collapsed by default (see the <details> in the sidebar), so this only costs
-        // space once someone actually opens it, and it's what makes the list discoverable
-        // instead of requiring you to already know a tool's exact name to find it. Typing
-        // narrows down to matches, still grouped the same way.
+        // With no query, browse the full catalog grouped by category, each group its own
+        // collapsible subcategory (same pattern as the Workshop Layout Planner's Dust
+        // Collection and Air Compressor groups) instead of one long scroll of flat headings
+        // — 125 tools across 8 categories was unusable as a single list. The outer section
+        // is still collapsed by default (see the <details> in the sidebar), so this only
+        // costs space once someone actually opens it. Typing narrows down to matches, still
+        // grouped the same way.
         function renderPowerToolSearchResults() {
             const input = document.getElementById('smallPowerToolSearchInput');
             const resultsEl = document.getElementById('smallPowerToolSearchResults');
             const emptyHint = document.getElementById('smallPowerToolSearchEmptyHint');
             const query = input.value.trim().toLowerCase();
+
+            // Rebuilt on every keystroke and every owned/wishlist toggle — without this, a
+            // subcategory the user just opened would snap shut the instant they clicked a
+            // tool's Owned/Wishlist button.
+            const previouslyOpen = new Set(
+                Array.from(resultsEl.querySelectorAll('details.tool-subcategory[open]')).map(d => d.dataset.category)
+            );
             resultsEl.innerHTML = '';
 
             const matches = query
@@ -2582,11 +2591,22 @@
                 groups[tool.category].push(tool);
             });
             Object.keys(groups).forEach(category => {
-                const heading = document.createElement('div');
-                heading.className = 'tool-search-category-heading';
-                heading.textContent = category;
-                resultsEl.appendChild(heading);
-                groups[category].forEach(tool => resultsEl.appendChild(buildToolResultCard(tool)));
+                const sub = document.createElement('details');
+                sub.className = 'tool-category tool-subcategory';
+                sub.dataset.category = category;
+                if (query || previouslyOpen.has(category)) sub.open = true;
+
+                const summary = document.createElement('summary');
+                summary.className = 'category-header';
+                summary.innerHTML = `<span class="category-header-left">${escapeHtml(category)} <span class="category-count">${groups[category].length}</span></span><span class="category-chevron">&#9656;</span>`;
+                sub.appendChild(summary);
+
+                const items = document.createElement('div');
+                items.className = 'category-items';
+                groups[category].forEach(tool => items.appendChild(buildToolResultCard(tool)));
+                sub.appendChild(items);
+
+                resultsEl.appendChild(sub);
             });
             emptyHint.style.display = matches.length ? 'none' : 'block';
         }
@@ -2600,9 +2620,21 @@
             const root = document.getElementById('sidebar-panel');
             if (!root || !popover) return;
 
+            // A short cancelable hide delay, not relatedTarget-chasing on mouseout: the gap
+            // between a triggering item and this fixed-position popover is real territory
+            // belonging to some other element (confirmed via elementFromPoint in
+            // workshop-planner.html, where this exact bug was first diagnosed and fixed —
+            // see commit b63fa62), so a real mouse crossing fires mouseout with relatedTarget
+            // pointing at that element, not the popover, and hides it before the cursor ever
+            // arrives. This works regardless of gap size or crossing angle.
+            let hideTimer = null;
+            const cancelHide = () => { clearTimeout(hideTimer); hideTimer = null; };
+            const scheduleHide = () => { cancelHide(); hideTimer = setTimeout(() => popover.classList.remove('visible'), 200); };
+
             root.addEventListener('mouseover', (e) => {
                 const item = e.target.closest('.tool-box-item');
                 if (!item || item.contains(e.relatedTarget)) return;
+                cancelHide();
 
                 const name = item.getAttribute('data-name');
                 if (!name) return;
@@ -2650,8 +2682,13 @@
             root.addEventListener('mouseout', (e) => {
                 const item = e.target.closest('.tool-box-item');
                 if (!item || item.contains(e.relatedTarget)) return;
-                popover.classList.remove('visible');
+                scheduleHide();
             });
+
+            // mouseenter/mouseleave (non-bubbling) on the popover itself: reaching it within
+            // the delay cancels the pending hide; actually leaving it re-schedules one.
+            popover.addEventListener('mouseenter', cancelHide);
+            popover.addEventListener('mouseleave', scheduleHide);
         }
 
         function initPowerToolSearch() {

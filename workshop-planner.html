@@ -9762,8 +9762,12 @@
             updateMyToolsEmptyState();
         }
 
-        // With no query, browse the full catalog grouped by category — matches the home page's
-        // Small Power Tools section exactly, so the same list is discoverable on both pages.
+        // With no query, browse the full catalog grouped by category, each group its own
+        // collapsible subcategory (same pattern as Dust Collection's 4"/6" groups and Air
+        // Compressors' Mobile/Floor split) instead of one long scroll of flat headings —
+        // 125 tools across 8 categories was unusable as a single list. Matches the home
+        // page's Small Power Tools section exactly, so the same list is discoverable on
+        // both pages.
         function renderPowerToolSection() {
             const input = document.getElementById('smallPowerToolSearchInput');
             const resultsEl = document.getElementById('smallPowerToolSearchResults');
@@ -9771,6 +9775,14 @@
             if (!input || !resultsEl) return;
             const query = input.value.trim().toLowerCase();
             const statuses = loadToolStatuses();
+
+            // This whole list is torn down and rebuilt on every keystroke and every owned/
+            // wishlist toggle (see the comment above initToolPreviewPopovers) — without this,
+            // a subcategory the user just opened would snap shut the instant they clicked a
+            // tool's Owned/Wishlist button.
+            const previouslyOpen = new Set(
+                Array.from(resultsEl.querySelectorAll('details.tool-subcategory[open]')).map(d => d.dataset.category)
+            );
             resultsEl.innerHTML = '';
 
             const matches = query
@@ -9783,11 +9795,24 @@
                 groups[tool.category].push(tool);
             });
             Object.keys(groups).forEach(category => {
-                const heading = document.createElement('div');
-                heading.className = 'tool-search-category-heading';
-                heading.textContent = category;
-                resultsEl.appendChild(heading);
-                groups[category].forEach(tool => resultsEl.appendChild(buildPowerToolCard(tool, statuses)));
+                const sub = document.createElement('details');
+                sub.className = 'tool-category tool-subcategory';
+                sub.dataset.category = category;
+                // Actively searching should surface matches immediately rather than making
+                // the user click into every category that happens to match.
+                if (query || previouslyOpen.has(category)) sub.open = true;
+
+                const summary = document.createElement('summary');
+                summary.className = 'category-header';
+                summary.innerHTML = `<span class="category-header-left">${escapeHtml(category)} <span class="category-count">${groups[category].length}</span></span><span class="category-chevron">&#9656;</span>`;
+                sub.appendChild(summary);
+
+                const items = document.createElement('div');
+                items.className = 'category-items';
+                groups[category].forEach(tool => items.appendChild(buildPowerToolCard(tool, statuses)));
+                sub.appendChild(items);
+
+                resultsEl.appendChild(sub);
             });
             emptyHint.style.display = matches.length ? 'none' : 'block';
             document.getElementById('smallPowerToolsCount').textContent = SMALL_TOOLS.length;
