@@ -2212,6 +2212,7 @@
             text-decoration: none;
         }
         .preview-buy-link:hover { text-decoration: underline; }
+        .preview-buy-link + .preview-buy-link { margin-top: 4px; }
 
         .print-only-header { display: none; }
         .print-watermark { display: none; }
@@ -11442,7 +11443,10 @@
                         <div class="preview-spec-row"><span class="preview-spec-label">Voltage</span><span class="preview-spec-value">${escapeHtml(specs.voltage || '—')}</span></div>
                         <div class="preview-spec-row"><span class="preview-spec-label">Weight</span><span class="preview-spec-value">${escapeHtml(specs.weight || '—')}</span></div>
                         <div class="preview-spec-note">Specs are typical/representative — verify exact figures for your model before purchase.</div>
-                        <div class="preview-buy-section">${specs.buyUrl ? `<a href="${escapeHtml(specs.buyUrl)}" target="_blank" rel="noopener noreferrer" class="preview-buy-link">Check current price &rarr;</a>` : 'Pricing &amp; buy links coming soon'}</div>
+                        <div class="preview-buy-section">
+                            ${specs.buyUrl ? `<a href="${escapeHtml(specs.buyUrl)}" target="_blank" rel="noopener noreferrer" class="preview-buy-link">Check current price &rarr;</a>` : ''}
+                            <a href="${escapeHtml(shopSearchUrl(title))}" target="_blank" rel="noopener noreferrer" class="preview-buy-link">Shop on Amazon &rarr;</a>
+                        </div>
                     `;
 
                     const rect = item.getBoundingClientRect();

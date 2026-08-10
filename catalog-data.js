@@ -559,6 +559,15 @@
         'King Canada KC-5006R': { power: '15A', voltage: '120V', weight: '~48 lbs', buyUrl: 'https://www.kingcanada.com/en/products/woodworking/table-saws/kc-5006r-10-table-saw-with-riving-knife' }
     };
 
+    // Amazon Associates tag — builds a generic, always-working "Shop on Amazon" search link for
+    // any tool name. Shared here (not duplicated per page) since index.html, workshop-planner.html,
+    // and tool-catalog.html all need it. Disclosed sitewide via the footer (kerphInjectFooter in
+    // supabase-client.js) and in terms.html section 7.
+    window.AMAZON_ASSOCIATE_TAG = 'kerphplans-20';
+    window.shopSearchUrl = function (name) {
+        return `https://www.amazon.com/s?k=${encodeURIComponent(name)}&tag=${window.AMAZON_ASSOCIATE_TAG}`;
+    };
+
     // { name, category, layer, widthFt, lengthFt, heightFt } for every non-cabinet catalog
     // item (cabinets are built via a form, not this static list). widthFt/lengthFt/heightFt
     // mirror each catalog chip's data-width/data-length/data-height in workshop-planner.html.
