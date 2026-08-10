@@ -491,6 +491,43 @@
         .tool-title { font-weight: 700; font-size: 13px; color: #0f172a; }
         .tool-dims { font-size: 11px; color: #6b7280; margin-top: 1px; }
 
+        /* ---------- Tool hover preview popover (photo + specs on hover) ---------- */
+        .tool-preview-popover {
+            position: fixed;
+            width: 240px;
+            background-color: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            box-shadow: 0 20px 40px -10px rgba(15, 23, 42, 0.35);
+            padding: 14px;
+            z-index: 3000;
+            opacity: 0;
+            transform: translateY(6px);
+            pointer-events: none;
+            transition: opacity 0.12s ease, transform 0.12s ease;
+        }
+        .tool-preview-popover.visible { opacity: 1; transform: translateY(0); }
+        .preview-photo {
+            width: 100%;
+            height: 90px;
+            object-fit: contain;
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        .preview-title { font-size: 13px; font-weight: 800; color: #0f172a; margin-bottom: 2px; }
+        .preview-category { font-size: 10px; color: #7c3aed; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 8px; }
+        .preview-spec-row { display: flex; justify-content: space-between; gap: 8px; font-size: 11px; padding: 3px 0; border-top: 1px solid #f1f5f9; }
+        .preview-spec-row:first-of-type { border-top: none; }
+        .preview-spec-label { color: #9ca3af; font-weight: 600; }
+        .preview-spec-value { color: #1f2937; font-weight: 600; text-align: right; }
+        .preview-spec-note { font-size: 9.5px; color: #9ca3af; margin-top: 8px; line-height: 1.35; }
+        .preview-buy-section { margin-top: 10px; padding-top: 10px; border-top: 1px dashed #cbd5e1; text-align: center; }
+        .preview-buy-link { display: block; font-size: 11px; font-weight: 700; color: #1e3a8a; text-decoration: none; }
+        .preview-buy-link:hover { text-decoration: underline; }
+        .preview-buy-link + .preview-buy-link { margin-top: 4px; }
+
         /* ---------- Per-card collapse/expand (My Tools / My Wishlist) ---------- */
         /* flex:1 lets this row shrink to make room for the remove button instead of the whole
            row wrapping onto a second line; the title itself truncates with an ellipsis rather
@@ -1632,6 +1669,8 @@
         </div>
     </main>
 
+    <div class="tool-preview-popover" id="toolPreviewPopover"></div>
+
     <script src="catalog-data.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.7/dist/umd/supabase.js"></script>
     <script src="supabase-client.js"></script>
@@ -1654,46 +1693,9 @@
            built to be extended, not a claim of covering "every tool" out of the gate. */
         // Source of truth for the "Small Power Tools" sidebar section — portable power tools
         // that never sit on the shop floor, searchable so they can still be added to My Tools/
-        // Wishlist and counted in the Insurance Report.
-        const SMALL_TOOLS = [
-            { name: 'Router (Fixed Base)', category: 'Routers' },
-            { name: 'Router (Plunge)', category: 'Routers' },
-            { name: 'Router (Trim/Palm)', category: 'Routers' },
-            { name: 'Router Table', category: 'Routers' },
-            { name: 'Festool OF 1400 EQ Router', category: 'Routers' },
-            { name: 'Festool MFK 700 Trim Router', category: 'Routers' },
-            { name: 'Random Orbital Sander', category: 'Sanders' },
-            { name: 'Belt Sander', category: 'Sanders' },
-            { name: 'Detail/Mouse Sander', category: 'Sanders' },
-            { name: 'Handheld Drum Sander', category: 'Sanders' },
-            { name: 'Festool RO 150 FEQ Rotex Sander', category: 'Sanders' },
-            { name: 'Circular Saw', category: 'Handheld Saws' },
-            { name: 'Jigsaw', category: 'Handheld Saws' },
-            { name: 'Reciprocating Saw', category: 'Handheld Saws' },
-            { name: 'Track Saw', category: 'Handheld Saws' },
-            { name: 'Handheld Miter Saw', category: 'Handheld Saws' },
-            { name: 'Festool TS 55 REQ Track Saw', category: 'Handheld Saws' },
-            { name: 'Festool Carvex PS 420 Jigsaw', category: 'Handheld Saws' },
-            { name: 'Festool Kapex KS 120 Miter Saw', category: 'Handheld Saws' },
-            { name: 'Cordless Drill/Driver', category: 'Drills & Drivers' },
-            { name: 'Impact Driver', category: 'Drills & Drivers' },
-            { name: 'Hammer Drill', category: 'Drills & Drivers' },
-            { name: 'Benchtop Drill Press', category: 'Drills & Drivers' },
-            { name: 'Festool T 18 Cordless Drill', category: 'Drills & Drivers' },
-            { name: 'Biscuit Joiner', category: 'Planes & Joinery' },
-            { name: 'Power Hand Planer', category: 'Planes & Joinery' },
-            { name: 'Festool Domino DF 500 Joiner', category: 'Planes & Joinery' },
-            { name: 'Portable Air Compressor', category: 'Air Tools' },
-            { name: 'Brad Nailer', category: 'Air Tools' },
-            { name: 'Finish Nailer', category: 'Air Tools' },
-            { name: 'Framing Nailer', category: 'Air Tools' },
-            { name: 'Pneumatic Staple Gun', category: 'Air Tools' },
-            { name: 'Chainsaw', category: 'Outdoor & Rough Tools' },
-            { name: 'Angle Grinder', category: 'Outdoor & Rough Tools' },
-            { name: 'Heat Gun', category: 'Outdoor & Rough Tools' },
-            { name: 'Handheld Shop Vacuum', category: 'Safety & Dust' },
-            { name: 'Festool CT 26 Dust Extractor', category: 'Safety & Dust' }
-        ];
+        // Wishlist and counted in the Insurance Report. Sourced live from catalog-data.js
+        // (window.SMALL_TOOLS), same single source of truth used by workshop-planner.html.
+        const SMALL_TOOLS = window.SMALL_TOOLS;
 
         // The exact same machinery catalog as the Workshop Layout Planner's draggable sidebar —
         // floor-standing tools that DO sit on the shop floor, so placing them on a layout still
@@ -2507,6 +2509,8 @@
             const entry = statuses[tool.name];
             const card = document.createElement('div');
             card.className = 'tool-box-item' + (entry ? (entry.status === 'owned' ? ' is-owned' : ' is-wishlist') : '');
+            card.setAttribute('data-name', tool.name);
+            card.setAttribute('data-category', tool.category);
 
             const info = document.createElement('div');
             const title = document.createElement('div');
@@ -2580,6 +2584,68 @@
             emptyHint.style.display = matches.length ? 'none' : 'block';
         }
 
+        // Event-delegated (not per-item addEventListener) because these cards get torn down
+        // and rebuilt on every search keystroke and every owned/wishlist toggle — a one-time
+        // forEach-attach would silently stop working on rebuilt cards. Matches the same
+        // approach in workshop-planner.html's initToolPreviewPopovers().
+        function initToolPreviewPopovers() {
+            const popover = document.getElementById('toolPreviewPopover');
+            const root = document.getElementById('sidebar-panel');
+            if (!root || !popover) return;
+
+            root.addEventListener('mouseover', (e) => {
+                const item = e.target.closest('.tool-box-item');
+                if (!item || item.contains(e.relatedTarget)) return;
+
+                const name = item.getAttribute('data-name');
+                if (!name) return;
+                const title = item.querySelector('.tool-title').textContent;
+                const category = item.getAttribute('data-category') || '';
+                const specs = (window.TOOL_SPECS && window.TOOL_SPECS[name]) || {};
+                const hasFootprint = item.hasAttribute('data-width');
+                const heightFt = parseFloat(item.getAttribute('data-height'));
+
+                popover.innerHTML = `
+                    ${specs.image ? `<img class="preview-photo" src="${escapeHtml(specs.image)}" alt="" loading="lazy" onerror="this.remove()">` : ''}
+                    <div class="preview-title">${escapeHtml(title)}</div>
+                    <div class="preview-category">${escapeHtml(category)}</div>
+                    ${hasFootprint ? `<div class="preview-spec-row"><span class="preview-spec-label">Footprint</span><span class="preview-spec-value">${escapeHtml(item.getAttribute('data-width'))}' x ${escapeHtml(item.getAttribute('data-length'))}'</span></div>
+                    ${heightFt ? `<div class="preview-spec-row"><span class="preview-spec-label">Height</span><span class="preview-spec-value">${heightFt}'</span></div>` : ''}` : ''}
+                    <div class="preview-spec-row"><span class="preview-spec-label">Power</span><span class="preview-spec-value">${escapeHtml(specs.power || '—')}</span></div>
+                    <div class="preview-spec-row"><span class="preview-spec-label">Voltage</span><span class="preview-spec-value">${escapeHtml(specs.voltage || '—')}</span></div>
+                    <div class="preview-spec-row"><span class="preview-spec-label">Weight</span><span class="preview-spec-value">${escapeHtml(specs.weight || '—')}</span></div>
+                    <div class="preview-spec-note">Specs are typical/representative — verify exact figures for your model before purchase.</div>
+                    <div class="preview-buy-section">
+                        ${specs.buyUrl ? `<a href="${escapeHtml(specs.buyUrl)}" target="_blank" rel="noopener noreferrer" class="preview-buy-link">Check current price &rarr;</a>` : ''}
+                        <a href="${escapeHtml(shopSearchUrl(title))}" target="_blank" rel="noopener noreferrer" class="preview-buy-link">Shop on Amazon &rarr;</a>
+                    </div>
+                `;
+
+                const rect = item.getBoundingClientRect();
+                const popoverWidth = 240;
+                let left = rect.right + 12;
+                if (left + popoverWidth > window.innerWidth) {
+                    left = rect.left - popoverWidth - 12;
+                }
+                popover.style.left = `${Math.max(8, left)}px`;
+                popover.style.top = `${rect.top}px`;
+                popover.classList.add('visible');
+
+                requestAnimationFrame(() => {
+                    const popRect = popover.getBoundingClientRect();
+                    if (popRect.bottom > window.innerHeight) {
+                        popover.style.top = `${Math.max(8, window.innerHeight - popRect.height - 12)}px`;
+                    }
+                });
+            });
+
+            root.addEventListener('mouseout', (e) => {
+                const item = e.target.closest('.tool-box-item');
+                if (!item || item.contains(e.relatedTarget)) return;
+                popover.classList.remove('visible');
+            });
+        }
+
         function initPowerToolSearch() {
             // The category badge is the size of the searchable catalog (a fixed, informational
             // count), not a live result count — it shouldn't flicker between numbers as someone
@@ -2597,6 +2663,11 @@
             const entry = statuses[tool.name];
             const card = document.createElement('div');
             card.className = 'tool-box-item' + (entry ? (entry.status === 'owned' ? ' is-owned' : ' is-wishlist') : '');
+            card.setAttribute('data-name', tool.name);
+            card.setAttribute('data-category', tool.category);
+            card.setAttribute('data-width', tool.widthFt);
+            card.setAttribute('data-length', tool.lengthFt);
+            if (tool.heightFt) card.setAttribute('data-height', tool.heightFt);
 
             const info = document.createElement('div');
             const title = document.createElement('div');
@@ -3054,6 +3125,7 @@
             });
         }
         initJigsDropdown();
+        initToolPreviewPopovers();
 
         // Waits for the first real auth state (session restored, or confirmed signed-out)
         // before wiring/rendering anything sign-in-dependent, so an actually-signed-in user

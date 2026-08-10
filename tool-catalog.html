@@ -273,6 +273,15 @@
         }
         .review-model-card:hover { border-color: #1e3a8a; box-shadow: 0 6px 14px -6px rgba(15, 23, 42, 0.2); }
         .review-model-card.active { border-color: #1e3a8a; background-color: #eef2ff; }
+        .review-model-card-photo {
+            width: 100%;
+            height: 130px;
+            object-fit: contain;
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
         .review-model-card-name { font-size: 13px; font-weight: 700; color: #0f172a; margin-bottom: 4px; }
         .review-model-card-category { font-size: 10.5px; font-weight: 700; color: #1e3a8a; text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 4px; }
         .review-model-card-specs { font-size: 11.5px; color: #6b7280; margin-bottom: 6px; }
@@ -932,9 +941,19 @@
         // never goes stale as new tool types get added -- plus a few review-only categories
         // that don't have floor-placed catalog entries (hand tools, finishes, etc. aren't
         // "footprint" items) and a catch-all "Other" for anything else.
+        // Small Power Tools (handheld, never floor-placed) are browsable/reviewable here too --
+        // merged with CATALOG_ITEMS wherever the catalog pool is built below. Kept OUT of
+        // catalogDomainMap() further down since they're generic shop tools (drills, saws) that
+        // don't belong to one shop-type domain the way floor machinery does.
+        function getBrowsableCatalogItems() {
+            return [
+                ...(Array.isArray(window.CATALOG_ITEMS) ? window.CATALOG_ITEMS : []),
+                ...(Array.isArray(window.SMALL_TOOLS) ? window.SMALL_TOOLS : [])
+            ];
+        }
         const REVIEW_ONLY_CATEGORIES = ['Hand Tools', 'Measuring & Layout', 'Finishing', 'Storage'];
         const REVIEW_CATEGORIES = [...new Set([
-            ...(Array.isArray(window.CATALOG_ITEMS) ? window.CATALOG_ITEMS.map(i => i.category) : []),
+            ...getBrowsableCatalogItems().map(i => i.category),
             ...REVIEW_ONLY_CATEGORIES
         ])].sort();
         REVIEW_CATEGORIES.push('Other');
@@ -991,7 +1010,7 @@
         }
 
         function populateBrandSelect() {
-            const catalogItems = Array.isArray(window.CATALOG_ITEMS) ? window.CATALOG_ITEMS : [];
+            const catalogItems = getBrowsableCatalogItems();
             const brands = [...new Set(catalogItems.map(i => extractBrand(i.name)).filter(Boolean))].sort((a, b) => a.localeCompare(b));
             const sel = document.getElementById('reviewBrandFilter');
             sel.innerHTML = '<option value="">All Brands</option>' +
@@ -1006,7 +1025,7 @@
         // only."
         function computeModelsRollup(category, query, brand, shopType) {
             const q = (query || '').toLowerCase();
-            const catalogItems = Array.isArray(window.CATALOG_ITEMS) ? window.CATALOG_ITEMS : [];
+            const catalogItems = getBrowsableCatalogItems();
             const domainByName = catalogDomainMap();
             // Off-catalog reviewed tools have no domain data -- shopType can't exclude them, so
             // they pass through rather than being incorrectly hidden.
@@ -1060,8 +1079,12 @@
                 ? `<a href="${escapeHtml(m.specs.buyUrl)}" target="_blank" rel="noopener" class="review-model-card-buy" onclick="event.stopPropagation()">Buy &rarr;</a>`
                 : '';
             const shopLink = `<a href="${escapeHtml(shopSearchUrl(m.name))}" target="_blank" rel="noopener" class="review-model-card-buy" onclick="event.stopPropagation()">Shop on Amazon &rarr;</a>`;
+            const photo = m.specs && m.specs.image
+                ? `<img class="review-model-card-photo" src="${escapeHtml(m.specs.image)}" alt="" loading="lazy" onerror="this.remove()">`
+                : '';
             return `
                 <div class="review-model-card" data-name="${escapeHtml(m.name)}">
+                    ${photo}
                     <div class="review-model-card-name">${escapeHtml(m.name)}</div>
                     ${showCategory ? `<div class="review-model-card-category">${escapeHtml(m.category)}</div>` : ''}
                     ${specLine ? `<div class="review-model-card-specs">${specLine}</div>` : ''}
@@ -1082,7 +1105,7 @@
         // always-visible full-catalog browser -- this is the whole point of folding the catalog
         // into this page instead of just renaming it, so it must not be gated behind a filter.
         function computeFullCatalogGrouped(brand, shopType) {
-            const catalogItems = Array.isArray(window.CATALOG_ITEMS) ? window.CATALOG_ITEMS : [];
+            const catalogItems = getBrowsableCatalogItems();
             const specs = window.TOOL_SPECS || {};
             const domainByName = catalogDomainMap();
             const matchesExtra = (name) => {
@@ -1255,7 +1278,7 @@
             const suggestionsEl = document.getElementById('toolNameSuggestions');
             const hintEl = document.getElementById('toolNameHint');
             const categorySelect = document.getElementById('reviewCategorySelect');
-            const items = Array.isArray(window.CATALOG_ITEMS) ? window.CATALOG_ITEMS : [];
+            const items = getBrowsableCatalogItems();
             let matches = [];
             let activeIndex = -1;
 

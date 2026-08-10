@@ -2172,6 +2172,16 @@
 
         .preview-icon-wrap svg { width: 56px; height: 56px; }
 
+        .preview-photo {
+            width: 100%;
+            height: 90px;
+            object-fit: contain;
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
         .preview-title { font-size: 13px; font-weight: 800; color: #0f172a; margin-bottom: 2px; }
         .preview-category { font-size: 10px; color: #7c3aed; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 8px; }
 
@@ -9239,45 +9249,9 @@
         // power tools that never sit on the shop floor, so they don't belong in the draggable
         // catalog below, but still need to be ownable/wishlist-able here, not just on the home
         // page, and show up in My Tools the same way floor tools do.
-        const SMALL_TOOLS = [
-            { name: 'Router (Fixed Base)', category: 'Routers' },
-            { name: 'Router (Plunge)', category: 'Routers' },
-            { name: 'Router (Trim/Palm)', category: 'Routers' },
-            { name: 'Router Table', category: 'Routers' },
-            { name: 'Festool OF 1400 EQ Router', category: 'Routers' },
-            { name: 'Festool MFK 700 Trim Router', category: 'Routers' },
-            { name: 'Random Orbital Sander', category: 'Sanders' },
-            { name: 'Belt Sander', category: 'Sanders' },
-            { name: 'Detail/Mouse Sander', category: 'Sanders' },
-            { name: 'Handheld Drum Sander', category: 'Sanders' },
-            { name: 'Festool RO 150 FEQ Rotex Sander', category: 'Sanders' },
-            { name: 'Circular Saw', category: 'Handheld Saws' },
-            { name: 'Jigsaw', category: 'Handheld Saws' },
-            { name: 'Reciprocating Saw', category: 'Handheld Saws' },
-            { name: 'Track Saw', category: 'Handheld Saws' },
-            { name: 'Handheld Miter Saw', category: 'Handheld Saws' },
-            { name: 'Festool TS 55 REQ Track Saw', category: 'Handheld Saws' },
-            { name: 'Festool Carvex PS 420 Jigsaw', category: 'Handheld Saws' },
-            { name: 'Festool Kapex KS 120 Miter Saw', category: 'Handheld Saws' },
-            { name: 'Cordless Drill/Driver', category: 'Drills & Drivers' },
-            { name: 'Impact Driver', category: 'Drills & Drivers' },
-            { name: 'Hammer Drill', category: 'Drills & Drivers' },
-            { name: 'Benchtop Drill Press', category: 'Drills & Drivers' },
-            { name: 'Festool T 18 Cordless Drill', category: 'Drills & Drivers' },
-            { name: 'Biscuit Joiner', category: 'Planes & Joinery' },
-            { name: 'Power Hand Planer', category: 'Planes & Joinery' },
-            { name: 'Festool Domino DF 500 Joiner', category: 'Planes & Joinery' },
-            { name: 'Portable Air Compressor', category: 'Air Tools' },
-            { name: 'Brad Nailer', category: 'Air Tools' },
-            { name: 'Finish Nailer', category: 'Air Tools' },
-            { name: 'Framing Nailer', category: 'Air Tools' },
-            { name: 'Pneumatic Staple Gun', category: 'Air Tools' },
-            { name: 'Chainsaw', category: 'Outdoor & Rough Tools' },
-            { name: 'Angle Grinder', category: 'Outdoor & Rough Tools' },
-            { name: 'Heat Gun', category: 'Outdoor & Rough Tools' },
-            { name: 'Handheld Shop Vacuum', category: 'Safety & Dust' },
-            { name: 'Festool CT 26 Dust Extractor', category: 'Safety & Dust' }
-        ];
+        // Sourced live from catalog-data.js (window.SMALL_TOOLS) -- same single source of truth
+        // used by index.html, so a tool added to the catalog shows up on both pages automatically.
+        const SMALL_TOOLS = window.SMALL_TOOLS;
 
         // Builds one card, browsable (in the Small Power Tools list) or owned (relocated-style
         // display in My Tools) — same tool-box-item/status-btn styling as the floor catalog,
@@ -9289,6 +9263,7 @@
             const card = document.createElement('div');
             card.className = 'tool-box-item' + (entry ? (entry.status === 'owned' ? ' is-owned' : ' is-wishlist') : '');
             card.setAttribute('data-name', tool.name);
+            card.setAttribute('data-category', tool.category);
 
             const info = document.createElement('div');
             const title = document.createElement('div');
@@ -11419,57 +11394,67 @@
             return left.firstChild.textContent.trim();
         }
 
+        // Event-delegated (not per-item addEventListener) because Small Power Tool cards get
+        // torn down and rebuilt on every search keystroke and every owned/wishlist toggle
+        // (renderPowerToolSection() does resultsEl.innerHTML = ''); a one-time forEach-attach
+        // would silently stop working on those cards after the first rebuild. Floor-tool chips
+        // are static and would work either way, but delegation covers both with one listener.
         function initToolPreviewPopovers() {
             const popover = document.getElementById('toolPreviewPopover');
+            const root = document.getElementById('sidebar-panel');
+            if (!root || !popover) return;
 
-            document.querySelectorAll('.tool-box-item').forEach(item => {
-                item.addEventListener('mouseenter', () => {
-                    const name = item.getAttribute('data-name');
-                    const title = item.querySelector('.tool-title').textContent;
-                    const dims = item.querySelector('.tool-dims').textContent.replace(' Footprint', '');
-                    const category = getItemCategory(item);
-                    const specs = TOOL_SPECS[name] || {};
-                    const icon = CATEGORY_ICONS[category] || DEFAULT_ICON;
-                    const heightFeet = parseFloat(item.getAttribute('data-height'));
-                    const heightText = heightFeet ? formatFeetInches(heightFeet) : '—';
+            root.addEventListener('mouseover', (e) => {
+                const item = e.target.closest('.tool-box-item');
+                if (!item || item.contains(e.relatedTarget)) return;
 
-                    popover.innerHTML = `
-                        <div class="preview-icon-wrap">${icon}</div>
-                        <div class="preview-title">${escapeHtml(title)}</div>
-                        <div class="preview-category">${escapeHtml(category)}</div>
-                        <div class="preview-spec-row"><span class="preview-spec-label">Footprint</span><span class="preview-spec-value">${escapeHtml(dims)}</span></div>
-                        <div class="preview-spec-row"><span class="preview-spec-label">Height</span><span class="preview-spec-value">${escapeHtml(heightText)}</span></div>
-                        <div class="preview-spec-row"><span class="preview-spec-label">Power</span><span class="preview-spec-value">${escapeHtml(specs.power || '—')}</span></div>
-                        <div class="preview-spec-row"><span class="preview-spec-label">Voltage</span><span class="preview-spec-value">${escapeHtml(specs.voltage || '—')}</span></div>
-                        <div class="preview-spec-row"><span class="preview-spec-label">Weight</span><span class="preview-spec-value">${escapeHtml(specs.weight || '—')}</span></div>
-                        <div class="preview-spec-note">Specs are typical/representative — verify exact figures for your model before purchase.</div>
-                        <div class="preview-buy-section">
-                            ${specs.buyUrl ? `<a href="${escapeHtml(specs.buyUrl)}" target="_blank" rel="noopener noreferrer" class="preview-buy-link">Check current price &rarr;</a>` : ''}
-                            <a href="${escapeHtml(shopSearchUrl(title))}" target="_blank" rel="noopener noreferrer" class="preview-buy-link">Shop on Amazon &rarr;</a>
-                        </div>
-                    `;
+                const name = item.getAttribute('data-name');
+                const title = item.querySelector('.tool-title').textContent;
+                const category = item.getAttribute('data-category') || getItemCategory(item);
+                const specs = TOOL_SPECS[name] || {};
+                const icon = CATEGORY_ICONS[category] || DEFAULT_ICON;
+                const hasFootprint = item.hasAttribute('data-width');
+                const heightFeet = parseFloat(item.getAttribute('data-height'));
+                const heightText = heightFeet ? formatFeetInches(heightFeet) : '—';
 
-                    const rect = item.getBoundingClientRect();
-                    const popoverWidth = 240;
-                    let left = rect.right + 12;
-                    if (left + popoverWidth > window.innerWidth) {
-                        left = rect.left - popoverWidth - 12;
+                popover.innerHTML = `
+                    ${specs.image ? `<img class="preview-photo" src="${escapeHtml(specs.image)}" alt="" loading="lazy" onerror="this.remove()">` : `<div class="preview-icon-wrap">${icon}</div>`}
+                    <div class="preview-title">${escapeHtml(title)}</div>
+                    <div class="preview-category">${escapeHtml(category)}</div>
+                    ${hasFootprint ? `<div class="preview-spec-row"><span class="preview-spec-label">Footprint</span><span class="preview-spec-value">${escapeHtml(item.querySelector('.tool-dims').textContent.replace(' Footprint', ''))}</span></div>
+                    <div class="preview-spec-row"><span class="preview-spec-label">Height</span><span class="preview-spec-value">${escapeHtml(heightText)}</span></div>` : ''}
+                    <div class="preview-spec-row"><span class="preview-spec-label">Power</span><span class="preview-spec-value">${escapeHtml(specs.power || '—')}</span></div>
+                    <div class="preview-spec-row"><span class="preview-spec-label">Voltage</span><span class="preview-spec-value">${escapeHtml(specs.voltage || '—')}</span></div>
+                    <div class="preview-spec-row"><span class="preview-spec-label">Weight</span><span class="preview-spec-value">${escapeHtml(specs.weight || '—')}</span></div>
+                    <div class="preview-spec-note">Specs are typical/representative — verify exact figures for your model before purchase.</div>
+                    <div class="preview-buy-section">
+                        ${specs.buyUrl ? `<a href="${escapeHtml(specs.buyUrl)}" target="_blank" rel="noopener noreferrer" class="preview-buy-link">Check current price &rarr;</a>` : ''}
+                        <a href="${escapeHtml(shopSearchUrl(title))}" target="_blank" rel="noopener noreferrer" class="preview-buy-link">Shop on Amazon &rarr;</a>
+                    </div>
+                `;
+
+                const rect = item.getBoundingClientRect();
+                const popoverWidth = 240;
+                let left = rect.right + 12;
+                if (left + popoverWidth > window.innerWidth) {
+                    left = rect.left - popoverWidth - 12;
+                }
+                popover.style.left = `${Math.max(8, left)}px`;
+                popover.style.top = `${rect.top}px`;
+                popover.classList.add('visible');
+
+                requestAnimationFrame(() => {
+                    const popRect = popover.getBoundingClientRect();
+                    if (popRect.bottom > window.innerHeight) {
+                        popover.style.top = `${Math.max(8, window.innerHeight - popRect.height - 12)}px`;
                     }
-                    popover.style.left = `${Math.max(8, left)}px`;
-                    popover.style.top = `${rect.top}px`;
-                    popover.classList.add('visible');
-
-                    requestAnimationFrame(() => {
-                        const popRect = popover.getBoundingClientRect();
-                        if (popRect.bottom > window.innerHeight) {
-                            popover.style.top = `${Math.max(8, window.innerHeight - popRect.height - 12)}px`;
-                        }
-                    });
                 });
+            });
 
-                item.addEventListener('mouseleave', () => {
-                    popover.classList.remove('visible');
-                });
+            root.addEventListener('mouseout', (e) => {
+                const item = e.target.closest('.tool-box-item');
+                if (!item || item.contains(e.relatedTarget)) return;
+                popover.classList.remove('visible');
             });
         }
 
