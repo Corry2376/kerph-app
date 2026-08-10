@@ -11404,9 +11404,21 @@
             const root = document.getElementById('sidebar-panel');
             if (!root || !popover) return;
 
+            // The popover sits a 12px gap away from the triggering item (position:fixed, so
+            // it isn't a DOM descendant of the item or `root`). A mouse crossing that gap
+            // passes over whatever's underneath it first, firing a mouseout with relatedTarget
+            // pointing at THAT element, not the popover -- so hiding on relatedTarget-chasing
+            // closes the popover mid-crossing, before the cursor ever reaches it. A short
+            // cancelable hide delay is the standard fix: it survives any gap size or crossing
+            // angle instead of depending on exactly which element the cursor happens to land on.
+            let hideTimer = null;
+            const cancelHide = () => { clearTimeout(hideTimer); hideTimer = null; };
+            const scheduleHide = () => { cancelHide(); hideTimer = setTimeout(() => popover.classList.remove('visible'), 200); };
+
             root.addEventListener('mouseover', (e) => {
                 const item = e.target.closest('.tool-box-item');
                 if (!item || item.contains(e.relatedTarget)) return;
+                cancelHide();
 
                 const name = item.getAttribute('data-name');
                 const title = item.querySelector('.tool-title').textContent;
@@ -11454,19 +11466,13 @@
             root.addEventListener('mouseout', (e) => {
                 const item = e.target.closest('.tool-box-item');
                 if (!item || item.contains(e.relatedTarget)) return;
-                // Moving from the item straight into the popover (which renders outside
-                // `root` via position:fixed) would otherwise be read as "left the item" and
-                // hide the popover before the cursor ever reaches it.
-                if (popover.contains(e.relatedTarget)) return;
-                popover.classList.remove('visible');
+                scheduleHide();
             });
 
-            // The popover itself isn't inside `root`, so it needs its own listener to close
-            // once the cursor actually leaves it (mouseleave doesn't bubble, so this only
-            // fires on a true exit, not on moving between children inside the popover).
-            popover.addEventListener('mouseleave', () => {
-                popover.classList.remove('visible');
-            });
+            // mouseenter/mouseleave (non-bubbling) on the popover itself: reaching it within
+            // the delay cancels the pending hide; actually leaving it re-schedules one.
+            popover.addEventListener('mouseenter', cancelHide);
+            popover.addEventListener('mouseleave', scheduleHide);
         }
 
         /* ---------- CUSTOM CABINETRY ---------- */
