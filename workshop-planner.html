@@ -2157,7 +2157,7 @@
             transition: opacity 0.12s ease, transform 0.12s ease;
         }
 
-        .tool-preview-popover.visible { opacity: 1; transform: translateY(0); }
+        .tool-preview-popover.visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
 
         .preview-icon-wrap {
             width: 100%;
@@ -11454,6 +11454,17 @@
             root.addEventListener('mouseout', (e) => {
                 const item = e.target.closest('.tool-box-item');
                 if (!item || item.contains(e.relatedTarget)) return;
+                // Moving from the item straight into the popover (which renders outside
+                // `root` via position:fixed) would otherwise be read as "left the item" and
+                // hide the popover before the cursor ever reaches it.
+                if (popover.contains(e.relatedTarget)) return;
+                popover.classList.remove('visible');
+            });
+
+            // The popover itself isn't inside `root`, so it needs its own listener to close
+            // once the cursor actually leaves it (mouseleave doesn't bubble, so this only
+            // fires on a true exit, not on moving between children inside the popover).
+            popover.addEventListener('mouseleave', () => {
                 popover.classList.remove('visible');
             });
         }
