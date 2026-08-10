@@ -1044,12 +1044,12 @@
             savedQuotes = data || [];
             renderQuotesList();
 
-            // Deep-link from My Workspace.
+            // Deep-link from My Workbench.
             const loadId = new URLSearchParams(window.location.search).get('loadQuote');
             const target = loadId ? savedQuotes.find((q) => q.id === loadId) : null;
             if (target) {
                 loadQuoteIntoForm(target);
-                showToast(`Loaded "${target.name}" from My Workspace.`);
+                showToast(`Loaded "${target.name}" from My Workbench.`);
             }
 
             // One-shot handoff from Project Designer's "Send to Quote Builder" button — the

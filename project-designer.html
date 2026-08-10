@@ -4523,14 +4523,14 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
             renderAll();
             renderSavedProjectsPicker();
 
-            // Deep-link from My Workspace — a fresh page load, so no unsaved-work conflict
+            // Deep-link from My Workbench — a fresh page load, so no unsaved-work conflict
             // to guard against the way the manual picker's loadSelectedProject() does.
             const loadId = new URLSearchParams(window.location.search).get('loadProject');
             const target = loadId ? cachedSavedProjects.find((p) => p.id === loadId) : null;
             if (target) {
                 restoreProject(target);
                 renderSavedProjectsPicker();
-                showToast(`Loaded "${target.name}" from My Workspace.`);
+                showToast(`Loaded "${target.name}" from My Workbench.`);
             }
         });
     </script>

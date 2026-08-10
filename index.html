@@ -1622,12 +1622,12 @@
             </div>
 
             <div class="snapshot-panel">
-                <div class="snapshot-title">My Workspace</div>
+                <div class="snapshot-title">My Workbench</div>
                 <div class="snapshot-subtitle">Your shop at a glance</div>
                 <div class="account-stats-row" id="homeStatsRow"></div>
                 <div class="snapshot-current" id="snapshotCurrent"></div>
                 <div id="snapshotPremierPerk"></div>
-                <a href="my-workspace.html" class="snapshot-cta">Go to My Workspace &rarr;</a>
+                <a href="my-workspace.html" class="snapshot-cta">Go to My Workbench &rarr;</a>
             </div>
         </div>
     </main>
@@ -1723,7 +1723,7 @@
         function isPremium() { return getPlan() === 'premier'; }
 
         function applyPlanGating() {
-            // The Insurance Inventory Report lives only in the My Workspace snapshot panel
+            // The Insurance Inventory Report lives only in the My Workbench snapshot panel
             // now, gated by simply not rendering unless isPremium() — so switching plans just
             // needs the snapshot re-rendered, nothing else to toggle here.
             if (typeof renderHomeSnapshot === 'function') renderHomeSnapshot();
