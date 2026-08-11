@@ -616,7 +616,10 @@
         function escapeHtml(str) {
             const div = document.createElement('div');
             div.textContent = str == null ? '' : String(str);
-            return div.innerHTML;
+            // Also encode quotes, not just the DOM trick's </>/& -- several call sites interpolate
+            // this into an HTML attribute value (src="...", data-url="...."), where an unescaped
+            // " lets the string break out of the attribute entirely.
+            return div.innerHTML.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
         }
 
         function getPlan() { return kerphGetCachedEffectivePlan(); }
@@ -935,7 +938,7 @@
         function cardMediaHtml(post) {
             const url = kerphShowcaseImageUrl(post.image_path);
             const media = url
-                ? `<img class="post-card-image" src="${url}" alt="">`
+                ? `<img class="post-card-image" src="${escapeHtml(url)}" alt="">`
                 : `<div class="post-card-placeholder">&#128247;</div>`;
             const extraPhotos = (post.gallery_paths || []).length;
             const badges = [
@@ -1039,7 +1042,7 @@
                 const heroUrl = allPhotoUrls[0] || null;
                 const videoUrl = post.video_path ? kerphShowcaseImageUrl(post.video_path) : null;
                 const thumbStripHtml = allPhotoUrls.length > 1
-                    ? `<div class="detail-thumb-strip">${allPhotoUrls.map((u, i) => `<div class="detail-thumb${i === 0 ? ' active' : ''}" data-url="${u}"><img src="${u}"></div>`).join('')}</div>`
+                    ? `<div class="detail-thumb-strip">${allPhotoUrls.map((u, i) => `<div class="detail-thumb${i === 0 ? ' active' : ''}" data-url="${escapeHtml(u)}"><img src="${escapeHtml(u)}"></div>`).join('')}</div>`
                     : '';
                 const layoutCardHtml = post.layout_share_token
                     ? `<div class="detail-layout-card">
@@ -1050,10 +1053,10 @@
                 const shareUrl = `${window.location.origin}${window.location.pathname}?post=${encodeURIComponent(id)}`;
 
                 box.innerHTML = `
-                    ${heroUrl ? `<img class="detail-image" id="detailHeroImage" src="${heroUrl}" alt="">` : `<div class="detail-placeholder">&#128247;</div>`}
+                    ${heroUrl ? `<img class="detail-image" id="detailHeroImage" src="${escapeHtml(heroUrl)}" alt="">` : `<div class="detail-placeholder">&#128247;</div>`}
                     ${thumbStripHtml}
                     <div class="detail-body">
-                        ${videoUrl ? `<video class="detail-video" src="${videoUrl}" controls></video>` : ''}
+                        ${videoUrl ? `<video class="detail-video" src="${escapeHtml(videoUrl)}" controls></video>` : ''}
                         <div class="detail-title" style="margin-top:14px;">${escapeHtml(post.title)}</div>
                         <div class="detail-meta"><a href="portfolio.html?user=${encodeURIComponent(post.user_id)}" class="post-author">${escapeHtml(post.author || 'Anonymous')}</a> &middot; ${dateStr} &middot; <a href="portfolio.html?user=${encodeURIComponent(post.user_id)}">View Portfolio &rarr;</a></div>
                         ${post.description ? `<div class="detail-desc">${escapeHtml(post.description)}</div>` : ''}

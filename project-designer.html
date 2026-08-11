@@ -3364,7 +3364,7 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
             const groups = {};
             const individualItems = [];
             panels.forEach(p => {
-                if (jointedIds.has(p.id)) { individualItems.push({ ...p, qty: 1, names: new Set([p.name]), jointedPanel: p }); return; }
+                if (jointedIds.has(p.id)) { individualItems.push({ ...p, names: new Set([p.name]), jointedPanel: p }); return; }
                 const key = [p.widthIn, p.heightIn, p.thicknessIn, p.material, p.shapeType || 'rectangle'].join('|');
                 if (!groups[key]) groups[key] = { ...p, qty: 0, names: new Set() };
                 groups[key].qty += p.qty;
@@ -3468,6 +3468,17 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
 
         document.getElementById('sendToQuoteBuilderBtn').addEventListener('click', () => {
             if (!panels.length) { showToast('Add some panels first — nothing to quote yet.'); return; }
+            // Quote Builder needs Premier even though this page only needs Pro -- without this
+            // check a Pro subscriber's seed gets saved and then silently discarded when
+            // quote-builder.html's own head-script gate bounces them to pricing.html before it's
+            // ever read, so we catch it here instead and send them to the upgrade path directly.
+            const requiredTier = kerphRequiredTierFor('quote-builder.html');
+            if (requiredTier && !kerphPlanMeetsTier(getPlan(), requiredTier)) {
+                const tierLabel = requiredTier.charAt(0).toUpperCase() + requiredTier.slice(1);
+                showToast(`Quote Builder requires ${tierLabel} — taking you to the plan comparison.`);
+                setTimeout(() => { window.location.href = 'pricing.html?locked=quote-builder.html'; }, 900);
+                return;
+            }
             const projectName = document.getElementById('projectNameInput').value.trim() || 'Untitled Project';
             const seed = {
                 name: `Quote — ${projectName}`,

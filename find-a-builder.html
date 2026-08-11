@@ -379,6 +379,7 @@
            no PDF library. A summary (dimensions + equipment list), not a rendered visual floor
            plan — the actual grid graphics live in the Workshop Layout Planner's own renderer,
            which isn't something this page has a copy of. */
+        #shopSummaryPrintArea { display: none; }
         @media print {
             body.printing-shop-summary > *:not(#shopSummaryPrintArea) { display: none !important; }
             body.printing-shop-summary { padding-top: 0 !important; background: #fff !important; }
@@ -507,6 +508,11 @@
 
     <div class="upgrade-nudge" id="upgradeNudge"></div>
 
+    <!-- Direct child of <body> on purpose -- the print CSS below hides every OTHER body child
+         via a `> *:not(#shopSummaryPrintArea)` selector, which only works if this element is
+         actually a body-level sibling and not nested inside <main>. -->
+    <div id="shopSummaryPrintArea"></div>
+
     <main>
         <div class="finder-eyebrow">Resource &middot; not a Kerph directory</div>
         <div class="finder-title">Find a pole barn / post-frame builder</div>
@@ -614,8 +620,6 @@
                 </div>
             </div>
         </div>
-
-        <div id="shopSummaryPrintArea"></div>
 
         <div class="why-note">
             <b>Why we link out instead of hosting our own list:</b> Google Maps' listings, ratings, and reviews stay current on their own — a directory we maintained ourselves would go stale and risks pointing you to bad contact info. This always shows real, live listings for your area.
@@ -1120,6 +1124,10 @@
             window.print();
             setTimeout(() => document.body.classList.remove('printing-shop-summary'), 500);
         }
+
+        // Belt-and-suspenders alongside the setTimeout above -- on browsers where window.print()
+        // doesn't block (e.g. Firefox), afterprint is the reliable signal instead of a fixed delay.
+        window.addEventListener('afterprint', () => document.body.classList.remove('printing-shop-summary'));
 
         function initConcierge() {
             const output = document.getElementById('conciergeOutput');

@@ -10886,7 +10886,11 @@
         function escapeHtml(str) {
             const div = document.createElement('div');
             div.textContent = str;
-            return div.innerHTML;
+            // Also encode quotes, not just the DOM trick's </>/& -- several call sites (saved
+            // layout name in a title="...", catalog image/buy-link URLs in src=/href=) interpolate
+            // this into an HTML attribute value, where an unescaped " lets the string break out of
+            // the attribute and add arbitrary new attributes (e.g. an onmouseover= handler).
+            return div.innerHTML.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
         }
 
         // Every stored pixel value (tool positions, wall-feature positions, shape points) is
@@ -11553,7 +11557,7 @@
                     <div class="elec-status-badge ${statusClass}">${statusText}</div>
                     <table class="elec-table">
                         <tr><th>Tool</th><th>V</th><th>A</th><th>Breaker</th></tr>
-                        ${result.items.map(i => `<tr><td>${i.name}</td><td>${i.voltageClass}</td><td>${i.amps.toFixed(1)}</td><td>${i.breaker}A</td></tr>`).join('')}
+                        ${result.items.map(i => `<tr><td>${escapeHtml(i.name)}</td><td>${i.voltageClass}</td><td>${i.amps.toFixed(1)}</td><td>${i.breaker}A</td></tr>`).join('')}
                     </table>
                 `;
                 const need240 = result.outletsNeeded240 > result.outletsPlaced240;

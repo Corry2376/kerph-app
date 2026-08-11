@@ -571,6 +571,7 @@
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.7/dist/umd/supabase.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
     <script src="supabase-client.js"></script>
     <script>
         const PLAN_KEY = 'kerphPlan';
@@ -592,7 +593,10 @@
         function escapeHtml(str) {
             const div = document.createElement('div');
             div.textContent = str == null ? '' : String(str);
-            return div.innerHTML;
+            // Also encode quotes, not just the DOM trick's </>/& -- several call sites interpolate
+            // this into an HTML attribute value (src="...", etc.), where an unescaped " lets the
+            // string break out of the attribute entirely.
+            return div.innerHTML.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
         }
 
         function getPlan() { return kerphGetCachedEffectivePlan(); }
@@ -939,7 +943,7 @@
         function cardMediaHtml(tip) {
             const url = kerphGarageTipImageUrl(tip.cover_image_path);
             const img = url
-                ? `<img class="tip-card-image" src="${url}" alt="">`
+                ? `<img class="tip-card-image" src="${escapeHtml(url)}" alt="">`
                 : `<div class="tip-card-placeholder">&#128221;</div>`;
             const videoBadge = tip.video_url ? '<div class="tip-card-video-badge">&#9654;</div>' : '';
             return img + videoBadge;
@@ -1016,9 +1020,14 @@
             const shareUrl = `${window.location.origin}${window.location.pathname}?article=${encodeURIComponent(id)}`;
 
             let mediaHtml = '';
-            if (embedUrl) mediaHtml = `<div class="detail-video-wrap"><iframe src="${embedUrl}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>`;
-            else if (imageUrl) mediaHtml = `<img class="detail-image" src="${imageUrl}" alt="">`;
+            if (embedUrl) mediaHtml = `<div class="detail-video-wrap"><iframe src="${escapeHtml(embedUrl)}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>`;
+            else if (imageUrl) mediaHtml = `<img class="detail-image" src="${escapeHtml(imageUrl)}" alt="">`;
             else mediaHtml = `<div class="detail-placeholder">&#128221;</div>`;
+
+            // body_html is admin-authored rich text stored as raw HTML -- sanitized here (not
+            // just escaped) so real formatting still renders, but a compromised admin session
+            // or a stored script tag can't execute against every visitor who reads the article.
+            const safeBodyHtml = (typeof DOMPurify !== 'undefined') ? DOMPurify.sanitize(tip.body_html || '') : escapeHtml(tip.body_html || '');
 
             box.innerHTML = `
                 ${mediaHtml}
@@ -1026,7 +1035,7 @@
                     <div class="detail-title">${escapeHtml(tip.title)}</div>
                     <div class="detail-meta">${escapeHtml(tip.category || '')} &middot; ${dateStr}${tip.author ? ` &middot; ${escapeHtml(tip.author)}` : ''}${!tip.published ? ' &middot; <b style="color:#92400e;">DRAFT</b>' : ''}</div>
                     ${tagsHtml ? `<div class="tip-tags">${tagsHtml}</div>` : ''}
-                    <div class="detail-desc">${tip.body_html}</div>
+                    <div class="detail-desc">${safeBodyHtml}</div>
                     <div class="detail-share">
                         <span class="detail-share-label">Share this article</span>
                         <div class="detail-share-row">
