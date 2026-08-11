@@ -254,11 +254,11 @@
         .header-sign-in-mode-toggle:hover { text-decoration: underline; }
 
         .header-sign-in-input {
-            width: 84px;
-            padding: 6px 8px;
+            width: 110px;
+            padding: 8px 10px;
             border: 1px solid #cbd5e1;
             border-radius: 6px;
-            font-size: 11px;
+            font-size: 14px;
             font-weight: 600;
         }
 
@@ -2844,6 +2844,11 @@
         <div class="modal-box">
             <div class="modal-title" id="modalTitle">Start a New Shop Layout</div>
             <div class="modal-warning" id="modalWarning">This clears everything currently on the grid.</div>
+
+            <div class="header-field" style="width:100%; margin-bottom:10px;" id="newLayoutModalNameField">
+                <label class="header-field-label" for="newLayoutNameInput">Layout Name</label>
+                <input type="text" class="input-box" id="newLayoutNameInput" placeholder="Name this layout (optional)">
+            </div>
 
             <div class="header-field" style="width:100%; margin-bottom:10px;" id="templateField">
                 <label class="header-field-label" for="layoutTemplateSelect">Start From</label>
@@ -10226,7 +10231,9 @@
             document.querySelectorAll('.pro-feature').forEach(el => {
                 el.classList.toggle('locked', !pro);
             });
-            document.getElementById('layoutNameInput').disabled = !pro;
+            // Layout Name is intentionally NOT disabled for Free -- Free is entitled to one real
+            // saved layout and needs to be able to name it. The actual save-count limit is
+            // enforced where it belongs, in initSavedLayouts()'s save handler.
         }
 
         function showToast(message) {
@@ -13676,6 +13683,8 @@
             const startBtn = document.getElementById('modalStartBtn');
             const templateField = document.getElementById('templateField');
             const templateSelect = document.getElementById('layoutTemplateSelect');
+            const nameField = document.getElementById('newLayoutModalNameField');
+            const nameInputModal = document.getElementById('newLayoutNameInput');
             let modalMode = 'new';
 
             templateSelect.addEventListener('change', () => {
@@ -13694,12 +13703,15 @@
                     warning.style.display = 'none';
                     startBtn.textContent = 'Apply Changes';
                     templateField.style.display = 'none';
+                    nameField.style.display = 'none';
                 } else {
                     title.textContent = 'Start a New Shop Layout';
                     warning.style.display = 'block';
                     startBtn.textContent = 'Start Layout';
                     templateField.style.display = 'block';
                     templateSelect.value = '';
+                    nameField.style.display = 'block';
+                    nameInputModal.value = '';
                 }
                 overlay.style.display = 'flex';
             }
@@ -13729,6 +13741,11 @@
                         resetToRectangle();
                         showToast('Started a new shop layout.');
                     }
+                    // Carries the name typed here into the header's Layout Name field so it's
+                    // already filled in when the user hits Save -- this modal only starts the
+                    // layout, it doesn't create the saved-layout record itself.
+                    const typedName = nameInputModal.value.trim();
+                    if (typedName) document.getElementById('layoutNameInput').value = typedName;
                 } else {
                     updateWorkshopGridSize();
                     showToast('Shop settings updated.');
