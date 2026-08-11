@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <script>(function(){var t=new URLSearchParams(location.search).get('kerphPreview');if(t==='ls-review-bm0j8zf5qs'){localStorage.setItem('kerphComingSoonBypass','true');}if(localStorage.getItem('kerphComingSoonBypass')!=='true'){location.replace('coming-soon.html');}})();</script>
@@ -1255,6 +1255,7 @@
                     <button type="button" id="headerSignInBtn" class="mini-btn" title="Sign In">Sign In</button>
                 </div>
                 <a href="#" id="headerSignInModeToggle" class="header-sign-in-mode-toggle">New here? Create an account</a>
+                <a href="#" id="headerForgotPasswordLink" class="header-sign-in-mode-toggle">Forgot password?</a>
             </div>
             <button type="button" id="accountBtn" class="account-btn plan-free" title="Account &amp; Plan Settings &mdash; border color shows your plan level" style="display:none;">
                 <span class="account-avatar" id="accountAvatarPreview">&#128100;</span>
@@ -1338,6 +1339,17 @@
                 <button type="button" id="accountSaveBtn" class="mini-btn modal-primary-btn">Save</button>
             </div>
             <button type="button" id="accountSignOutBtn" class="mini-btn danger" style="width:100%; margin-top:8px;">Sign Out</button>
+
+            <div style="margin-top:16px;">
+                <div class="account-backup-title">Change Password</div>
+                <div class="header-field" style="width:100%; margin-top:8px;">
+                    <input type="password" class="input-box" id="accountNewPassword" placeholder="New password (min 6 characters)" autocomplete="new-password">
+                </div>
+                <div class="header-field" style="width:100%; margin-top:8px;">
+                    <input type="password" class="input-box" id="accountNewPasswordConfirm" placeholder="Confirm new password" autocomplete="new-password">
+                </div>
+                <button type="button" id="accountChangePasswordBtn" class="mini-btn" style="width:100%; margin-top:8px;">Change Password</button>
+            </div>
 
             <div class="account-backup-zone">
                 <div class="account-backup-title">Local Device Settings</div>
@@ -1937,6 +1949,24 @@
 
         function initAccountPanel() {
             const btn = document.getElementById('accountBtn');
+            const newPasswordInput = document.getElementById('accountNewPassword');
+            const newPasswordConfirmInput = document.getElementById('accountNewPasswordConfirm');
+            const changePasswordBtn = document.getElementById('accountChangePasswordBtn');
+            if (changePasswordBtn) {
+                changePasswordBtn.addEventListener('click', async () => {
+                    const newPassword = newPasswordInput.value;
+                    const confirmPassword = newPasswordConfirmInput.value;
+                    if (newPassword.length < 6) { showToast('Password must be at least 6 characters.'); return; }
+                    if (newPassword !== confirmPassword) { showToast('Passwords do not match.'); return; }
+                    changePasswordBtn.disabled = true;
+                    const { error } = await kerphUpdatePassword(newPassword);
+                    changePasswordBtn.disabled = false;
+                    if (error) { showToast(error.message || 'Could not change password.'); return; }
+                    newPasswordInput.value = '';
+                    newPasswordConfirmInput.value = '';
+                    showToast('Password changed.');
+                });
+            }
             const overlay = document.getElementById('accountModalOverlay');
             const cancelBtn = document.getElementById('accountCancelBtn');
             const saveBtn = document.getElementById('accountSaveBtn');
@@ -2127,6 +2157,20 @@
                 mode = mode === 'signin' ? 'signup' : 'signin';
                 applyMode();
             });
+
+            const forgotLink = document.getElementById('headerForgotPasswordLink');
+            if (forgotLink) {
+                forgotLink.addEventListener('click', async (e) => {
+                    e.preventDefault();
+                    const email = emailInput.value.trim();
+                    if (!email) { showToast('Enter your email above, then click Forgot password.'); return; }
+                    forgotLink.textContent = 'Sending...';
+                    const { error } = await kerphRequestPasswordReset(email);
+                    forgotLink.textContent = 'Forgot password?';
+                    if (error) { showToast(error.message || 'Could not send reset email.'); return; }
+                    showToast('Check your email for a password reset link.');
+                });
+            }
 
             async function attemptSubmit() {
                 const email = emailInput.value.trim();

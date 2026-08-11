@@ -501,6 +501,17 @@
             </div>
             <button type="button" id="accountSignOutBtn" class="mini-btn danger" style="width:100%; margin-top:8px;">Sign Out</button>
 
+            <div style="margin-top:16px;">
+                <div class="account-backup-title">Change Password</div>
+                <div class="header-field" style="width:100%; margin-top:8px;">
+                    <input type="password" class="input-box" id="accountNewPassword" placeholder="New password (min 6 characters)" autocomplete="new-password">
+                </div>
+                <div class="header-field" style="width:100%; margin-top:8px;">
+                    <input type="password" class="input-box" id="accountNewPasswordConfirm" placeholder="Confirm new password" autocomplete="new-password">
+                </div>
+                <button type="button" id="accountChangePasswordBtn" class="mini-btn" style="width:100%; margin-top:8px;">Change Password</button>
+            </div>
+
             <div class="account-backup-zone">
                 <div class="account-backup-title">Local Device Settings</div>
                 <div class="account-backup-desc">Your layouts, projects, tools, Showcase posts, and reviews live on your account now — no backup needed. This just covers a couple of local display preferences still cached in this browser.</div>
@@ -889,6 +900,24 @@
 
         function initAccountPanel() {
             const btn = document.getElementById('accountBtn');
+            const newPasswordInput = document.getElementById('accountNewPassword');
+            const newPasswordConfirmInput = document.getElementById('accountNewPasswordConfirm');
+            const changePasswordBtn = document.getElementById('accountChangePasswordBtn');
+            if (changePasswordBtn) {
+                changePasswordBtn.addEventListener('click', async () => {
+                    const newPassword = newPasswordInput.value;
+                    const confirmPassword = newPasswordConfirmInput.value;
+                    if (newPassword.length < 6) { showToast('Password must be at least 6 characters.'); return; }
+                    if (newPassword !== confirmPassword) { showToast('Passwords do not match.'); return; }
+                    changePasswordBtn.disabled = true;
+                    const { error } = await kerphUpdatePassword(newPassword);
+                    changePasswordBtn.disabled = false;
+                    if (error) { showToast(error.message || 'Could not change password.'); return; }
+                    newPasswordInput.value = '';
+                    newPasswordConfirmInput.value = '';
+                    showToast('Password changed.');
+                });
+            }
             const overlay = document.getElementById('accountModalOverlay');
             const cancelBtn = document.getElementById('accountCancelBtn');
             const saveBtn = document.getElementById('accountSaveBtn');
@@ -1026,6 +1055,20 @@
             }
             applyMode();
             modeToggle.addEventListener('click', (e) => { e.preventDefault(); mode = mode === 'signin' ? 'signup' : 'signin'; applyMode(); });
+
+            const forgotLink = document.getElementById('headerForgotPasswordLink');
+            if (forgotLink) {
+                forgotLink.addEventListener('click', async (e) => {
+                    e.preventDefault();
+                    const email = emailInput.value.trim();
+                    if (!email) { showToast('Enter your email above, then click Forgot password.'); return; }
+                    forgotLink.textContent = 'Sending...';
+                    const { error } = await kerphRequestPasswordReset(email);
+                    forgotLink.textContent = 'Forgot password?';
+                    if (error) { showToast(error.message || 'Could not send reset email.'); return; }
+                    showToast('Check your email for a password reset link.');
+                });
+            }
 
             async function attemptSubmit() {
                 const email = emailInput.value.trim();

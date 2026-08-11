@@ -112,6 +112,22 @@
         await kerphSupabase.auth.signOut();
     }
 
+    // Sends a recovery-link email via Supabase Auth; the link lands the user on
+    // reset-password.html with a recovery session already active. redirectTo must be
+    // an allowed Redirect URL in the Supabase Auth settings or the email link 404s.
+    async function kerphRequestPasswordReset(email) {
+        return kerphSupabase.auth.resetPasswordForEmail(email, {
+            redirectTo: `${window.location.origin}/reset-password.html`
+        });
+    }
+
+    // Used both by reset-password.html (recovery session from the emailed link) and by
+    // the "Change Password" field in Account Settings (regular signed-in session) --
+    // updateUser() works the same way for either since both are a live Supabase session.
+    async function kerphUpdatePassword(newPassword) {
+        return kerphSupabase.auth.updateUser({ password: newPassword });
+    }
+
     function kerphGetCachedUser() {
         return state.user;
     }
@@ -1573,6 +1589,8 @@
     window.kerphSignUp = kerphSignUp;
     window.kerphSignIn = kerphSignIn;
     window.kerphSignOut = kerphSignOut;
+    window.kerphRequestPasswordReset = kerphRequestPasswordReset;
+    window.kerphUpdatePassword = kerphUpdatePassword;
     window.kerphGetCachedUser = kerphGetCachedUser;
     window.kerphGetCachedProfile = kerphGetCachedProfile;
     window.kerphSaveProfile = kerphSaveProfile;

@@ -32,6 +32,7 @@ document.write(`
             <button type="button" id="headerSignInBtn" class="mini-btn" title="Sign In">Sign In</button>
         </div>
         <a href="#" class="header-sign-in-mode-toggle" id="headerSignInModeToggle">New here? Create an account</a>
+        <a href="#" class="header-sign-in-mode-toggle" id="headerForgotPasswordLink">Forgot password?</a>
     </div>
     <button type="button" id="accountBtn" class="account-btn plan-free" title="Account &amp; Plan Settings &mdash; border color shows your plan level" style="display:none;">
         <span class="account-avatar" id="accountAvatarPreview">&#128100;</span>
