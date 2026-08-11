@@ -681,13 +681,6 @@
             margin-bottom: 8px;
         }
 
-        .intro-subtitle {
-            font-size: 15px;
-            color: #4b5563;
-            max-width: 640px;
-            line-height: 1.5;
-        }
-
         /* "Customize Tiles" — lets a user hide tiles they have access to but don't want
            cluttering their home page. Same open/close pattern as .jigs-dropdown. Only tiles
            the current plan unlocks are offered here; a locked tile is already an upsell
@@ -785,7 +778,8 @@
         }
 
         .snapshot-panel {
-            flex: 0 0 300px;
+            flex: 0 0 310px;
+            min-height: 420px;
             background-color: #ffffff;
             background-image: linear-gradient(180deg, #ffffff 0%, #f6f8fb 100%);
             border: 1px solid #cbd5e1;
@@ -1568,25 +1562,24 @@
     <div id="insuranceReportPrintArea"></div>
 
     <main>
+        <div class="hero-intro">
+            <div class="intro-title" id="heroTitle">Workshop &amp; project tools</div>
+            <div class="tile-visibility-dropdown" id="tileVisibilityDropdown">
+                <button type="button" class="tile-visibility-btn" id="tileVisibilityBtn">Customize Tiles <span class="tile-visibility-caret">&#9662;</span></button>
+                <div class="tile-visibility-menu" id="tileVisibilityMenu">
+                    <div class="tile-visibility-menu-title">Show on this page</div>
+                    <label class="tile-visibility-item tile-visibility-select-all">
+                        <input type="checkbox" id="tileVisibilitySelectAll">
+                        <span id="tileVisibilitySelectAllLabel">Select All</span>
+                    </label>
+                    <div class="tile-visibility-menu-sep"></div>
+                    <div class="tile-visibility-list" id="tileVisibilityList"></div>
+                </div>
+            </div>
+        </div>
+
         <div class="hero-row">
             <div class="home-main-col">
-                <div class="hero-intro">
-                    <div class="intro-title" id="heroTitle">Workshop &amp; project tools</div>
-                    <div class="intro-subtitle" id="heroSubtitle">Pick a tool to get started. More will show up here over time.</div>
-                    <div class="tile-visibility-dropdown" id="tileVisibilityDropdown">
-                        <button type="button" class="tile-visibility-btn" id="tileVisibilityBtn">Customize Tiles <span class="tile-visibility-caret">&#9662;</span></button>
-                        <div class="tile-visibility-menu" id="tileVisibilityMenu">
-                            <div class="tile-visibility-menu-title">Show on this page</div>
-                            <label class="tile-visibility-item tile-visibility-select-all">
-                                <input type="checkbox" id="tileVisibilitySelectAll">
-                                <span id="tileVisibilitySelectAllLabel">Select All</span>
-                            </label>
-                            <div class="tile-visibility-menu-sep"></div>
-                            <div class="tile-visibility-list" id="tileVisibilityList"></div>
-                        </div>
-                    </div>
-                </div>
-
                 <div class="tool-grid">
                     <a href="workshop-planner.html" class="tool-card tool-card-featured">
                         <div class="tool-card-icon">&#128736;</div>
@@ -1872,10 +1865,8 @@
 
             const acc = loadAccount();
             const titleEl = document.getElementById('heroTitle');
-            const subtitleEl = document.getElementById('heroSubtitle');
             const greetName = acc.fullName || acc.username;
             if (titleEl) titleEl.textContent = greetName ? `Welcome back, ${greetName}` : 'Workshop & project tools';
-            if (subtitleEl) subtitleEl.textContent = greetName ? 'Jump back into your shop, or explore another tool below.' : 'Pick a tool to get started. More will show up here over time.';
 
             // Surfaced here (not just the sidebar button) since this is the first thing
             // anyone sees on the home page — a Premier subscriber who just upgraded shouldn't
