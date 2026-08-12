@@ -2963,6 +2963,16 @@
             </div>
         </details>
 
+        <details class="tool-category" id="wishlistCategory" open>
+            <summary class="category-header">
+                <span class="category-header-left">My Wishlist <span class="category-count">0</span></span>
+                <span class="category-chevron">&#9656;</span>
+            </summary>
+            <div class="category-items">
+                <div class="empty-hint" id="wishlistEmptyHint">Mark a tool with a star (&#9733;) to see it here.</div>
+            </div>
+        </details>
+
         <div class="tool-search-wrap">
             <input type="text" class="input-box" id="toolSearchInput" placeholder="&#128269; Search tools...">
         </div>
@@ -9754,16 +9764,22 @@
             });
         }
 
-        // Owned tools physically relocate into the "My Tools" category (rather than just
-        // being flagged in place) — un-owning a tool sends it back to whichever category
-        // it originally lived in, tracked via _homeParent/_homeNextSibling set once at init.
+        // Owned/wishlisted tools physically relocate into the "My Tools"/"My Wishlist"
+        // categories (rather than just being flagged in place) — clearing a status sends the
+        // item back to whichever category it originally lived in, tracked via
+        // _homeParent/_homeNextSibling set once at init.
         function moveToolItem(item, entry) {
             const myToolsContainer = document.querySelector('#myToolsCategory .category-items');
+            const wishlistContainer = document.querySelector('#wishlistCategory .category-items');
             if (!myToolsContainer) return;
 
             if (entry && entry.status === 'owned') {
                 if (item.parentElement !== myToolsContainer) {
                     myToolsContainer.appendChild(item);
+                }
+            } else if (entry && entry.status === 'wishlist' && wishlistContainer) {
+                if (item.parentElement !== wishlistContainer) {
+                    wishlistContainer.appendChild(item);
                 }
             } else if (item._homeParent && item.parentElement !== item._homeParent) {
                 if (item._homeNextSibling && item._homeNextSibling.parentElement === item._homeParent) {
@@ -9775,6 +9791,7 @@
 
             updateCategoryCounts();
             updateMyToolsEmptyState();
+            updateWishlistEmptyState();
         }
 
         function updateCategoryCounts() {
@@ -9793,6 +9810,13 @@
         function updateMyToolsEmptyState() {
             const container = document.querySelector('#myToolsCategory .category-items');
             const hint = document.getElementById('myToolsEmptyHint');
+            if (!container || !hint) return;
+            hint.style.display = container.querySelectorAll('.tool-box-item').length ? 'none' : 'block';
+        }
+
+        function updateWishlistEmptyState() {
+            const container = document.querySelector('#wishlistCategory .category-items');
+            const hint = document.getElementById('wishlistEmptyHint');
             if (!container || !hint) return;
             hint.style.display = container.querySelectorAll('.tool-box-item').length ? 'none' : 'block';
         }
@@ -10067,23 +10091,32 @@
             document.getElementById('smallPowerToolsCount').textContent = SMALL_TOOLS.length;
         }
 
-        // Owned power tools don't exist as static DOM nodes in the floor catalog below (unlike
-        // machinery), so moveToolItem can't physically relocate them — instead they're rendered
-        // fresh into My Tools alongside the relocated floor items on every status change, tagged
-        // so they can be cleared and rebuilt without touching the floor tools' real DOM nodes.
+        // Owned/wishlisted power tools don't exist as static DOM nodes in the floor catalog
+        // below (unlike machinery), so moveToolItem can't physically relocate them — instead
+        // they're rendered fresh into My Tools/My Wishlist alongside the relocated floor items
+        // on every status change, tagged so they can be cleared and rebuilt without touching
+        // the floor tools' real DOM nodes. Keeps the historical function name (call sites are
+        // unchanged) even though it now also handles wishlist, not just owned.
         function renderOwnedPowerToolsInMyTools() {
-            const container = document.querySelector('#myToolsCategory .category-items');
-            if (!container) return;
-            container.querySelectorAll('.power-tool-my-tools-card').forEach(el => el.remove());
+            const myToolsContainer = document.querySelector('#myToolsCategory .category-items');
+            const wishlistContainer = document.querySelector('#wishlistCategory .category-items');
+            if (!myToolsContainer) return;
+            myToolsContainer.querySelectorAll('.power-tool-my-tools-card').forEach(el => el.remove());
+            if (wishlistContainer) wishlistContainer.querySelectorAll('.power-tool-my-tools-card').forEach(el => el.remove());
             const statuses = loadToolStatuses();
             SMALL_TOOLS.forEach(tool => {
                 const entry = statuses[tool.name];
                 if (entry && entry.status === 'owned') {
                     const card = buildPowerToolCard(tool, statuses);
                     card.classList.add('power-tool-my-tools-card');
-                    container.appendChild(card);
+                    myToolsContainer.appendChild(card);
+                } else if (entry && entry.status === 'wishlist' && wishlistContainer) {
+                    const card = buildPowerToolCard(tool, statuses);
+                    card.classList.add('power-tool-my-tools-card');
+                    wishlistContainer.appendChild(card);
                 }
             });
+            updateWishlistEmptyState();
         }
 
         function initPowerToolSearch() {
