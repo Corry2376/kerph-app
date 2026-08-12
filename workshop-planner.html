@@ -5024,7 +5024,7 @@
 
         <details class="tool-category" data-domain="woodworking" data-clearance-category="Crosscut &amp; Miter">
             <summary class="category-header">
-                <span class="category-header-left">Crosscut &amp; Miter <span class="category-count">19</span></span>
+                <span class="category-header-left">Crosscut &amp; Miter <span class="category-count">20</span></span>
                 <span class="category-chevron">&#9656;</span>
             </summary>
             <div class="category-items">
@@ -5065,6 +5065,13 @@
                 </div>
                 <div class="tool-box-item" draggable="true" data-width="2.0" data-length="2.0" data-height="1.5" data-name="Metabo HPT C10FCGS">
                     <div><div class="tool-title">Metabo HPT C10FCGS 10" Compound Miter Saw</div><div class="tool-dims">2.0' x 2.0' Footprint</div></div>
+                    <div class="tool-status-controls">
+                        <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
+                        <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
+                    </div>
+                </div>
+                <div class="tool-box-item" draggable="true" data-width="1.8" data-length="2.2" data-height="1.6" data-name="DeWalt DCS361B 20V MAX Cordless Miter Saw">
+                    <div><div class="tool-title">DeWalt DCS361B 20V MAX Cordless Miter Saw</div><div class="tool-dims">1.8' x 2.2' Footprint</div></div>
                     <div class="tool-status-controls">
                         <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
                         <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
@@ -9925,15 +9932,20 @@
 
             // "Attach to dust collection?" — tools only (not the dust-collection/lighting
             // catalog items themselves, which have no data-layer attribute default of 'tools'
-            // vs an explicit one), and not Mini-Splits, which have no dust port to attach to.
-            // Independent of owned/wishlist status, since it's a placement-time preference, not
-            // an ownership fact — see autoRouteDustCollection, wired into the drop handler in
+            // vs an explicit one), and not any category with no dust port to attach to at all
+            // (Mini-Splits, 3D Printers, Tool Storage, Assembly & Storage). Independent of
+            // owned/wishlist status, since it's a placement-time preference, not an ownership
+            // fact — see autoRouteDustCollection, wired into the drop handler in
             // initDragAndDropEngine. Checked once here at wiring time (the item's home category,
-            // before any owned/wishlist relocation) since Mini-Splits carries no per-item
-            // data-category attribute of its own.
+            // before any owned/wishlist relocation) via the category header text, since not
+            // every excluded category carries its own data-clearance-category attribute.
+            const NO_DUST_PORT_CATEGORIES = ['Mini-Splits', '3D Printers', 'Tool Storage', 'Assembly & Storage'];
             const homeCategoryEl = item.closest('.tool-category');
-            const isMiniSplit = homeCategoryEl && homeCategoryEl.getAttribute('data-clearance-category') === 'Mini-Splits';
-            if ((item.getAttribute('data-layer') || 'tools') === 'tools' && !isMiniSplit) {
+            const homeCategoryLabel = homeCategoryEl
+                ? (homeCategoryEl.querySelector(':scope > summary .category-header-left')?.childNodes[0]?.textContent || '').trim()
+                : '';
+            const hasNoDustPort = NO_DUST_PORT_CATEGORIES.includes(homeCategoryLabel);
+            if ((item.getAttribute('data-layer') || 'tools') === 'tools' && !hasNoDustPort) {
                 const attachLabel = document.createElement('label');
                 attachLabel.className = 'attach-dc-label';
                 attachLabel.innerHTML = '<input type="checkbox" class="attach-dc-checkbox"> Attach to dust collection?';
