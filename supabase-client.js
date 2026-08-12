@@ -448,6 +448,67 @@
         nameInput.focus();
     }
 
+    // Explicit "forgot password" modal -- always asks for an email, rather than the old
+    // per-page inline handler's behavior of silently reusing whatever the adjacent sign-in
+    // email field happened to already contain (stale value, autofill, whatever) with nothing
+    // on screen indicating that's what it was about to do. prefillEmail is a convenience only,
+    // not a dependency -- the field is always visible and editable before Send does anything.
+    function kerphShowForgotPasswordModal(prefillEmail) {
+        if (document.getElementById('kerphForgotPasswordModal')) return;
+        const el = document.createElement('div');
+        el.id = 'kerphForgotPasswordModal';
+        el.style.cssText = 'position:fixed; inset:0; background:rgba(15,23,42,0.55); z-index:5000; display:flex; align-items:center; justify-content:center; padding:20px; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;';
+        el.innerHTML = `
+            <div style="background:#fff; border-radius:14px; box-shadow:0 25px 60px rgba(0,0,0,0.4); max-width:360px; width:100%; padding:24px; position:relative; box-sizing:border-box;">
+                <button type="button" aria-label="Close" style="position:absolute; top:12px; right:12px; background:none; border:none; color:#9ca3af; font-size:18px; line-height:1; cursor:pointer; padding:4px;">&times;</button>
+                <div style="font-size:18px; font-weight:800; color:#0f172a; margin-bottom:2px;">Reset your password</div>
+                <div style="font-size:12.5px; color:#6b7280;">Enter your account email and we'll send a link to set a new password.</div>
+
+                <label style="${KERPH_MODAL_LABEL_STYLE}" for="forgotPasswordEmailInput">Email</label>
+                <input type="email" id="forgotPasswordEmailInput" placeholder="you@example.com" style="${KERPH_MODAL_INPUT_STYLE}">
+
+                <div id="forgotPasswordModalStatus" style="display:none; margin-top:12px; font-size:12px; padding:8px 10px; border-radius:6px;"></div>
+                <button type="button" id="forgotPasswordModalSubmit" style="display:block; width:100%; text-align:center; background:#1e3a8a; color:#fff; border:none; font-weight:700; font-size:14px; padding:11px; border-radius:8px; cursor:pointer; margin-top:16px;">Send Reset Link</button>
+            </div>
+        `;
+        const emailInput = el.querySelector('#forgotPasswordEmailInput');
+        const statusEl = el.querySelector('#forgotPasswordModalStatus');
+        const submitBtn = el.querySelector('#forgotPasswordModalSubmit');
+        emailInput.value = prefillEmail || '';
+
+        function close() { el.remove(); }
+        function showStatus(message, ok) {
+            statusEl.textContent = message;
+            statusEl.style.display = 'block';
+            statusEl.style.color = ok ? '#166534' : '#b91c1c';
+            statusEl.style.background = ok ? '#f0fdf4' : '#fef2f2';
+            statusEl.style.border = `1px solid ${ok ? '#bbf7d0' : '#fecaca'}`;
+        }
+
+        async function submit() {
+            const email = emailInput.value.trim();
+            if (!email || !email.includes('@')) { showStatus('Enter a valid email address.'); return; }
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Sending…';
+            try {
+                const { error } = await kerphRequestPasswordReset(email);
+                if (error) { showStatus(error.message || 'Could not send reset email.'); return; }
+                showStatus('Check your email for a password reset link.', true);
+                setTimeout(close, 3000);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Send Reset Link';
+            }
+        }
+
+        el.querySelector('button[aria-label="Close"]').addEventListener('click', close);
+        el.addEventListener('click', (e) => { if (e.target === el) close(); });
+        submitBtn.addEventListener('click', submit);
+        emailInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') submit(); });
+        document.body.appendChild(el);
+        emailInput.focus();
+    }
+
     // Every page's header sign-in form is independently duplicated markup+JS (~26 copies), so
     // rather than edit the Sign-Up path into all of them, this intercepts it centrally: the
     // header button's own text ("Sign Up" vs "Sign In") is the one reliable signal of which
@@ -473,6 +534,19 @@
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' && e.target && (e.target.id === 'headerSignInEmail' || e.target.id === 'headerSignInPassword')) {
             kerphInterceptSignUp(e);
+        }
+    }, true);
+
+    // Same centralized-interception pattern as Sign Up above -- "Forgot password?" is likewise
+    // independently duplicated per-page, and its old inline handler just silently reused
+    // whatever the adjacent sign-in email field happened to contain. Intercepted centrally so
+    // the explicit modal opens on every page without editing ~27 duplicated copies.
+    document.addEventListener('click', (e) => {
+        if (e.target && e.target.id === 'headerForgotPasswordLink') {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            const emailInput = document.getElementById('headerSignInEmail');
+            kerphShowForgotPasswordModal(emailInput ? emailInput.value.trim() : '');
         }
     }, true);
 
