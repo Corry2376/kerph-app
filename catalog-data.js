@@ -45,7 +45,6 @@
         'Powermatic PJ882': { power: '2 HP', voltage: '220V', weight: '~475 lbs' },
         'Powermatic 201HH': { power: '3 HP', voltage: '220V', weight: '~450 lbs' },
         'Hammer A3-31': { power: '4 HP', voltage: '220V / 3-phase', weight: '~750 lbs' },
-        'Grizzly G0771Z': { power: '1.5 HP', voltage: '110V / 220V', weight: '~200 lbs' },
         'JET 22-44 Sander': { power: '3/4 HP', voltage: '110V', weight: '~250 lbs' },
         'SuperMax 19-38': { power: '5 HP', voltage: '220V', weight: '~600 lbs' },
         'Powermatic PM2800B': { power: '1 HP', voltage: '110V / 220V', weight: '~400 lbs' },
@@ -157,9 +156,9 @@
         'DeWalt DWE7491RS': { power: '15A', voltage: '120V', weight: '~90 lbs (w/ stand)', buyUrl: 'https://www.dewalt.com/en-us/product/dwe7491rs/10-jobsite-table-saw-and-rolling-stand', image: 'https://assets.dewalt.com/NAG/PRODUCT/IMAGES/HIRES/WHITEBG/DWE7491RS_1_1680.webp' },
         'SKIL TS6307-00': { power: '15A', voltage: '120V', weight: '~65 lbs', buyUrl: 'https://www.skil.com/products/15-amp-10inch-table-saw-ts6307-00', image: 'https://www.skil.com/cdn/shop/files/ts6307_skil_tablesaw_profile_shadow_23-0314_main_1000.png?v=1751490797' },
         'RIDGID R4518': { power: '15A', voltage: '120V', weight: '~75 lbs', buyUrl: 'https://www.homedepot.com/p/RIDGID-15-Amp-10-in-Portable-Corded-Jobsite-Table-Saw-with-Folding-Stand-R4518/309413142' },
-        'Grizzly G0715P': { power: '2 HP', voltage: '110V / 220V', weight: '~393 lbs', buyUrl: 'https://cdn0.grizzly.com/specsheets/g0715p_ds.pdf' },
+        'Grizzly G0715P': { power: '2 HP', voltage: '110V / 220V', weight: '~393 lbs', buyUrl: 'https://www.amazon.com/Grizzly-G0715P-Hybrid-Riving-10-Inch/dp/B006SJIEG4?tag=kerphplans-20' },
         'Powermatic PM1000': { power: '1.75 HP', voltage: '115V / 230V', weight: '~289 lbs', buyUrl: 'https://www.rockler.com/powermatic-pm1000-1-3-4-hp-table-saw-1-phase-with-30-accu-fence-system', image: 'https://www.rockler.com/media/catalog/product/4/9/49024-01-1000.jpg?quality=80&bg-color=255,255,255&fit=bounds&height=760&width=760&canvas=760:760' },
-        'Grizzly G0690': { power: '3 HP', voltage: '220V', weight: '~507 lbs', buyUrl: 'https://cdn0.grizzly.com/specsheets/g0690_ds.pdf' },
+        'Grizzly G0690': { power: '3 HP', voltage: '220V', weight: '~507 lbs', buyUrl: 'https://www.amazon.com/Grizzly-G0690-Cabinet-Riving-10-Inch/dp/B0029VN2SA?tag=kerphplans-20' },
         'DeWalt DWS779': { power: '15A', voltage: '120V', weight: '~56 lbs', buyUrl: 'https://www.dewalt.com/en-us/product/dws779/12-double-bevel-sliding-compound-miter-saw', image: 'https://assets.dewalt.com/NAG/PRODUCT/IMAGES/HIRES/WHITEBG/DWS779_1_1680.webp' },
         'Bosch GCM12SD': { power: '15A', voltage: '120V', weight: '~65 lbs', buyUrl: 'https://www.boschtools.com/us/en/products/gcm12sd-060166501C', image: 'https://www.boschtools.com/us/en/ocsmedia/131320-945/application-image/1434x828/miter-saws-gcm12sd-060166501c.png' },
         'Makita LS1019L': { power: '15A', voltage: '120V', weight: '~58 lbs', buyUrl: 'https://makitatools.com/products/details/LS1019L' },
@@ -184,7 +183,7 @@
         'Festool KSC 60 EB-Basic': { power: '18V x2 (cordless)', voltage: '18V x2', weight: '~38 lbs (saw only)', buyUrl: 'https://www.woodcraft.com/products/festool-cordless-kapex-sliding-compound-miter-saw-ksc-60-eb-basic', image: 'https://www.woodcraft.com/cdn/shop/files/576848_000_001.jpg?v=1720477558&width=2000' },
         'Skilsaw SPT88-01': { power: '15A', voltage: '120V', weight: '~51 lbs (saw only)', buyUrl: 'https://www.skil.com/products/wormdrive-dual-bevel-miter-saw-spt88-01', image: 'https://www.skil.com/cdn/shop/files/spt88-01_hero_skilsaw_12_mitersaw_front_na.png?v=1751491104' },
         'Rikon 10-305': { power: '1/3 HP', voltage: '120V', weight: '~76 lbs', buyUrl: 'https://rikontools.com/product/model-10-305-10%E2%80%B3-bandsaw/', image: 'https://rikontools.com/wp-content/uploads/2023/01/10-305-parts-diagramdark-scaled.jpg' },
-        'Grizzly G0555LX': { power: '1 HP', voltage: '110V', weight: '~218 lbs', buyUrl: 'https://cdn0.grizzly.com/specsheets/g0555lx_ds.pdf' },
+        'Grizzly G0555LX': { power: '1 HP', voltage: '110V', weight: '~218 lbs', buyUrl: 'https://www.amazon.com/Grizzly-Industrial-G0555LX-Deluxe-Bandsaw/dp/B07XT63FWH?tag=kerphplans-20' },
         'DeWalt DW735X': { power: '15A', voltage: '120V', weight: '~102 lbs', buyUrl: 'https://www.dewalt.com/en-us/product/dw735x/13-3-knife-two-speed-thickness-planer', image: 'https://assets.dewalt.com/NAG/PRODUCT/IMAGES/HIRES/WHITEBG/DW735X_1_1680.webp' },
         'JET JWJ-8CS': { power: '2 HP', voltage: '230V', weight: '~398 lbs', buyUrl: 'https://www.homedepot.com/p/Jet-JWJ-8CS-8-in-Closed-Stand-Jointer-Kit-718200K/306002034' },
         'Cutech 40160HB': { power: 'N/A (manual feed)', voltage: 'N/A', weight: '~65 lbs', buyUrl: 'https://cutechtools.us/products/6-spiral-cutterhead-benchtop-jointer-black-table-cutech-40160hb', image: 'https://cutechtools.us/cdn/shop/files/20241210_40160HCB_2.jpg?v=1741029104&width=3240' },
@@ -280,7 +279,7 @@
         'Panasonic CU-XE9WKUA': { power: '9,000 BTU', voltage: '208-230V', weight: '~106 lbs', buyUrl: 'https://oswaldsupply.com/products/panasonic-xe9wkua-9000-btu-climapure-xe-series-single-zone-28-1-seer-heat-cool-pump-system' },
         'Panasonic CU-XE12WKUA': { power: '12,000 BTU', voltage: '208-230V', weight: '~106 lbs', buyUrl: 'https://oswaldsupply.com/products/panasonic-xe12wkua-12-000-btu-climapure-xe-series-single-zone-24-6-seer-heat-cool-pump-system' },
         'Panasonic CU-XE15WKUA': { power: '15,000 BTU', voltage: '208-230V', weight: '~130 lbs', buyUrl: 'https://www.platt.com/platt-electric-supply/Indoor-Outdoor-Units-Outdoor/Panasonic/CU-XE15WKUA/product.aspx?zpid=1740793' },
-        'Panasonic CU-XE18WKUA': { power: '18,000 BTU', voltage: '208-230V', weight: '~165 lbs', buyUrl: 'https://www.metalworks.com/shop/p/climapure-xe-single-zone-ductless-heat-pump-18000-btu?q=panasonic' },
+        'Panasonic CU-XE18WKUA': { power: '18,000 BTU', voltage: '208-230V', weight: '~165 lbs', buyUrl: 'https://na.panasonic.com/us/home-and-building-solutions/heating-air-conditioning/mini-split/xe18wkua-new-climapure-xe-wall' },
         'Panasonic CU-XE24WKUA': { power: '24,000 BTU', voltage: '208-230V', weight: '~165 lbs', buyUrl: 'https://www.platt.com/p/1740797/panasonic/heat-pump-compressor/phvcuxe24wkua', image: 'https://rexel-cdn.com/products/18.jpg?i=57F3FE12-49F1-4BDB-8798-6EEBF53A14C7&f=420' },
         'Toshiba Carrier RAV-SM122KRTP-UL': { power: '12,000 BTU', voltage: '208-230V', weight: '~132 lbs', buyUrl: 'https://www.carrierenterprise.com/product/1604089118000888' },
         'Toshiba Carrier RAV-SM182KRTP-UL': { power: '18,000 BTU', voltage: '208-230V', weight: '~132 lbs', buyUrl: 'https://www.carrierenterprise.com/product/1604089205498845' },
@@ -401,7 +400,11 @@
         'WEN 4227T': { power: '13A', voltage: '120V', weight: '~214 lbs', buyUrl: 'https://wenproducts.com/products/wen-4227t-13-amp-17-inch-12-speed-floor-standing-drill-press', image: 'https://wenproducts.com/cdn/shop/products/4227.main_89ddd2e4-08e0-4b6e-9dc6-656df52dc062_700x700.jpg?v=1744143426' },
         'WEN 4233': { power: '6.2A', voltage: '120V', weight: '~105 lbs', buyUrl: 'https://wenproducts.com/products/wen-4233-6-2-amp-33-inch-radial-arm-drill-press-benchtop-design-with-5-speeds-and-cast-iron-construction', image: 'https://wenproducts.com/cdn/shop/files/4233.main_700x700.jpg?v=1763747417' },
         'General Intl 75-155 M1': { power: '1/2 HP', voltage: '120V', weight: '~136 lbs', buyUrl: 'https://www.acmetools.com/general-international-15in-floor-commercial-mechanical-variable-speed-drill-press--3-4-hp-75-155-m1/626708751558.html' },
-        'General Intl 75-260 M1': { power: '1 HP', voltage: '120V', weight: '~229 lbs', buyUrl: 'http://www.general.ca/products/1_general/75_drill/75-260.html' },
+        // buyUrl removed 2026-08-11: general.ca has an expired SSL cert (same issue already
+        // documented elsewhere in this file for General International) and no clean Amazon or
+        // other retailer listing was found for this specific model -- falls back to the
+        // Amazon-search "Shop" button instead of linking to a broken domain.
+        'General Intl 75-260 M1': { power: '1 HP', voltage: '120V', weight: '~229 lbs' },
         'General Intl 75-500 M1': { power: '1 HP', voltage: '110V', weight: '~372 lbs', buyUrl: 'https://www.calfast.com/10426_0-GEN75-500-M1.html', image: 'https://www.calfast.com/img/p/en-m-1.jpg' },
         'General Intl 75-710 M1': { power: '1 HP', voltage: '220V', weight: '~161 lbs', buyUrl: 'https://www.acmetools.com/general-international-electronic-17in-variable-speed-drive-floor-drill-press-1-hp-75-710-m1/626708757109.html' },
         'Craftsman CMXEDAX69434601': { power: '4.1A', voltage: '120V', weight: '~53 lbs', buyUrl: 'https://www.craftsman.com/en-us/product/cmxedax69434601/10-benchtop-drill-press-41-amp', image: 'https://assets.craftsman.com/NAG/PRODUCT/IMAGES/HIRES/WHITEBG/CMXEDAX69434601_1_1680.webp' },
@@ -624,6 +627,9 @@
         'DeWalt DWE7485': { power: '15A', voltage: '120V', weight: '~46 lbs', buyUrl: 'https://www.dewalt.com/en-us/product/dwe7485/15-amp-8-14-compact-portable-jobsite-table-saw', image: 'https://assets.dewalt.com/NAG/PRODUCT/IMAGES/HIRES/WHITEBG/DWE7485_1_1680.webp' },
         'DeWalt DWE7491X': { power: '15A', voltage: '120V', weight: '~87 lbs', buyUrl: 'https://www.dewalt.com/en-us/product/dwe7491x/10-table-saw-scissor-stand', image: 'https://assets.dewalt.com/NAG/PRODUCT/IMAGES/HIRES/WHITEBG/DWE7491X_1_1680.webp' },
         'DeWalt DCS7485T1': { power: '60V MAX FlexVolt', voltage: '60V', weight: '~48 lbs', buyUrl: 'https://www.dewalt.com/en-us/product/dcs7485t1/60v-max-table-saw-kit', image: 'https://assets.dewalt.com/NAG/PRODUCT/IMAGES/HIRES/WHITEBG/DCS7485T1_K1_1680.webp' },
+        // Was previously duplicated (two different spec sets for the same name -- the second
+        // definition always silently wins in JS, so this one was already the only one actually
+        // used; the dead first definition, with wrong specs and no buyUrl, was removed 2026-08-11.
         'Grizzly G0771Z': { power: '2 HP', voltage: '120V', weight: '~324 lbs', buyUrl: 'https://www.grizzly.com/products/grizzly-10-2-hp-120v-hybrid-table-saw-w-t-shaped-fence/g0771z' },
         'Grizzly G0962': { power: '2 HP', voltage: '120V', weight: '~243 lbs', buyUrl: 'https://www.grizzly.com/products/grizzly-10-2-hp-open-stand-hybrid-table-saw/g0962' },
         'Grizzly G0899': { power: '2 HP', voltage: '115V / 230V', weight: '~450 lbs', buyUrl: 'https://www.grizzly.com/products/grizzly-10-2-hp-115v-230v-cabinet-saw/g0899' },
@@ -733,7 +739,7 @@
         'Makita KP0810 3-1/4in Planer': { power: '7.5A', voltage: '120V', weight: '~7.3 lbs', buyUrl: 'https://www.toolnut.com/products/makita-kp0810-3-1-4-planer', image: 'https://www.toolnut.com/cdn/shop/files/makita-kp0810-1.jpg?v=1778076376&width=1946' },
         'Makita XPK02Z 18V LXT Cordless Planer': { power: '18V LXT Brushless', voltage: '18V (cordless)', weight: '~6.5 lbs', buyUrl: 'https://www.toolnut.com/makita-xpk02z-18v-lxt-brushless-cordless-aws-capable-3-1-4-planer-tool-only.html', image: 'https://www.toolnut.com/cdn/shop/files/makita_xpk02z_product_shot.jpg?v=1778205090&width=1946' },
         'Bosch PL2632K Planer Kit': { power: '6.5A', voltage: '120V', weight: '~6.3 lbs', buyUrl: 'https://www.boschtools.com/us/en/products/pl2632k-06015A4311', image: 'https://www.boschtools.com/us/en/ocsmedia/291713-945/application-image/1434x828/planers-pl2632k-06015a4311.png' },
-        'Triton TPL180B Triple Blade Planer': { power: '14A', voltage: '120V', weight: '~21 lbs', buyUrl: 'https://www.amazon.com/Triton-TPL180B-Triple-Blade-Planer-7-Inch/dp/B07ZFN78VW' },
+        'Triton TPL180B Triple Blade Planer': { power: '14A', voltage: '120V', weight: '~21 lbs', buyUrl: 'https://www.amazon.com/Triton-TPL180B-Triple-Blade-Planer-7-Inch/dp/B07ZFN78VW?tag=kerphplans-20' },
 
         'DeWalt DWFP12233 Brad Nailer': { power: '70-120 PSI', voltage: 'Pneumatic (air hose)', weight: '~3.1 lbs', buyUrl: 'https://www.dewalt.com/en-us/product/dwfp12233/18-ga-precision-point-brad-nailer', image: 'https://assets.dewalt.com/NAG/PRODUCT/IMAGES/HIRES/WHITEBG/DWFP12233_1_1680.webp' },
         'DeWalt DWF83PL 21-Degree Framing Nailer': { power: '70-120 PSI', voltage: 'Pneumatic (air hose)', weight: '~8 lbs', buyUrl: 'https://www.dewalt.com/en-us/product/dwf83pl/21-degree-plastic-round-head-framing-nailer', image: 'https://assets.dewalt.com/NAG/PRODUCT/IMAGES/HIRES/WHITEBG/DWF83PL_1_1680.webp' },
@@ -761,7 +767,7 @@
         'Ryobi RY405100 40V HP Brushless Chainsaw': { power: '40V brushless motor', voltage: '40V (cordless)', weight: '~11.4 lbs', buyUrl: 'https://www.ryobitools.com/products/46396039910', image: 'https://cdn.shopify.com/s/files/1/0651/3668/9323/files/0a0aaeeb026d49cd99358fdd01f419a5_1824x874.jpg?v=1734040700' },
         'Milwaukee 2780-20 M18 FUEL Angle Grinder': { power: '8,500 RPM brushless motor', voltage: '18V (cordless)', weight: '~5.8 lbs', buyUrl: 'https://www.milwaukeetool.com/products/details/m18-fuel-4-1-2-5-grinder-paddle-switch-no-lock-tool-only/2780-20', image: 'https://www.milwaukeetool.com/--/web-images/sc/d4f5afffbc7740cb9af727fdd00d45f2?hash=74bea8cd3eb09b951cd1686f8d7b3a29&lang=en' },
         'DeWalt DWE402 Small Angle Grinder': { power: '11A', voltage: '120V', weight: '~6.1 lbs', buyUrl: 'https://www.dewalt.com/en-us/product/dwe402/4-12-115mm-small-angle-grinder', image: 'https://assets.dewalt.com/NAG/PRODUCT/IMAGES/HIRES/WHITEBG/DWE402_1_1680.webp' },
-        'Makita 9557PBX1 Angle Grinder': { power: '7.5A', voltage: '120V', weight: '~4.5 lbs', buyUrl: 'https://www.amazon.com/Makita-9557PBX1-2-Inch-Grinder-Aluminum/dp/B0010DHFTK', image: 'https://www.toolnut.com/cdn/shop/files/makita-9557pbx1-1.jpg?v=1778065156&width=1946' },
+        'Makita 9557PBX1 Angle Grinder': { power: '7.5A', voltage: '120V', weight: '~4.5 lbs', buyUrl: 'https://www.amazon.com/Makita-9557PBX1-2-Inch-Grinder-Aluminum/dp/B0010DHFTK?tag=kerphplans-20', image: 'https://www.toolnut.com/cdn/shop/files/makita-9557pbx1-1.jpg?v=1778065156&width=1946' },
         'Bosch GWS13-50 Angle Grinder': { power: '13A', voltage: '120V', weight: '~5.3 lbs', buyUrl: 'https://www.boschtools.com/us/en/products/gws13-50-060179G012', image: 'https://www.boschtools.com/us/en/ocsmedia/247153-945/application-image/1434x828/standard-angle-grinders-gws13-50-060179g012.png' },
         'DeWalt D26960K Heat Gun': { power: '13A / 1550W', voltage: '120V', weight: '~2.3 lbs', buyUrl: 'https://www.dewalt.com/en-us/product/d26960k/dewalt-heat-gun-kit-lcd-display', image: 'https://assets.dewalt.com/NAG/PRODUCT/IMAGES/HIRES/WHITEBG/D26960K_K1_1680.webp' },
         'Milwaukee 2688-20 M18 Compact Heat Gun': { power: 'up to 875°F airflow', voltage: '18V (cordless)', weight: '~1.7 lbs', buyUrl: 'https://www.milwaukeetool.com/products/details/m18-compact-heat-gun/2688-20', image: 'https://www.milwaukeetool.com/--/web-images/sc/268ea4572182461ca2955cc47b06f26d?hash=3ee1b436dd8438b20e61800525e461b8&lang=en' },
@@ -826,7 +832,9 @@
         { name: 'Powermatic PJ882', category: 'Jointers & Planers', layer: 'tools', widthFt: 1.4, lengthFt: 7.3, heightFt: 3.0 },
         { name: 'Powermatic 201HH', category: 'Jointers & Planers', layer: 'tools', widthFt: 2.6, lengthFt: 3.4, heightFt: 3.2 },
         { name: 'Hammer A3-31', category: 'Jointers & Planers', layer: 'tools', widthFt: 2.5, lengthFt: 4.0, heightFt: 3.0 },
-        { name: 'Grizzly G0771Z', category: 'Sanding', layer: 'tools', widthFt: 1.8, lengthFt: 2.2, heightFt: 5.0 },
+        // 'Grizzly G0771Z' was also erroneously placed here under Sanding (a 10" table saw has
+        // no business in a sanding category) -- removed 2026-08-11. Its one correct placement is
+        // under Table Saws below.
         { name: 'JET 22-44 Sander', category: 'Sanding', layer: 'tools', widthFt: 1.5, lengthFt: 1.5, heightFt: 3.3 },
         { name: 'SuperMax 19-38', category: 'Sanding', layer: 'tools', widthFt: 2.0, lengthFt: 3.5, heightFt: 4.0 },
         { name: 'Powermatic PM2800B', category: 'Drilling & Boring', layer: 'tools', widthFt: 2.0, lengthFt: 2.3, heightFt: 6.3 },
