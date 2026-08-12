@@ -8923,12 +8923,12 @@
             const toolW = dragData.length * ppi;
             const toolH = dragData.width * ppi;
 
-            // Placement snaps to a fixed 6in grid regardless of the ruler's displayed grid
+            // Placement snaps to a fixed 1in grid regardless of the ruler's displayed grid
             // scale (1ft/2ft/etc.) — that scale is a ruler/visual setting, not a placement
-            // granularity, and 6in gives real positioning control next to walls/other items.
+            // granularity, and 1in gives real positioning control next to walls/other items.
             // Dust collection items (ducts especially) need finer placement still, to route
             // cleanly between fixed points without every run jumping between a few spots.
-            const snapInterval = dragData.layer === 'dust-collection' ? (ppi / 6) : (ppi / 2);
+            const snapInterval = dragData.layer === 'dust-collection' ? (ppi / 6) : (ppi / 12);
 
             // Enforces snapping alignment parameters
             let snapX = Math.round((mouseX - toolW / 2) / snapInterval) * snapInterval;
@@ -9343,8 +9343,8 @@
                 }
                 let targetX = startLeft + deltaX;
                 let targetY = startTop + deltaY;
-                // Fixed 6in placement snap regardless of ruler grid scale — see the drop handler above.
-                const currentSnap = el.dataset.layer === 'dust-collection' ? (ppi / 6) : (ppi / 2);
+                // Fixed 1in placement snap regardless of ruler grid scale — see the drop handler above.
+                const currentSnap = el.dataset.layer === 'dust-collection' ? (ppi / 6) : (ppi / 12);
                 targetX = Math.round(targetX / currentSnap) * currentSnap;
                 targetY = Math.round(targetY / currentSnap) * currentSnap;
 
@@ -9523,9 +9523,9 @@
             document.addEventListener('pointermove', (e) => {
                 if (!mode || e.pointerId !== resizePointerId) return;
                 if (isMultiTouch()) return;
-                // Fixed 6in snap regardless of ruler grid scale — matches the placement/
+                // Fixed 1in snap regardless of ruler grid scale — matches the placement/
                 // reposition snap everywhere else on the board.
-                const snap = ppi / 2;
+                const snap = ppi / 12;
                 const minPx = snap;
                 const angle = parseFloat(el.dataset.rotation) || 0;
                 const curW = parseFloat(el.style.width) || 0;
