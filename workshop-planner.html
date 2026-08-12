@@ -10039,7 +10039,7 @@
             resultsEl.innerHTML = '';
 
             const matches = query
-                ? SMALL_TOOLS.filter(t => t.name.toLowerCase().includes(query) || t.category.toLowerCase().includes(query))
+                ? SMALL_TOOLS.filter(t => window.kerphSearchMatch(t.name, query) || window.kerphSearchMatch(t.category, query))
                 : SMALL_TOOLS;
 
             const groups = {};
@@ -13897,7 +13897,7 @@
                     let categoryHasMatch = false;
                     category.querySelectorAll('.tool-box-item').forEach(item => {
                         const nameText = (item.querySelector('.tool-title')?.textContent || item.getAttribute('data-name') || '').toLowerCase();
-                        const isMatch = !query || nameText.includes(query);
+                        const isMatch = window.kerphSearchMatch(nameText, query);
                         item.style.display = isMatch ? '' : 'none';
                         if (isMatch) categoryHasMatch = true;
                     });

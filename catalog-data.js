@@ -788,6 +788,20 @@
         return `https://www.amazon.com/s?k=${encodeURIComponent(name)}&tag=${window.AMAZON_ASSOCIATE_TAG}`;
     };
 
+    // Shared "contains all these words" search matcher -- a plain haystack.includes(query) only
+    // matches the typed text as one contiguous substring, so "dewalt table saw" would never
+    // match "DeWalt DWE7491RS 10-inch Jobsite Table Saw" (the words are real, just not adjacent
+    // in that order). Splitting the query into words and requiring each one to appear somewhere
+    // (any order) is what makes multi-word typing actually narrow results down instead of going
+    // straight to zero. Both haystack and query are matched case-insensitively; pass already-
+    // lowercased text in if you have it cached to avoid re-lowercasing on every keystroke.
+    window.kerphSearchMatch = function (haystack, query) {
+        const q = (query || '').trim().toLowerCase();
+        if (!q) return true;
+        const h = (haystack || '').toLowerCase();
+        return q.split(/\s+/).every(word => h.includes(word));
+    };
+
     // { name, category, layer, widthFt, lengthFt, heightFt } for every non-cabinet catalog
     // item (cabinets are built via a form, not this static list). widthFt/lengthFt/heightFt
     // mirror each catalog chip's data-width/data-length/data-height in workshop-planner.html.

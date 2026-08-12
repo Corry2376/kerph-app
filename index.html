@@ -2622,7 +2622,7 @@
             resultsEl.innerHTML = '';
 
             const matches = query
-                ? SMALL_TOOLS.filter(t => t.name.toLowerCase().includes(query) || t.category.toLowerCase().includes(query))
+                ? SMALL_TOOLS.filter(t => window.kerphSearchMatch(t.name, query) || window.kerphSearchMatch(t.category, query))
                 : SMALL_TOOLS;
 
             const groups = {};
@@ -2856,7 +2856,7 @@
                     let categoryHasMatch = false;
                     details.querySelectorAll('.tool-box-item').forEach(item => {
                         const nameText = (item.querySelector('.tool-title')?.textContent || '').toLowerCase();
-                        const isMatch = !query || nameText.includes(query) || category.toLowerCase().includes(query);
+                        const isMatch = window.kerphSearchMatch(nameText, query) || window.kerphSearchMatch(category, query);
                         item.style.display = isMatch ? '' : 'none';
                         if (isMatch) categoryHasMatch = true;
                     });
