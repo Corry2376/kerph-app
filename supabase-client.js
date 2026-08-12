@@ -62,7 +62,7 @@
             if (state.user) kerphLogDailyActiveUser(state.user.id);
             await refreshProfile(state.user ? state.user.id : null);
             if (state.user) {
-                await kerphApplyPendingSignupProfile();
+                await kerphBackfillProfileFromSignupMetadata();
             }
             kerphSyncAdminDashboardLink();
             // Real entitlement resolution — direct subscription, or Premier inherited via an
@@ -91,8 +91,15 @@
         }, 0);
     });
 
-    async function kerphSignUp(email, password) {
-        const { data, error } = await kerphSupabase.auth.signUp({ email, password });
+    // metadata (e.g. { full_name, username, referral_source }) is stored by Supabase on the
+    // auth.users row itself (available afterward as session.user.user_metadata) -- unlike
+    // localStorage, it survives regardless of which device/browser the user ends up
+    // confirming their email and signing in from.
+    async function kerphSignUp(email, password, metadata) {
+        const { data, error } = await kerphSupabase.auth.signUp({
+            email, password,
+            options: metadata ? { data: metadata } : undefined
+        });
         if (error) return { error };
         // Supabase deliberately returns an obfuscated non-error "success" for an email
         // that's already registered (anti-enumeration behavior) — without this check, a
@@ -407,14 +414,17 @@
             submitBtn.disabled = true;
             submitBtn.textContent = 'Creating…';
             try {
-                const { error, needsConfirmation } = await kerphSignUp(email, password);
+                const { error, needsConfirmation } = await kerphSignUp(email, password, {
+                    full_name: name, username: name, referral_source: referral
+                });
                 if (error) { showStatus(error.message || 'Sign up failed.'); return; }
 
                 if (needsConfirmation) {
                     // Not signed in yet -- state.user doesn't exist until they confirm and sign
-                    // in for real, so this can't be saved via kerphSaveProfile right now.
-                    // Applied automatically on that first real sign-in (see the auth listener).
-                    localStorage.setItem('kerphPendingSignupProfile', JSON.stringify({ username: name, fullName: name, referralSource: referral }));
+                    // in for real, so this can't be saved via kerphSaveProfile right now. The
+                    // name/referral above are already stored as auth user_metadata though, so
+                    // kerphBackfillProfileFromSignupMetadata() applies them automatically on
+                    // that first real sign-in, from whatever device it happens on.
                     showStatus('Check your email to confirm your account, then sign in.', true);
                     setTimeout(close, 3000);
                 } else {
@@ -466,15 +476,22 @@
         }
     }, true);
 
-    // Applies a name/referral-source captured at sign-up but deferred because email
-    // confirmation was required (no session existed yet to save against). Runs once per real
-    // sign-in; harmless no-op for every other case since the localStorage key is absent.
-    async function kerphApplyPendingSignupProfile() {
-        let pending;
-        try { pending = JSON.parse(localStorage.getItem('kerphPendingSignupProfile') || 'null'); } catch (e) { pending = null; }
-        if (!pending) return;
-        localStorage.removeItem('kerphPendingSignupProfile');
-        await kerphSaveProfile(pending).catch(() => {});
+    // Backfills username/full_name/referral_source from the signup-time auth metadata (set via
+    // signUp()'s options.data above) the first time we see a profile that doesn't have a name
+    // yet. Runs on every sign-in; cheap no-op once full_name is actually set. This replaced a
+    // localStorage-based handoff that silently failed whenever email confirmation happened on a
+    // different device/browser than the one signup started on (a common real case, e.g. signing
+    // up on desktop and confirming from a phone) — user_metadata lives on the auth user record
+    // itself, so it's there on every sign-in from every device, not just the original one.
+    async function kerphBackfillProfileFromSignupMetadata() {
+        if (!state.user) return;
+        const meta = state.user.user_metadata || {};
+        if (!meta.full_name || (state.profile && state.profile.full_name)) return;
+        await kerphSaveProfile({
+            username: (state.profile && state.profile.username) || meta.username || meta.full_name,
+            fullName: meta.full_name,
+            referralSource: meta.referral_source
+        }).catch(() => {});
     }
 
     // Sitewide footer -- injected here (not added to ~26 pages' own HTML) for the same reason
