@@ -6360,7 +6360,7 @@
             </div>
         </details>
 
-        <details class="tool-category" data-domain="mechanical" data-clearance-category="Air Compressors &amp; Shop Air">
+        <details class="tool-category" data-clearance-category="Air Compressors &amp; Shop Air">
             <summary class="category-header">
                 <span class="category-header-left">Air Compressors &amp; Shop Air <span class="category-count">31</span></span>
                 <span class="category-chevron">&#9656;</span>
@@ -7442,8 +7442,12 @@
         // Shop Type follows the individual layout (like width/length), not a global browser
         // preference like unitSystem — a user can have one woodworking layout and one
         // mechanical layout, so this is never read from localStorage, only from the loaded
-        // layout's own shopType field (see serializeCurrentLayout/applyLayoutState).
-        let shopType = 'woodworking';
+        // layout's own shopType field (see serializeCurrentLayout/applyLayoutState). Defaults
+        // to 'both' (not 'woodworking') so a fresh layout's sidebar shows every category, same
+        // as the home page's catalog always does -- narrowing it down is an explicit opt-in,
+        // not a silent default that hides half the catalog (Air Compressors, Vehicle Lifts,
+        // Welding, etc.) with no visible explanation.
+        let shopType = 'both';
 
         function feetToDisplay(feet) {
             return unitSystem === 'metric'
@@ -13843,8 +13847,11 @@
         }
 
         // Shows/hides sidebar catalog categories based on the current shopType. Categories
-        // with no data-domain attribute (My Tools, Small Power Tools, Tool Storage, Lighting,
-        // Assembly & Storage, My Custom Tools) are domain-agnostic and always show.
+        // with no data-domain attribute (My Tools, My Wishlist, Small Power Tools, Tool
+        // Storage, Lighting, Plumbing, Mini-Splits, Air Compressors & Shop Air, Assembly &
+        // Storage, My Custom Tools) are domain-agnostic and always show -- also true of any
+        // shop that uses both trades' tools (e.g. air compressors run nail guns and spray
+        // finishing in a wood shop just as much as pneumatic tools in a mechanical one).
         function applyShopTypeFilter() {
             document.querySelectorAll('#sidebar-panel .tool-category[data-domain]').forEach(cat => {
                 const domain = cat.getAttribute('data-domain');
