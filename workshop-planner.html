@@ -961,12 +961,12 @@
             z-index: 10;
         }
 
-        /* Only this inner area scrolls, reserving a clean strip above it (see .measure-toolbar)
-           so the fixed-position measure toolbar's screen space never has grid content that can
-           scroll underneath it. */
+        /* Only this inner area scrolls, reserving a clean strip above it (see .measure-toolbar
+           and .layers-bar) so the fixed-position toolbar/layers row's screen space never has
+           grid content that can scroll underneath it. */
         #canvas-scroll-area {
             position: absolute;
-            top: 55px;
+            top: 95px;
             left: 0;
             right: 0;
             bottom: 0;
@@ -1182,6 +1182,32 @@
         }
 
         .measure-btn:hover { background-color: #eef2ff; border-color: #2563eb; }
+
+        /* Persistent, always-visible layer switcher -- deliberately NOT a collapsible
+           floating-panel like the other tool panels. This changes what's even visible on the
+           board (a mode switch), not an occasional lookup, so it stays on-screen with the
+           current layer always shown via the active tab, one click to switch. Sits in the same
+           reserved strip as .measure-toolbar, directly below it -- see #canvas-scroll-area's
+           top offset, which was grown to fit both rows. */
+        .layers-bar {
+            position: fixed;
+            top: 191px;
+            left: 320px;
+            z-index: 1500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .layers-bar-label {
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: #cbd5e1;
+            margin-right: 2px;
+        }
 
         /* Centered over the actual visible grid/ruler, vertically midway between the toolbar
            row and the ruler (both kept in sync by JS — see updateZoomControlBarPosition), not
@@ -1658,12 +1684,6 @@
             color: #94a3b8;
             padding: 10px 0;
             text-align: center;
-        }
-
-        .layer-toggle-row {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
         }
 
         .wf-tabs {
@@ -2548,7 +2568,7 @@
             z-index: 1440;
         }
 
-        /* ---------- Mobile bottom-sheet tab bar (Cabinets / Wall Features / Layers) ---------- */
+        /* ---------- Mobile bottom-sheet tab bar (Cabinets / Wall Features) ---------- */
         #mobilePanelTabBar {
             display: none;
         }
@@ -2578,6 +2598,11 @@
                 left: 8px;
                 right: 8px;
                 flex-wrap: wrap;
+                justify-content: center;
+            }
+            .layers-bar {
+                left: 8px;
+                right: 8px;
                 justify-content: center;
             }
             .shape-draw-panel {
@@ -7058,6 +7083,15 @@
         <button type="button" id="zoomInBtn" class="measure-btn" title="Zoom in">&#43;</button>
     </div>
 
+    <div class="layers-bar" id="layersBar">
+        <span class="layers-bar-label">Layers</span>
+        <button type="button" class="wf-tab active" data-layer-view="all">All</button>
+        <button type="button" class="wf-tab" data-layer-view="tools">Tools</button>
+        <button type="button" class="wf-tab" data-layer-view="dust-collection">Dust Collection</button>
+        <button type="button" class="wf-tab" data-layer-view="lighting">Lighting</button>
+        <button type="button" class="wf-tab" data-layer-view="plumbing">Plumbing</button>
+    </div>
+
     <div class="print-only-header" id="printOnlyHeader"></div>
     <div class="print-watermark" id="printWatermark">KERPH &mdash; FREE PLAN</div>
 
@@ -7068,20 +7102,6 @@
         <button type="button" id="touchActionRotateBtn" class="mini-btn" title="Rotate 90&deg;">&#8635; Rotate</button>
         <button type="button" id="touchActionCopyBtn" class="mini-btn" title="Duplicate">&#10697; Copy</button>
         <button type="button" id="touchActionDeleteBtn" class="mini-btn danger" title="Delete">&#128465;&#65039; Delete</button>
-    </div>
-
-    <div class="floating-panel layers-panel collapsed" id="layersPanel">
-        <div class="floating-panel-title" id="layersPanelHandle">Layers <span class="panel-toggle-chevron">&#9656;</span></div>
-        <div class="panel-body">
-        <div class="layer-toggle-row">
-            <button type="button" class="wf-tab active" data-layer-view="all">All</button>
-            <button type="button" class="wf-tab" data-layer-view="tools">Tools</button>
-            <button type="button" class="wf-tab" data-layer-view="dust-collection">Dust Collection</button>
-            <button type="button" class="wf-tab" data-layer-view="lighting">Lighting</button>
-            <button type="button" class="wf-tab" data-layer-view="plumbing">Plumbing</button>
-        </div>
-        <div class="shape-hint" style="margin-top:8px; margin-bottom:0;">Cabinets, walls, and wall features always stay visible — this only hides/shows tools, dust collection, lighting, and plumbing items.</div>
-        </div>
     </div>
 
     <div class="floating-panel wall-feature-panel collapsed" id="wallFeaturePanel">
@@ -7181,14 +7201,15 @@
         </div>
     </div>
 
-    <!-- Mobile-only (<=900px) persistent tab bar standing in for the Cabinet/Wall Feature/
-         Layers panels' own title bars, which are hidden while each panel is collapsed in
-         bottom-sheet mode (see the .cabinet-panel/.wall-feature-panel/.layers-panel rules in
-         the mobile media query above) — see initMobilePanelTabBar(). -->
+    <!-- Mobile-only (<=900px) persistent tab bar standing in for the Cabinet/Wall Feature
+         panels' own title bars, which are hidden while each panel is collapsed in
+         bottom-sheet mode (see the .cabinet-panel/.wall-feature-panel rules in
+         the mobile media query above) — see initMobilePanelTabBar(). Layers is no longer part
+         of this: it's a persistent top bar (.layers-bar) on every viewport width now, not a
+         collapsible panel. -->
     <div id="mobilePanelTabBar">
         <button type="button" id="mobileTabCabinet">&#128736;&#65039; Cabinets</button>
         <button type="button" id="mobileTabWallFeature">&#128682; Wall Features</button>
-        <button type="button" id="mobileTabLayers">&#128443;&#65039; Layers</button>
     </div>
 
     <div class="floating-panel electrical-panel collapsed" id="electricalPanel">
@@ -9104,7 +9125,7 @@
         }
 
         function initLayers() {
-            const buttons = document.querySelectorAll('#layersPanel .wf-tab');
+            const buttons = document.querySelectorAll('#layersBar .wf-tab');
             buttons.forEach(btn => {
                 btn.addEventListener('click', () => {
                     activeLayerView = btn.dataset.layerView;
@@ -13459,12 +13480,12 @@
         // is deferred until movement actually crosses the threshold, so a plain click/tap never
         // yanks the panel off its CSS-positioned spot.
         //
-        // opts.mobileSheet marks the 3 panels (Cabinet builder, Wall Feature, Layers) that
-        // become a fixed bottom sheet below 900px width (see the mobile media query in <style>
-        // and #mobilePanelTabBar) — free-form dragging is meaningless there (the sheet is
-        // pinned full-width to the bottom edge by CSS), so movement is ignored entirely while
-        // that layout is active and only the tap-to-toggle behavior remains. Desktop-width drag
-        // behavior for these same 3 panels is completely unchanged.
+        // opts.mobileSheet marks the panels (Cabinet builder, Wall Feature) that become a fixed
+        // bottom sheet below 900px width (see the mobile media query in <style> and
+        // #mobilePanelTabBar) — free-form dragging is meaningless there (the sheet is pinned
+        // full-width to the bottom edge by CSS), so movement is ignored entirely while that
+        // layout is active and only the tap-to-toggle behavior remains. Desktop-width drag
+        // behavior for these same panels is completely unchanged.
         function makeDraggable(panel, handle, onClick, opts) {
             const mobileSheet = !!(opts && opts.mobileSheet);
             let dragging = false;
@@ -13547,21 +13568,20 @@
         // window, the page itself just scrolls down to reach the rest — same as any other
         // page on the site — instead of needing internal per-panel clamping/scrolling or a
         // second column that ends up sitting on top of the grid.
-        // These 3 panel ids become a fixed bottom sheet below 900px width (see the mobile media
+        // These panel ids become a fixed bottom sheet below 900px width (see the mobile media
         // query in <style> and #mobilePanelTabBar) -- their position there is entirely CSS-driven
         // (position:fixed; bottom:50px; left:0; right:0), which an inline top/right/left from the
         // desktop stacking logic below would silently override (inline styles always beat a
         // stylesheet rule, media query or not). Skipped from the stack entirely while that layout
         // is active, and any stale inline position from before a resize is cleared so the CSS
         // rule regains full control.
-        const MOBILE_SHEET_PANEL_IDS = ['cabinetPanel', 'wallFeaturePanel', 'layersPanel', 'projectImportPanel'];
+        const MOBILE_SHEET_PANEL_IDS = ['cabinetPanel', 'wallFeaturePanel', 'projectImportPanel'];
 
         function arrangeFloatingPanels() {
             const panels = [
                 document.getElementById('cabinetPanel'),
                 document.getElementById('projectImportPanel'),
                 document.getElementById('wallFeaturePanel'),
-                document.getElementById('layersPanel'),
                 document.getElementById('electricalPanel'),
                 document.getElementById('clearancePanel'),
                 document.getElementById('costPanel'),
@@ -13624,7 +13644,7 @@
         // feedback loops: arrangeFloatingPanels only ever writes top/left/right, never a size
         // property, so it can't itself trigger another resize.
         function initPanelAutoStack() {
-            const panels = ['cabinetPanel', 'projectImportPanel', 'wallFeaturePanel', 'layersPanel', 'electricalPanel', 'clearancePanel', 'costPanel', 'calcPanel']
+            const panels = ['cabinetPanel', 'projectImportPanel', 'wallFeaturePanel', 'electricalPanel', 'clearancePanel', 'costPanel', 'calcPanel']
                 .map(id => document.getElementById(id))
                 .filter(Boolean);
             // No rAF debounce needed: ResizeObserver already batches every observed change
@@ -13638,14 +13658,12 @@
         function initDraggablePanels() {
             const cabinetPanel = document.getElementById('cabinetPanel');
             const wallFeaturePanel = document.getElementById('wallFeaturePanel');
-            const layersPanel = document.getElementById('layersPanel');
 
             makeDraggable(cabinetPanel, cabinetPanel.querySelector('.floating-panel-title'), toggleCollapsedPanel(cabinetPanel), { mobileSheet: true });
             const projectImportPanel = document.getElementById('projectImportPanel');
             makeDraggable(projectImportPanel, projectImportPanel.querySelector('.floating-panel-title'), toggleCollapsedPanel(projectImportPanel), { mobileSheet: true });
             makeDraggable(wallFeaturePanel, wallFeaturePanel.querySelector('.floating-panel-title'), toggleCollapsedPanel(wallFeaturePanel), { mobileSheet: true });
             makeDraggable(document.getElementById('measureToolbar'), document.getElementById('measureToolbarHandle'));
-            makeDraggable(layersPanel, document.getElementById('layersPanelHandle'), toggleCollapsedPanel(layersPanel), { mobileSheet: true });
             initMobilePanelTabBar();
 
             const electricalPanel = document.getElementById('electricalPanel');
@@ -14052,13 +14070,12 @@
         // Stands in for these 3 panels' own title bars, which are hidden while collapsed in
         // bottom-sheet mode (see the mobile media query in <style>) — reuses the exact same
         // toggleCollapsedPanel() the desktop drag-handle click already calls, just enforcing
-        // that only one of the three sheets is expanded at a time (they'd otherwise render on
-        // top of one another, since all three occupy the same full-width slot above this bar).
+        // that only one of the two sheets is expanded at a time (they'd otherwise render on
+        // top of one another, since both occupy the same full-width slot above this bar).
         function initMobilePanelTabBar() {
             const entries = [
                 { btn: document.getElementById('mobileTabCabinet'), panel: document.getElementById('cabinetPanel') },
-                { btn: document.getElementById('mobileTabWallFeature'), panel: document.getElementById('wallFeaturePanel') },
-                { btn: document.getElementById('mobileTabLayers'), panel: document.getElementById('layersPanel') }
+                { btn: document.getElementById('mobileTabWallFeature'), panel: document.getElementById('wallFeaturePanel') }
             ].filter(entry => entry.btn && entry.panel);
             if (!entries.length) return;
 
