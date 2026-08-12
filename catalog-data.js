@@ -533,13 +533,6 @@
         'Cornwell CTSPPR8414KST': { power: 'N/A', voltage: 'N/A', weight: '~281 lbs empty', buyUrl: 'https://webcat.cornwelltools.com/CTSPPR8414KST-PLATINUM-PLUS%E2%84%A2-84%E2%80%9D-14-Drawer-Triple-Bank-Cabinet-Storm-p640564640', image: 'https://d2j6dbq0eux0bg.cloudfront.net/images/53972175/products/640564640/6051232478.jpg' },
         'Craftsman CMSTVS5212BK': { power: 'N/A', voltage: 'N/A', weight: '~376 lbs empty', buyUrl: 'https://www.craftsman.com/en-us/product/cmstvs5212bk/v-series-52-inch-12-drawer-steel-rolling-tool-cabinet-black', image: 'https://assets.craftsman.com/NAG/PRODUCT/IMAGES/HIRES/WHITEBG/CMSTVS5212BK_1_1680.webp' },
 
-        // Plumbing layer — new 4th layer, works for every shop type (domain-agnostic)
-        'Zurn Z415': { power: 'N/A', voltage: 'N/A', weight: 'N/A', buyUrl: 'https://www.zurn.com/products/drainage-interceptors/floor-drains/finish-floor-drains/z415b', image: 'https://zurnelkay.scene7.com/is/image/Elkay/Z415B_AF?$ZE_PRODUCT_MAIN$' },
-        'Mustee 63M': { power: 'N/A', voltage: 'N/A', weight: 'N/A', buyUrl: 'https://www.homeperfect.com/mustee-63m-mop-sink-white-24-in-l.html' },
-        'Rheem RTEX-13': { power: '13 kW', voltage: '240V', weight: '~8.5 lbs', buyUrl: 'https://www.homedepot.com/p/Rheem-Performance-13-kW-2-54-GPM-240-Volt-Self-Modulating-Electric-Tankless-Water-Heater-RETEX-13/300800566' },
-        'NDS Dura Slope': { power: 'N/A', voltage: 'N/A', weight: 'N/A', buyUrl: 'https://www.ndspro.com/us/en/product/drainage/channel-and-trench-drains-and-grates/ds-097-dura-slope-channel-drain-60-in-to-64-in-invert-depth-6-in-wide-x-4-ft-long-x-78-in-deep', image: 'https://powered-by.qbank.se/norma/pim/item_DS-097_M1_Profiles_2500px.jpg' },
-        'Woodford Model 65': { power: 'N/A', voltage: 'N/A', weight: 'N/A', buyUrl: 'https://www.supplyhouse.com/Woodford-65P-12-Model-65-12-3-4-FPT-Inlet-Freezeless-Automatic-Draining-Wall-Hydrant', image: 'https://d3501hjdis3g5w.cloudfront.net/images/products/zoom/65p-12-1.jpg' },
-
         // Dust collection reducer — bridges a 4in run to a 6in run (see DUCT_PORTS/
         // getPortSizeClasses in workshop-planner.html for the port-matching logic)
         '4in-6in Duct Reducer': { power: 'N/A', voltage: 'N/A', weight: '~1 lb' },
@@ -1373,12 +1366,6 @@
         { name: 'Cornwell CTSPPR8414KST', category: 'Mechanic Tool Storage', layer: 'tools', domain: 'mechanical', widthFt: 7.0, lengthFt: 2.5, heightFt: 2.0 },
         { name: 'Craftsman CMSTVS5212BK', category: 'Mechanic Tool Storage', layer: 'tools', domain: 'mechanical', widthFt: 4.3, lengthFt: 1.8, heightFt: 3.3 },
 
-        // Plumbing layer — domain-agnostic (no `domain` key), works for every shop type
-        { name: 'Zurn Z415', category: 'Plumbing', layer: 'plumbing', widthFt: 0.7, lengthFt: 0.7, heightFt: 0.3 },
-        { name: 'Mustee 63M', category: 'Plumbing', layer: 'plumbing', widthFt: 2.0, lengthFt: 0.83, heightFt: 2.0 },
-        { name: 'Rheem RTEX-13', category: 'Plumbing', layer: 'plumbing', widthFt: 0.7, lengthFt: 0.3, heightFt: 1.05 },
-        { name: 'NDS Dura Slope', category: 'Plumbing', layer: 'plumbing', widthFt: 0.5, lengthFt: 4.0, heightFt: 0.65 },
-        { name: 'Woodford Model 65', category: 'Plumbing', layer: 'plumbing', widthFt: 0.3, lengthFt: 0.3, heightFt: 0.3 },
 
         { name: '4in-6in Duct Reducer', category: 'Dust Collection', layer: 'dust-collection', domain: 'woodworking', widthFt: 0.45, lengthFt: 0.6, heightFt: 7.0 }
     ];

@@ -1776,7 +1776,8 @@
         }
 
         .wall-feature-node.wall-feature-switch,
-        .wall-feature-node.wall-feature-outlet {
+        .wall-feature-node.wall-feature-outlet,
+        .wall-feature-node.wall-feature-drain {
             border-radius: 50%;
         }
 
@@ -1796,6 +1797,10 @@
 
         .wall-feature-node.wall-feature-panel {
             background-color: #475569;
+        }
+
+        .wall-feature-node.wall-feature-drain {
+            background-color: #0f766e;
         }
 
         /* Freely-drawn interior walls — styled like the shop's own boundary wall (solid dark
@@ -5424,50 +5429,6 @@
             </div>
         </details>
 
-        <details class="tool-category">
-            <summary class="category-header">
-                <span class="category-header-left">Plumbing <span class="category-count">5</span></span>
-                <span class="category-chevron">&#9656;</span>
-            </summary>
-            <div class="category-items">
-                <div class="tool-box-item" draggable="true" data-layer="plumbing" data-width="0.7" data-length="0.7" data-height="0.3" data-name="Zurn Z415">
-                    <div><div class="tool-title">Zurn Z415 Floor Drain</div><div class="tool-dims">0.7' x 0.7' Footprint</div></div>
-                    <div class="tool-status-controls">
-                        <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
-                        <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
-                    </div>
-                </div>
-                <div class="tool-box-item" draggable="true" data-layer="plumbing" data-width="2.0" data-length="0.83" data-height="2.0" data-name="Mustee 63M">
-                    <div><div class="tool-title">Mustee 63M Utility/Mop Sink</div><div class="tool-dims">2.0' x 0.83' Footprint</div></div>
-                    <div class="tool-status-controls">
-                        <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
-                        <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
-                    </div>
-                </div>
-                <div class="tool-box-item" draggable="true" data-layer="plumbing" data-width="0.7" data-length="0.3" data-height="1.05" data-name="Rheem RTEX-13">
-                    <div><div class="tool-title">Rheem RTEX-13 Tankless Water Heater</div><div class="tool-dims">0.7' x 0.3' Footprint</div></div>
-                    <div class="tool-status-controls">
-                        <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
-                        <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
-                    </div>
-                </div>
-                <div class="tool-box-item" draggable="true" data-layer="plumbing" data-width="0.5" data-length="4.0" data-height="0.65" data-name="NDS Dura Slope">
-                    <div><div class="tool-title">NDS Dura Slope Trench Drain (4ft)</div><div class="tool-dims">0.5' x 4.0' Footprint</div></div>
-                    <div class="tool-status-controls">
-                        <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
-                        <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
-                    </div>
-                </div>
-                <div class="tool-box-item" draggable="true" data-layer="plumbing" data-width="0.3" data-length="0.3" data-height="0.3" data-name="Woodford Model 65">
-                    <div><div class="tool-title">Woodford Model 65 Wall Hydrant</div><div class="tool-dims">0.3' x 0.3' Footprint</div></div>
-                    <div class="tool-status-controls">
-                        <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
-                        <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
-                    </div>
-                </div>
-            </div>
-        </details>
-
         <details class="tool-category" data-domain="woodworking" data-clearance-category="CNC &amp; Digital Fab">
             <summary class="category-header">
                 <span class="category-header-left">CNC &amp; Digital Fab <span class="category-count">3</span></span>
@@ -7099,7 +7060,6 @@
         <button type="button" class="wf-tab" data-layer-view="tools">Tools</button>
         <button type="button" class="wf-tab" data-layer-view="dust-collection">Dust Collection</button>
         <button type="button" class="wf-tab" data-layer-view="lighting">Lighting</button>
-        <button type="button" class="wf-tab" data-layer-view="plumbing">Plumbing</button>
     </div>
 
     <div class="print-only-header" id="printOnlyHeader"></div>
@@ -7123,6 +7083,7 @@
             <button type="button" class="wf-tab" data-wf-type="switch">💡 Switch</button>
             <button type="button" class="wf-tab" data-wf-type="outlet">🔌 Outlet</button>
             <button type="button" class="wf-tab" data-wf-type="panel">⚡ Panel</button>
+            <button type="button" class="wf-tab" data-wf-type="drain">🕳️ Drain</button>
             <button type="button" class="wf-tab" data-wf-type="wall">🧱 Wall</button>
         </div>
 
@@ -7197,6 +7158,11 @@
                 <option value="200" selected>200A</option>
                 <option value="400">400A</option>
             </select>
+        </div>
+
+        <div class="wf-fields" id="wfFieldsDrain" style="display:none;">
+            <label class="header-field-label" for="wfDrainLabel">Label (optional)</label>
+            <input type="text" class="input-box" id="wfDrainLabel" placeholder="e.g. Floor Drain">
         </div>
 
         <div class="wf-fields" id="wfFieldsWall" style="display:none;">
@@ -12027,7 +11993,7 @@
            up their own numbers. Values live in dataset.estCost on each placed node and ride
            along through the same descriptor pipeline as everything else (serialize/restore/
            paste), so they survive save/load and undo/redo like any other placement detail. */
-        const COST_LAYER_LABELS = { tools: 'Tools', cabinets: 'Cabinets', 'dust-collection': 'Dust Collection', lighting: 'Lighting', plumbing: 'Plumbing' };
+        const COST_LAYER_LABELS = { tools: 'Tools', cabinets: 'Cabinets', 'dust-collection': 'Dust Collection', lighting: 'Lighting' };
         let costRowNodes = [];
 
         function getCostItems() {
@@ -12950,11 +12916,11 @@
         };
 
         const POINT_FEATURE_SIZE_FT = 0.35;
-        const WALL_FEATURE_MARKS = { door: 'D', window: 'W', switch: 'S', outlet: 'O', panel: 'E', minisplit: 'M' };
+        const WALL_FEATURE_MARKS = { door: 'D', window: 'W', switch: 'S', outlet: 'O', panel: 'E', minisplit: 'M', drain: 'Dr' };
         // 'minisplit' has no placement entry point anymore (real catalog tools now, in the
         // Mini-Splits category below) -- kept here only so any layout saved before this
         // conversion still renders/loads its wall-mounted mini-split correctly.
-        const WALL_FEATURE_NAMES = { door: 'Door', window: 'Window', switch: 'Switch', outlet: 'Outlet', panel: 'Electrical Panel', minisplit: 'Mini-Split', wall: 'Wall' };
+        const WALL_FEATURE_NAMES = { door: 'Door', window: 'Window', switch: 'Switch', outlet: 'Outlet', panel: 'Electrical Panel', minisplit: 'Mini-Split', drain: 'Drain', wall: 'Wall' };
 
         function getWallSegments() {
             let points;
@@ -13338,6 +13304,10 @@
                     thicknessFt = 0.3;
                     const amps = document.getElementById('wfPanelAmperage').value;
                     label = document.getElementById('wfPanelLabel').value.trim() || `${amps}A Panel`;
+                } else if (type === 'drain') {
+                    lengthFt = POINT_FEATURE_SIZE_FT;
+                    thicknessFt = POINT_FEATURE_SIZE_FT;
+                    label = document.getElementById('wfDrainLabel').value.trim() || 'Drain';
                 }
 
                 const clamped = clampToWallBounds(snapped, lengthFt * ppi);
@@ -13853,10 +13823,10 @@
 
         // Shows/hides sidebar catalog categories based on the current shopType. Categories
         // with no data-domain attribute (My Tools, My Wishlist, Small Power Tools, Tool
-        // Storage, Lighting, Plumbing, Mini-Splits, Air Compressors & Shop Air, Assembly &
-        // Storage, My Custom Tools) are domain-agnostic and always show -- also true of any
-        // shop that uses both trades' tools (e.g. air compressors run nail guns and spray
-        // finishing in a wood shop just as much as pneumatic tools in a mechanical one).
+        // Storage, Lighting, Mini-Splits, Air Compressors & Shop Air, Assembly & Storage, My
+        // Custom Tools) are domain-agnostic and always show -- also true of any shop that uses
+        // both trades' tools (e.g. air compressors run nail guns and spray finishing in a wood
+        // shop just as much as pneumatic tools in a mechanical one).
         function applyShopTypeFilter() {
             document.querySelectorAll('#sidebar-panel .tool-category[data-domain]').forEach(cat => {
                 const domain = cat.getAttribute('data-domain');
