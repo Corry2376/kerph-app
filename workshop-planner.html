@@ -9921,10 +9921,15 @@
 
             // "Attach to dust collection?" — tools only (not the dust-collection/lighting
             // catalog items themselves, which have no data-layer attribute default of 'tools'
-            // vs an explicit one). Independent of owned/wishlist status, since it's a
-            // placement-time preference, not an ownership fact — see autoRouteDustCollection,
-            // wired into the drop handler in initDragAndDropEngine.
-            if ((item.getAttribute('data-layer') || 'tools') === 'tools') {
+            // vs an explicit one), and not Mini-Splits, which have no dust port to attach to.
+            // Independent of owned/wishlist status, since it's a placement-time preference, not
+            // an ownership fact — see autoRouteDustCollection, wired into the drop handler in
+            // initDragAndDropEngine. Checked once here at wiring time (the item's home category,
+            // before any owned/wishlist relocation) since Mini-Splits carries no per-item
+            // data-category attribute of its own.
+            const homeCategoryEl = item.closest('.tool-category');
+            const isMiniSplit = homeCategoryEl && homeCategoryEl.getAttribute('data-clearance-category') === 'Mini-Splits';
+            if ((item.getAttribute('data-layer') || 'tools') === 'tools' && !isMiniSplit) {
                 const attachLabel = document.createElement('label');
                 attachLabel.className = 'attach-dc-label';
                 attachLabel.innerHTML = '<input type="checkbox" class="attach-dc-checkbox"> Attach to dust collection?';
