@@ -732,9 +732,26 @@
         return { load, save };
     }
 
+    // current_layouts is Supabase-only for signed-in users, which means a guest editing a
+    // layout gets zero persistence at all -- navigating to the 3D viewer (or anywhere else)
+    // silently loses the board. Mirroring through localStorage first makes the round trip
+    // safe for every visitor, signed in or not, and is also what lets the 3D viewer and the
+    // 2D planner share a live layout without a network round-trip in between.
     const currentLayoutDomain = makeSingletonDomain('current_layouts', 'data', null);
-    const kerphLoadCurrentLayout = currentLayoutDomain.load;
-    const kerphSaveCurrentLayout = currentLayoutDomain.save;
+    const CURRENT_LAYOUT_LOCAL_KEY = 'kerphCurrentLayout';
+
+    async function kerphLoadCurrentLayout() {
+        try {
+            const raw = localStorage.getItem(CURRENT_LAYOUT_LOCAL_KEY);
+            if (raw) return { data: JSON.parse(raw), error: null };
+        } catch (e) { /* ignore -- fall through to Supabase */ }
+        return currentLayoutDomain.load();
+    }
+
+    async function kerphSaveCurrentLayout(value) {
+        try { localStorage.setItem(CURRENT_LAYOUT_LOCAL_KEY, JSON.stringify(value)); } catch (e) { /* private browsing / quota -- best effort */ }
+        return currentLayoutDomain.save(value);
+    }
 
     const toolStatusDomain = makeSingletonDomain('tool_status', 'data', {});
     const kerphLoadToolStatus = toolStatusDomain.load;
