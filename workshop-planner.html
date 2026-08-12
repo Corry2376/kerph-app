@@ -10039,7 +10039,7 @@
             resultsEl.innerHTML = '';
 
             const matches = query
-                ? SMALL_TOOLS.filter(t => window.kerphSearchMatch(t.name, query) || window.kerphSearchMatch(t.category, query))
+                ? SMALL_TOOLS.filter(t => window.kerphSearchMatch(`${t.name} ${t.category}`, query))
                 : SMALL_TOOLS;
 
             const groups = {};
@@ -13895,9 +13895,14 @@
 
                 document.querySelectorAll('#sidebar-panel .tool-category').forEach(category => {
                     let categoryHasMatch = false;
+                    // Some cards only carry a short name (e.g. "DeWalt DWE7491RS") and rely on
+                    // the category label ("Table Saws") for the rest -- matching name+category
+                    // together as one haystack means a query like "dewalt table saw" still
+                    // works even though no single field contains all three words.
+                    const categoryLabel = (category.querySelector(':scope > summary .category-header-left')?.childNodes[0]?.textContent || '').toLowerCase();
                     category.querySelectorAll('.tool-box-item').forEach(item => {
                         const nameText = (item.querySelector('.tool-title')?.textContent || item.getAttribute('data-name') || '').toLowerCase();
-                        const isMatch = window.kerphSearchMatch(nameText, query);
+                        const isMatch = window.kerphSearchMatch(`${nameText} ${categoryLabel}`, query);
                         item.style.display = isMatch ? '' : 'none';
                         if (isMatch) categoryHasMatch = true;
                     });
