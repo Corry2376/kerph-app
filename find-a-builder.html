@@ -572,11 +572,11 @@
                 <button type="button" class="mini-btn modal-primary-btn" id="conciergeGenerateBtn" style="width:100%; margin-top:10px;">Draft My Quote Request</button>
 
                 <div id="conciergeOutput" style="display:none; margin-top:16px;">
-                    <label class="header-field-label" for="conciergeOutputText" style="display:block; margin-bottom:6px;">Your draft &mdash; copy it or open it in email</label>
+                    <label class="header-field-label" for="conciergeOutputText" style="display:block; margin-bottom:6px;">Your draft &mdash; send it from Kerph, or copy it for a contact form</label>
                     <textarea class="input-box" id="conciergeOutputText" rows="9" readonly></textarea>
                     <div style="display:flex; gap:8px; margin-top:8px;">
                         <button type="button" class="mini-btn" id="conciergeCopyBtn" style="flex:1;">&#128203; Copy Request</button>
-                        <button type="button" class="mini-btn" id="conciergeEmailBtn" style="flex:1;">&#9993;&#65039; Open in Email</button>
+                        <button type="button" class="mini-btn modal-primary-btn" id="conciergeSendBtn" style="flex:1;">&#128228; Send from Kerph</button>
                     </div>
                     <div class="concierge-next-note" id="conciergeNextNote">Next: search above, then send this to your top picks &mdash; most Maps listings show a phone number or a website with a contact form right on the card.</div>
                 </div>
@@ -1065,19 +1065,44 @@
                 });
             });
 
-            // No cap on recipients — comma/newline-separated, all handed straight through to
-            // mailto:'s own to= field, which supports as many comma-separated addresses as you
-            // give it. Left blank, this is the same blank-recipient behavior as before.
-            document.getElementById('conciergeEmailBtn').addEventListener('click', () => {
-                // Commas here must stay literal, not percent-encoded — mailto:'s recipient list
-                // (the part before "?") is comma-separated addresses, and encoding the commas
-                // would make mail clients read the whole thing as one (invalid) address instead
-                // of a list. Individual addresses don't need escaping; they don't contain
-                // characters that are unsafe in a URI.
-                const recipients = parseBuilderRecipients().join(',');
-                const subject = encodeURIComponent(`Quote request: ${document.getElementById('conciergeProjectType').value}`);
-                const body = encodeURIComponent(outputText.value);
-                window.location.href = `mailto:${recipients}?subject=${subject}&body=${body}`;
+            // Sends the request via Kerph's own send-builder-request Edge Function instead of a
+            // mailto: link — the earlier mailto: flow just handed the user off to their email
+            // client to click send themselves, which (per explicit feedback) only encouraged
+            // them to leave Kerph. Requires sign-in since the function needs the user's JWT
+            // (also where the Reply-To address comes from, so a builder's reply reaches them).
+            const sendBtn = document.getElementById('conciergeSendBtn');
+            sendBtn.addEventListener('click', async () => {
+                if (!isSignedIn()) { showToast('Sign in to send builder requests from Kerph.'); return; }
+                const recipients = parseBuilderRecipients();
+                if (!recipients.length) { showToast('Enter at least one builder email address first.'); return; }
+
+                sendBtn.disabled = true;
+                const originalLabel = sendBtn.textContent;
+                sendBtn.textContent = 'Sending…';
+                try {
+                    const { data: { session } } = await kerphSupabase.auth.getSession();
+                    const resp = await fetch(`${kerphSupabase.supabaseUrl}/functions/v1/send-builder-request`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+                        body: JSON.stringify({
+                            recipients,
+                            projectType: document.getElementById('conciergeProjectType').value,
+                            bodyText: outputText.value,
+                        }),
+                    });
+                    const result = await resp.json().catch(() => ({}));
+                    if (!resp.ok || result.error) { showToast(result.error || 'Could not send the request.'); return; }
+                    const sentCount = (result.sent || []).length;
+                    const failedCount = (result.failed || []).length;
+                    showToast(failedCount
+                        ? `Sent to ${sentCount} builder${sentCount === 1 ? '' : 's'} — ${failedCount} failed (check the address${failedCount === 1 ? '' : 'es'}).`
+                        : `Sent to ${sentCount} builder${sentCount === 1 ? '' : 's'} — replies will land in your own inbox.`);
+                } catch (err) {
+                    showToast('Could not send the request. Try again in a moment.');
+                } finally {
+                    sendBtn.disabled = false;
+                    sendBtn.textContent = originalLabel;
+                }
             });
         }
 
