@@ -765,7 +765,15 @@
             if (brandInput) brandInput.value = kerphGetCachedProfile().preferredBrand || '';
         } else if (e.target.closest('#accountSaveBtn')) {
             if (fullNameInput) kerphSaveProfile({ fullName: fullNameInput.value.trim() });
-            if (brandInput) kerphSaveProfile({ preferredBrand: brandInput.value });
+            // Awaited (unlike the fullName save above) and surfaced via the same showToast()
+            // every page already defines for this modal's own Save button -- a save that fails
+            // silently (e.g. the preferred_brand column not existing yet on some environment)
+            // is exactly what makes "I saved it but it didn't stick" bugs hard to catch.
+            if (brandInput) {
+                kerphSaveProfile({ preferredBrand: brandInput.value }).then(({ error }) => {
+                    if (error && typeof showToast === 'function') showToast('Preferred brand did not save: ' + (error.message || 'unknown error'));
+                });
+            }
         }
     });
 
