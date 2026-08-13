@@ -1425,9 +1425,20 @@
     }
 
     function kerphOnVisible(callback) {
+        // visibilitychange covers same-window tab switching, but two other common "came back
+        // to this page" cases don't fire it at all: (1) a same-tab back/forward navigation
+        // restored from the browser's bfcache -- the tab was never actually hidden, so
+        // pageshow with persisted=true is the real signal there; (2) two separate browser
+        // WINDOWS side by side or alt-tabbed between -- neither window is ever occluded, so
+        // visibilityState never changes, but window focus does fire reliably. All three are
+        // wired so "switch back to this page" refreshes regardless of how the user got there.
         document.addEventListener('visibilitychange', () => {
             if (document.visibilityState === 'visible') callback();
         });
+        window.addEventListener('pageshow', (e) => {
+            if (e.persisted) callback();
+        });
+        window.addEventListener('focus', callback);
     }
 
     /* ---------- TOOL TIER GATING (soft/local — kerphPlan isn't billing-enforced yet) ----------
