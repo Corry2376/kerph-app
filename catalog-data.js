@@ -937,6 +937,90 @@
         return String(a || '').localeCompare(String(b || ''), undefined, { numeric: true, sensitivity: 'base' });
     };
 
+    // Every distinct brand across the catalog, derived programmatically from every tool name
+    // in TOOL_SPECS/SMALL_TOOLS (2026-08-12) -- not hand-guessed. Powers both the "Preferred
+    // Tool Brand" dropdown (signup + account settings) and the catalog's preferred-brand badge.
+    window.KERPH_BRANDS = [
+        'Akro-Mils', 'Anycubic', 'Arcan', 'Baileigh', 'Bambu Lab', 'Bench Dog', 'BendPak',
+        'BIG RED', 'Bosch', 'Bostitch', 'California Air Tools', 'Campbell', 'Carrier', 'Champion',
+        'CLC', 'Coats', 'Cooper & Hunter', 'Cornwell', 'Craftsman', 'Creality', 'Cutech', 'Delta',
+        'DeWalt', 'DEWENWILS', 'Duramax', 'Durham', 'Echo', 'Edsal', 'Elegoo', 'EMAX',
+        'Ernst Manufacturing', 'Extreme Tools', 'Fein', 'Felder', 'Festool', 'Flashforge',
+        'Formlabs', 'Friedrich', 'Garvee', 'GEARWRENCH', 'General Intl', 'Giraffe Tools',
+        'Gladiator', 'Global Industrial', 'Glowforge', 'Goodman', 'Goplus', 'Gree', 'Grizzly',
+        'Hallowell', 'Hammer', 'Harvey', 'Hisense', 'Hobart', 'Homak', 'Husky', 'Husqvarna',
+        'Industrial Air', 'Ingersoll Rand', 'JessEm', 'JET', 'Justrite', 'K Tool International',
+        'King', 'Klein Tools', 'Klimaire', 'Kobalt', 'Kreg', 'Laguna', 'Lamello', 'LG', 'Luxor',
+        'Mac Tools', 'Makita', 'Matco', 'Metabo HPT', 'Midea', 'Miller', 'Milwaukee', 'Minimax',
+        'MRCOOL', 'Muscle Rack', 'NewAge Products', 'NOVA', 'Oliver', 'Olsa Tools',
+        'Olympia Tools', 'Onefinity', 'Oneida', 'Oneway', 'Panasonic', 'Paslode', 'Phrozen',
+        'Pioneer', 'Porter-Cable', 'Powerbuilt', 'Powermatic', 'Proslat', 'Prusa', 'Qidi',
+        'Quincy', 'Rackems', 'Raise3D', 'Ranger', 'Rheem', 'RIDGID', 'Rikon', 'Robland', 'Robust',
+        'Rockler', 'Rolair', 'Rubbermaid', 'Ryobi', 'SafeRacks', 'Sandusky Lee', 'SawStop',
+        'SENCO', 'Senville', 'Seville Classics', 'Shapeoko', 'Shop Fox', 'Skil', 'SKILSAW',
+        'Snapmaker', 'Snap-on', 'Sovol', 'Stack-On', 'Stalwart', 'Stanley', 'Sterilite', 'Stihl',
+        'Sunex', 'SuperMax', 'Torin', 'Toshiba Carrier', 'ToughBuilt', 'Trane', 'Triton',
+        'Ultimaker', 'US General', 'Veto Pro Pac', 'VEVOR', 'Vicmarc', 'Viper', 'VIVOHOME',
+        'Wall Control', 'WallPeg', 'WEN', 'Whitmor', 'Woodpeckers', 'WORKPRO'
+    ];
+
+    // Brands whose own name is more than one word -- checked longest-first so "BIG RED" is
+    // tried before a bare first-word split would find nothing, etc. Matching is case-insensitive
+    // since the catalog has some inherited casing inconsistencies per brand (DEWALT/DeWalt,
+    // RIDGID/Ridgid) from sourcing each manufacturer's own spec sheets independently.
+    const KERPH_MULTI_WORD_BRANDS = window.KERPH_BRANDS
+        .filter(b => b.includes(' ') || b.includes('&'))
+        .sort((a, b) => b.length - a.length);
+
+    // A few catalog entries don't literally start with their brand's usual multi-word form
+    // (e.g. "General 75-510 M1" instead of "General Intl 75-510 M1") -- these route the bare
+    // first word to the right canonical brand anyway.
+    const KERPH_BRAND_ALIASES = { 'General': 'General Intl' };
+
+    // Case-insensitive lookup so single-word brands with inconsistent catalog casing (DEWALT
+    // vs DeWalt, RIDGID vs Ridgid) both resolve to the one canonical spelling used in
+    // KERPH_BRANDS/the dropdown -- without this, a tool named "DEWALT ..." would never match a
+    // saved preference of "DeWalt" even though they're the same brand.
+    const KERPH_BRAND_BY_LOWER = {};
+    window.KERPH_BRANDS.forEach(b => { KERPH_BRAND_BY_LOWER[b.toLowerCase()] = b; });
+
+    window.kerphExtractBrand = function (name) {
+        const n = String(name || '').trim();
+        if (!n) return '';
+        const lower = n.toLowerCase();
+        for (const brand of KERPH_MULTI_WORD_BRANDS) {
+            const bl = brand.toLowerCase();
+            if (lower === bl || lower.startsWith(bl + ' ')) return brand;
+        }
+        const firstWord = n.split(/\s+/)[0];
+        if (KERPH_BRAND_ALIASES[firstWord]) return KERPH_BRAND_ALIASES[firstWord];
+        return KERPH_BRAND_BY_LOWER[firstWord.toLowerCase()] || firstWord;
+    };
+
+    // Scans every tool card currently in the DOM (both pages, static and dynamically-rendered
+    // alike, since this works off the rendered .tool-box-item markup rather than the source
+    // data) and adds/removes a "Preferred Brand" badge based on the signed-in user's saved
+    // preference. Idempotent -- safe to call after every render and on every profile change.
+    window.kerphApplyPreferredBrandBadges = function () {
+        const profile = window.kerphGetCachedProfile ? window.kerphGetCachedProfile() : {};
+        const preferred = profile.preferredBrand || '';
+        document.querySelectorAll('.tool-box-item').forEach(item => {
+            const titleEl = item.querySelector('.tool-title');
+            if (!titleEl) return;
+            const name = item.getAttribute('data-name') || titleEl.textContent || '';
+            const isMatch = !!preferred && window.kerphExtractBrand(name) === preferred;
+            let badge = item.querySelector('.preferred-brand-badge');
+            if (isMatch && !badge) {
+                badge = document.createElement('span');
+                badge.className = 'preferred-brand-badge';
+                badge.textContent = '★ Preferred Brand';
+                titleEl.insertAdjacentElement('afterend', badge);
+            } else if (!isMatch && badge) {
+                badge.remove();
+            }
+        });
+    };
+
     // { name, category, layer, widthFt, lengthFt, heightFt } for every non-cabinet catalog
     // item (cabinets are built via a form, not this static list). widthFt/lengthFt/heightFt
     // mirror each catalog chip's data-width/data-length/data-height in workshop-planner.html.

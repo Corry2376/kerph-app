@@ -153,7 +153,8 @@
             maintenanceRemindersEnabled: state.profile.maintenance_reminders_enabled !== false,
             homeTileOrder: state.profile.home_tile_order || null,
             homeTileHidden: state.profile.home_tile_hidden || [],
-            isAdmin: state.profile.is_admin === true
+            isAdmin: state.profile.is_admin === true,
+            preferredBrand: state.profile.preferred_brand || ''
         };
     }
 
@@ -189,7 +190,7 @@
     // upsert (not update) so a missing profile row — trigger failure, edge case, whatever —
     // never permanently locks a signed-in user out of saving; the INSERT RLS policy exists
     // specifically to make this self-healing path work.
-    async function kerphSaveProfile({ username, fullName, avatarDataUrl, unitSystem, maintenanceRemindersEnabled, homeTileOrder, homeTileHidden, referralSource } = {}) {
+    async function kerphSaveProfile({ username, fullName, avatarDataUrl, unitSystem, maintenanceRemindersEnabled, homeTileOrder, homeTileHidden, referralSource, preferredBrand } = {}) {
         if (!state.user) return { error: { message: 'Not signed in.' } };
         const updates = { id: state.user.id, username };
         if (fullName !== undefined) updates.full_name = fullName;
@@ -199,6 +200,7 @@
         if (homeTileOrder !== undefined) updates.home_tile_order = homeTileOrder;
         if (homeTileHidden !== undefined) updates.home_tile_hidden = homeTileHidden;
         if (referralSource !== undefined) updates.referral_source = referralSource;
+        if (preferredBrand !== undefined) updates.preferred_brand = preferredBrand;
         const { data, error } = await kerphSupabase.from('profiles').upsert(updates).select().maybeSingle();
         if (!error && data) {
             state.profile = data;
@@ -372,6 +374,12 @@
                 </select>
                 <input type="text" id="signupReferralOther" placeholder="Where, specifically?" style="display:none; margin-top:6px; ${KERPH_MODAL_INPUT_STYLE}">
 
+                <label style="${KERPH_MODAL_LABEL_STYLE}" for="signupBrandSelect">Preferred tool brand (optional)</label>
+                <select id="signupBrandSelect" style="${KERPH_MODAL_INPUT_STYLE} background:#f8fafc;">
+                    <option value="">No preference</option>
+                    ${(window.KERPH_BRANDS || []).map(b => `<option value="${b}">${b}</option>`).join('')}
+                </select>
+
                 <div id="signupModalStatus" style="display:none; margin-top:12px; font-size:12px; padding:8px 10px; border-radius:6px;"></div>
                 <button type="button" id="signupModalSubmit" style="display:block; width:100%; text-align:center; background:#1e3a8a; color:#fff; border:none; font-weight:700; font-size:14px; padding:11px; border-radius:8px; cursor:pointer; margin-top:16px;">Create Account</button>
             </div>
@@ -381,6 +389,7 @@
         const passwordInput = el.querySelector('#signupPasswordInput');
         const referralSelect = el.querySelector('#signupReferralSelect');
         const referralOther = el.querySelector('#signupReferralOther');
+        const brandSelect = el.querySelector('#signupBrandSelect');
         const statusEl = el.querySelector('#signupModalStatus');
         const submitBtn = el.querySelector('#signupModalSubmit');
         emailInput.value = prefillEmail || '';
@@ -405,6 +414,7 @@
             const email = emailInput.value.trim();
             const password = passwordInput.value;
             const referral = referralSelect.value === 'Other' ? (referralOther.value.trim() || 'Other') : referralSelect.value;
+            const preferredBrand = brandSelect ? brandSelect.value : '';
 
             if (!name) { showStatus('Enter your name.'); return; }
             if (!email) { showStatus('Enter an email address.'); return; }
@@ -415,20 +425,20 @@
             submitBtn.textContent = 'Creating…';
             try {
                 const { error, needsConfirmation } = await kerphSignUp(email, password, {
-                    full_name: name, username: name, referral_source: referral
+                    full_name: name, username: name, referral_source: referral, preferred_brand: preferredBrand
                 });
                 if (error) { showStatus(error.message || 'Sign up failed.'); return; }
 
                 if (needsConfirmation) {
                     // Not signed in yet -- state.user doesn't exist until they confirm and sign
                     // in for real, so this can't be saved via kerphSaveProfile right now. The
-                    // name/referral above are already stored as auth user_metadata though, so
-                    // kerphBackfillProfileFromSignupMetadata() applies them automatically on
+                    // name/referral/brand above are already stored as auth user_metadata though,
+                    // so kerphBackfillProfileFromSignupMetadata() applies them automatically on
                     // that first real sign-in, from whatever device it happens on.
                     showStatus('Check your email to confirm your account, then sign in.', true);
                     setTimeout(close, 3000);
                 } else {
-                    await kerphSaveProfile({ username: name, fullName: name, referralSource: referral });
+                    await kerphSaveProfile({ username: name, fullName: name, referralSource: referral, preferredBrand });
                     close();
                     kerphShowSubscribePrompt();
                 }
@@ -564,7 +574,8 @@
         await kerphSaveProfile({
             username: (state.profile && state.profile.username) || meta.username || meta.full_name,
             fullName: meta.full_name,
-            referralSource: meta.referral_source
+            referralSource: meta.referral_source,
+            preferredBrand: meta.preferred_brand
         }).catch(() => {});
     }
 
@@ -699,6 +710,30 @@
     }
     kerphInjectFullNameField();
 
+    // Same retrofit approach as kerphInjectFullNameField() above -- the Account Settings modal
+    // markup is duplicated across ~27 pages, so this injects the field once via JS (using
+    // window.KERPH_BRANDS from catalog-data.js, which loads before this file on every page)
+    // rather than hand-editing every page's copy.
+    function kerphInjectPreferredBrandField() {
+        const usernameField = document.getElementById('accountUsernameInput');
+        if (!usernameField || document.getElementById('accountPreferredBrandInput') || !window.KERPH_BRANDS) return;
+        const usernameWrapper = usernameField.closest('.header-field');
+        if (!usernameWrapper || !usernameWrapper.parentNode) return;
+        const wrapper = document.createElement('div');
+        wrapper.className = 'header-field';
+        wrapper.style.cssText = 'display:flex; flex-direction:column; gap:4px; margin-top:12px;';
+        const options = window.KERPH_BRANDS.map(b => `<option value="${b}">${b}</option>`).join('');
+        wrapper.innerHTML = `
+            <label class="header-field-label" for="accountPreferredBrandInput">Preferred Tool Brand</label>
+            <select class="input-box" id="accountPreferredBrandInput">
+                <option value="">No preference</option>
+                ${options}
+            </select>
+        `;
+        usernameWrapper.parentNode.insertBefore(wrapper, usernameWrapper.nextSibling);
+    }
+    kerphInjectPreferredBrandField();
+
     // These fire on document, so they always run *after* each page's own click handler
     // bound directly to the button (target-phase listeners fire before the event bubbles
     // up to document) -- by the time these run, the modal is already open/populated or
@@ -706,13 +741,21 @@
     // field it owns.
     document.addEventListener('click', (e) => {
         const fullNameInput = document.getElementById('accountFullNameInput');
-        if (!fullNameInput) return;
+        const brandInput = document.getElementById('accountPreferredBrandInput');
         if (e.target.closest('#accountBtn')) {
-            fullNameInput.value = (kerphGetCachedProfile().fullName) || '';
+            if (fullNameInput) fullNameInput.value = (kerphGetCachedProfile().fullName) || '';
+            if (brandInput) brandInput.value = kerphGetCachedProfile().preferredBrand || '';
         } else if (e.target.closest('#accountSaveBtn')) {
-            kerphSaveProfile({ fullName: fullNameInput.value.trim() });
+            if (fullNameInput) kerphSaveProfile({ fullName: fullNameInput.value.trim() });
+            if (brandInput) kerphSaveProfile({ preferredBrand: brandInput.value });
         }
     });
+
+    // Re-flag catalog tiles the instant the preference changes (or on sign-in, once the
+    // profile has loaded) without requiring a page reload or a fresh search/render.
+    if (window.kerphApplyPreferredBrandBadges) {
+        kerphOnAuthChange(() => window.kerphApplyPreferredBrandBadges());
+    }
 
     /* ---------- Singleton domains: one row per user, upsert-only ---------- */
 

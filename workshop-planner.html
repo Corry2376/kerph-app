@@ -760,6 +760,16 @@
 
         .tool-title { font-weight: 700; font-size: 13px; color: #0f172a; }
         .tool-dims { font-size: 11px; color: #6b7280; margin-top: 1px; }
+        .preferred-brand-badge {
+            display: inline-block;
+            background-color: #fef3c7;
+            color: #92400e;
+            font-size: 9px;
+            font-weight: 700;
+            padding: 1px 6px;
+            border-radius: 999px;
+            margin-top: 3px;
+        }
 
         .tool-search-category-heading {
             font-size: 10px;
@@ -10902,6 +10912,7 @@
             });
             emptyHint.style.display = matches.length ? 'none' : 'block';
             document.getElementById('smallPowerToolsCount').textContent = SMALL_TOOLS.length;
+            if (window.kerphApplyPreferredBrandBadges) window.kerphApplyPreferredBrandBadges();
         }
 
         // Owned/wishlisted power tools don't exist as static DOM nodes in the floor catalog
@@ -15047,6 +15058,7 @@
             });
         }
         sortStaticFloorToolCategories();
+        if (window.kerphApplyPreferredBrandBadges) window.kerphApplyPreferredBrandBadges();
 
         /* ---------- CURRENT LAYOUT AUTOSAVE (cross-page sync) ----------
            The live, unsaved board state is continuously mirrored into localStorage under
