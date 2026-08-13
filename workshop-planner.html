@@ -830,6 +830,19 @@
             color: #ffffff;
         }
 
+        .shop-link-btn {
+            text-decoration: none;
+            border-color: #93c5fd;
+            color: #2563eb;
+            background-color: #eff6ff;
+        }
+
+        .shop-link-btn:hover {
+            background-color: #2563eb;
+            border-color: #2563eb;
+            color: #ffffff;
+        }
+
         .pro-badge {
             background-color: #7c3aed;
             color: #ffffff;
@@ -10684,6 +10697,33 @@
 
             const name = item.getAttribute('data-name');
 
+            // Parity fix: the home page's catalog cards have always had a Buy/Shop link;
+            // this page's never did, despite both reading the exact same TOOL_SPECS buyUrl.
+            // Styled as a third .status-btn (icon-only, same 22px round pill as Owned/
+            // Wishlist) rather than a text pill, so it matches this page's own visual
+            // language instead of importing the home page's differently-styled button.
+            const curatedBuyUrl = (window.TOOL_SPECS && window.TOOL_SPECS[name] && window.TOOL_SPECS[name].buyUrl) || null;
+            const shopLink = document.createElement('a');
+            shopLink.className = 'status-btn shop-link-btn';
+            shopLink.target = '_blank';
+            shopLink.rel = 'noopener noreferrer';
+            shopLink.setAttribute('draggable', 'false');
+            shopLink.addEventListener('mousedown', (e) => e.stopPropagation());
+            shopLink.addEventListener('click', (e) => e.stopPropagation());
+            if (curatedBuyUrl) {
+                shopLink.href = curatedBuyUrl;
+                shopLink.textContent = '🔗';
+                shopLink.title = `Go to this exact model's product page (opens in a new tab)`;
+            } else if (typeof shopSearchUrl === 'function') {
+                shopLink.href = shopSearchUrl(name);
+                shopLink.textContent = '🔍';
+                shopLink.title = `Search for "${name}" (opens in a new tab)`;
+            }
+            if (shopLink.href) {
+                const controls = ownedBtn.closest('.tool-status-controls') || ownedBtn.parentElement;
+                controls.appendChild(shopLink);
+            }
+
             const nicknameInput = document.createElement('input');
             nicknameInput.type = 'text';
             nicknameInput.className = 'nickname-input';
@@ -10824,15 +10864,24 @@
                 nicknameInput.className = 'nickname-input';
                 nicknameInput.placeholder = 'Nickname (e.g. "Dad\'s drill")';
                 nicknameInput.value = entry.nickname || '';
+                nicknameInput.addEventListener('mousedown', (e) => e.stopPropagation());
                 nicknameInput.addEventListener('click', (e) => e.stopPropagation());
-                nicknameInput.addEventListener('change', () => {
-                    const current = loadToolStatuses();
-                    if (current[tool.name]) {
-                        current[tool.name].nickname = nicknameInput.value;
-                        saveToolStatuses(current);
-                        renderPowerToolSection();
-                        renderOwnedPowerToolsInMyTools();
-                    }
+                // Debounced save + flash, matching the floor-tool cards (wireToolStatusItem)
+                // and index.html's appendNicknameInputIfOwned — was previously a plain
+                // `change` listener with a full re-render and no visible save confirmation.
+                let nicknameSaveTimer = null;
+                nicknameInput.addEventListener('input', () => {
+                    clearTimeout(nicknameSaveTimer);
+                    nicknameSaveTimer = setTimeout(() => {
+                        const current = loadToolStatuses();
+                        if (current[tool.name] && current[tool.name].status === 'owned') {
+                            current[tool.name].nickname = nicknameInput.value;
+                            saveToolStatuses(current);
+                            renderOwnedPowerToolsInMyTools();
+                            nicknameInput.classList.add('nickname-saved-flash');
+                            setTimeout(() => nicknameInput.classList.remove('nickname-saved-flash'), 900);
+                        }
+                    }, 500);
                 });
                 info.appendChild(nicknameInput);
             }
@@ -10855,6 +10904,27 @@
             wishlistBtn.textContent = '★';
             wishlistBtn.addEventListener('click', () => togglePowerToolStatus(tool, 'wishlist'));
             controls.appendChild(wishlistBtn);
+
+            // Parity fix: same gap as the floor-tool cards (wireToolStatusItem) had — the home
+            // page's power-tool cards (buildToolResultCard) have always had a Buy/Shop link.
+            const curatedBuyUrl = (window.TOOL_SPECS && window.TOOL_SPECS[tool.name] && window.TOOL_SPECS[tool.name].buyUrl) || null;
+            const shopLink = document.createElement('a');
+            shopLink.className = 'status-btn shop-link-btn';
+            shopLink.target = '_blank';
+            shopLink.rel = 'noopener noreferrer';
+            shopLink.setAttribute('draggable', 'false');
+            shopLink.addEventListener('mousedown', (e) => e.stopPropagation());
+            shopLink.addEventListener('click', (e) => e.stopPropagation());
+            if (curatedBuyUrl) {
+                shopLink.href = curatedBuyUrl;
+                shopLink.textContent = '🔗';
+                shopLink.title = `Go to this exact model's product page (opens in a new tab)`;
+            } else if (typeof shopSearchUrl === 'function') {
+                shopLink.href = shopSearchUrl(tool.name);
+                shopLink.textContent = '🔍';
+                shopLink.title = `Search for "${tool.name}" (opens in a new tab)`;
+            }
+            if (shopLink.href) controls.appendChild(shopLink);
 
             card.appendChild(info);
             card.appendChild(controls);
