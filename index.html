@@ -2858,7 +2858,7 @@
             const input = document.getElementById('floorToolSearchInput');
             const emptyHint = document.getElementById('floorToolSearchEmptyHint');
 
-            input.addEventListener('input', () => {
+            function runFloorToolSearch() {
                 const query = input.value.trim().toLowerCase();
                 let anyVisibleAtAll = false;
 
@@ -2884,7 +2884,16 @@
                 });
 
                 emptyHint.style.display = (query && !anyVisibleAtAll) ? 'block' : 'none';
-            });
+            }
+
+            input.addEventListener('input', runFloorToolSearch);
+            // Browsers restore a text input's typed value on back/forward navigation without
+            // dispatching an 'input' event for it -- so a user who searched, clicked Buy
+            // (opening the tool's Amazon page in a new tab or navigating away), then hit Back
+            // saw the search box still showing their query but every card back to its
+            // unfiltered default order/visibility. Running the filter once here for whatever
+            // value is already in the box on load covers that case.
+            runFloorToolSearch();
         }
 
         /* ---------- INSURANCE INVENTORY REPORT (Premier) ----------

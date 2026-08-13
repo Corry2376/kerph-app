@@ -14733,7 +14733,7 @@
             const input = document.getElementById('toolSearchInput');
             const emptyHint = document.getElementById('toolSearchEmptyHint');
 
-            input.addEventListener('input', () => {
+            function runToolSearch() {
                 const query = input.value.trim().toLowerCase();
                 let anyVisibleAtAll = false;
 
@@ -14756,7 +14756,18 @@
                 });
 
                 emptyHint.style.display = (query && !anyVisibleAtAll) ? 'block' : 'none';
-            });
+            }
+
+            input.addEventListener('input', runToolSearch);
+            // Browsers restore a text input's typed value on back/forward navigation (bfcache
+            // or a plain history reload) without dispatching an 'input' event for it -- so a
+            // user who searched, clicked Buy (opening the tool's Amazon page), then hit Back
+            // saw the search box still showing their query but every card back to its
+            // unfiltered default order/visibility, since nothing had re-run the filter for the
+            // value that was already sitting in the box. Running it once here covers that case
+            // (and any other pre-filled-on-load scenario) the same way the dynamic Small Power
+            // Tools/floor-tool renders already do by reading input.value at their own init call.
+            runToolSearch();
         }
 
         document.getElementById('inputWidth').addEventListener('input', updateWorkshopGridSize);
