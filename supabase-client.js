@@ -1409,8 +1409,20 @@
         return (KERPH_PLAN_RANK[plan] || 0) >= (KERPH_PLAN_RANK[requiredTier] || 0);
     }
 
+    // Accepts either "project-designer.html" (KERPH_TOOL_TIER_MAP's keys, and what a local
+    // static server serves) or "project-designer" (what kerphplans.com's production hosting
+    // actually serves in location.pathname -- it strips .html from every URL). Without this
+    // normalization, kerphEnforceRealTierGate()'s location.pathname-derived lookup NEVER
+    // matched anything on production -- confirmed live (kerphplans.com/project-designer has
+    // no .html in location.pathname at all) -- making the real, second-pass tier check a
+    // permanent no-op there regardless of the kerphAuthReady hardening below. The badge/nav-
+    // dropdown lockouts still worked throughout, since those match against the literal
+    // href/option-value strings authored in each page's own HTML (which do include .html),
+    // not location.pathname -- which is exactly why the lock icons/labels looked correct while
+    // the actual pages themselves let a Free account straight in.
     function kerphRequiredTierFor(page) {
-        return KERPH_TOOL_TIER_MAP[page] || null;
+        const normalized = page.endsWith('.html') ? page : page + '.html';
+        return KERPH_TOOL_TIER_MAP[page] || KERPH_TOOL_TIER_MAP[normalized] || null;
     }
 
     // Grays out + disables any pageNavSelect <option> whose page isn't included in the
@@ -1508,7 +1520,7 @@
     async function kerphEnforceRealTierGate() {
         if (!state.user) return;
         if (state.profile && state.profile.is_admin) return; // admins preview via the local toggle instead
-        const page = location.pathname.split('/').pop();
+        const page = location.pathname.split('/').filter(Boolean).pop() || '';
         const requiredTier = kerphRequiredTierFor(page);
         if (!requiredTier) return;
         if (!kerphPlanMeetsTier(cachedEffectivePlan.plan, requiredTier)) {
