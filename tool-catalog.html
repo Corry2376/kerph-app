@@ -292,6 +292,41 @@
         .review-model-card-buy { display: block; margin-top: 8px; font-size: 11.5px; font-weight: 700; color: #1e3a8a; text-decoration: none; }
         .review-model-card-buy:hover { text-decoration: underline; }
 
+        .tool-detail-section { margin-bottom: 24px; }
+        .tool-detail-header {
+            display: flex;
+            gap: 24px;
+            background-color: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 14px;
+        }
+        .tool-detail-photo-wrap { flex: 0 0 220px; }
+        .tool-detail-photo-wrap img {
+            width: 100%;
+            height: 220px;
+            object-fit: contain;
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+        }
+        .tool-detail-photo-placeholder {
+            width: 100%;
+            height: 220px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 40px;
+            color: #cbd5e1;
+        }
+        .tool-detail-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+        .tool-detail-name { font-size: 22px; font-weight: 800; color: #0f172a; margin-bottom: 4px; }
+        .tool-detail-specs { font-size: 13.5px; color: #4b5563; margin-bottom: 14px; line-height: 1.6; }
+
         /* Full catalog browser -- the page's default/primary view, always visible (not gated
            behind picking a category first). One collapsible block per category so 700+ items
            across 26 categories doesn't dump onto the page at once, but every category is
@@ -616,7 +651,7 @@
         <div class="reviews-title">Tool Catalog &amp; Reviews</div>
         <div class="reviews-subtitle">Every tool in the Kerph catalog, grouped by category below &mdash; specs, buy links, and real feedback from real shops, all in one place. Expand a category to browse it, or search/filter to jump straight to a tool.</div>
 
-        <div class="reviews-toolbar">
+        <div class="reviews-toolbar" id="reviewsToolbar">
             <input type="text" class="input-box" id="reviewSearchInput" placeholder="&#128269; Search the tool catalog&hellip;">
             <select class="select-box" id="reviewCategoryFilter"></select>
             <select class="select-box" id="reviewBrandFilter"></select>
@@ -643,8 +678,28 @@
             <div class="reviews-models-grid" id="reviewsModelsGrid"></div>
         </div>
 
-        <div class="reviews-models-title" style="margin-top:8px;">Recent Community Reviews</div>
+        <div class="reviews-models-title" id="reviewsGridHeading" style="margin-top:8px;">Recent Community Reviews</div>
         <div class="reviews-grid" id="reviewsGrid"></div>
+
+        <!-- Shown instead of the toolbar/browse/rollup/reviews-list above when a tool card is
+             clicked -- picture, specs, and buy link always render even with zero reviews, so
+             clicking a review-less tool no longer looks like the page went blank. Uses real
+             browser history (pushState/popstate below), not just a filtered search box, so the
+             back button returns here to the full catalog instead of leaving the page entirely. -->
+        <div class="tool-detail-section" id="toolDetailSection" style="display:none;">
+            <button type="button" class="mini-btn" id="toolDetailBackBtn">&larr; Back to Full Catalog</button>
+            <div class="tool-detail-header">
+                <div class="tool-detail-photo-wrap" id="toolDetailPhotoWrap"></div>
+                <div class="tool-detail-info">
+                    <div class="reviews-eyebrow" id="toolDetailCategory"></div>
+                    <div class="tool-detail-name" id="toolDetailName"></div>
+                    <div class="tool-detail-specs" id="toolDetailSpecs"></div>
+                    <a href="#" target="_blank" rel="noopener" class="mini-btn primary" id="toolDetailBuyLink" style="display:inline-block; width:fit-content; text-decoration:none;"></a>
+                </div>
+            </div>
+            <div class="reviews-models-title" style="margin-top:20px;">Reviews for this tool</div>
+            <div class="reviews-grid" id="toolDetailReviewsGrid"></div>
+        </div>
     </main>
 
     <script src="catalog-data.js"></script>
@@ -1139,9 +1194,130 @@
             `;
         }
 
-        function jumpToToolReviews(name) {
-            document.getElementById('reviewSearchInput').value = name;
+        // Tool Detail view -- shows picture/specs/buy-link plus that tool's reviews (if any)
+        // instead of just filtering the reviews grid down to a possibly-empty list. Uses real
+        // browser history (pushState on open, popstate on back) rather than only a filtered
+        // search box, so the Back button returns to the full catalog on this page instead of
+        // leaving it entirely -- clicking a card used to just set the search box and re-render,
+        // which pushed no history entry at all.
+        function findToolForDetail(name) {
+            const specs = (window.TOOL_SPECS || {})[name] || null;
+            const catalogItems = getBrowsableCatalogItems();
+            const fromCatalog = catalogItems.find(item => item.name === name);
+            const fromReview = cachedReviews.find(r => r.tool_name === name);
+            const category = (fromCatalog && fromCatalog.category) || (fromReview && fromReview.category) || '';
+            return { name, category, specs };
+        }
+
+        function renderToolDetail(name) {
+            const tool = findToolForDetail(name);
+
+            document.getElementById('reviewsToolbar').style.display = 'none';
+            document.getElementById('catalogBrowseSection').style.display = 'none';
+            document.getElementById('reviewsModelsSection').style.display = 'none';
+            document.getElementById('reviewsGridHeading').style.display = 'none';
+            document.getElementById('reviewsGrid').style.display = 'none';
+            document.getElementById('toolDetailSection').style.display = 'block';
+
+            document.getElementById('toolDetailCategory').textContent = tool.category || 'Kerph Catalog';
+            document.getElementById('toolDetailName').textContent = tool.name;
+
+            const photoWrap = document.getElementById('toolDetailPhotoWrap');
+            photoWrap.innerHTML = tool.specs && tool.specs.image
+                ? `<img src="${escapeHtml(tool.specs.image)}" alt="" onerror="this.parentElement.innerHTML='<div class=&quot;tool-detail-photo-placeholder&quot;>&#128736;</div>'">`
+                : `<div class="tool-detail-photo-placeholder">&#128736;</div>`;
+
+            const specParts = tool.specs ? [tool.specs.power, tool.specs.voltage, tool.specs.weight].filter(Boolean) : [];
+            document.getElementById('toolDetailSpecs').textContent = specParts.length ? specParts.join('  ·  ') : 'Specs not available for this tool.';
+
+            const buyLink = document.getElementById('toolDetailBuyLink');
+            const buyUrl = (tool.specs && tool.specs.buyUrl) || shopSearchUrl(tool.name);
+            buyLink.href = buyUrl;
+            buyLink.textContent = (tool.specs && tool.specs.buyUrl) ? 'Buy →' : 'Shop on Amazon →';
+
+            renderToolDetailReviews(name);
+        }
+
+        function renderToolDetailReviews(name) {
+            const grid = document.getElementById('toolDetailReviewsGrid');
+            const reviews = cachedReviews.filter(r => r.tool_name === name)
+                .slice()
+                .sort((a, b) => b.created_at.localeCompare(a.created_at));
+            if (!reviews.length) {
+                grid.innerHTML = `
+                    <div class="reviews-empty">
+                        <div class="reviews-empty-icon">&#11088;</div>
+                        <div class="reviews-empty-title">No reviews yet</div>
+                        <div class="reviews-empty-desc">Be the first to review this tool &mdash; click "+ Write a Review" above.</div>
+                    </div>
+                `;
+                return;
+            }
+            grid.innerHTML = reviews.map(r => {
+                const dateStr = new Date(r.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+                const isVoted = cachedMyVotes.includes(r.id);
+                return `
+                    <div class="review-card">
+                        <div class="review-card-top">
+                            <div class="review-tool-name">${escapeHtml(r.tool_name)}</div>
+                            <div class="review-category-tag">${escapeHtml(r.category)}</div>
+                        </div>
+                        <div class="star-rating">${starsHtml(r.rating)}</div>
+                        <div class="review-text">${escapeHtml(r.review_text)}</div>
+                        <div class="review-card-footer">
+                            <span><span class="review-author">${escapeHtml(r.author || 'Anonymous')}</span> &middot; <span class="review-date">${dateStr}</span></span>
+                            <button type="button" class="helpful-btn${isVoted ? ' active' : ''}" data-id="${r.id}">&#128077; Helpful${r.helpful_count ? ' (' + r.helpful_count + ')' : ''}</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            grid.querySelectorAll('.helpful-btn').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    const id = btn.getAttribute('data-id');
+                    if (!isSignedIn()) { showToast('Sign in (top right) to mark a review helpful.'); return; }
+                    const currentlyVoted = cachedMyVotes.includes(id);
+                    await kerphToggleReviewHelpful(id, currentlyVoted);
+                    const [votesResult] = await Promise.all([kerphLoadMyReviewVotes()]);
+                    cachedMyVotes = votesResult.data;
+                    renderToolDetailReviews(name);
+                });
+            });
+        }
+
+        function closeToolDetail() {
+            document.getElementById('reviewsToolbar').style.display = '';
+            document.getElementById('toolDetailSection').style.display = 'none';
+            document.getElementById('reviewsGridHeading').style.display = '';
+            document.getElementById('reviewsGrid').style.display = '';
+            document.getElementById('reviewSearchInput').value = '';
             renderReviews();
+        }
+
+        function openToolDetail(name) {
+            history.pushState({ kerphToolDetail: name }, '', '#tool=' + encodeURIComponent(name));
+            renderToolDetail(name);
+        }
+
+        window.addEventListener('popstate', (e) => {
+            if (e.state && e.state.kerphToolDetail) {
+                renderToolDetail(e.state.kerphToolDetail);
+            } else {
+                closeToolDetail();
+            }
+        });
+
+        document.getElementById('toolDetailBackBtn').addEventListener('click', () => history.back());
+
+        // Deep-link support: a shared/reloaded #tool=... URL opens straight into that tool's
+        // detail view instead of the full catalog. Uses replaceState (not the pushState inside
+        // openToolDetail) so the very first Back press from a deep link leaves the page instead
+        // of bouncing to a synthetic empty state.
+        function initToolDetailFromHash() {
+            const match = location.hash.match(/^#tool=(.+)$/);
+            if (!match) return;
+            const name = decodeURIComponent(match[1]);
+            history.replaceState({ kerphToolDetail: name }, '', location.hash);
+            renderToolDetail(name);
         }
 
         // Every catalog item (plus reviewed-but-off-catalog tools) grouped by category, for the
@@ -1213,7 +1389,7 @@
                 </details>
             `).join('');
             container.querySelectorAll('.review-model-card').forEach(card => {
-                card.addEventListener('click', () => jumpToToolReviews(card.getAttribute('data-name')));
+                card.addEventListener('click', () => openToolDetail(card.getAttribute('data-name')));
             });
         }
 
@@ -1249,7 +1425,7 @@
             section.style.display = 'block';
 
             grid.querySelectorAll('.review-model-card').forEach(card => {
-                card.addEventListener('click', () => jumpToToolReviews(card.getAttribute('data-name')));
+                card.addEventListener('click', () => openToolDetail(card.getAttribute('data-name')));
             });
         }
 
@@ -1495,7 +1671,9 @@
             initAccountPanel();
             // Public content — renders for signed-out visitors too, just needed auth to
             // resolve first so kerphLoadMyReviewVotes() reflects the right (or no) user.
-            renderReviews();
+            // initToolDetailFromHash() runs after, not in parallel -- it needs cachedReviews
+            // (populated by renderReviews) to show the right category/reviews for a deep link.
+            renderReviews().then(initToolDetailFromHash);
         });
 
         populateCategorySelects();
