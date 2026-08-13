@@ -505,6 +505,18 @@
             border-radius: 999px;
             margin-top: 3px;
         }
+        .kerph-brand-filter-row {
+            display: none;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #1e3a6e;
+            padding: 6px 2px 10px;
+            cursor: pointer;
+        }
+        .kerph-brand-filter-row input { cursor: pointer; }
+        .tool-box-item.kerph-brand-filtered-out { display: none !important; }
 
         /* ---------- Tool hover preview popover (photo + specs on hover) ---------- */
         .tool-preview-popover {
@@ -2660,6 +2672,7 @@
             });
             emptyHint.style.display = matches.length ? 'none' : 'block';
             if (window.kerphApplyPreferredBrandBadges) window.kerphApplyPreferredBrandBadges();
+            if (window.kerphApplyPreferredBrandFilter) window.kerphApplyPreferredBrandFilter();
         }
 
         // Event-delegated (not per-item addEventListener) because these cards get torn down
@@ -2848,6 +2861,7 @@
                 items.forEach(tool => itemsEl.appendChild(buildFloorToolResultCard(tool)));
             });
             if (window.kerphApplyPreferredBrandBadges) window.kerphApplyPreferredBrandBadges();
+            if (window.kerphApplyPreferredBrandFilter) window.kerphApplyPreferredBrandFilter();
         }
 
         // Same filter behavior as the Workshop Layout Planner's #toolSearchInput: hides
@@ -3256,6 +3270,7 @@
             initInsuranceReport();
             initPowerToolSearch();
             initFloorToolSearch();
+            if (window.kerphInjectBrandFilterToggle) window.kerphInjectBrandFilterToggle();
             // Syncs the account's real preferences in on a different device than the one
             // that set them — the localStorage reads above are only an instant-paint
             // fallback to avoid a flash of the wrong value before auth resolves.

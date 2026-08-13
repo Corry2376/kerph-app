@@ -800,10 +800,14 @@
     });
 
     // Re-flag catalog tiles the instant the preference changes (or on sign-in, once the
-    // profile has loaded) without requiring a page reload or a fresh search/render.
-    if (window.kerphApplyPreferredBrandBadges) {
-        kerphOnAuthChange(() => window.kerphApplyPreferredBrandBadges());
-    }
+    // profile has loaded) without requiring a page reload or a fresh search/render. Also
+    // keeps the "Show only X tools" filter toggle's visibility/label and the actual filtering
+    // in sync with whatever brand is (or isn't) currently saved.
+    kerphOnAuthChange(() => {
+        if (window.kerphApplyPreferredBrandBadges) window.kerphApplyPreferredBrandBadges();
+        if (window.kerphRefreshBrandFilterToggle) window.kerphRefreshBrandFilterToggle();
+        if (window.kerphApplyPreferredBrandFilter) window.kerphApplyPreferredBrandFilter();
+    });
 
     /* ---------- Singleton domains: one row per user, upsert-only ---------- */
 

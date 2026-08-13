@@ -1021,6 +1021,70 @@
         });
     };
 
+    // ---------- Preferred Brand filter ----------
+    // Distinct from the badge above (which only flags matches) -- this actually hides
+    // everything that ISN'T the preferred brand, per-item, using a class with !important so it
+    // composes correctly on top of whatever a search box's own item.style.display already set,
+    // regardless of call order. Persisted in localStorage (not tied to the account) since it's
+    // a "browsing mode" toggle a user flips on/off per-session, not a saved preference itself.
+    const BRAND_FILTER_LOCAL_KEY = 'kerphBrandFilterOn';
+
+    window.kerphBrandFilterActive = function () {
+        return localStorage.getItem(BRAND_FILTER_LOCAL_KEY) === 'true';
+    };
+
+    window.kerphApplyPreferredBrandFilter = function () {
+        const profile = window.kerphGetCachedProfile ? window.kerphGetCachedProfile() : {};
+        const preferred = profile.preferredBrand || '';
+        const active = !!preferred && window.kerphBrandFilterActive();
+        document.querySelectorAll('.tool-box-item').forEach(item => {
+            if (!active) { item.classList.remove('kerph-brand-filtered-out'); return; }
+            const titleEl = item.querySelector('.tool-title');
+            const name = item.getAttribute('data-name') || (titleEl ? titleEl.textContent : '') || '';
+            const isMatch = window.kerphExtractBrand(name) === preferred;
+            item.classList.toggle('kerph-brand-filtered-out', !isMatch);
+        });
+    };
+
+    window.kerphSetBrandFilterActive = function (active) {
+        try { localStorage.setItem(BRAND_FILTER_LOCAL_KEY, active ? 'true' : 'false'); } catch (e) { /* private browsing -- best effort */ }
+        window.kerphApplyPreferredBrandFilter();
+    };
+
+    // Injects the toggle right after the sidebar's tool-search box (same wrapper class,
+    // .tool-search-wrap, on both index.html and workshop-planner.html) so it's visible right
+    // where someone is actually browsing tool cards, not buried in account settings. Hidden
+    // entirely when there's no preferred brand set, since the toggle wouldn't mean anything.
+    window.kerphInjectBrandFilterToggle = function () {
+        if (document.getElementById('kerphBrandFilterRow')) { window.kerphRefreshBrandFilterToggle(); return; }
+        const searchWrap = document.querySelector('.tool-search-wrap');
+        if (!searchWrap || !searchWrap.parentNode) return;
+        const row = document.createElement('label');
+        row.id = 'kerphBrandFilterRow';
+        row.className = 'kerph-brand-filter-row';
+        row.innerHTML = `<input type="checkbox" id="kerphBrandFilterCheckbox"> <span id="kerphBrandFilterLabel"></span>`;
+        searchWrap.parentNode.insertBefore(row, searchWrap.nextSibling);
+        row.querySelector('#kerphBrandFilterCheckbox').addEventListener('change', (e) => {
+            window.kerphSetBrandFilterActive(e.target.checked);
+        });
+        window.kerphRefreshBrandFilterToggle();
+    };
+
+    window.kerphRefreshBrandFilterToggle = function () {
+        const row = document.getElementById('kerphBrandFilterRow');
+        if (!row) return;
+        const profile = window.kerphGetCachedProfile ? window.kerphGetCachedProfile() : {};
+        const preferred = profile.preferredBrand || '';
+        if (!preferred) {
+            row.style.display = 'none';
+            if (window.kerphBrandFilterActive()) window.kerphSetBrandFilterActive(false);
+            return;
+        }
+        row.style.display = 'flex';
+        document.getElementById('kerphBrandFilterLabel').textContent = `Show only ${preferred} tools`;
+        document.getElementById('kerphBrandFilterCheckbox').checked = window.kerphBrandFilterActive();
+    };
+
     // { name, category, layer, widthFt, lengthFt, heightFt } for every non-cabinet catalog
     // item (cabinets are built via a form, not this static list). widthFt/lengthFt/heightFt
     // mirror each catalog chip's data-width/data-length/data-height in workshop-planner.html.
