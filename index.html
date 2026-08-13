@@ -495,6 +495,21 @@
 
         .tool-title { font-weight: 700; font-size: 13px; color: #0f172a; }
         .tool-dims { font-size: 11px; color: #6b7280; margin-top: 1px; }
+        .nickname-input {
+            display: block;
+            width: 100%;
+            box-sizing: border-box;
+            margin-top: 6px;
+            padding: 6px 8px;
+            border: 1px solid #86efac;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            background-color: #ffffff;
+            color: #14532d;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+        .nickname-input.nickname-saved-flash { background-color: #dcfce7; border-color: #16a34a; }
         .preferred-brand-badge {
             display: inline-block;
             background-color: #fef3c7;
@@ -2566,6 +2581,45 @@
             if (typeof renderCatalogCategories === 'function') renderCatalogCategories();
         }
 
+        // Parity fix: Workshop Planner's catalog cards have always had a nickname field for
+        // owned tools; the home page's equivalent cards never did, even though both pages read/
+        // write the exact same tool_status nickname field. Shared by both card builders below so
+        // the two catalogs' owned-tool cards behave identically, not just look similar. Debounced
+        // save + a brief flash on success, matching the treatment workshop-planner.html got.
+        function appendNicknameInputIfOwned(infoEl, tool, entry) {
+            if (!entry || entry.status !== 'owned') return;
+            const nicknameInput = document.createElement('input');
+            nicknameInput.type = 'text';
+            nicknameInput.className = 'nickname-input';
+            nicknameInput.placeholder = `Nickname (e.g. "Dad's ${tool.category.toLowerCase().includes('saw') ? 'saw' : 'tool'}")`;
+            nicknameInput.value = entry.nickname || '';
+            nicknameInput.addEventListener('mousedown', (e) => e.stopPropagation());
+            nicknameInput.addEventListener('click', (e) => e.stopPropagation());
+            // Enter/blur flush immediately (not just the debounce) so a quick navigation right
+            // after typing can't lose the edit -- blur fires before a same-page nav click
+            // actually navigates.
+            let saveTimer = null;
+            function flushNicknameSave() {
+                clearTimeout(saveTimer);
+                const current = loadToolStatuses();
+                if (current[tool.name] && current[tool.name].status === 'owned') {
+                    current[tool.name].nickname = nicknameInput.value;
+                    saveToolStatuses(current);
+                    nicknameInput.classList.add('nickname-saved-flash');
+                    setTimeout(() => nicknameInput.classList.remove('nickname-saved-flash'), 900);
+                }
+            }
+            nicknameInput.addEventListener('input', () => {
+                clearTimeout(saveTimer);
+                saveTimer = setTimeout(flushNicknameSave, 500);
+            });
+            nicknameInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') { e.preventDefault(); flushNicknameSave(); nicknameInput.blur(); }
+            });
+            nicknameInput.addEventListener('blur', flushNicknameSave);
+            infoEl.appendChild(nicknameInput);
+        }
+
         function buildToolResultCard(tool) {
             const statuses = loadToolStatuses();
             const entry = statuses[tool.name];
@@ -2583,6 +2637,7 @@
             dims.className = 'tool-dims';
             dims.textContent = tool.category;
             info.appendChild(dims);
+            appendNicknameInputIfOwned(info, tool, entry);
 
             const actions = document.createElement('div');
             actions.className = 'hand-tool-actions';
@@ -2787,6 +2842,7 @@
             dims.className = 'tool-dims';
             dims.textContent = `${tool.category} — ${tool.widthFt}' x ${tool.lengthFt}' Footprint`;
             info.appendChild(dims);
+            appendNicknameInputIfOwned(info, tool, entry);
 
             const actions = document.createElement('div');
             actions.className = 'hand-tool-actions';

@@ -10779,20 +10779,30 @@
 
             nicknameInput.addEventListener('mousedown', (e) => e.stopPropagation());
             nicknameInput.addEventListener('click', (e) => e.stopPropagation());
-            // Debounced (was saving on every keystroke) plus a brief visible flash on save --
-            // the save itself already worked before this change, but with zero feedback it
-            // reads as "there's no way to save this," which is the actual complaint this fixes.
+            // Debounced (was saving on every keystroke) plus a brief visible flash on save.
+            // A pure debounce can still lose the last edit if the user navigates away inside
+            // the 500ms window, so Enter and blur (focus leaving the field -- which fires
+            // before a same-page nav click actually navigates) flush immediately instead of
+            // waiting out the timer.
             let nicknameSaveTimer = null;
+            function flushNicknameSave() {
+                if (!(statuses[name] && statuses[name].status === 'owned')) return;
+                clearTimeout(nicknameSaveTimer);
+                statuses[name].nickname = nicknameInput.value;
+                saveToolStatuses(statuses);
+                nicknameInput.classList.add('nickname-saved-flash');
+                setTimeout(() => nicknameInput.classList.remove('nickname-saved-flash'), 900);
+            }
             nicknameInput.addEventListener('input', () => {
                 if (!(statuses[name] && statuses[name].status === 'owned')) return;
                 statuses[name].nickname = nicknameInput.value;
                 clearTimeout(nicknameSaveTimer);
-                nicknameSaveTimer = setTimeout(() => {
-                    saveToolStatuses(statuses);
-                    nicknameInput.classList.add('nickname-saved-flash');
-                    setTimeout(() => nicknameInput.classList.remove('nickname-saved-flash'), 900);
-                }, 500);
+                nicknameSaveTimer = setTimeout(flushNicknameSave, 500);
             });
+            nicknameInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') { e.preventDefault(); flushNicknameSave(); nicknameInput.blur(); }
+            });
+            nicknameInput.addEventListener('blur', flushNicknameSave);
 
             // "Attach to dust collection?" — tools only (not the dust-collection/lighting
             // catalog items themselves, which have no data-layer attribute default of 'tools'
@@ -10869,20 +10879,29 @@
                 // Debounced save + flash, matching the floor-tool cards (wireToolStatusItem)
                 // and index.html's appendNicknameInputIfOwned — was previously a plain
                 // `change` listener with a full re-render and no visible save confirmation.
+                // Enter/blur flush immediately (not just the debounce) so a quick navigation
+                // right after typing can't lose the edit -- blur fires before a same-page nav
+                // click actually navigates.
                 let nicknameSaveTimer = null;
+                function flushNicknameSave() {
+                    clearTimeout(nicknameSaveTimer);
+                    const current = loadToolStatuses();
+                    if (current[tool.name] && current[tool.name].status === 'owned') {
+                        current[tool.name].nickname = nicknameInput.value;
+                        saveToolStatuses(current);
+                        renderOwnedPowerToolsInMyTools();
+                        nicknameInput.classList.add('nickname-saved-flash');
+                        setTimeout(() => nicknameInput.classList.remove('nickname-saved-flash'), 900);
+                    }
+                }
                 nicknameInput.addEventListener('input', () => {
                     clearTimeout(nicknameSaveTimer);
-                    nicknameSaveTimer = setTimeout(() => {
-                        const current = loadToolStatuses();
-                        if (current[tool.name] && current[tool.name].status === 'owned') {
-                            current[tool.name].nickname = nicknameInput.value;
-                            saveToolStatuses(current);
-                            renderOwnedPowerToolsInMyTools();
-                            nicknameInput.classList.add('nickname-saved-flash');
-                            setTimeout(() => nicknameInput.classList.remove('nickname-saved-flash'), 900);
-                        }
-                    }, 500);
+                    nicknameSaveTimer = setTimeout(flushNicknameSave, 500);
                 });
+                nicknameInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') { e.preventDefault(); flushNicknameSave(); nicknameInput.blur(); }
+                });
+                nicknameInput.addEventListener('blur', flushNicknameSave);
                 info.appendChild(nicknameInput);
             }
 
