@@ -822,9 +822,26 @@
         return currentLayoutDomain.save(value);
     }
 
+    // Same gap as current_layouts above, same fix -- tool_status is where owned/wishlist
+    // status AND per-tool nicknames live (see wireToolStatusItem() in workshop-planner.html),
+    // and was Supabase-only, so a signed-out user (or any transient save error, silently
+    // swallowed by every caller's .catch(() => {})) lost nicknames/status with zero feedback:
+    // the field looked like it accepted the text, but nothing actually persisted past reload.
     const toolStatusDomain = makeSingletonDomain('tool_status', 'data', {});
-    const kerphLoadToolStatus = toolStatusDomain.load;
-    const kerphSaveToolStatus = toolStatusDomain.save;
+    const TOOL_STATUS_LOCAL_KEY = 'kerphToolStatus';
+
+    async function kerphLoadToolStatus() {
+        try {
+            const raw = localStorage.getItem(TOOL_STATUS_LOCAL_KEY);
+            if (raw) return { data: JSON.parse(raw), error: null };
+        } catch (e) { /* ignore -- fall through to Supabase */ }
+        return toolStatusDomain.load();
+    }
+
+    async function kerphSaveToolStatus(value) {
+        try { localStorage.setItem(TOOL_STATUS_LOCAL_KEY, JSON.stringify(value)); } catch (e) { /* private browsing / quota -- best effort */ }
+        return toolStatusDomain.save(value);
+    }
 
     const customToolsDomain = makeSingletonDomain('custom_tools', 'data', []);
     const kerphLoadCustomTools = customToolsDomain.load;

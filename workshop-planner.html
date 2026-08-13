@@ -727,7 +727,9 @@
             font-weight: 600;
             background-color: #ffffff;
             color: #14532d;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
         }
+        .nickname-input.nickname-saved-flash { background-color: #dcfce7; border-color: #16a34a; }
 
         .attach-dc-label {
             flex-basis: 100%;
@@ -10725,11 +10727,19 @@
 
             nicknameInput.addEventListener('mousedown', (e) => e.stopPropagation());
             nicknameInput.addEventListener('click', (e) => e.stopPropagation());
+            // Debounced (was saving on every keystroke) plus a brief visible flash on save --
+            // the save itself already worked before this change, but with zero feedback it
+            // reads as "there's no way to save this," which is the actual complaint this fixes.
+            let nicknameSaveTimer = null;
             nicknameInput.addEventListener('input', () => {
-                if (statuses[name] && statuses[name].status === 'owned') {
-                    statuses[name].nickname = nicknameInput.value;
+                if (!(statuses[name] && statuses[name].status === 'owned')) return;
+                statuses[name].nickname = nicknameInput.value;
+                clearTimeout(nicknameSaveTimer);
+                nicknameSaveTimer = setTimeout(() => {
                     saveToolStatuses(statuses);
-                }
+                    nicknameInput.classList.add('nickname-saved-flash');
+                    setTimeout(() => nicknameInput.classList.remove('nickname-saved-flash'), 900);
+                }, 500);
             });
 
             // "Attach to dust collection?" — tools only (not the dust-collection/lighting
