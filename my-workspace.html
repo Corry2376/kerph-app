@@ -204,7 +204,53 @@
         .workspace-community-cols { grid-template-columns: repeat(3, 1fr); }
         .workspace-tools-panel { background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 16px; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04); }
         .workspace-tools-panel-title { font-size: 15px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; color: #1e3a8a; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 2px solid #1e3a8a; }
-        .workspace-tools-list { font-size: 12.5px; color: #1e293b; line-height: 1.9; max-height: 150px; overflow-y: auto; }
+        .workspace-tools-panel-title-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 2px solid #1e3a8a; }
+        .workspace-tools-panel-title-row .workspace-tools-panel-title { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
+        .workspace-tools-list { font-size: 12.5px; color: #1e293b; line-height: 1.9; max-height: 260px; overflow-y: auto; }
+
+        /* ---------- MAINTENANCE REMINDERS (ported from index.html's My Tools list) ---------- */
+        .workspace-owned-tool-row { padding: 6px 0; border-bottom: 1px solid #f1f5f9; }
+        .workspace-owned-tool-row:last-child { border-bottom: none; }
+        .workspace-owned-tool-name { font-weight: 700; }
+        .tool-maintenance { margin-top: 4px; padding-top: 4px; }
+        .maintenance-badge { font-size: 11px; font-weight: 600; padding: 3px 0; }
+        .maintenance-badge.overdue { color: #b91c1c; }
+        .maintenance-badge.due-soon { color: #b45309; }
+        .maintenance-badge.due-ok { color: #6b7280; }
+        .maintenance-actions { display: flex; gap: 6px; margin-top: 4px; }
+        .maintenance-mini-btn {
+            padding: 4px 8px; border: 1px solid #cbd5e1; border-radius: 6px; background-color: #ffffff;
+            font-size: 10.5px; font-weight: 700; color: #1e3a8a; cursor: pointer; white-space: nowrap;
+        }
+        .maintenance-mini-btn:hover { border-color: #1e3a8a; background-color: #eef2ff; }
+        .maintenance-form-row { display: flex; gap: 6px; margin-top: 4px; }
+        .maintenance-input {
+            flex: 1; padding: 5px 7px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 11px; font-weight: 600;
+        }
+
+        /* ---------- INSURANCE INVENTORY REPORT (ported from index.html, Premier) ---------- */
+        #insuranceReportPrintArea { display: none; }
+        @media print {
+            body.printing-insurance-report > *:not(#insuranceReportPrintArea) { display: none !important; }
+            body.printing-insurance-report { padding-top: 0 !important; background: #fff !important; }
+            body.printing-insurance-report #insuranceReportPrintArea {
+                display: block !important;
+                font-family: inherit;
+                color: #0f172a;
+            }
+            @page { size: portrait; margin: 0.6in; }
+            .ins-report-title { font-size: 22px; font-weight: 800; }
+            .ins-report-meta { font-size: 11px; color: #475569; margin-top: 4px; margin-bottom: 18px; }
+            .ins-report-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+            .ins-report-table th {
+                text-align: left; padding: 6px 8px; font-size: 9px; text-transform: uppercase;
+                letter-spacing: 0.04em; color: #64748b; border-bottom: 2px solid #1e3a8a;
+            }
+            .ins-report-table td { padding: 6px 8px; border-bottom: 1px solid #e2e8f0; }
+            .ins-report-table td.ins-value { text-align: right; font-variant-numeric: tabular-nums; }
+            .ins-report-total-row td { font-weight: 800; border-top: 2px solid #1e3a8a; border-bottom: none; }
+            .ins-report-disclaimer { margin-top: 22px; font-size: 10px; color: #6b7280; line-height: 1.6; border-top: 1px solid #e2e8f0; padding-top: 10px; }
+        }
 
         .workspace-future-note {
             font-size: 12px; color: #92400e; background-color: #fffbeb; border: 1px solid #fde68a; border-radius: 10px; padding: 12px 16px; line-height: 1.5;
@@ -316,6 +362,7 @@
     </div>
 
     <div class="upgrade-nudge" id="upgradeNudge"></div>
+    <div id="insuranceReportPrintArea"></div>
 
     <div class="workspace-layout">
         <div class="workspace-hero-title">My Workbench</div>
@@ -345,7 +392,10 @@
                 </div>
                 <div class="workspace-tools-cols">
                     <div class="workspace-tools-panel">
-                        <div class="workspace-tools-panel-title">Owned</div>
+                        <div class="workspace-tools-panel-title-row">
+                            <div class="workspace-tools-panel-title">Owned</div>
+                            <button type="button" class="maintenance-mini-btn" id="insuranceReportBtn" title="Generate a printable inventory of your owned tools for insurance purposes (Premier)">&#128737;&#65039; Insurance Report</button>
+                        </div>
                         <div class="workspace-tools-list" id="workspaceOwnedToolsList"></div>
                     </div>
                     <div class="workspace-tools-panel">
@@ -459,6 +509,10 @@
 
         let cachedToolStatuses = {};
         function loadToolStatuses() { return cachedToolStatuses; }
+        function saveToolStatuses(statuses) {
+            cachedToolStatuses = statuses;
+            kerphSaveToolStatus(statuses).catch(() => {});
+        }
         let cachedSavedLayouts = [];
         function loadLayouts() { return cachedSavedLayouts; }
         const LAYOUT_TYPE_LABELS = { workshop: 'Workshop', 'dust-collection': 'Dust Collection', lighting: 'Lighting' };
@@ -867,16 +921,225 @@
         function toolLabel(key, entry) {
             return (entry && entry.nickname) ? entry.nickname : key;
         }
+
+        // ---------- Maintenance reminders (ported from index.html's My Tools list) ----------
+        function formatMaintenanceStatus(dueDateStr) {
+            const due = new Date(dueDateStr + 'T00:00:00');
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const diffDays = Math.round((due - today) / 86400000);
+            if (diffDays < 0) return { text: `Overdue by ${Math.abs(diffDays)}d`, cls: 'overdue' };
+            if (diffDays === 0) return { text: 'Due today', cls: 'due-soon' };
+            if (diffDays <= 7) return { text: `Due in ${diffDays}d`, cls: 'due-soon' };
+            return { text: `Due ${due.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}`, cls: 'due-ok' };
+        }
+        function updateToolMaintenance(name, maintenance) {
+            const current = loadToolStatuses();
+            if (!current[name]) return;
+            if (maintenance === null) delete current[name].maintenance;
+            else current[name].maintenance = maintenance;
+            saveToolStatuses(current);
+            renderTools(current);
+        }
+        function openMaintenanceForm(container, name) {
+            container.innerHTML = '';
+            const noteInput = document.createElement('input');
+            noteInput.type = 'text';
+            noteInput.className = 'maintenance-input';
+            noteInput.placeholder = 'e.g. Change blade';
+            const dateInput = document.createElement('input');
+            dateInput.type = 'date';
+            dateInput.className = 'maintenance-input';
+            dateInput.value = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10);
+            const intervalInput = document.createElement('input');
+            intervalInput.type = 'number';
+            intervalInput.className = 'maintenance-input';
+            intervalInput.min = '1';
+            intervalInput.placeholder = 'Repeat every N days (optional)';
+            const saveBtn = document.createElement('button');
+            saveBtn.type = 'button';
+            saveBtn.className = 'maintenance-mini-btn';
+            saveBtn.textContent = 'Save';
+            saveBtn.addEventListener('click', () => {
+                if (!dateInput.value) return;
+                updateToolMaintenance(name, {
+                    note: noteInput.value.trim(),
+                    dueDate: dateInput.value,
+                    intervalDays: parseInt(intervalInput.value, 10) || null
+                });
+            });
+            const row1 = document.createElement('div');
+            row1.className = 'maintenance-form-row';
+            row1.appendChild(noteInput);
+            const row2 = document.createElement('div');
+            row2.className = 'maintenance-form-row';
+            row2.appendChild(dateInput);
+            const row3 = document.createElement('div');
+            row3.className = 'maintenance-form-row';
+            row3.appendChild(intervalInput);
+            row3.appendChild(saveBtn);
+            container.appendChild(row1);
+            container.appendChild(row2);
+            container.appendChild(row3);
+        }
+        function buildMaintenanceSection(name, entry) {
+            const wrap = document.createElement('div');
+            wrap.className = 'tool-maintenance';
+            if (entry.maintenance && entry.maintenance.dueDate) {
+                const status = formatMaintenanceStatus(entry.maintenance.dueDate);
+                const badge = document.createElement('div');
+                badge.className = 'maintenance-badge ' + status.cls;
+                badge.textContent = `\u{1F527} ${entry.maintenance.note ? entry.maintenance.note + ' — ' : ''}${status.text}`;
+                wrap.appendChild(badge);
+
+                const actions = document.createElement('div');
+                actions.className = 'maintenance-actions';
+                const doneBtn = document.createElement('button');
+                doneBtn.type = 'button';
+                doneBtn.className = 'maintenance-mini-btn';
+                doneBtn.textContent = 'Mark Done';
+                doneBtn.addEventListener('click', () => {
+                    const interval = entry.maintenance.intervalDays;
+                    if (interval) {
+                        const next = new Date();
+                        next.setDate(next.getDate() + interval);
+                        updateToolMaintenance(name, { ...entry.maintenance, dueDate: next.toISOString().slice(0, 10) });
+                    } else {
+                        updateToolMaintenance(name, null);
+                    }
+                });
+                const clearBtn = document.createElement('button');
+                clearBtn.type = 'button';
+                clearBtn.className = 'maintenance-mini-btn';
+                clearBtn.textContent = 'Clear';
+                clearBtn.addEventListener('click', () => updateToolMaintenance(name, null));
+                actions.appendChild(doneBtn);
+                actions.appendChild(clearBtn);
+                wrap.appendChild(actions);
+            } else {
+                const setBtn = document.createElement('button');
+                setBtn.type = 'button';
+                setBtn.className = 'maintenance-mini-btn';
+                setBtn.textContent = '+ Set Maintenance Reminder';
+                setBtn.addEventListener('click', () => openMaintenanceForm(wrap, name));
+                wrap.appendChild(setBtn);
+            }
+            return wrap;
+        }
+
         function renderTools(toolStatuses) {
-            const owned = [], wishlist = [];
+            const wishlist = [];
+            const ownedEntries = [];
             Object.entries(toolStatuses).forEach(([key, entry]) => {
-                if (entry && entry.status === 'owned') owned.push(toolLabel(key, entry));
+                if (entry && entry.status === 'owned') ownedEntries.push([key, entry]);
                 else if (entry && entry.status === 'wishlist') wishlist.push(toolLabel(key, entry));
             });
+
             const ownedEl = document.getElementById('workspaceOwnedToolsList');
+            ownedEl.innerHTML = '';
+            if (!ownedEntries.length) {
+                ownedEl.innerHTML = '<div style="color:#9ca3af; font-style:italic;">None marked owned yet.</div>';
+            } else {
+                ownedEntries.forEach(([name, entry]) => {
+                    const row = document.createElement('div');
+                    row.className = 'workspace-owned-tool-row';
+                    const nameEl = document.createElement('div');
+                    nameEl.className = 'workspace-owned-tool-name';
+                    nameEl.textContent = toolLabel(name, entry);
+                    row.appendChild(nameEl);
+                    row.appendChild(buildMaintenanceSection(name, entry));
+                    ownedEl.appendChild(row);
+                });
+            }
+
             const wishlistEl = document.getElementById('workspaceWishlistToolsList');
-            ownedEl.innerHTML = owned.length ? owned.map((t) => `<div>${escapeHtml(t)}</div>`).join('') : '<div style="color:#9ca3af; font-style:italic;">None marked owned yet.</div>';
             wishlistEl.innerHTML = wishlist.length ? wishlist.map((t) => `<div>${escapeHtml(t)}</div>`).join('') : '<div style="color:#9ca3af; font-style:italic;">Nothing on your wishlist yet.</div>';
+        }
+
+        // ---------- Insurance Inventory Report (ported from index.html, Premier) ----------
+        function generateInsuranceReport() {
+            const statuses = loadToolStatuses();
+            const owned = Object.entries(statuses).filter(([, e]) => e.status === 'owned');
+            if (!owned.length) {
+                showToast('Mark some tools as owned first — there\'s nothing to put in the report yet.');
+                return;
+            }
+            const acc = loadAccount();
+            const today = new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+            let total = 0;
+            let valuedCount = 0;
+            const rows = owned.map(([name, entry]) => {
+                const dispName = entry.nickname ? `${name} (${entry.nickname})` : name;
+                const dims = (entry.widthFt && entry.lengthFt)
+                    ? `${entry.widthFt}' x ${entry.lengthFt}'${entry.heightFt ? ' x ' + entry.heightFt + '\'' : ''}`
+                    : '—';
+                const hasValue = entry.replacementValue != null;
+                if (hasValue) { total += entry.replacementValue; valuedCount++; }
+                const valueText = hasValue ? `$${entry.replacementValue.toLocaleString()}` : 'Not entered';
+                const serialText = entry.serialNumber || '—';
+                return `<tr>
+                    <td>${escapeHtml(dispName)}</td>
+                    <td>${escapeHtml(entry.category || '—')}</td>
+                    <td>${escapeHtml(dims)}</td>
+                    <td>${escapeHtml(serialText)}</td>
+                    <td class="ins-value">${escapeHtml(valueText)}</td>
+                </tr>`;
+            }).join('');
+            const printArea = document.getElementById('insuranceReportPrintArea');
+            printArea.innerHTML = `
+                <div class="ins-report-title">Shop Equipment Inventory</div>
+                <div class="ins-report-meta">
+                    Prepared via Kerph on ${today}${acc.username ? ` for ${escapeHtml(acc.username)}` : ''} &mdash; ${owned.length} item${owned.length === 1 ? '' : 's'}
+                </div>
+                <table class="ins-report-table">
+                    <thead><tr><th>Item</th><th>Category</th><th>Dimensions</th><th>Serial #</th><th>Est. Value</th></tr></thead>
+                    <tbody>
+                        ${rows}
+                        <tr class="ins-report-total-row">
+                            <td colspan="4">Total estimated replacement value</td>
+                            <td class="ins-value">$${total.toLocaleString()}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="ins-report-disclaimer">
+                    Values shown are estimates entered by the account holder, not a professional appraisal — ${valuedCount} of ${owned.length} item${owned.length === 1 ? '' : 's'} have a value entered.
+                    Dimensions come from tools placed in the Kerph Workshop Layout Planner; hand and power tools added via search have no floor footprint to report, so only name, category, and whatever value/serial number you entered are shown for those.
+                    Provide this alongside receipts or your own documentation when filing an insurance claim or setting coverage limits; consult your insurance provider for how they'd like replacement-cost documentation formatted.
+                </div>
+            `;
+            document.body.classList.add('printing-insurance-report');
+            window.print();
+            setTimeout(() => document.body.classList.remove('printing-insurance-report'), 500);
+        }
+
+        function initInsuranceReport() {
+            const btn = document.getElementById('insuranceReportBtn');
+            if (!btn) return;
+            btn.addEventListener('click', () => {
+                if (getPlan() !== 'premier') {
+                    showUpgradeNudge('The Insurance Inventory Report is a Premier feature.');
+                    return;
+                }
+                generateInsuranceReport();
+            });
+            window.addEventListener('afterprint', () => document.body.classList.remove('printing-insurance-report'));
+        }
+
+        function showUpgradeNudge(featureMessage) {
+            const nudge = document.getElementById('upgradeNudge');
+            nudge.innerHTML = '';
+            const text = document.createElement('span');
+            text.textContent = featureMessage + ' ';
+            nudge.appendChild(text);
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'mini-btn';
+            btn.style.cssText = 'flex:none; display:inline-flex; align-items:center; padding:4px 10px; margin-left:4px;';
+            btn.textContent = 'Plan Comparison';
+            btn.addEventListener('click', () => { window.location.href = 'pricing.html'; });
+            nudge.appendChild(btn);
+            nudge.classList.add('visible');
+            clearTimeout(showToast._timer);
         }
 
         function renderProjects(projects) {
@@ -925,6 +1188,7 @@
         kerphAuthReady.then(async () => {
             initHeaderSignIn();
             initAccountPanel();
+            initInsuranceReport();
             if (isSignedIn()) { await loadWorkspaceData(); } else { showSignedOut(); }
         });
 
