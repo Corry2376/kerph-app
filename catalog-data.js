@@ -929,6 +929,14 @@
         return q.split(/\s+/).every(word => h.includes(word));
     };
 
+    // Alphabetical sort by full name, used to order tool lists within a subcategory. Since
+    // every tool name starts with its brand ("Bambu Lab X1 Carbon", "Bambu Lab A1 Mini"), a
+    // plain A-Z sort naturally clusters same-brand tools together without needing a separate
+    // brand field or brand-parsing logic.
+    window.kerphToolNameCompare = function (a, b) {
+        return String(a || '').localeCompare(String(b || ''), undefined, { numeric: true, sensitivity: 'base' });
+    };
+
     // { name, category, layer, widthFt, lengthFt, heightFt } for every non-cabinet catalog
     // item (cabinets are built via a form, not this static list). widthFt/lengthFt/heightFt
     // mirror each catalog chip's data-width/data-length/data-height in workshop-planner.html.

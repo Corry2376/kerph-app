@@ -5473,7 +5473,7 @@
                     </div>
                 </div>
                 <div class="tool-box-item" draggable="true" data-width="1.6" data-length="1.8" data-height="1.3" data-name="Prusa MK4">
-                    <div><div class="tool-title">Prusa MK4 3D Printer</div><div class="tool-dims">1.6' x 1.8' Footprint</div></div>
+                    <div><div class="tool-title">Original Prusa MK4 3D Printer</div><div class="tool-dims">1.6' x 1.8' Footprint</div></div>
                     <div class="tool-status-controls">
                         <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
                         <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
@@ -10895,7 +10895,7 @@
 
                 const items = document.createElement('div');
                 items.className = 'category-items';
-                groups[category].forEach(tool => items.appendChild(buildPowerToolCard(tool, statuses)));
+                groups[category].slice().sort((a, b) => window.kerphToolNameCompare(a.name, b.name)).forEach(tool => items.appendChild(buildPowerToolCard(tool, statuses)));
                 sub.appendChild(items);
 
                 resultsEl.appendChild(sub);
@@ -15023,6 +15023,30 @@
         initShopTypeToggle();
         applyShopTypeFilter();
         initToolSearch();
+
+        // The floor-tool categories are static HTML (not rendered from CATALOG_ITEMS like the
+        // home page), so unlike Small Power Tools -- which sorts itself fresh on every render --
+        // these only need sorting once, at load, since their DOM nodes never get rebuilt.
+        // Excludes My Tools/My Wishlist (user-curated order) and Small Power Tools (already
+        // sorted at render time). Covers nested subcategories too (Dust Collection's 4"/6"
+        // split, Air Compressors' Mobile/Floor split) since the selector matches any
+        // .category-items, not just top-level ones.
+        function sortStaticFloorToolCategories() {
+            const skipIds = new Set(['myToolsCategory', 'wishlistCategory', 'smallPowerToolsCategory']);
+            document.querySelectorAll('#sidebar-panel .tool-category').forEach(category => {
+                if (skipIds.has(category.id)) return;
+                category.querySelectorAll(':scope .category-items').forEach(container => {
+                    const items = Array.from(container.children).filter(el => el.classList.contains('tool-box-item'));
+                    if (items.length < 2) return;
+                    items.sort((a, b) => window.kerphToolNameCompare(
+                        a.querySelector('.tool-title')?.textContent || a.getAttribute('data-name') || '',
+                        b.querySelector('.tool-title')?.textContent || b.getAttribute('data-name') || ''
+                    ));
+                    items.forEach(item => container.appendChild(item));
+                });
+            });
+        }
+        sortStaticFloorToolCategories();
 
         /* ---------- CURRENT LAYOUT AUTOSAVE (cross-page sync) ----------
            The live, unsaved board state is continuously mirrored into localStorage under

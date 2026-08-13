@@ -2643,7 +2643,7 @@
 
                 const items = document.createElement('div');
                 items.className = 'category-items';
-                groups[category].forEach(tool => items.appendChild(buildToolResultCard(tool)));
+                groups[category].slice().sort((a, b) => window.kerphToolNameCompare(a.name, b.name)).forEach(tool => items.appendChild(buildToolResultCard(tool)));
                 sub.appendChild(items);
 
                 resultsEl.appendChild(sub);
@@ -2830,7 +2830,7 @@
             CATALOG_CATEGORY_ORDER.forEach(category => {
                 const details = document.querySelector(`#sidebar-panel .tool-category[data-clearance-category="${CSS.escape(category)}"]`);
                 if (!details) return;
-                const items = grouped[category] || [];
+                const items = (grouped[category] || []).slice().sort((a, b) => window.kerphToolNameCompare(a.name, b.name));
                 details.querySelector('.category-count').textContent = items.length;
                 const itemsEl = details.querySelector('.category-items');
                 itemsEl.innerHTML = '';
