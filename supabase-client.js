@@ -58,36 +58,54 @@
     kerphSupabase.auth.onAuthStateChange((event, session) => {
         setTimeout(async () => {
             const wasReady = state.ready;
-            state.user = session ? session.user : null;
-            if (state.user) kerphLogDailyActiveUser(state.user.id);
-            await refreshProfile(state.user ? state.user.id : null);
-            if (state.user) {
-                await kerphBackfillProfileFromSignupMetadata();
-            }
-            kerphSyncAdminDashboardLink();
-            // Real entitlement resolution — direct subscription, or Premier inherited via an
-            // active team membership. Refreshed on every auth event (sign-in, sign-out, token
-            // refresh) so it never lags behind who's actually signed in.
-            if (state.user) {
-                const { data: eff } = await kerphGetMyEffectivePlan();
-                cachedEffectivePlan = { plan: eff.plan, viaTeam: !!eff.viaTeam };
-            } else {
+            // SECURITY: everything below this line up through resolveReady() must run even if
+            // a step throws (a real, verified gap — a network hiccup partway through, e.g. the
+            // team_members lookup in kerphGetMyEffectivePlan(), used to leave this whole async
+            // callback rejected with resolveReady() never called). kerphEnforceRealTierGate()
+            // on every gated page waits on kerphAuthReady before it can close the loophole left
+            // by each page's own fast-but-spoofable localStorage-only first-pass redirect — if
+            // that promise never resolves, the second-pass check never runs, and a signed-in
+            // Free user who ever had a stale/edited kerphPlan value in localStorage (e.g. from
+            // previewing a tier on pricing.html) stays on Pro/Premier pages indefinitely. The
+            // try/catch/finally here guarantees resolveReady() always fires and the plan fails
+            // safe to 'free' on any error, matching the fail-safe philosophy already documented
+            // on kerphGetMySubscription() below -- that fallback doesn't help if this outer
+            // caller never reaches the code that uses it.
+            try {
+                state.user = session ? session.user : null;
+                if (state.user) kerphLogDailyActiveUser(state.user.id);
+                await refreshProfile(state.user ? state.user.id : null);
+                if (state.user) {
+                    await kerphBackfillProfileFromSignupMetadata();
+                }
+                kerphSyncAdminDashboardLink();
+                // Real entitlement resolution — direct subscription, or Premier inherited via an
+                // active team membership. Refreshed on every auth event (sign-in, sign-out, token
+                // refresh) so it never lags behind who's actually signed in.
+                if (state.user) {
+                    const { data: eff } = await kerphGetMyEffectivePlan();
+                    cachedEffectivePlan = { plan: eff.plan, viaTeam: !!eff.viaTeam };
+                } else {
+                    cachedEffectivePlan = { plan: 'free', viaTeam: false };
+                }
+                // Only on the very first ready-resolution of a real sign-in (not every later
+                // auth event) — kerphRunLocalMigration itself is a fast no-op after the first
+                // time via its own sentinel, but this also skips it during INITIAL_SESSION
+                // signed-out resolution and other no-op events.
+                if (!wasReady && state.user && !migrationAttempted) {
+                    migrationAttempted = true;
+                    await kerphRunLocalMigration();
+                }
+            } catch (e) {
                 cachedEffectivePlan = { plan: 'free', viaTeam: false };
+            } finally {
+                if (!state.ready) {
+                    state.ready = true;
+                    resolveReady();
+                }
+                kerphRefreshTierLocks();
+                notifyChange();
             }
-            // Only on the very first ready-resolution of a real sign-in (not every later
-            // auth event) — kerphRunLocalMigration itself is a fast no-op after the first
-            // time via its own sentinel, but this also skips it during INITIAL_SESSION
-            // signed-out resolution and other no-op events.
-            if (!wasReady && state.user && !migrationAttempted) {
-                migrationAttempted = true;
-                await kerphRunLocalMigration();
-            }
-            if (!state.ready) {
-                state.ready = true;
-                resolveReady();
-            }
-            kerphRefreshTierLocks();
-            notifyChange();
         }, 0);
     });
 
@@ -1640,12 +1658,17 @@
     async function kerphGetMyEffectivePlan() {
         const direct = await kerphGetMySubscription();
         if (direct.data.plan !== 'free' || !state.user) return direct;
-        const { data: membership } = await kerphSupabase
-            .from('team_members').select('status, team_id').eq('user_id', state.user.id).eq('status', 'active').maybeSingle();
-        if (membership) {
-            const { data: ownerPlan } = await kerphSupabase.rpc('kerph_team_owner_plan', { p_team_id: membership.team_id });
-            return { data: { ...direct.data, plan: ownerPlan || 'free', viaTeam: !!ownerPlan }, error: null };
-        }
+        // Fails safe to the direct (free) result on any error -- e.g. a network hiccup on
+        // this lookup used to leave the caller's whole async chain rejected and resolveReady()
+        // never called, which is worse than just missing a team-inherited plan for one pass.
+        try {
+            const { data: membership } = await kerphSupabase
+                .from('team_members').select('status, team_id').eq('user_id', state.user.id).eq('status', 'active').maybeSingle();
+            if (membership) {
+                const { data: ownerPlan } = await kerphSupabase.rpc('kerph_team_owner_plan', { p_team_id: membership.team_id });
+                return { data: { ...direct.data, plan: ownerPlan || 'free', viaTeam: !!ownerPlan }, error: null };
+            }
+        } catch (e) { /* fall through to the direct (free) result below */ }
         return direct;
     }
 
