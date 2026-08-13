@@ -752,6 +752,28 @@
     }
     kerphInjectPreferredBrandField();
 
+    // A visible X in the corner, same as the sign-up modal already has -- the account modal
+    // only ever had its "Close"/"Cancel" button at the very bottom, past stats/plan/saved-
+    // layouts/danger-zone content on a modal tall enough to scroll, so closing it meant
+    // hunting for that button every time. Injected (not hand-edited into all ~27 pages'
+    // account-modal markup) for the same reason as the fields above.
+    function kerphInjectAccountCloseButton() {
+        const overlay = document.getElementById('accountModalOverlay');
+        if (!overlay || overlay.querySelector('.kerph-account-close-x')) return;
+        const box = overlay.querySelector('.modal-box');
+        if (!box) return;
+        box.style.position = 'relative';
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'kerph-account-close-x';
+        btn.setAttribute('aria-label', 'Close');
+        btn.style.cssText = 'position:absolute; top:12px; right:12px; background:none; border:none; color:#9ca3af; font-size:20px; line-height:1; cursor:pointer; padding:4px;';
+        btn.textContent = '×';
+        btn.addEventListener('click', () => { overlay.style.display = 'none'; });
+        box.insertBefore(btn, box.firstChild);
+    }
+    kerphInjectAccountCloseButton();
+
     // These fire on document, so they always run *after* each page's own click handler
     // bound directly to the button (target-phase listeners fire before the event bubbles
     // up to document) -- by the time these run, the modal is already open/populated or
