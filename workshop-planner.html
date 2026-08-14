@@ -11853,6 +11853,13 @@
             shapeMode = 'drawing';
             drawingPoints = [];
             shapeHoverPoint = null;
+            // Drawing a second custom shape after an earlier one was already finished left the
+            // board still clipped to that old outline the whole time -- the new points were
+            // being placed against a stale, non-rectangular boundary instead of the full board.
+            // Un-clipping here (the new shape isn't final until finishShapeDrawing re-applies
+            // it) gives a clean full rectangle to draw against; cancelShapeBtn/resetToRectangle
+            // already handle putting the old shape back if the user backs out instead.
+            board.style.clipPath = '';
             document.getElementById('shapeDrawControls').style.display = 'block';
             document.getElementById('clearShapeBtn').style.display = shapePoints.length ? 'block' : 'none';
             setResizeHandlesVisible(false);
