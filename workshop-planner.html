@@ -3036,6 +3036,7 @@
             <input type="text" class="input-box" id="toolSearchInput" placeholder="&#128269; Search tools...">
         </div>
         <div class="empty-hint" id="toolSearchEmptyHint" style="display:none;">No tools match your search.</div>
+        <button type="button" id="collapseAllCategoriesBtn" class="mini-btn" style="width:100%; margin-bottom:10px;" title="Collapse every category and subcategory in the catalog below">&#9650; Collapse All</button>
 
         <details class="tool-category" id="customToolsCategory">
             <summary class="category-header">
@@ -14930,6 +14931,12 @@
             // Tools/floor-tool renders already do by reading input.value at their own init call.
             runToolSearch();
         }
+
+        document.getElementById('collapseAllCategoriesBtn').addEventListener('click', () => {
+            // .tool-subcategory elements also carry .tool-category, so this one selector
+            // already covers both top-level categories and nested subcategories.
+            document.querySelectorAll('#sidebar-panel details.tool-category').forEach(d => { d.open = false; });
+        });
 
         document.getElementById('inputWidth').addEventListener('input', updateWorkshopGridSize);
         document.getElementById('inputLength').addEventListener('input', updateWorkshopGridSize);
