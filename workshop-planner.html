@@ -1367,9 +1367,17 @@
             right: 24px;
         }
 
+        /* Anchored to the bottom of the viewport instead of top-left over the grid -- it used
+           to sit at top:166px/left:330px, which put its hint text + button row (taller than
+           the slim single-row toolbars that share that same top strip) directly over the area
+           a user is actively clicking points in while drawing a custom shop shape. Bottom-center
+           keeps it clear of the grid regardless of content height, matching the existing
+           .touch-action-bar convention for a floating bottom action bar. */
         .shape-draw-panel {
-            top: 166px;
-            left: 330px;
+            top: auto;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
             width: 280px;
             z-index: 1600;
         }
@@ -2657,6 +2665,8 @@
                 left: 8px;
                 right: 8px;
                 width: auto;
+                transform: none;
+                bottom: 58px; /* clears the fixed #mobilePanelTabBar (bottom:0, 50px tall) below */
             }
 
             /* The 3 highest-traffic floating panels become a bottom sheet instead of a
