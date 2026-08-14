@@ -14885,7 +14885,19 @@
                 const query = input.value.trim().toLowerCase();
                 let anyVisibleAtAll = false;
 
+                // My Tools/My Wishlist are the user's own persistent lists, not part of the
+                // searchable catalog (their contents are whatever's owned/wishlisted, which
+                // often won't share words with an unrelated search query) -- so they're always
+                // left fully visible instead of being hidden or filtered like a real category.
+                const SEARCH_EXEMPT_CATEGORY_IDS = new Set(['myToolsCategory', 'wishlistCategory']);
+
                 document.querySelectorAll('#sidebar-panel .tool-category').forEach(category => {
+                    if (SEARCH_EXEMPT_CATEGORY_IDS.has(category.id)) {
+                        category.style.display = '';
+                        category.querySelectorAll('.tool-box-item').forEach(item => { item.style.display = ''; });
+                        anyVisibleAtAll = true;
+                        return;
+                    }
                     let categoryHasMatch = false;
                     // Some cards only carry a short name (e.g. "DeWalt DWE7491RS") and rely on
                     // the category label ("Table Saws") for the rest -- matching name+category
