@@ -535,7 +535,8 @@
         <div class="floating-panel-title">3D Shop Viewer</div>
         <button type="button" id="backToWorkshopBtn" class="mini-btn" style="width:100%; margin-bottom:8px;">&larr; Back to Workshop Layout</button>
         <button type="button" id="refresh3dBtn" class="mini-btn" style="width:100%;">&#8635; Refresh from Layout</button>
-        <div class="viewer-hint">Drag empty space to orbit &middot; right-drag to pan &middot; scroll to zoom &middot; drag any item to move it &middot; wall features slide along their wall.</div>
+        <label class="viewer-legend-row" style="margin-top:8px; font-weight:700;"><input type="checkbox" id="moveObjectsCheckbox"> Move Objects</label>
+        <div class="viewer-hint" id="viewerHint">Drag empty space to orbit &middot; right-drag to pan &middot; scroll to zoom &middot; wall features slide along their wall.</div>
         <div class="viewer-legend">
             <label class="viewer-legend-row"><input type="checkbox" class="layer-visibility-checkbox" data-layer-key="tools" checked><span class="viewer-legend-swatch" style="background:#4d7ac2;"></span>Tools</label>
             <label class="viewer-legend-row"><input type="checkbox" class="layer-visibility-checkbox" data-layer-key="cabinets" checked><span class="viewer-legend-swatch" style="background:#b9895c;"></span>Cabinets</label>
@@ -1099,6 +1100,11 @@
         // that's what turns the next 1-finger drag into "move the selection" instead of "orbit".
         let touchSelectionActive = false;
         let touchMoveArmed = false;
+        // Desktop-only counterpart to touchMoveArmed -- off by default so grabbing anywhere on
+        // the canvas (including on top of a placed item) always orbits the camera unless the
+        // user explicitly opts into drag-to-move. Touch already has its own per-selection
+        // "Move" arm/disarm via the touch action bar and is unaffected by this checkbox.
+        let moveObjectsEnabled = false;
         const dragPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
         const dragPoint = new THREE.Vector3();
         let currentShopWidthFt = 20, currentShopLengthFt = 24;
@@ -2348,7 +2354,7 @@
                 return;
             }
 
-            // ---- Original desktop mouse flow (unchanged) ----
+            // ---- Original desktop mouse flow ----
             touchSelectionActive = false;
             raycastFromEvent(e);
             const hits = raycaster.intersectObjects(clickableMeshes, false);
@@ -2366,7 +2372,10 @@
             // lighting, and wall features all set userData.draggable — see addToolMesh /
             // addWallFeatureMesh), so there's no remaining non-draggable case here; the hover
             // preview card (onHoverMove) covers the old click-for-tooltip info for all of them.
-            if (obj.userData.draggable) {
+            // Move Objects gates whether this click-and-drag moves the item or just selects it
+            // (falling through with no stopPropagation, same as the touch tap-select path
+            // above, so OrbitControls still gets the drag and orbits the camera as normal).
+            if (obj.userData.draggable && moveObjectsEnabled) {
                 beginDragOnMesh(obj, e);
             }
         }
@@ -2874,6 +2883,16 @@
                     if (sharedLayout) buildScene();
                 });
             });
+
+            const moveCheckbox = document.getElementById('moveObjectsCheckbox');
+            const viewerHint = document.getElementById('viewerHint');
+            moveCheckbox.addEventListener('change', () => {
+                moveObjectsEnabled = moveCheckbox.checked;
+                viewerHint.textContent = moveObjectsEnabled
+                    ? 'Drag any item to move it · drag empty space to orbit · right-drag to pan · scroll to zoom · wall features slide along their wall.'
+                    : 'Drag empty space to orbit · right-drag to pan · scroll to zoom · check Move Objects to drag items instead.';
+            });
+            viewerHint.textContent = 'Drag empty space to orbit · right-drag to pan · scroll to zoom · check Move Objects to drag items instead.';
         }
 
         document.getElementById('refresh3dBtn').addEventListener('click', () => {
