@@ -7949,6 +7949,7 @@
         <button type="button" class="wf-tab" data-layer-view="tools">Tools</button>
         <button type="button" class="wf-tab" data-layer-view="dust-collection">Dust Collection</button>
         <button type="button" class="wf-tab" data-layer-view="lighting">Lighting</button>
+        <button type="button" class="wf-tab" data-layer-view="cabinets">Cabinets</button>
     </div>
 
     <div class="print-only-header" id="printOnlyHeader"></div>
@@ -10020,9 +10021,13 @@
             document.addEventListener('pointercancel', endPan);
         }
 
-        /* ---------- LAYERS (Tools / Dust Collection / Lighting) ----------
+        /* ---------- LAYERS (Tools / Dust Collection / Lighting / Cabinets) ----------
            Cabinets and wall features are always-visible structural context (same reasoning
-           as the shop walls themselves) — only tools/dust-collection/lighting items toggle. */
+           as the shop walls themselves) — only tools/dust-collection/lighting items toggle.
+           The "Cabinets" tab works for free off this same formula: selecting it makes
+           `layer === activeLayerView` false for every non-cabinet node (hiding them) while
+           cabinets keep matching via the `layer === 'cabinets'` clause, same as they always
+           do -- no separate branch needed to get an "only cabinets" view. */
         let activeLayerView = 'all';
 
         function applyLayerVisibility() {
@@ -10030,6 +10035,13 @@
                 const layer = node.dataset.layer || 'tools';
                 const visible = activeLayerView === 'all' || layer === 'cabinets' || layer === activeLayerView;
                 node.style.display = visible ? '' : 'none';
+            });
+            // Cabinet name/dimension labels are only useful when Cabinets is the focused view --
+            // on every other view (including All) they're just clutter on shapes that stay
+            // visible purely as structural/collision context, not as the thing being inspected.
+            const showCabinetLabels = activeLayerView === 'cabinets';
+            document.querySelectorAll('.placed-cabinet-node .node-content').forEach(el => {
+                el.style.display = showCabinetLabels ? '' : 'none';
             });
         }
 
