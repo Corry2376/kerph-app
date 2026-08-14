@@ -14725,7 +14725,15 @@
             makeDraggable(cabinetPanel, cabinetPanel.querySelector('.floating-panel-title'), toggleCollapsedPanel(cabinetPanel), { mobileSheet: true });
             const projectImportPanel = document.getElementById('projectImportPanel');
             makeDraggable(projectImportPanel, projectImportPanel.querySelector('.floating-panel-title'), toggleCollapsedPanel(projectImportPanel), { mobileSheet: true });
-            makeDraggable(wallFeaturePanel, wallFeaturePanel.querySelector('.floating-panel-title'), toggleCollapsedPanel(wallFeaturePanel), { mobileSheet: true });
+            // Collapsing this panel while "Click Grid to Place X" is still armed left
+            // wallFeatureMode set with nothing on screen showing it -- the next grid click
+            // silently tried to place a wall feature anyway. Closing the panel now also exits
+            // placement mode, same as clicking the place button again would.
+            const toggleWallFeaturePanel = toggleCollapsedPanel(wallFeaturePanel);
+            makeDraggable(wallFeaturePanel, wallFeaturePanel.querySelector('.floating-panel-title'), () => {
+                toggleWallFeaturePanel();
+                if (wallFeaturePanel.classList.contains('collapsed')) deactivateInteractiveModes();
+            }, { mobileSheet: true });
             makeDraggable(document.getElementById('measureToolbar'), document.getElementById('measureToolbarHandle'));
             initMobilePanelTabBar();
 
