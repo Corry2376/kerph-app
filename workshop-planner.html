@@ -2974,6 +2974,7 @@
                 <label class="header-field-label" for="inputLength">Length (ft)</label>
                 <input type="number" class="input-box" id="inputLength" value="24">
             </div>
+            <button type="button" id="swapOrientationBtn" class="mini-btn" style="width:100%; margin-top:8px;" title="Swap Width and Length -- rotates the shop 90&deg; between portrait and landscape">&#8635; Swap Width/Length (Rotate 90&deg;)</button>
             <div class="header-field" style="width:100%; margin-top:10px;">
                 <label class="header-field-label" for="inputCeilingHeight">Ceiling Height (ft)</label>
                 <input type="number" class="input-box" id="inputCeilingHeight" value="10" min="6" step="0.5">
@@ -14932,6 +14933,18 @@
 
         document.getElementById('inputWidth').addEventListener('input', updateWorkshopGridSize);
         document.getElementById('inputLength').addEventListener('input', updateWorkshopGridSize);
+        // Swaps the two field values (a plain resize, same as if the user retyped them
+        // themselves -- including the same existing caveat that already-placed items aren't
+        // repositioned) so the shop board rotates between portrait and landscape without
+        // re-entering both numbers.
+        document.getElementById('swapOrientationBtn').addEventListener('click', () => {
+            const widthField = document.getElementById('inputWidth');
+            const lengthField = document.getElementById('inputLength');
+            const w = widthField.value;
+            widthField.value = lengthField.value;
+            lengthField.value = w;
+            updateWorkshopGridSize();
+        });
         document.getElementById('inputScale').addEventListener('change', updateWorkshopGridSize);
         initDragAndDropEngine();
         initGridPanning();
