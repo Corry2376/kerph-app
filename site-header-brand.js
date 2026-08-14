@@ -67,7 +67,7 @@ document.write(`
     <div class="jigs-dropdown" id="jigsDropdown">
         <button type="button" class="jigs-dropdown-btn" id="jigsDropdownBtn">Shop Jigs <span class="jigs-dropdown-caret">&#9662;</span></button>
         <div class="jigs-dropdown-menu">
-            <a href="shop-jigs-fraction-converter.html">Fraction Converter</a>
+            <a href="shop-jigs-fraction-converter.html">Measurement Converter</a>
             <a href="shop-jigs-add-fractions.html">Add &amp; Subtract Fractions</a>
             <a href="shop-jigs-board-feet.html">Board Foot Calculator</a>
             <a href="shop-jigs-angle-chart.html">Polygon Angle Chart</a>
