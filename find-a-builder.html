@@ -1046,9 +1046,29 @@
             return lines.join('\n');
         }
 
+        // Auto-fills the contact line from the signed-in user's own name/email so a builder
+        // always has a way to reach them even if they never touch this field -- it used to be
+        // purely opt-in free text, which meant a request with no signature and only an
+        // invisible Reply-To header was the default, not the exception. Never overwrites
+        // anything the user has actually typed (including clearing it on purpose), tracked via
+        // a one-way "userEdited" flag rather than just "is it empty" so a deliberate clear
+        // doesn't get silently re-filled on the next auth event.
+        function prefillConciergeContact() {
+            const field = document.getElementById('conciergeContact');
+            if (!field || field.dataset.userEdited === 'true' || field.value.trim()) return;
+            const user = typeof kerphGetCachedUser === 'function' ? kerphGetCachedUser() : null;
+            if (!user || !user.email) return;
+            const profile = typeof kerphGetCachedProfile === 'function' ? kerphGetCachedProfile() : {};
+            const name = profile.fullName || profile.username || '';
+            field.value = name ? `${name} — ${user.email}` : user.email;
+        }
+
         function initConcierge() {
             const output = document.getElementById('conciergeOutput');
             const outputText = document.getElementById('conciergeOutputText');
+            document.getElementById('conciergeContact').addEventListener('input', (e) => {
+                e.target.dataset.userEdited = 'true';
+            });
 
             document.getElementById('conciergeGenerateBtn').addEventListener('click', async () => {
                 outputText.value = await buildQuoteRequestText();
@@ -1131,11 +1151,13 @@
             renderAccountBadge();
             kerphLoadToolStatus().then(({ data }) => { cachedToolStatuses = data || {}; });
             kerphLoadSavedLayouts().then(({ data }) => { cachedSavedLayouts = data || []; populateConciergeLayoutSelect(); });
+            prefillConciergeContact();
         });
 
         kerphAuthReady.then(() => {
             initHeaderSignIn();
             initAccountPanel();
+            prefillConciergeContact();
         });
 
         initBuilderFinder();

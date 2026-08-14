@@ -1926,6 +1926,12 @@
             display: none;
         }
 
+        /* Same "Hide Labels" pattern as dust collection, for the door/window/outlet/etc.
+           labels rendered above each wall feature. */
+        body.hide-wf-labels .wall-feature-label {
+            display: none;
+        }
+
         /* Blast gates are too small a footprint to hold the full name + dims legibly —
            the label is abbreviated to "BG" at creation time; this just sizes it to fit. */
         /* Side flag label — for footprints too small to hold readable text inside themselves
@@ -7910,6 +7916,7 @@
         <button type="button" id="measureClearBtn" class="measure-btn" title="Clear all measurements" style="display:none;">Clear</button>
         <button type="button" id="zoomResetBtn" class="measure-btn" title="Reset zoom to 100%">Reset</button>
         <button type="button" id="hideDcLabelsBtn" class="measure-btn" title="Hide the text labels on dust collection ducts/fittings so you can see the pure shapes">&#127991;&#65039; Hide Dust Collection Labels</button>
+        <button type="button" id="hideWfLabelsBtn" class="measure-btn" title="Hide the text labels on doors, windows, outlets, and other wall features">&#127991;&#65039; Hide Wall Feature Labels</button>
         <button type="button" id="view3dBtn" class="measure-btn" title="View this shop in 3D">&#129517; View in 3D</button>
         <button type="button" id="exportPdfBtn" class="measure-btn" title="Print or save this layout as a PDF">&#128196; Export PDF</button>
     </div>
@@ -8644,6 +8651,23 @@
                 document.body.classList.toggle('hide-dc-labels', hidden);
                 btn.classList.toggle('active', hidden);
                 btn.innerHTML = hidden ? '&#127991;&#65039; Show Dust Collection Labels' : '&#127991;&#65039; Hide Dust Collection Labels';
+            }
+            btn.addEventListener('click', () => {
+                localStorage.setItem(KEY, (localStorage.getItem(KEY) !== 'true').toString());
+                apply();
+            });
+            apply();
+        }
+
+        // Same pattern as initHideDcLabels, for wall feature (door/window/outlet/etc.) labels.
+        function initHideWfLabels() {
+            const KEY = 'kerphHideWfLabels';
+            const btn = document.getElementById('hideWfLabelsBtn');
+            function apply() {
+                const hidden = localStorage.getItem(KEY) === 'true';
+                document.body.classList.toggle('hide-wf-labels', hidden);
+                btn.classList.toggle('active', hidden);
+                btn.innerHTML = hidden ? '&#127991;&#65039; Show Wall Feature Labels' : '&#127991;&#65039; Hide Wall Feature Labels';
             }
             btn.addEventListener('click', () => {
                 localStorage.setItem(KEY, (localStorage.getItem(KEY) !== 'true').toString());
@@ -12401,6 +12425,7 @@
                 const layouts = loadLayouts();
                 const current = layouts.find(l => l.id === select.value);
                 if (!current) return;
+                if (!confirm(`Delete "${current.name || 'Untitled Layout'}"? This cannot be undone.`)) return;
                 await kerphDeleteSavedLayout(current.id);
                 cachedSavedLayouts = layouts.filter(l => l.id !== current.id);
                 renderSavedLayoutsPicker();
@@ -14099,6 +14124,7 @@
             el.addEventListener('click', (e) => {
                 e.stopPropagation();
                 if (moved) { moved = false; return; }
+                if (!confirm(`Remove this ${f.type}?`)) return;
                 wallFeatures = wallFeatures.filter(x => x.id !== f.id);
                 renderWallFeatures();
             });
@@ -14978,6 +15004,7 @@
         initMobileHeaderSync();
         initTouchActionBar();
         initHideDcLabels();
+        initHideWfLabels();
         initElectricalPanel();
         initClearancePanel();
         initCostPanel();
