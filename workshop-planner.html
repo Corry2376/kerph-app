@@ -8211,7 +8211,7 @@
             <div class="modal-warning">How high on the wall should this outlet be mounted?</div>
 
             <div class="header-field" style="width:100%;">
-                <label class="header-field-label" for="outletHeightInput">Height (in, from floor)</label>
+                <label class="header-field-label" for="outletHeightInput">Height, from floor (in)</label>
                 <input type="number" class="input-box" id="outletHeightInput" value="18" min="0">
             </div>
             <div class="header-compound-row" style="margin-top:8px; flex-wrap:wrap; gap:6px;">
@@ -8234,7 +8234,7 @@
             <div class="modal-warning">How high off the floor should the bottom of this cabinet sit?</div>
 
             <div class="header-field" style="width:100%;">
-                <label class="header-field-label" for="cabinetHeightInput">Height (in, from floor to cabinet bottom)</label>
+                <label class="header-field-label" for="cabinetHeightInput">Height, floor to cabinet bottom (in)</label>
                 <input type="number" class="input-box" id="cabinetHeightInput" value="54" min="0">
             </div>
             <div class="header-compound-row" style="margin-top:8px; flex-wrap:wrap; gap:6px;">
@@ -8314,6 +8314,30 @@
             return unitSystem === 'metric' ? value * FT_PER_METER : value;
         }
 
+        // Same boundary-conversion pattern as feetToDisplay/displayToFeet above, for the
+        // inch-scale dimensions used by cabinets, custom tools, and wall features (door/window
+        // width, mount height, drawer height, etc.) -- these used to be hardcoded imperial
+        // regardless of unitSystem. Canonical storage stays inches; cm is the display unit
+        // (not meters -- centimeters are the natural scale for furniture/tool-sized numbers).
+        const CM_PER_INCH = 2.54;
+        function inchesToDisplay(inches) {
+            return unitSystem === 'metric'
+                ? Math.round(inches * CM_PER_INCH * 10) / 10
+                : Math.round(inches * 10) / 10;
+        }
+        function displayToInches(value) {
+            return unitSystem === 'metric' ? value / CM_PER_INCH : value;
+        }
+        function dimUnitSuffix() {
+            return unitSystem === 'metric' ? 'cm' : '"';
+        }
+        // Feet-scale footprint text (tool/cabinet W x D x H) uses the same feet<->meters
+        // conversion as shop Width/Length, just formatted as a short "W x D" / "W x D x H"
+        // string with the right unit suffix instead of separate labeled inputs.
+        function footprintUnitSuffix() {
+            return unitSystem === 'metric' ? 'm' : "'";
+        }
+
         function getShopWidthFeet() {
             return displayToFeet(parseFloat(document.getElementById('inputWidth').value) || 0);
         }
@@ -8322,11 +8346,9 @@
             return displayToFeet(parseFloat(document.getElementById('inputLength').value) || 0);
         }
 
-        // Ceiling height stays imperial-only (feet), same convention as physicalHeight
-        // on placed tools — see the unit-system comment above (display toggle only
-        // affects Width/Length, not real-world object/room heights).
         function getShopCeilingHeightFeet() {
-            return parseFloat(document.getElementById('inputCeilingHeight').value) || 10;
+            const raw = parseFloat(document.getElementById('inputCeilingHeight').value);
+            return isNaN(raw) ? 10 : displayToFeet(raw);
         }
 
         let internalDragData = null;
@@ -8780,9 +8802,10 @@
         function createTouchDragGhost(dragData) {
             const ghost = document.createElement('div');
             ghost.className = 'touch-drag-ghost';
+            const suffix = footprintUnitSuffix();
             const dims = dragData.cabType
-                ? `${dragData.length.toFixed(1)}' x ${dragData.width.toFixed(1)}'`
-                : `${dragData.width.toFixed(1)}' x ${dragData.length.toFixed(1)}'`;
+                ? `${feetToDisplay(dragData.length)}${suffix} x ${feetToDisplay(dragData.width)}${suffix}`
+                : `${feetToDisplay(dragData.width)}${suffix} x ${feetToDisplay(dragData.length)}${suffix}`;
             ghost.innerHTML = `${escapeHtml(dragData.name || 'Item')}<br><span style="font-weight:600; opacity:0.75;">${dims}</span>`;
             document.body.appendChild(ghost);
             return ghost;
@@ -9904,9 +9927,9 @@
             let displayName = placement.name;
             let displayDims;
             if (placement.cabType) {
-                const widthIn = Math.round(placement.length * 12 * 10) / 10;
-                const depthIn = Math.round(placement.width * 12 * 10) / 10;
-                displayDims = `${widthIn}"W x ${depthIn}"D`;
+                const widthIn = inchesToDisplay(placement.length * 12);
+                const depthIn = inchesToDisplay(placement.width * 12);
+                displayDims = `${widthIn}${dimUnitSuffix()}W x ${depthIn}${dimUnitSuffix()}D`;
                 if (placement.hasDrawers && placement.drawers.length) {
                     displayDims += ` +${placement.drawers.length} drwrs`;
                 }
@@ -9914,7 +9937,7 @@
                     displayDims += ` +${placement.shelfCount} shlvs`;
                 }
                 if (placement.cabType === 'wall' && mountHeightIn) {
-                    displayDims += ` @ ${mountHeightIn}"H`;
+                    displayDims += ` @ ${inchesToDisplay(mountHeightIn)}${dimUnitSuffix()}H`;
                 }
             } else {
                 const statuses = loadToolStatuses();
@@ -9922,7 +9945,7 @@
                 if (entry && entry.status === 'owned' && entry.nickname) {
                     displayName = entry.nickname;
                 }
-                displayDims = `${placement.width.toFixed(1)}' x ${placement.length.toFixed(1)}'`;
+                displayDims = `${feetToDisplay(placement.width)}${footprintUnitSuffix()} x ${feetToDisplay(placement.length)}${footprintUnitSuffix()}`;
             }
             buildPlacedNodeContent(toolNode, displayName, displayDims);
             applyVerticalLabelIfNarrow(toolNode, placement.name, toolW, toolH);
@@ -10378,15 +10401,15 @@
             if (!dimsEl) return;
             let text;
             if (el.classList.contains('placed-cabinet-node')) {
-                const widthIn = Math.round(wFt * 12 * 10) / 10;
-                const depthIn = Math.round(hFt * 12 * 10) / 10;
-                text = `${widthIn}"W x ${depthIn}"D`;
+                const widthIn = inchesToDisplay(wFt * 12);
+                const depthIn = inchesToDisplay(hFt * 12);
+                text = `${widthIn}${dimUnitSuffix()}W x ${depthIn}${dimUnitSuffix()}D`;
                 const drawerMatch = dimsEl.textContent.match(/\+\d+ drwrs/);
                 if (drawerMatch) text += ` ${drawerMatch[0]}`;
-                const heightMatch = dimsEl.textContent.match(/@\s*[\d.]+"H/);
+                const heightMatch = dimsEl.textContent.match(/@\s*[\d.]+("|cm)H/);
                 if (heightMatch) text += ` ${heightMatch[0]}`;
             } else {
-                text = `${wFt.toFixed(1)}' x ${hFt.toFixed(1)}'`;
+                text = `${feetToDisplay(wFt)}${footprintUnitSuffix()} x ${feetToDisplay(hFt)}${footprintUnitSuffix()}`;
             }
             dimsEl.textContent = text;
             el.dataset.displayDims = text;
@@ -11141,7 +11164,7 @@
             title.textContent = tool.name;
             const dims = document.createElement('div');
             dims.className = 'tool-dims';
-            dims.textContent = `${tool.widthFt.toFixed(1)}' x ${tool.depthFt.toFixed(1)}' Footprint`;
+            dims.textContent = `${feetToDisplay(tool.widthFt)}${footprintUnitSuffix()} x ${feetToDisplay(tool.depthFt)}${footprintUnitSuffix()} Footprint`;
             info.appendChild(title);
             info.appendChild(dims);
 
@@ -11197,9 +11220,11 @@
 
             saveBtn.addEventListener('click', () => {
                 const name = nameInput.value.trim();
-                const widthIn = parseFloat(widthInput.value);
-                const depthIn = parseFloat(depthInput.value);
-                const heightIn = parseFloat(heightInput.value);
+                // Field values are in the current display unit -- convert to real inches
+                // before storing (widthIn/depthIn/heightIn are assumed real inches elsewhere).
+                const widthIn = displayToInches(parseFloat(widthInput.value));
+                const depthIn = displayToInches(parseFloat(depthInput.value));
+                const heightIn = displayToInches(parseFloat(heightInput.value));
                 if (!name || !(widthIn > 0) || !(depthIn > 0) || !(heightIn > 0)) {
                     showToast('Enter a name and a positive width, depth, and height.');
                     return;
@@ -12098,7 +12123,7 @@
             document.getElementById('inputWidth').value = feetToDisplay(parseFloat(layout.widthFeet) || 0);
             document.getElementById('inputLength').value = feetToDisplay(parseFloat(layout.lengthFeet) || 0);
             // Defaults to 10 for layouts saved before this field existed.
-            document.getElementById('inputCeilingHeight').value = parseFloat(layout.ceilingHeightFt) || 10;
+            document.getElementById('inputCeilingHeight').value = feetToDisplay(parseFloat(layout.ceilingHeightFt) || 10);
             document.getElementById('inputScale').value = layout.scale;
             document.getElementById('inputWidth').disabled = false;
             document.getElementById('inputLength').disabled = false;
@@ -13244,20 +13269,21 @@
 
         function summarizeDrawers(drawers) {
             if (!drawers || !drawers.length) return '';
-            const heights = drawers.map(d => d.heightIn);
+            const heights = drawers.map(d => inchesToDisplay(d.heightIn));
             const allSame = heights.every(h => h === heights[0]);
-            if (allSame) return `${drawers.length} drawer${drawers.length === 1 ? '' : 's'} @ ${heights[0]}"`;
-            if (drawers.length <= 4) return `${drawers.length} drawers (${heights.map(h => h + '"').join(', ')})`;
+            const suffix = dimUnitSuffix();
+            if (allSame) return `${drawers.length} drawer${drawers.length === 1 ? '' : 's'} @ ${heights[0]}${suffix}`;
+            if (drawers.length <= 4) return `${drawers.length} drawers (${heights.map(h => h + suffix).join(', ')})`;
             return `${drawers.length} drawers (varies)`;
         }
 
         function summarizeShelves(shelfCount, shelfSpacingIn) {
             if (!shelfCount) return '';
-            return `${shelfCount} ${shelfCount === 1 ? 'shelf' : 'shelves'} @ ${shelfSpacingIn}" spacing`;
+            return `${shelfCount} ${shelfCount === 1 ? 'shelf' : 'shelves'} @ ${inchesToDisplay(shelfSpacingIn)}${dimUnitSuffix()} spacing`;
         }
 
         function formatCabinetDimsText(t) {
-            let text = `${t.widthIn}"W x ${t.depthIn}"D x ${t.heightIn}"H`;
+            let text = `${inchesToDisplay(t.widthIn)}${dimUnitSuffix()}W x ${inchesToDisplay(t.depthIn)}${dimUnitSuffix()}D x ${inchesToDisplay(t.heightIn)}${dimUnitSuffix()}H`;
             if (t.hasDrawers && t.drawers && t.drawers.length) {
                 text += ` · ${summarizeDrawers(t.drawers)}`;
             }
@@ -13301,7 +13327,7 @@
             picker.style.display = 'block';
             const previousValue = select.value;
             select.innerHTML = templates.map(t =>
-                `<option value="${t.id}">${escapeHtml(t.name)} — ${t.widthIn}"x${t.depthIn}"</option>`
+                `<option value="${t.id}">${escapeHtml(t.name)} — ${inchesToDisplay(t.widthIn)}${dimUnitSuffix()}x${inchesToDisplay(t.depthIn)}${dimUnitSuffix()}</option>`
             ).join('');
 
             if (templates.some(t => t.id === previousValue)) {
@@ -13414,7 +13440,7 @@
             chip.setAttribute('data-project-id', project.id);
             document.getElementById('projectImportChipTitle').textContent = name;
             document.getElementById('projectImportChipDims').textContent =
-                `${footprint.widthFt.toFixed(1)}' x ${footprint.depthFt.toFixed(1)}' x ${footprint.heightFt.toFixed(1)}' tall`;
+                `${feetToDisplay(footprint.widthFt)}${footprintUnitSuffix()} x ${feetToDisplay(footprint.depthFt)}${footprintUnitSuffix()} x ${feetToDisplay(footprint.heightFt)}${footprintUnitSuffix()} tall`;
         }
 
         function initProjectImportPicker() {
@@ -13435,12 +13461,12 @@
                 row.className = 'drawer-row';
                 row.innerHTML = `
                     <span class="drawer-row-label">Drawer ${i + 1}</span>
-                    <input type="number" class="input-box drawer-height-input" value="${d.heightIn}" min="1">
-                    <span>in</span>
+                    <input type="number" class="input-box drawer-height-input" value="${inchesToDisplay(d.heightIn)}" min="1">
+                    <span>${dimUnitSuffix()}</span>
                     <button type="button" class="cabinet-remove-btn">&#10005;</button>
                 `;
                 row.querySelector('.drawer-height-input').addEventListener('input', (e) => {
-                    drawerRows[i].heightIn = parseFloat(e.target.value) || 1;
+                    drawerRows[i].heightIn = displayToInches(parseFloat(e.target.value) || 1);
                 });
                 row.querySelector('.cabinet-remove-btn').addEventListener('click', () => {
                     drawerRows.splice(i, 1);
@@ -13471,15 +13497,17 @@
             }
 
             typeSelect.addEventListener('change', () => {
+                // CABINET_DEFAULTS/SHELF_DEFAULTS are always real inches -- convert to the
+                // current display unit when writing them into the fields.
                 const defaults = CABINET_DEFAULTS[typeSelect.value];
                 if (defaults) {
-                    widthInput.value = defaults.width;
-                    depthInput.value = defaults.depth;
-                    heightInput.value = defaults.height;
+                    widthInput.value = inchesToDisplay(defaults.width);
+                    depthInput.value = inchesToDisplay(defaults.depth);
+                    heightInput.value = inchesToDisplay(defaults.height);
                 }
                 if (typeSelect.value === 'shelving') {
                     shelfCountInput.value = SHELF_DEFAULTS.count;
-                    shelfSpacingInput.value = SHELF_DEFAULTS.spacingIn;
+                    shelfSpacingInput.value = inchesToDisplay(SHELF_DEFAULTS.spacingIn);
                 }
                 applyTypeSectionVisibility();
             });
@@ -13500,14 +13528,17 @@
             });
 
             document.getElementById('addCabinetBtn').addEventListener('click', () => {
-                const widthIn = parseFloat(widthInput.value);
-                const depthIn = parseFloat(depthInput.value);
-                const heightIn = parseFloat(heightInput.value);
+                // Field values are in the current display unit -- convert to real inches
+                // before storing, so the rest of the app (which assumes widthIn/depthIn/
+                // heightIn are real inches) keeps working unchanged.
+                const widthIn = displayToInches(parseFloat(widthInput.value));
+                const depthIn = displayToInches(parseFloat(depthInput.value));
+                const heightIn = displayToInches(parseFloat(heightInput.value));
                 const type = typeSelect.value;
                 const isShelving = type === 'shelving';
                 const hasDrawers = !isShelving && hasDrawersCheckbox.checked;
                 const shelfCount = isShelving ? parseInt(shelfCountInput.value, 10) || 0 : 0;
-                const shelfSpacingIn = isShelving ? parseFloat(shelfSpacingInput.value) || 0 : 0;
+                const shelfSpacingIn = isShelving ? displayToInches(parseFloat(shelfSpacingInput.value) || 0) : 0;
                 const hasShelves = isShelving && shelfCount > 0;
 
                 if (!widthIn || !depthIn || !heightIn || widthIn <= 0 || depthIn <= 0 || heightIn <= 0) {
@@ -13524,7 +13555,7 @@
                 }
 
                 const typeLabels = { base: 'Base Cabinet', wall: 'Wall Cabinet', shelving: 'Shelving Unit' };
-                const name = nameInput.value.trim() || `${typeLabels[type]} (${widthIn}"x${depthIn}")`;
+                const name = nameInput.value.trim() || `${typeLabels[type]} (${inchesToDisplay(widthIn)}${dimUnitSuffix()}x${inchesToDisplay(depthIn)}${dimUnitSuffix()})`;
                 const template = {
                     id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
                     type: type,
@@ -13574,6 +13605,7 @@
         let activeMeasureStart = null;
 
         function formatFeetInches(feetDecimal) {
+            if (unitSystem === 'metric') return `${inchesToDisplay(Math.abs(feetDecimal) * 12)}cm`;
             const totalInches = Math.round(Math.abs(feetDecimal) * 12);
             const feet = Math.floor(totalInches / 12);
             const inches = totalInches % 12;
@@ -14004,8 +14036,8 @@
         // tooltip — a door/window shows its width, an outlet additionally shows its mounting
         // height once set (see the height-confirmation modal in the outlet placement flow).
         function wallFeatureLabelText(f) {
-            let text = f.widthIn ? `${f.label} (${Math.round(f.widthIn)}")` : f.label;
-            if (f.type === 'outlet' && f.mountHeightIn) text += ` @ ${f.mountHeightIn}"`;
+            let text = f.widthIn ? `${f.label} (${inchesToDisplay(f.widthIn)}${dimUnitSuffix()})` : f.label;
+            if (f.type === 'outlet' && f.mountHeightIn) text += ` @ ${inchesToDisplay(f.mountHeightIn)}${dimUnitSuffix()}`;
             return text;
         }
 
@@ -14242,13 +14274,16 @@
             });
 
             doorPreset.addEventListener('change', () => {
+                // DOOR_PRESETS/WINDOW_PRESETS are always real inches -- convert to whatever
+                // unit the field is currently showing (preset option text stays imperial for
+                // now, but the value it produces is correct either way).
                 const preset = DOOR_PRESETS[doorPreset.value];
-                if (preset) doorWidth.value = preset;
+                if (preset) doorWidth.value = inchesToDisplay(preset);
             });
 
             windowPreset.addEventListener('change', () => {
                 const preset = WINDOW_PRESETS[windowPreset.value];
-                if (preset) windowWidth.value = preset;
+                if (preset) windowWidth.value = inchesToDisplay(preset);
             });
 
             placeBtn.addEventListener('click', () => {
@@ -14274,13 +14309,13 @@
                 let lengthFt, thicknessFt, label, voltage = null, widthIn = null, color = null;
 
                 if (type === 'door') {
-                    widthIn = parseFloat(doorWidth.value) || 36;
+                    widthIn = displayToInches(parseFloat(doorWidth.value)) || 36;
                     lengthFt = widthIn / 12;
                     thicknessFt = 0.3;
                     label = document.getElementById('wfDoorLabel').value.trim() || 'Door';
                     color = document.getElementById('wfDoorColor').value || null;
                 } else if (type === 'window') {
-                    widthIn = parseFloat(windowWidth.value) || 36;
+                    widthIn = displayToInches(parseFloat(windowWidth.value)) || 36;
                     lengthFt = widthIn / 12;
                     thicknessFt = 0.2;
                     label = document.getElementById('wfWindowLabel').value.trim() || 'Window';
@@ -14349,7 +14384,7 @@
 
         function openOutletHeightModal(placement) {
             pendingOutletPlacement = placement;
-            document.getElementById('outletHeightInput').value = 18;
+            document.getElementById('outletHeightInput').value = inchesToDisplay(18);
             document.getElementById('outletHeightModalOverlay').style.display = 'flex';
         }
 
@@ -14363,12 +14398,14 @@
             });
 
             document.querySelectorAll('.outlet-height-preset').forEach(btn => {
-                btn.addEventListener('click', () => { input.value = btn.dataset.height; });
+                // data-height is always real inches -- see the matching comment on the
+                // cabinet-height-preset buttons above.
+                btn.addEventListener('click', () => { input.value = inchesToDisplay(parseFloat(btn.dataset.height)); });
             });
 
             document.getElementById('outletHeightConfirmBtn').addEventListener('click', () => {
                 if (!pendingOutletPlacement) { overlay.style.display = 'none'; return; }
-                const heightIn = parseFloat(input.value) || 18;
+                const heightIn = displayToInches(parseFloat(input.value)) || 18;
                 const p = pendingOutletPlacement;
 
                 // Height is known now, for the first time — a cabinet or another wall feature
@@ -14436,7 +14473,7 @@
             pendingCabinetPlacement = placement;
             editingCabinetHeightNode = null;
             document.getElementById('cabinetHeightModalTitle').textContent = 'Wall Cabinet Height';
-            document.getElementById('cabinetHeightInput').value = 54;
+            document.getElementById('cabinetHeightInput').value = inchesToDisplay(54);
             document.getElementById('cabinetHeightModalOverlay').style.display = 'flex';
         }
 
@@ -14444,7 +14481,7 @@
             editingCabinetHeightNode = node;
             pendingCabinetPlacement = null;
             document.getElementById('cabinetHeightModalTitle').textContent = 'Edit Cabinet Height';
-            document.getElementById('cabinetHeightInput').value = node.dataset.mountHeightIn || 54;
+            document.getElementById('cabinetHeightInput').value = inchesToDisplay(parseFloat(node.dataset.mountHeightIn) || 54);
             document.getElementById('cabinetHeightModalOverlay').style.display = 'flex';
         }
 
@@ -14459,11 +14496,14 @@
             });
 
             document.querySelectorAll('.cabinet-height-preset').forEach(btn => {
-                btn.addEventListener('click', () => { input.value = btn.dataset.height; });
+                // data-height is always real inches -- convert to whatever unit the field
+                // is currently showing (the preset button labels themselves stay imperial
+                // text for now, but the value they produce is correct either way).
+                btn.addEventListener('click', () => { input.value = inchesToDisplay(parseFloat(btn.dataset.height)); });
             });
 
             document.getElementById('cabinetHeightConfirmBtn').addEventListener('click', () => {
-                const heightIn = parseFloat(input.value) || 54;
+                const heightIn = displayToInches(parseFloat(input.value)) || 54;
                 if (pendingCabinetPlacement) {
                     placeToolNodeOnBoard(pendingCabinetPlacement, heightIn);
                     pendingCabinetPlacement = null;
@@ -14473,7 +14513,7 @@
                     updateCabinetHeightBadge(node);
                     const dimsEl = node.querySelector('.node-dims');
                     if (dimsEl) {
-                        const text = dimsEl.textContent.replace(/\s*@\s*[\d.]+"H$/, '') + ` @ ${heightIn}"H`;
+                        const text = dimsEl.textContent.replace(/\s*@\s*[\d.]+("|cm)H$/, '') + ` @ ${inchesToDisplay(heightIn)}${dimUnitSuffix()}H`;
                         dimsEl.textContent = text;
                         node.dataset.displayDims = text;
                     }
@@ -14726,7 +14766,7 @@
                 if (!tpl) return;
                 document.getElementById('inputWidth').value = feetToDisplay(tpl.widthFeet);
                 document.getElementById('inputLength').value = feetToDisplay(tpl.lengthFeet);
-                document.getElementById('inputCeilingHeight').value = tpl.ceilingHeightFt || 10;
+                document.getElementById('inputCeilingHeight').value = feetToDisplay(tpl.ceilingHeightFt || 10);
                 document.getElementById('inputScale').value = tpl.scale;
             });
 
@@ -14802,17 +14842,56 @@
             });
         }
 
+        // Field ids whose label reads "<Label> (in)" and whose value is a plain inches number
+        // -- cabinet builder, custom tool builder, and the two shelf/drawer-adjacent fields.
+        // Centralized here (rather than one-off DOM lookups scattered at each modal) so a new
+        // inch-based field only needs adding to this list to pick up unit switching for free.
+        const DIM_INPUT_IDS = ['cabWidthInput', 'cabDepthInput', 'cabHeightInput', 'cabShelfSpacingInput',
+            'customToolWidthInput', 'customToolDepthInput', 'customToolHeightInput', 'cabinetHeightInput',
+            'wfDoorWidth', 'wfWindowWidth', 'outletHeightInput'];
+
         function applyUnitLabels() {
             const widthLabel = document.querySelector('label[for="inputWidth"]');
             const lengthLabel = document.querySelector('label[for="inputLength"]');
+            const ceilingLabel = document.querySelector('label[for="inputCeilingHeight"]');
             const imperialBtn = document.getElementById('unitImperialBtn');
             const metricBtn = document.getElementById('unitMetricBtn');
             const isMetric = unitSystem === 'metric';
 
             widthLabel.textContent = isMetric ? 'Width (m)' : 'Width (ft)';
             lengthLabel.textContent = isMetric ? 'Length (m)' : 'Length (ft)';
+            ceilingLabel.textContent = isMetric ? 'Ceiling Height (m)' : 'Ceiling Height (ft)';
             imperialBtn.classList.toggle('active', !isMetric);
             metricBtn.classList.toggle('active', isMetric);
+
+            DIM_INPUT_IDS.forEach(id => {
+                const label = document.querySelector(`label[for="${id}"]`);
+                if (!label) return;
+                label.textContent = label.textContent.replace(/\(in\)|\(cm\)/, isMetric ? '(cm)' : '(in)');
+            });
+            document.querySelectorAll('.drawer-height-input').forEach(input => {
+                const unitSpan = input.nextElementSibling;
+                if (unitSpan && unitSpan.tagName === 'SPAN') unitSpan.textContent = dimUnitSuffix();
+            });
+            refreshFloorToolDimsText();
+        }
+
+        // The floor-tool catalog cards are static HTML (unlike Small Power Tools/Custom Tools,
+        // which are JS-rendered and already pick up the current unit on every render) -- their
+        // "2.3' x 2.7' Footprint" text is baked into the markup at imperial values. data-width/
+        // data-length on the same element are the real source of truth (feet, always), so this
+        // regenerates the visible text from those attributes instead of trying to parse/convert
+        // whatever's currently displayed.
+        function refreshFloorToolDimsText() {
+            document.querySelectorAll('.tool-box-item[data-width][data-length]').forEach(item => {
+                const dimsEl = item.querySelector('.tool-dims');
+                if (!dimsEl || !dimsEl.textContent.includes('Footprint')) return;
+                const w = parseFloat(item.getAttribute('data-width'));
+                const l = parseFloat(item.getAttribute('data-length'));
+                if (isNaN(w) || isNaN(l)) return;
+                const suffix = footprintUnitSuffix();
+                dimsEl.textContent = `${feetToDisplay(w)}${suffix} x ${feetToDisplay(l)}${suffix} Footprint`;
+            });
         }
 
         // Shows/hides sidebar catalog categories based on the current shopType. Categories
@@ -14852,12 +14931,29 @@
             if (newUnit === unitSystem) return;
             const widthInput = document.getElementById('inputWidth');
             const lengthInput = document.getElementById('inputLength');
+            const ceilingInput = document.getElementById('inputCeilingHeight');
             const currentWidthFt = getShopWidthFeet();
             const currentLengthFt = getShopLengthFeet();
+            const currentCeilingFt = getShopCeilingHeightFeet();
+            // Snapshot every inch-based field's real value (in canonical inches, via the OLD
+            // unitSystem) before flipping, then re-display each in the NEW unit -- same
+            // read-before-flip/write-after-flip pattern as the shop width/length above.
+            const dimValuesIn = {};
+            DIM_INPUT_IDS.forEach(id => {
+                const el = document.getElementById(id);
+                if (el && el.value !== '') dimValuesIn[id] = displayToInches(parseFloat(el.value));
+            });
+
             unitSystem = newUnit;
             localStorage.setItem('kerphUnitSystem', unitSystem);
             widthInput.value = feetToDisplay(currentWidthFt);
             lengthInput.value = feetToDisplay(currentLengthFt);
+            ceilingInput.value = feetToDisplay(currentCeilingFt);
+            DIM_INPUT_IDS.forEach(id => {
+                if (!(id in dimValuesIn)) return;
+                document.getElementById(id).value = inchesToDisplay(dimValuesIn[id]);
+            });
+            if (typeof renderDrawerList === 'function') renderDrawerList();
             applyUnitLabels();
         }
 
@@ -14865,12 +14961,18 @@
             const widthInput = document.getElementById('inputWidth');
             const lengthInput = document.getElementById('inputLength');
 
-            // The HTML defaults (20/24) are hardcoded as feet. If a metric preference was
-            // persisted from a previous session, convert the displayed value now so it doesn't
-            // show "20" mislabeled as meters before the user ever touches these fields.
+            // The HTML defaults (20/24, and every DIM_INPUT_IDS field's own hardcoded default)
+            // are hardcoded imperial. If a metric preference was persisted from a previous
+            // session, convert every displayed value now so it doesn't show e.g. "24" mislabeled
+            // as cm before the user ever touches these fields.
             if (unitSystem === 'metric') {
                 widthInput.value = feetToDisplay(parseFloat(widthInput.value) || 20);
                 lengthInput.value = feetToDisplay(parseFloat(lengthInput.value) || 24);
+                document.getElementById('inputCeilingHeight').value = feetToDisplay(parseFloat(document.getElementById('inputCeilingHeight').value) || 10);
+                DIM_INPUT_IDS.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el && el.value !== '') el.value = inchesToDisplay(parseFloat(el.value));
+                });
             }
 
             document.getElementById('unitImperialBtn').addEventListener('click', () => switchUnitSystem('imperial'));
