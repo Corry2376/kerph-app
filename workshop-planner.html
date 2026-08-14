@@ -2307,6 +2307,7 @@
 
         .print-only-header { display: none; }
         .print-watermark { display: none; }
+        .print-layer-pages { display: none; }
 
         /* ---------- PRINT / PDF EXPORT ----------
            The board's on-screen layout is all position:absolute against viewport-relative
@@ -2368,6 +2369,29 @@
                 zoom: var(--print-zoom, 1);
             }
             .placed-tool-node.selected-node { outline: none !important; }
+
+            /* Multi-layer export (2+ layers checked in the Export PDF modal) — see
+               printLayeredPdf(). Each .print-layer-page holds its own cloned/filtered board
+               and prints as its own page instead of the single live board above. */
+            body.printing-layers #canvas-view-space,
+            body.printing-layers .print-only-header {
+                display: none !important;
+            }
+            body.printing-layers .print-layer-pages {
+                display: block !important;
+            }
+            .print-layer-page {
+                page-break-after: always;
+            }
+            .print-layer-page:last-child {
+                page-break-after: auto;
+            }
+            .print-layer-page-header {
+                font-family: inherit;
+                margin-bottom: 14px;
+            }
+            .print-layer-page-header .print-title { font-size: 20px; font-weight: 800; color: #0f172a; }
+            .print-layer-page-header .print-meta { font-size: 12px; color: #475569; margin-top: 2px; }
         }
             .header-quick-links { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; font-size: 11px; }
             .header-quick-links-row { display: flex; align-items: center; gap: 6px; }
@@ -7955,6 +7979,12 @@
     <div class="print-only-header" id="printOnlyHeader"></div>
     <div class="print-watermark" id="printWatermark">KERPH &mdash; FREE PLAN</div>
 
+    <!-- Populated only for a multi-layer PDF export (2+ layers checked in the Export PDF
+         modal) -- one .print-layer-page per selected layer, each holding its own cloned/
+         filtered copy of the board so each layer paginates onto its own page. Empty and
+         hidden the rest of the time; see printLayeredPdf(). -->
+    <div class="print-layer-pages" id="printLayerPages"></div>
+
     <!-- Touch-only equivalent of the Ctrl+C / Delete keyboard shortcuts (there's no keyboard
          on a phone/tablet) — shown whenever something is selected on a coarse-pointer device.
          See initTouchActionBar(). -->
@@ -8203,6 +8233,26 @@
             <button type="button" id="calcRunBtn" class="mini-btn modal-primary-btn" style="width:100%; margin-top:10px;">Calculate</button>
 
             <div id="calcResults" style="margin-top:12px;"></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="exportPdfModalOverlay" style="display:none;">
+        <div class="modal-box">
+            <div class="modal-title">Export PDF</div>
+            <div class="modal-warning">Choose which layers to include. Pick more than one and each renders as its own page.</div>
+
+            <div style="display:flex; flex-direction:column; gap:6px; margin:10px 0;">
+                <label class="checkbox-label"><input type="checkbox" id="pdfLayerAll" checked> All (everything together, one page)</label>
+                <label class="checkbox-label"><input type="checkbox" class="pdf-layer-checkbox" value="tools"> Tools</label>
+                <label class="checkbox-label"><input type="checkbox" class="pdf-layer-checkbox" value="dust-collection"> Dust Collection</label>
+                <label class="checkbox-label"><input type="checkbox" class="pdf-layer-checkbox" value="lighting"> Lighting</label>
+                <label class="checkbox-label"><input type="checkbox" class="pdf-layer-checkbox" value="cabinets"> Cabinets</label>
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" id="exportPdfCancelBtn" class="mini-btn">Cancel</button>
+                <button type="button" id="exportPdfConfirmBtn" class="mini-btn modal-primary-btn">Export</button>
+            </div>
         </div>
     </div>
 
@@ -13123,37 +13173,147 @@
            relying on the browser's native "Save as PDF" print destination. See the
            @media print block for how the on-screen absolute-positioned layout gets stripped
            down to just the board so it paginates cleanly. */
-        function initExportPdf() {
-            document.getElementById('exportPdfBtn').addEventListener('click', () => {
-                const widthFt = getShopWidthFeet();
-                const lengthFt = getShopLengthFeet();
-                const dateStr = new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
-                document.getElementById('printOnlyHeader').innerHTML = `
-                    <div class="print-title">Kerph Workshop Layout</div>
-                    <div class="print-meta">${feetToDisplay(widthFt)}${unitSystem === 'metric' ? 'm' : "'"} x ${feetToDisplay(lengthFt)}${unitSystem === 'metric' ? 'm' : "'"} shop &mdash; printed ${dateStr}</div>
-                `;
+        const PDF_LAYER_LABELS = { all: 'All Layers', tools: 'Tools', 'dust-collection': 'Dust Collection', lighting: 'Lighting', cabinets: 'Cabinets' };
 
-                // Shrink the board to fit a single landscape page — 940x650 CSS px is a
-                // conservative printable area (comfortably inside both Letter and A4
-                // landscape at the @page 0.4in margin, with room left for the header
-                // above it). Never scales UP past 1 — a board that already fits stays
-                // as-is rather than being blown up to fill the page.
-                const PRINT_AREA_W = 940;
-                const PRINT_AREA_H = 650;
-                const scale = Math.min(1, PRINT_AREA_W / board.scrollWidth, PRINT_AREA_H / board.scrollHeight);
-                board.style.setProperty('--print-zoom', scale);
+        function buildPrintHeaderHtml(layerKey) {
+            const widthFt = getShopWidthFeet();
+            const lengthFt = getShopLengthFeet();
+            const dateStr = new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+            const suffix = unitSystem === 'metric' ? 'm' : "'";
+            const layerNote = layerKey && layerKey !== 'all' ? ` &mdash; ${PDF_LAYER_LABELS[layerKey]}` : '';
+            return `
+                <div class="print-title">Kerph Workshop Layout${layerNote}</div>
+                <div class="print-meta">${feetToDisplay(widthFt)}${suffix} x ${feetToDisplay(lengthFt)}${suffix} shop &mdash; printed ${dateStr}</div>
+            `;
+        }
 
-                // Free-plan exports carry a watermark — clean exports are a Pro+ perk (see
-                // the launch report's tier sheet). Real enforcement needs a real backend —
-                // this is the same client-side "Plan (Preview)" gate used everywhere else.
-                document.getElementById('printWatermark').classList.toggle('active', getPlan() === 'free');
-
-                window.print();
+        // Same visibility/label rules as the on-screen Layers bar (applyLayerVisibility) --
+        // cabinets stay visible as structural context on every layer, with their own labels
+        // suppressed outside the dedicated Cabinets layer -- just applied to a detached clone
+        // instead of the live board, so print pages stay independent of whatever the user has
+        // the on-screen Layers bar currently set to.
+        function applyLayerFilterToClone(cloneBoard, layerKey) {
+            cloneBoard.querySelectorAll('.placed-tool-node').forEach(node => {
+                const layer = node.dataset.layer || 'tools';
+                const visible = layerKey === 'all' || layer === 'cabinets' || layer === layerKey;
+                node.style.display = visible ? '' : 'none';
             });
+            const showCabinetLabels = layerKey === 'cabinets';
+            cloneBoard.querySelectorAll('.placed-cabinet-node .node-content').forEach(el => {
+                el.style.display = showCabinetLabels ? '' : 'none';
+            });
+        }
 
-            window.addEventListener('afterprint', () => {
+        // Single-page path (exactly one layer selected, 'all' or otherwise) -- filters the
+        // LIVE board in place via activeLayerView/applyLayerVisibility, prints it directly, and
+        // restores the on-screen view afterward. No cloning needed since there's only one page.
+        function printSingleLayer(layerKey) {
+            const priorLayerView = activeLayerView;
+            activeLayerView = layerKey;
+            applyLayerVisibility();
+
+            document.getElementById('printOnlyHeader').innerHTML = buildPrintHeaderHtml(layerKey);
+
+            // Shrink the board to fit a single landscape page — 940x650 CSS px is a
+            // conservative printable area (comfortably inside both Letter and A4
+            // landscape at the @page 0.4in margin, with room left for the header
+            // above it). Never scales UP past 1 — a board that already fits stays
+            // as-is rather than being blown up to fill the page.
+            const PRINT_AREA_W = 940;
+            const PRINT_AREA_H = 650;
+            const scale = Math.min(1, PRINT_AREA_W / board.scrollWidth, PRINT_AREA_H / board.scrollHeight);
+            board.style.setProperty('--print-zoom', scale);
+
+            // Free-plan exports carry a watermark — clean exports are a Pro+ perk (see
+            // the launch report's tier sheet). Real enforcement needs a real backend —
+            // this is the same client-side "Plan (Preview)" gate used everywhere else.
+            document.getElementById('printWatermark').classList.toggle('active', getPlan() === 'free');
+
+            window.print();
+
+            function restore() {
                 board.style.removeProperty('--print-zoom');
                 document.getElementById('printWatermark').classList.remove('active');
+                activeLayerView = priorLayerView;
+                applyLayerVisibility();
+                window.removeEventListener('afterprint', restore);
+            }
+            window.addEventListener('afterprint', restore);
+        }
+
+        // Multi-page path (2+ layers selected) -- clones the board once per selected layer
+        // into #printLayerPages, each with its own filtered visibility and header, so each
+        // renders as its own page (see the body.printing-layers print CSS). The live board is
+        // untouched throughout; body.printing-layers is what hides it during print instead.
+        function printMultipleLayers(layerKeys) {
+            const container = document.getElementById('printLayerPages');
+            container.innerHTML = '';
+
+            const PRINT_AREA_W = 940;
+            const PRINT_AREA_H = 650;
+            const scale = Math.min(1, PRINT_AREA_W / board.scrollWidth, PRINT_AREA_H / board.scrollHeight);
+
+            layerKeys.forEach(layerKey => {
+                const page = document.createElement('div');
+                page.className = 'print-layer-page';
+                const header = document.createElement('div');
+                header.className = 'print-layer-page-header';
+                header.innerHTML = buildPrintHeaderHtml(layerKey);
+                page.appendChild(header);
+
+                const clone = board.cloneNode(true);
+                clone.removeAttribute('id');
+                clone.style.setProperty('--print-zoom', scale);
+                applyLayerFilterToClone(clone, layerKey);
+                page.appendChild(clone);
+
+                container.appendChild(page);
+            });
+
+            document.getElementById('printWatermark').classList.toggle('active', getPlan() === 'free');
+            document.body.classList.add('printing-layers');
+
+            window.print();
+
+            function restore() {
+                document.body.classList.remove('printing-layers');
+                document.getElementById('printWatermark').classList.remove('active');
+                container.innerHTML = '';
+                window.removeEventListener('afterprint', restore);
+            }
+            window.addEventListener('afterprint', restore);
+        }
+
+        function initExportPdf() {
+            const modalOverlay = document.getElementById('exportPdfModalOverlay');
+            const allCheckbox = document.getElementById('pdfLayerAll');
+            const layerCheckboxes = document.querySelectorAll('.pdf-layer-checkbox');
+
+            document.getElementById('exportPdfBtn').addEventListener('click', () => {
+                allCheckbox.checked = true;
+                layerCheckboxes.forEach(cb => { cb.checked = false; });
+                modalOverlay.style.display = 'flex';
+            });
+
+            document.getElementById('exportPdfCancelBtn').addEventListener('click', () => {
+                modalOverlay.style.display = 'none';
+            });
+
+            document.getElementById('exportPdfConfirmBtn').addEventListener('click', () => {
+                const selected = [];
+                if (allCheckbox.checked) selected.push('all');
+                layerCheckboxes.forEach(cb => { if (cb.checked) selected.push(cb.value); });
+                // Nothing checked shouldn't be possible to reach Export with (button is only
+                // ever visible via this modal), but falls back to the full layout rather than
+                // printing nothing if it somehow happens.
+                if (!selected.length) selected.push('all');
+
+                modalOverlay.style.display = 'none';
+                if (selected.length === 1) {
+                    printSingleLayer(selected[0]);
+                } else {
+                    printMultipleLayers(selected);
+                }
             });
         }
 
