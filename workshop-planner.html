@@ -15239,7 +15239,23 @@
             const w = widthField.value;
             widthField.value = lengthField.value;
             lengthField.value = w;
-            updateWorkshopGridSize();
+
+            // A custom-drawn shape's points are independent absolute pixel coordinates --
+            // swapping Width/Length only resizes the underlying rectangle, so for a custom
+            // shape (Width/Length are even disabled for one, see applyCustomShape) nothing
+            // visibly happened. Rotate the shape's own points 90deg to fit the swapped
+            // rectangle: new board width == old board height after the resize below, so
+            // rotating against the OLD height is exactly the transform that lands each point
+            // correctly in the NEW board. Placed items/wall features keep their old absolute
+            // positions either way -- same existing limitation as a plain rectangle resize.
+            if (shapeMode === 'custom' && shapePoints.length) {
+                const oldBoardHeightPx = board.clientHeight;
+                shapePoints = shapePoints.map(p => ({ x: oldBoardHeightPx - p.y, y: p.x }));
+                updateWorkshopGridSize();
+                applyCustomShape();
+            } else {
+                updateWorkshopGridSize();
+            }
         });
         document.getElementById('inputScale').addEventListener('change', updateWorkshopGridSize);
         initDragAndDropEngine();
