@@ -7974,6 +7974,9 @@
         <button type="button" class="wf-tab" data-layer-view="dust-collection">Dust Collection</button>
         <button type="button" class="wf-tab" data-layer-view="lighting">Lighting</button>
         <button type="button" class="wf-tab" data-layer-view="cabinets">Cabinets</button>
+        <label class="checkbox-label" style="margin-left:4px;" title="When off, cabinets only show on the dedicated Cabinets layer instead of as background context on every layer">
+            <input type="checkbox" id="showCabinetsOnOtherLayersCheckbox" checked> Show Cabinets on other layers
+        </label>
     </div>
 
     <div class="print-only-header" id="printOnlyHeader"></div>
@@ -10081,9 +10084,20 @@
         let activeLayerView = 'all';
 
         function applyLayerVisibility() {
+            // Cabinets showing as background context on every other layer is the default (and
+            // was previously the only option) -- the checkbox lets it be turned off for a
+            // cabinet-free view of just tools/dust-collection/lighting.
+            const showCabinetsElsewhere = document.getElementById('showCabinetsOnOtherLayersCheckbox')?.checked !== false;
             document.querySelectorAll('.placed-tool-node').forEach(node => {
                 const layer = node.dataset.layer || 'tools';
-                const visible = activeLayerView === 'all' || layer === 'cabinets' || layer === activeLayerView;
+                let visible;
+                if (activeLayerView === 'cabinets') {
+                    visible = layer === 'cabinets';
+                } else if (layer === 'cabinets') {
+                    visible = showCabinetsElsewhere;
+                } else {
+                    visible = activeLayerView === 'all' || layer === activeLayerView;
+                }
                 node.style.display = visible ? '' : 'none';
             });
             // Cabinet name/dimension labels are only useful when Cabinets is the focused view --
@@ -10104,6 +10118,7 @@
                     applyLayerVisibility();
                 });
             });
+            document.getElementById('showCabinetsOnOtherLayersCheckbox').addEventListener('change', applyLayerVisibility);
         }
 
         function getRotatedAabb(wPx, hPx, angleDeg) {
@@ -13193,9 +13208,17 @@
         // instead of the live board, so print pages stay independent of whatever the user has
         // the on-screen Layers bar currently set to.
         function applyLayerFilterToClone(cloneBoard, layerKey) {
+            const showCabinetsElsewhere = document.getElementById('showCabinetsOnOtherLayersCheckbox')?.checked !== false;
             cloneBoard.querySelectorAll('.placed-tool-node').forEach(node => {
                 const layer = node.dataset.layer || 'tools';
-                const visible = layerKey === 'all' || layer === 'cabinets' || layer === layerKey;
+                let visible;
+                if (layerKey === 'cabinets') {
+                    visible = layer === 'cabinets';
+                } else if (layer === 'cabinets') {
+                    visible = showCabinetsElsewhere;
+                } else {
+                    visible = layerKey === 'all' || layer === layerKey;
+                }
                 node.style.display = visible ? '' : 'none';
             });
             const showCabinetLabels = layerKey === 'cabinets';
