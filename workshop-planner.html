@@ -3006,9 +3006,9 @@
             <div class="header-field" style="width:100%; margin-top:10px;">
                 <label class="header-field-label" for="inputScale">Grid Scale</label>
                 <select class="select-box" id="inputScale">
-                    <option value="2.0">2' Boxes</option>
-                    <option value="1.0" selected>1' Boxes</option>
-                    <option value="0.5">6" Boxes</option>
+                    <option value="2.0" id="scaleOpt2">2' Boxes</option>
+                    <option value="1.0" id="scaleOpt1" selected>1' Boxes</option>
+                    <option value="0.5" id="scaleOptHalf">6" Boxes</option>
                 </select>
             </div>
             <div class="header-field" style="width:100%; margin-top:10px;">
@@ -8495,21 +8495,34 @@
             const vRuler = document.getElementById('rulerLeft');
             if (!hRuler || !vRuler) return;
 
-            const scaleMultiplier = parseFloat(document.getElementById('inputScale').value) || 1.0;
-            const stepFt = scaleMultiplier;
             // Use the configured shop dimensions rather than board.clientWidth/Height so the
             // ruler's last tick lands on the true edge (clientWidth is a few px short due to the border).
             const widthFt = getShopLengthFeet();
             const heightFt = getShopWidthFeet();
+            const isMetric = unitSystem === 'metric';
+            // The Grid Scale dropdown's step is always in feet (1'/2'/6" boxes) -- reusing it
+            // directly in metric mode would label ticks at 0.3m/0.61m/0.91m intervals instead
+            // of round meters, so metric steps in a fixed half-meter instead and every tick
+            // gets a label (not just whole-number ones, since every half-meter is already a
+            // clean number worth showing).
+            const scaleMultiplier = parseFloat(document.getElementById('inputScale').value) || 1.0;
+            const stepFt = isMetric ? (0.5 * FT_PER_METER) : scaleMultiplier;
+
+            function tickLabelText(ft) {
+                return isMetric ? (Math.round(feetToDisplay(ft) * 10) / 10) : Math.round(ft);
+            }
+            function isLabeledTick(ft) {
+                return isMetric || Math.abs(ft - Math.round(ft)) < 0.001;
+            }
 
             hRuler.innerHTML = '';
             hRuler.style.width = (widthFt * ppi) + 'px';
             for (let ft = 0; ft <= widthFt + 0.001; ft += stepFt) {
-                if (Math.abs(ft - Math.round(ft)) < 0.001) {
+                if (isLabeledTick(ft)) {
                     const label = document.createElement('span');
                     label.className = 'ruler-label ruler-label-h';
                     label.style.left = (ft * ppi) + 'px';
-                    label.textContent = Math.round(ft);
+                    label.textContent = tickLabelText(ft);
                     hRuler.appendChild(label);
                 }
             }
@@ -8517,11 +8530,11 @@
             vRuler.innerHTML = '';
             vRuler.style.height = (heightFt * ppi) + 'px';
             for (let ft = 0; ft <= heightFt + 0.001; ft += stepFt) {
-                if (Math.abs(ft - Math.round(ft)) < 0.001) {
+                if (isLabeledTick(ft)) {
                     const label = document.createElement('span');
                     label.className = 'ruler-label ruler-label-v';
                     label.style.top = (ft * ppi) + 'px';
-                    label.textContent = Math.round(ft);
+                    label.textContent = tickLabelText(ft);
                     vRuler.appendChild(label);
                 }
             }
@@ -10467,6 +10480,33 @@
             }
             document.addEventListener('pointerup', endRotate);
             document.addEventListener('pointercancel', endRotate);
+        }
+
+        // Re-renders every already-placed item's dims text for the current unit system.
+        // updateNodeDims() alone isn't safe for this: its cabinet branch preserves whatever
+        // "@ 54"H" mount-height suffix is already sitting in the text verbatim (fine when only
+        // width/depth changed, wrong here since that suffix would still be in the OLD unit).
+        // This instead rebuilds the height suffix from dataset.mountHeightIn -- the canonical
+        // real-inches value -- so a metric switch converts every part of the label, not just
+        // width/depth. Called from applyUnitLabels() (unit toggle + already-metric page load).
+        function refreshAllPlacedNodeDimsText() {
+            document.querySelectorAll('.placed-tool-node').forEach(el => {
+                if (!el.classList.contains('placed-cabinet-node')) { updateNodeDims(el); return; }
+                const dimsEl = el.querySelector('.node-dims');
+                if (!dimsEl) return;
+                const wFt = (parseFloat(el.style.width) || 0) / ppi;
+                const hFt = (parseFloat(el.style.height) || 0) / ppi;
+                let text = `${inchesToDisplay(wFt * 12)}${dimUnitSuffix()}W x ${inchesToDisplay(hFt * 12)}${dimUnitSuffix()}D`;
+                const drawerMatch = dimsEl.textContent.match(/\+\d+ drwrs/);
+                if (drawerMatch) text += ` ${drawerMatch[0]}`;
+                const shelfMatch = dimsEl.textContent.match(/\+\d+ shlvs/);
+                if (shelfMatch) text += ` ${shelfMatch[0]}`;
+                if (el.dataset.cabType === 'wall' && el.dataset.mountHeightIn) {
+                    text += ` @ ${inchesToDisplay(parseFloat(el.dataset.mountHeightIn))}${dimUnitSuffix()}H`;
+                }
+                dimsEl.textContent = text;
+                el.dataset.displayDims = text;
+            });
         }
 
         // Refreshes a placed node's displayed dimension text (and the dataset copy
@@ -15084,6 +15124,19 @@
                 if (unitSpan && unitSpan.tagName === 'SPAN') unitSpan.textContent = dimUnitSuffix();
             });
             refreshFloorToolDimsText();
+            // Grid Scale's stored values stay in feet either way (they drive the board's
+            // background-size directly) -- only the option text needs to describe them in the
+            // current unit, in cm rather than m since these are small box sizes.
+            document.getElementById('scaleOpt2').textContent = isMetric ? `${Math.round(2 * 12 * CM_PER_INCH)}cm Boxes` : `2' Boxes`;
+            document.getElementById('scaleOpt1').textContent = isMetric ? `${Math.round(1 * 12 * CM_PER_INCH)}cm Boxes` : `1' Boxes`;
+            document.getElementById('scaleOptHalf').textContent = isMetric ? `${Math.round(0.5 * 12 * CM_PER_INCH)}cm Boxes` : `6" Boxes`;
+            // Catalog sidebar cards above are the searchable/draggable source -- these three
+            // are what's actually already placed on the board, which don't re-render on their
+            // own just because unitSystem changed (nothing else was touching them, or the
+            // page's grid/ruler, until now).
+            if (typeof refreshAllPlacedNodeDimsText === 'function') refreshAllPlacedNodeDimsText();
+            if (typeof renderWallFeatures === 'function') renderWallFeatures();
+            if (typeof renderRulers === 'function') renderRulers();
         }
 
         // The floor-tool catalog cards are static HTML (unlike Small Power Tools/Custom Tools,
