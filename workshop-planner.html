@@ -9047,7 +9047,7 @@
 
             const collectorNode = nodes.find(n => {
                 const name = n.dataset.toolName || '';
-                return name.includes('DC-1100VX') || name.includes('Dust Deputy');
+                return name.includes('DC-1100VX') || name.includes('Dust Deputy') || name.includes('C-Flux');
             });
             if (!collectorNode) return [];
 
@@ -9118,7 +9118,7 @@
             // collector's intake would otherwise be flagged "open" even though it's actually
             // connected — exclude anything within a few inches of a collector's box.
             const collectorBoxesFt = nodes
-                .filter(n => (n.dataset.toolName || '').match(/DC-1100VX|Dust Deputy/))
+                .filter(n => (n.dataset.toolName || '').match(/DC-1100VX|Dust Deputy|C-Flux/))
                 .map(n => getNodeBoxFt(n));
             const genuinelyOpen = openPorts.filter(p => {
                 const pxFt = p.x / ppi, pyFt = p.y / ppi;
@@ -9577,7 +9577,7 @@
 
             dcNodes.forEach(el => {
                 const name = el.dataset.toolName || '';
-                if (!/DC-1100VX|Dust Deputy/.test(name)) return;
+                if (!/DC-1100VX|Dust Deputy|C-Flux/.test(name)) return;
                 const left = parseFloat(el.style.left), top = parseFloat(el.style.top);
                 const w = parseFloat(el.style.width), h = parseFloat(el.style.height);
                 [[0, -1], [0, 1], [-1, 0], [1, 0]].forEach(([dx, dy]) => {

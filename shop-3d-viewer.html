@@ -1135,8 +1135,10 @@
         // machines AND the anchor of the duct network, so they belong to both the "Tools"
         // and "Dust collection" legend groups — hiding either one alone shouldn't hide them,
         // only hiding both should. See addToolMesh for the render-branch use of this same check.
+        // Matched narrowly by model, not brand -- "Laguna" alone would also catch Laguna's
+        // jointers/planers, which are unrelated tools that happen to share the brand name.
         function isCollectorLabel(label) {
-            return /DC-1100VX|Dust Deputy/.test(label || '');
+            return /DC-1100VX|Dust Deputy|C-Flux/.test(label || '');
         }
 
         function isToolVisible(t) {
