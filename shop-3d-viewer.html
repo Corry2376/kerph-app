@@ -2766,9 +2766,24 @@
             canvasWrap.style.display = 'block';
             controlsPanel.style.display = 'block';
             document.getElementById('addItemPanel').style.display = 'block';
+            positionAddItemPanel();
             buildScene();
             onWindowResize();
         }
+
+        // addItemPanel used to sit at a hardcoded top:410px, on the assumption
+        // viewerControlsPanel above it would never grow past that. It has since (the Move
+        // Objects checkbox added a row + a longer hint line), so the two started overlapping.
+        // Measuring the real rendered height instead of guessing a fixed offset means this
+        // can't silently break again the next time viewerControlsPanel's content changes.
+        function positionAddItemPanel() {
+            const controlsPanel = document.getElementById('viewerControlsPanel');
+            const addItemPanel = document.getElementById('addItemPanel');
+            if (controlsPanel.style.display === 'none' || addItemPanel.style.display === 'none') return;
+            const PANEL_GAP = 14;
+            addItemPanel.style.top = (controlsPanel.getBoundingClientRect().bottom + PANEL_GAP) + 'px';
+        }
+        window.addEventListener('resize', positionAddItemPanel);
 
         // Cabinets aren't a static catalog list like everything else in CATALOG_ITEMS — they're
         // whatever the user has already built with the cabinet builder in workshop-planner.html,
