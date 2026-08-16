@@ -428,8 +428,8 @@
                     </select>
                 </div>
                 <div class="jig-field">
-                    <label for="wmWidth">Board width (in)</label>
-                    <input type="number" id="wmWidth" value="6" step="0.25" min="0" class="narrow">
+                    <label for="wmWidth" id="wmWidthLabel">Board width (in)</label>
+                    <input type="number" id="wmWidth" value="6" step="0.25" min="0" class="narrow" autocomplete="off">
                 </div>
             </div>
 
@@ -630,6 +630,7 @@
                 if (error) { showToast(error.message || 'Could not save profile.'); return; }
                 overlay.style.display = 'none';
                 showToast('Profile saved.');
+                if (typeof applyWmUnitLabels === 'function') applyWmUnitLabels();
             });
 
             if (planSelect) {
@@ -869,12 +870,20 @@
         }
 
         function getWmMode() { return document.querySelector('input[name="wmMode"]:checked').value; }
+        function getUnitSystem() { return localStorage.getItem('kerphUnitSystem') || 'imperial'; }
 
+        // The shrinkage coefficient is a dimensionless ratio (movement fraction
+        // per %MC change) -- it applies unchanged whether width is in inches or
+        // mm, so no unit conversion is needed in the math itself, only in what
+        // unit the width is entered/displayed in.
         function runWoodMovement() {
             const species = WM_SPECIES[document.getElementById('wmSpecies').value];
             const cut = document.querySelector('input[name="wmCut"]:checked').value;
             const c = cut === 'quarter' ? species.c / WM_TR_RATIO : species.c;
             const width = parseFloat(document.getElementById('wmWidth').value) || 0;
+            const metric = getUnitSystem() === 'metric';
+            const unitSuffix = metric ? 'mm' : '"';
+            const places = metric ? 2 : 3;
 
             let mcInitial, mcFinal;
             if (getWmMode() === 'mc') {
@@ -891,10 +900,22 @@
             const pctChange = width > 0 ? (deltaD / width) * 100 : 0;
 
             document.getElementById('wmResults').innerHTML = `
-                <div class="jig-result"><div class="jig-result-label">Movement</div><div class="jig-result-value big">${deltaD >= 0 ? '+' : ''}${fmtNum(deltaD, 3)}"</div><div class="jig-result-sub">${pctChange >= 0 ? '+' : ''}${fmtNum(pctChange, 2)}% of width</div></div>
-                <div class="jig-result"><div class="jig-result-label">New width</div><div class="jig-result-value">${fmtNum(newWidth, 3)}"</div></div>
+                <div class="jig-result"><div class="jig-result-label">Movement</div><div class="jig-result-value big">${deltaD >= 0 ? '+' : ''}${fmtNum(deltaD, places)}${unitSuffix}</div><div class="jig-result-sub">${pctChange >= 0 ? '+' : ''}${fmtNum(pctChange, 2)}% of width</div></div>
+                <div class="jig-result"><div class="jig-result-label">New width</div><div class="jig-result-value">${fmtNum(newWidth, places)}${unitSuffix}</div></div>
                 <div class="jig-result"><div class="jig-result-label">Moisture content</div><div class="jig-result-value">${fmtNum(mcInitial, 1)}% &rarr; ${fmtNum(mcFinal, 1)}%</div></div>
             `;
+        }
+
+        // Re-labels the width field for the current unitSystem. The value is
+        // reset on a unit switch (not converted) -- same reasoning as every
+        // other unit-aware jig on the site: a bare number silently meaning
+        // something different after a switch is worse than asking for it again.
+        function applyWmUnitLabels() {
+            const metric = getUnitSystem() === 'metric';
+            document.getElementById('wmWidthLabel').textContent = metric ? 'Board width (mm)' : 'Board width (in)';
+            document.getElementById('wmWidth').step = metric ? '5' : '0.25';
+            document.getElementById('wmWidth').value = '';
+            runWoodMovement();
         }
 
         document.getElementById('wmSpecies').addEventListener('change', runWoodMovement);
@@ -902,7 +923,7 @@
         document.querySelectorAll('input[name="wmCut"]').forEach(r => r.addEventListener('change', runWoodMovement));
         document.querySelectorAll('input[name="wmMode"]').forEach(r => r.addEventListener('change', () => { buildWmInputRow(r.value); runWoodMovement(); }));
         buildWmInputRow('mc');
-        runWoodMovement();
+        applyWmUnitLabels();
     </script>
 </body>
 </html>

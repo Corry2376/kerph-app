@@ -417,8 +417,8 @@
 
             <div class="jig-input-row">
                 <div class="jig-field">
-                    <label for="rbDiameter">Bit diameter (in)</label>
-                    <input type="number" id="rbDiameter" value="1.5" step="0.125" min="0" class="narrow">
+                    <label for="rbDiameter" id="rbDiameterLabel">Bit diameter (in)</label>
+                    <input type="number" id="rbDiameter" value="1.5" step="0.125" min="0" class="narrow" autocomplete="off">
                 </div>
             </div>
             <div class="jig-results-grid" id="rbResults"></div>
@@ -440,7 +440,7 @@
 
         <div class="help-article">
             <h2>Drill Press &amp; Lathe RPM</h2>
-            <div class="help-article-desc">RPM = (surface speed &times; 12) &divide; (&pi; &times; diameter). Pick a material for a typical starting surface speed (SFM), or type your own — then dial in whatever your machine's closest step-pulley or VFD setting is.</div>
+            <div class="help-article-desc" id="sfFormulaDesc">RPM = (surface speed &times; 12) &divide; (&pi; &times; diameter). Pick a material for a typical starting surface speed (SFM), or type your own — then dial in whatever your machine's closest step-pulley or VFD setting is.</div>
 
             <div class="jig-input-row">
                 <div class="jig-field">
@@ -456,12 +456,12 @@
                     </select>
                 </div>
                 <div class="jig-field">
-                    <label for="sfSfm">Surface speed (SFM)</label>
-                    <input type="number" id="sfSfm" value="175" step="5" min="1" class="narrow">
+                    <label for="sfSfm" id="sfSfmLabel">Surface speed (SFM)</label>
+                    <input type="number" id="sfSfm" value="175" step="5" min="1" class="narrow" autocomplete="off">
                 </div>
                 <div class="jig-field">
-                    <label for="sfDiameter">Bit / stock diameter (in)</label>
-                    <input type="number" id="sfDiameter" value="0.25" step="0.0625" min="0.01" class="narrow">
+                    <label for="sfDiameter" id="sfDiameterLabel">Bit / stock diameter (in)</label>
+                    <input type="number" id="sfDiameter" value="0.25" step="0.0625" min="0.01" class="narrow" autocomplete="off">
                 </div>
             </div>
             <div class="jig-results-grid" id="sfResults"></div>
@@ -647,6 +647,7 @@
                 if (error) { showToast(error.message || 'Could not save profile.'); return; }
                 overlay.style.display = 'none';
                 showToast('Profile saved.');
+                if (typeof applySfUnitLabels === 'function') applySfUnitLabels();
             });
 
             if (planSelect) {
@@ -841,15 +842,22 @@
             }
             return 10000;
         }
+        function getUnitSystem() { return localStorage.getItem('kerphUnitSystem') || 'imperial'; }
+        function mmToIn(mm) { return mm / 25.4; }
+
+        // ROUTER_RPM_TABLE thresholds stay canonical inches -- a metric diameter
+        // is converted before the lookup rather than duplicating the table.
         function runRouterRpm() {
-            const dia = parseFloat(document.getElementById('rbDiameter').value) || 0;
-            const rpm = lookupRouterRpm(dia);
+            const metric = getUnitSystem() === 'metric';
+            const raw = parseFloat(document.getElementById('rbDiameter').value) || 0;
+            const diaIn = metric ? mmToIn(raw) : raw;
+            const rpm = lookupRouterRpm(diaIn);
+            const diaLabel = metric ? `${fmtNum(raw, 1)}mm` : `${fmtNum(raw, 3)}"`;
             document.getElementById('rbResults').innerHTML = `
-                <div class="jig-result"><div class="jig-result-label">Max RPM</div><div class="jig-result-value big">${rpm.toLocaleString()}</div><div class="jig-result-sub">for a ${fmtNum(dia, 3)}" bit</div></div>
+                <div class="jig-result"><div class="jig-result-label">Max RPM</div><div class="jig-result-value big">${rpm.toLocaleString()}</div><div class="jig-result-sub">for a ${diaLabel} bit</div></div>
             `;
         }
         document.getElementById('rbDiameter').addEventListener('input', runRouterRpm);
-        runRouterRpm();
 
         /* ---------- Drill Press / Lathe RPM ---------- */
         const SFM_PRESETS = {
@@ -861,21 +869,53 @@
             'mild-steel': 90,
             'stainless': 40
         };
+        // Imperial: RPM = (SFM x 12in/ft) / (pi x diameter_in).
+        // Metric:   RPM = (m/min x 1000mm/m) / (pi x diameter_mm).
+        // Same relationship, different unit-conversion constant -- not a
+        // dimensionless ratio like wood movement, so the constant has to switch.
         function runDrillRpm() {
+            const metric = getUnitSystem() === 'metric';
             const dia = parseFloat(document.getElementById('sfDiameter').value) || 0;
-            const sfm = parseFloat(document.getElementById('sfSfm').value) || 0;
-            const rpm = dia > 0 ? (sfm * 12) / (Math.PI * dia) : 0;
+            const speed = parseFloat(document.getElementById('sfSfm').value) || 0;
+            const rpm = dia > 0 ? (speed * (metric ? 1000 : 12)) / (Math.PI * dia) : 0;
             document.getElementById('sfResults').innerHTML = `
                 <div class="jig-result"><div class="jig-result-label">Recommended RPM</div><div class="jig-result-value big">${Math.round(rpm).toLocaleString()}</div></div>
             `;
         }
+        function sfPresetValue(materialKey) {
+            const sfm = SFM_PRESETS[materialKey];
+            return getUnitSystem() === 'metric' ? Math.round(sfm * 0.3048) : sfm;
+        }
         document.getElementById('sfMaterial').addEventListener('change', () => {
-            document.getElementById('sfSfm').value = SFM_PRESETS[document.getElementById('sfMaterial').value];
+            document.getElementById('sfSfm').value = sfPresetValue(document.getElementById('sfMaterial').value);
             runDrillRpm();
         });
         document.getElementById('sfSfm').addEventListener('input', runDrillRpm);
         document.getElementById('sfDiameter').addEventListener('input', runDrillRpm);
-        runDrillRpm();
+
+        // Re-labels every unit-dependent field on this page. Diameters reset to
+        // blank on a unit switch (same reasoning as the other jigs); surface
+        // speed re-derives from the currently-selected material preset instead,
+        // since it's tied to that dropdown rather than freely typed.
+        function applySfUnitLabels() {
+            const metric = getUnitSystem() === 'metric';
+            document.getElementById('rbDiameterLabel').textContent = metric ? 'Bit diameter (mm)' : 'Bit diameter (in)';
+            document.getElementById('rbDiameter').step = metric ? '1' : '0.125';
+            document.getElementById('rbDiameter').value = '';
+
+            document.getElementById('sfSfmLabel').textContent = metric ? 'Surface speed (m/min)' : 'Surface speed (SFM)';
+            document.getElementById('sfDiameterLabel').textContent = metric ? 'Bit / stock diameter (mm)' : 'Bit / stock diameter (in)';
+            document.getElementById('sfDiameter').step = metric ? '1' : '0.0625';
+            document.getElementById('sfSfm').value = sfPresetValue(document.getElementById('sfMaterial').value);
+            document.getElementById('sfDiameter').value = '';
+            document.getElementById('sfFormulaDesc').innerHTML = metric
+                ? 'RPM = (surface speed &times; 1000) &divide; (&pi; &times; diameter). Pick a material for a typical starting surface speed (m/min), or type your own — then dial in whatever your machine\'s closest step-pulley or VFD setting is.'
+                : 'RPM = (surface speed &times; 12) &divide; (&pi; &times; diameter). Pick a material for a typical starting surface speed (SFM), or type your own — then dial in whatever your machine\'s closest step-pulley or VFD setting is.';
+
+            runRouterRpm();
+            runDrillRpm();
+        }
+        applySfUnitLabels();
     </script>
 </body>
 </html>

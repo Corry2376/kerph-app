@@ -452,11 +452,11 @@
                         <input type="text" id="bfWoodType" class="bf-wood-input" placeholder="e.g. Walnut" autocomplete="off">
                     </div>
                     <div class="jig-field">
-                        <label for="bfThickness">Thickness (in)</label>
+                        <label for="bfThickness" id="bfThicknessLabel">Thickness (in)</label>
                         <input type="number" id="bfThickness" placeholder="0" step="0.125" min="0" autocomplete="off">
                     </div>
                     <div class="jig-field">
-                        <label for="bfWidth">Width (in)</label>
+                        <label for="bfWidth" id="bfWidthLabel">Width (in)</label>
                         <input type="number" id="bfWidth" placeholder="0" step="0.125" min="0" autocomplete="off">
                     </div>
                     <div class="jig-field">
@@ -479,14 +479,7 @@
                         <input type="number" id="bfPrice" value="" step="0.01" min="0" placeholder="optional">
                     </div>
                 </div>
-                <div class="bf-quickpicks" id="bfQuickpicks">
-                    <span class="bf-quickpick" data-thickness="0.75">4/4 S2S (&frac34;")</span>
-                    <span class="bf-quickpick" data-thickness="1">4/4 (1")</span>
-                    <span class="bf-quickpick" data-thickness="1.25">5/4 (1&frac14;")</span>
-                    <span class="bf-quickpick" data-thickness="1.5">6/4 (1&frac12;")</span>
-                    <span class="bf-quickpick" data-thickness="2">8/4 (2")</span>
-                    <span class="bf-quickpick" data-thickness="3">12/4 (3")</span>
-                </div>
+                <div class="bf-quickpicks" id="bfQuickpicks"></div>
 
                 <div class="jig-results-grid" id="bfResults" style="margin-top:16px;"></div>
 
@@ -685,6 +678,7 @@
                 if (error) { showToast(error.message || 'Could not save profile.'); return; }
                 overlay.style.display = 'none';
                 showToast('Profile saved.');
+                if (typeof applyBfUnitLabels === 'function') applyBfUnitLabels();
             });
 
             if (planSelect) {
@@ -868,22 +862,35 @@
             return s.replace(/(\.\d*?)0+$/, '$1').replace(/\.$/, '');
         }
 
+        // Canonical storage is always inches, matching every other unit-aware
+        // jig on the site -- unitSystem only controls the display/input boundary.
+        const LENGTH_UNIT_TO_INCHES = { ft: 12, in: 1, m: 39.3700787, cm: 0.3937007874 };
+        function getUnitSystem() { return localStorage.getItem('kerphUnitSystem') || 'imperial'; }
+        function mmToIn(mm) { return mm / 25.4; }
+        function inToMm(inches) { return inches * 25.4; }
+        function inToM(inches) { return inches * 0.0254; }
+
         function currentBfCalc() {
+            const unitSystem = getUnitSystem();
             const woodType = document.getElementById('bfWoodType').value.trim();
-            const thickness = parseFloat(document.getElementById('bfThickness').value) || 0;
-            const width = parseFloat(document.getElementById('bfWidth').value) || 0;
-            const length = parseFloat(document.getElementById('bfLength').value) || 0;
+            const rawThickness = parseFloat(document.getElementById('bfThickness').value) || 0;
+            const rawWidth = parseFloat(document.getElementById('bfWidth').value) || 0;
+            const rawLength = parseFloat(document.getElementById('bfLength').value) || 0;
             const lengthUnit = document.getElementById('bfLengthUnit').value;
             const qty = Math.max(1, parseInt(document.getElementById('bfQty').value, 10) || 1);
             const priceRaw = parseFloat(document.getElementById('bfPrice').value);
             const price = !isNaN(priceRaw) && priceRaw > 0 ? priceRaw : null;
 
-            const lengthIn = lengthUnit === 'ft' ? length * 12 : length;
+            const thickness = unitSystem === 'metric' ? mmToIn(rawThickness) : rawThickness;
+            const width = unitSystem === 'metric' ? mmToIn(rawWidth) : rawWidth;
+            const lengthIn = rawLength * (LENGTH_UNIT_TO_INCHES[lengthUnit] || 1);
             const bfPerBoard = (thickness * width * lengthIn) / 144;
             const totalBf = bfPerBoard * qty;
             const totalCost = price != null ? totalBf * price : null;
 
-            return { woodType, thickness, width, length, lengthUnit, qty, price, bfPerBoard, totalBf, totalCost };
+            // thickness/width/length below are all canonical inches, so a saved
+            // order item redisplays correctly no matter what unit is active later
+            return { woodType, thickness, width, length: lengthIn, qty, price, bfPerBoard, totalBf, totalCost };
         }
 
         function runBoardFeet() {
@@ -897,19 +904,70 @@
         ['bfThickness', 'bfWidth', 'bfLength', 'bfLengthUnit', 'bfQty', 'bfPrice'].forEach(id => {
             document.getElementById(id).addEventListener('input', () => { runBoardFeet(); syncQuickpickHighlight(); });
         });
-        function syncQuickpickHighlight() {
-            const t = parseFloat(document.getElementById('bfThickness').value);
-            document.querySelectorAll('.bf-quickpick').forEach(chip => {
-                chip.classList.toggle('active', Math.abs(parseFloat(chip.dataset.thickness) - t) < 0.001);
+
+        // Quickpick canonical thickness stays in inches (the universal "quarter"
+        // trade name is unit-agnostic); only the displayed number next to it
+        // switches with the unit system. Metric mm values are the real rounded
+        // sizes a metric lumberyard actually stocks, not raw unit-converted ones.
+        const BF_QUICKPICKS = [
+            { label: '4/4 S2S', in: 0.75, mm: 19 },
+            { label: '4/4', in: 1, mm: 25 },
+            { label: '5/4', in: 1.25, mm: 32 },
+            { label: '6/4', in: 1.5, mm: 38 },
+            { label: '8/4', in: 2, mm: 51 },
+            { label: '12/4', in: 3, mm: 76 },
+        ];
+        function renderBfQuickpicks() {
+            const unitSystem = getUnitSystem();
+            const wrap = document.getElementById('bfQuickpicks');
+            wrap.innerHTML = BF_QUICKPICKS.map(q => {
+                const shown = unitSystem === 'metric' ? `${q.mm}mm` : `${fmtNum(q.in, 3)}"`;
+                return `<span class="bf-quickpick" data-in="${q.in}" data-mm="${q.mm}">${q.label} (${shown})</span>`;
+            }).join('');
+            wrap.querySelectorAll('.bf-quickpick').forEach(chip => {
+                chip.addEventListener('click', () => {
+                    const us = getUnitSystem();
+                    document.getElementById('bfThickness').value = us === 'metric' ? chip.dataset.mm : chip.dataset.in;
+                    runBoardFeet();
+                    syncQuickpickHighlight();
+                });
             });
         }
-        document.querySelectorAll('.bf-quickpick').forEach(chip => {
-            chip.addEventListener('click', () => {
-                document.getElementById('bfThickness').value = chip.dataset.thickness;
-                runBoardFeet();
-                syncQuickpickHighlight();
+        function syncQuickpickHighlight() {
+            const unitSystem = getUnitSystem();
+            const rawT = parseFloat(document.getElementById('bfThickness').value);
+            document.querySelectorAll('.bf-quickpick').forEach(chip => {
+                const chipVal = parseFloat(unitSystem === 'metric' ? chip.dataset.mm : chip.dataset.in);
+                chip.classList.toggle('active', Math.abs(chipVal - rawT) < 0.001);
             });
-        });
+        }
+
+        // Re-labels/rebuilds every unit-dependent piece of this jig for the
+        // current unitSystem. Existing thickness/width/length values are reset
+        // rather than converted in place -- the number the user typed no longer
+        // means the same thing once its unit changes, and silently reinterpreting
+        // it risks a wrong-looking-right board foot total.
+        function applyBfUnitLabels() {
+            const unitSystem = getUnitSystem();
+            const metric = unitSystem === 'metric';
+            document.getElementById('bfThicknessLabel').textContent = metric ? 'Thickness (mm)' : 'Thickness (in)';
+            document.getElementById('bfWidthLabel').textContent = metric ? 'Width (mm)' : 'Width (in)';
+            document.getElementById('bfThickness').step = metric ? '1' : '0.125';
+            document.getElementById('bfWidth').step = metric ? '1' : '0.125';
+            document.getElementById('bfThickness').value = '';
+            document.getElementById('bfWidth').value = '';
+            document.getElementById('bfLength').value = '';
+
+            const lengthUnitSelect = document.getElementById('bfLengthUnit');
+            lengthUnitSelect.innerHTML = metric
+                ? '<option value="m" selected>Meters</option><option value="cm">Centimeters</option>'
+                : '<option value="ft" selected>Feet</option><option value="in">Inches</option>';
+
+            renderBfQuickpicks();
+            runBoardFeet();
+            syncQuickpickHighlight();
+            renderBfOrder();
+        }
 
         /* =====================================================================
            SHOPPING ORDER — running tally of the last 20 boards added, so a
@@ -939,7 +997,6 @@
                 thickness: calc.thickness,
                 width: calc.width,
                 length: calc.length,
-                lengthUnit: calc.lengthUnit,
                 qty: calc.qty,
                 totalBf: calc.totalBf,
                 totalCost: calc.totalCost,
@@ -955,20 +1012,27 @@
             countEl.textContent = bfOrder.length ? `${bfOrder.length} of ${BF_ORDER_MAX} boards` : '';
 
             const list = document.getElementById('bfTallyList');
+            const metric = getUnitSystem() === 'metric';
             if (!bfOrder.length) {
                 list.innerHTML = '<div class="bf-tally-empty">No boards added yet. Calculate a board, then click &ldquo;+ Add to Order&rdquo;.</div>';
             } else {
                 list.innerHTML = bfOrder.map(item => {
-                    const lenLabel = item.lengthUnit === 'ft' ? `${fmtNum(item.length, 2)}'` : `${fmtNum(item.length, 2)}"`;
+                    // item.thickness/width/length are always canonical inches, so this
+                    // redisplays correctly in whichever unit system is active now --
+                    // even if it was added while the other system was selected.
                     const qtyLabel = item.qty > 1 ? ` &times; ${item.qty}` : '';
+                    const dimsPart = metric
+                        ? `${fmtNum(inToMm(item.thickness), 1)}mm &times; ${fmtNum(inToMm(item.width), 1)}mm &times; ${fmtNum(inToM(item.length), 2)}m${qtyLabel}`
+                        : `${fmtNum(item.thickness, 3)}" &times; ${fmtNum(item.width, 3)}" &times; ${fmtNum(item.length / 12, 2)}'${qtyLabel}`;
                     const woodPrefix = item.woodType ? `<span class="bf-tally-item-wood-inline">${escapeHtml(item.woodType)}</span> &mdash; ` : '';
-                    const dimsPart = `${fmtNum(item.thickness, 3)}" &times; ${fmtNum(item.width, 3)}" &times; ${lenLabel}${qtyLabel}`;
                     const bfPart = `${fmtNum(item.totalBf, 2)} bf`;
                     const costPart = item.totalCost != null
                         ? `<span class="bf-tally-item-cost-inline">$${fmtNum(item.totalCost, 2)}</span>`
                         : `<span class="bf-tally-item-noprice">no price</span>`;
                     const line = `${woodPrefix}${dimsPart} &middot; ${bfPart} &middot; ${costPart}`;
-                    const plainDims = `${fmtNum(item.thickness, 3)}" x ${fmtNum(item.width, 3)}" x ${lenLabel}${item.qty > 1 ? ` x ${item.qty}` : ''}`;
+                    const plainDims = metric
+                        ? `${fmtNum(inToMm(item.thickness), 1)}mm x ${fmtNum(inToMm(item.width), 1)}mm x ${fmtNum(inToM(item.length), 2)}m${item.qty > 1 ? ` x ${item.qty}` : ''}`
+                        : `${fmtNum(item.thickness, 3)}" x ${fmtNum(item.width, 3)}" x ${fmtNum(item.length / 12, 2)}'${item.qty > 1 ? ` x ${item.qty}` : ''}`;
                     const plainCost = item.totalCost != null ? `$${fmtNum(item.totalCost, 2)}` : 'no price entered';
                     const plainLine = `${item.woodType ? item.woodType + ' — ' : ''}${plainDims} · ${fmtNum(item.totalBf, 2)} bf · ${plainCost}`;
                     return `
@@ -1008,9 +1072,7 @@
             renderBfOrder();
         });
 
-        runBoardFeet();
-        syncQuickpickHighlight();
-        renderBfOrder();
+        applyBfUnitLabels();
     </script>
 </body>
 </html>
