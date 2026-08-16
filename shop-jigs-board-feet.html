@@ -245,7 +245,7 @@
 
         /* ---------- SINGLE-JIG PAGE LAYOUT ---------- */
         .jig-page-layout {
-            max-width: 760px;
+            max-width: 1180px;
             margin: 0 auto;
             padding: 40px 24px 100px;
         }
@@ -289,6 +289,38 @@
         .bf-quickpick:hover { background: #e0e7ff; }
         .bf-quickpick.active { background: #1e3a8a; color: #fff; border-color: #1e3a8a; }
 
+        /* ---------- BOARD FOOT CALCULATOR — shopping-order tally ---------- */
+        .bf-layout { display: flex; align-items: flex-start; gap: 24px; }
+        .bf-calculator { flex: 1 1 560px; min-width: 0; }
+        .bf-add-order-btn { margin-top: 16px; width: 100%; padding: 10px; font-size: 13px; }
+
+        .bf-tally-panel {
+            flex: 0 0 360px;
+            background-color: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 14px;
+            padding: 22px;
+            box-shadow: 0 12px 30px -12px rgba(15, 23, 42, 0.15);
+        }
+        .bf-tally-header { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+        .bf-tally-title { font-size: 16px; font-weight: 800; color: #0f172a; }
+        .bf-tally-count { font-size: 11px; font-weight: 600; color: #6b7280; margin-top: 2px; }
+        .bf-tally-reset-btn { flex: none; padding: 6px 10px; font-size: 11px; }
+
+        .bf-tally-list { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; }
+        .bf-tally-item { display: flex; align-items: flex-start; gap: 8px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 10px; }
+        .bf-tally-item-info { flex: 1; min-width: 0; }
+        .bf-tally-item-dims { font-size: 12.5px; font-weight: 700; color: #1e293b; }
+        .bf-tally-item-sub { font-size: 11px; color: #6b7280; margin-top: 2px; }
+        .bf-tally-item-del { flex-shrink: 0; border: none; background: none; color: #b91c1c; cursor: pointer; font-size: 14px; padding: 2px; line-height: 1; }
+        .bf-tally-item-del:hover { color: #7f1d1d; }
+        .bf-tally-empty { font-size: 12px; color: #9ca3af; font-style: italic; text-align: center; padding: 18px 4px; }
+
+        .bf-tally-totals { margin-top: 16px; padding-top: 14px; border-top: 1px solid #e2e8f0; }
+        .bf-tally-total-row { display: flex; align-items: baseline; justify-content: space-between; font-size: 13px; font-weight: 700; color: #374151; margin-bottom: 6px; }
+        .bf-tally-total-row.grand { font-size: 19px; font-weight: 800; color: #1e3a8a; }
+        .bf-tally-missing-note { font-size: 11px; color: #92400e; margin-top: 6px; }
+
         @media (max-width: 640px) {
             .jig-page-layout { padding: 24px 16px 60px; }
             .help-title { font-size: 22px; }
@@ -303,6 +335,9 @@
             .jig-field input.narrow { width: 100%; }
 
             .jig-results-grid { grid-template-columns: repeat(2, 1fr); }
+
+            .bf-layout { flex-direction: column; }
+            .bf-tally-panel { flex: 1 1 auto; width: 100%; }
 
             .account-modal-box { width: calc(100vw - 48px); }
             .modal-box { width: calc(100vw - 48px); max-width: 320px; }
@@ -407,46 +442,62 @@
         <div class="help-title">Board Foot Calculator</div>
         <div class="help-subtitle">One board foot is 144 cubic inches — a board 1" thick, 12" wide, and 12" long. Enter your stock's real dimensions to get board feet per board, total board feet, and total cost.</div>
 
-        <div class="help-article">
-            <div class="jig-input-row">
-                <div class="jig-field">
-                    <label for="bfThickness">Thickness (in)</label>
-                    <input type="number" id="bfThickness" value="1" step="0.125" min="0">
+        <div class="bf-layout">
+            <div class="help-article bf-calculator">
+                <div class="jig-input-row">
+                    <div class="jig-field">
+                        <label for="bfThickness">Thickness (in)</label>
+                        <input type="number" id="bfThickness" value="1" step="0.125" min="0">
+                    </div>
+                    <div class="jig-field">
+                        <label for="bfWidth">Width (in)</label>
+                        <input type="number" id="bfWidth" value="6" step="0.125" min="0">
+                    </div>
+                    <div class="jig-field">
+                        <label for="bfLength">Length</label>
+                        <input type="number" id="bfLength" value="8" step="0.5" min="0">
+                    </div>
+                    <div class="jig-field">
+                        <label for="bfLengthUnit">Length unit</label>
+                        <select id="bfLengthUnit">
+                            <option value="ft" selected>Feet</option>
+                            <option value="in">Inches</option>
+                        </select>
+                    </div>
+                    <div class="jig-field">
+                        <label for="bfQty">Quantity</label>
+                        <input type="number" id="bfQty" value="1" step="1" min="1" class="narrow">
+                    </div>
+                    <div class="jig-field">
+                        <label for="bfPrice">$ / board foot</label>
+                        <input type="number" id="bfPrice" value="" step="0.01" min="0" placeholder="optional">
+                    </div>
                 </div>
-                <div class="jig-field">
-                    <label for="bfWidth">Width (in)</label>
-                    <input type="number" id="bfWidth" value="6" step="0.125" min="0">
+                <div class="bf-quickpicks" id="bfQuickpicks">
+                    <span class="bf-quickpick" data-thickness="0.75">4/4 S2S (&frac34;")</span>
+                    <span class="bf-quickpick" data-thickness="1">4/4 (1")</span>
+                    <span class="bf-quickpick" data-thickness="1.25">5/4 (1&frac14;")</span>
+                    <span class="bf-quickpick" data-thickness="1.5">6/4 (1&frac12;")</span>
+                    <span class="bf-quickpick" data-thickness="2">8/4 (2")</span>
+                    <span class="bf-quickpick" data-thickness="3">12/4 (3")</span>
                 </div>
-                <div class="jig-field">
-                    <label for="bfLength">Length</label>
-                    <input type="number" id="bfLength" value="8" step="0.5" min="0">
-                </div>
-                <div class="jig-field">
-                    <label for="bfLengthUnit">Length unit</label>
-                    <select id="bfLengthUnit">
-                        <option value="ft" selected>Feet</option>
-                        <option value="in">Inches</option>
-                    </select>
-                </div>
-                <div class="jig-field">
-                    <label for="bfQty">Quantity</label>
-                    <input type="number" id="bfQty" value="1" step="1" min="1" class="narrow">
-                </div>
-                <div class="jig-field">
-                    <label for="bfPrice">$ / board foot</label>
-                    <input type="number" id="bfPrice" value="" step="0.01" min="0" placeholder="optional">
-                </div>
-            </div>
-            <div class="bf-quickpicks" id="bfQuickpicks">
-                <span class="bf-quickpick" data-thickness="0.75">4/4 S2S (&frac34;")</span>
-                <span class="bf-quickpick" data-thickness="1">4/4 (1")</span>
-                <span class="bf-quickpick" data-thickness="1.25">5/4 (1&frac14;")</span>
-                <span class="bf-quickpick" data-thickness="1.5">6/4 (1&frac12;")</span>
-                <span class="bf-quickpick" data-thickness="2">8/4 (2")</span>
-                <span class="bf-quickpick" data-thickness="3">12/4 (3")</span>
+
+                <div class="jig-results-grid" id="bfResults" style="margin-top:16px;"></div>
+
+                <button type="button" id="bfAddToOrderBtn" class="mini-btn modal-primary-btn bf-add-order-btn">+ Add to Order</button>
             </div>
 
-            <div class="jig-results-grid" id="bfResults" style="margin-top:16px;"></div>
+            <div class="bf-tally-panel">
+                <div class="bf-tally-header">
+                    <div>
+                        <div class="bf-tally-title">Shopping Order</div>
+                        <div class="bf-tally-count" id="bfTallyCount"></div>
+                    </div>
+                    <button type="button" id="bfTallyResetBtn" class="mini-btn danger bf-tally-reset-btn">Reset</button>
+                </div>
+                <div class="bf-tally-list" id="bfTallyList"></div>
+                <div class="bf-tally-totals" id="bfTallyTotals"></div>
+            </div>
         </div>
     </div>
 
@@ -811,23 +862,29 @@
             return s.replace(/(\.\d*?)0+$/, '$1').replace(/\.$/, '');
         }
 
-        function runBoardFeet() {
+        function currentBfCalc() {
             const thickness = parseFloat(document.getElementById('bfThickness').value) || 0;
             const width = parseFloat(document.getElementById('bfWidth').value) || 0;
-            let length = parseFloat(document.getElementById('bfLength').value) || 0;
+            const length = parseFloat(document.getElementById('bfLength').value) || 0;
             const lengthUnit = document.getElementById('bfLengthUnit').value;
             const qty = Math.max(1, parseInt(document.getElementById('bfQty').value, 10) || 1);
-            const price = parseFloat(document.getElementById('bfPrice').value);
+            const priceRaw = parseFloat(document.getElementById('bfPrice').value);
+            const price = !isNaN(priceRaw) && priceRaw > 0 ? priceRaw : null;
 
             const lengthIn = lengthUnit === 'ft' ? length * 12 : length;
             const bfPerBoard = (thickness * width * lengthIn) / 144;
             const totalBf = bfPerBoard * qty;
-            const totalCost = !isNaN(price) && price > 0 ? totalBf * price : null;
+            const totalCost = price != null ? totalBf * price : null;
 
+            return { thickness, width, length, lengthUnit, qty, price, bfPerBoard, totalBf, totalCost };
+        }
+
+        function runBoardFeet() {
+            const calc = currentBfCalc();
             document.getElementById('bfResults').innerHTML = `
-                <div class="jig-result"><div class="jig-result-label">Board feet / board</div><div class="jig-result-value">${fmtNum(bfPerBoard, 3)} bf</div></div>
-                <div class="jig-result"><div class="jig-result-label">Total board feet</div><div class="jig-result-value big">${fmtNum(totalBf, 3)} bf</div><div class="jig-result-sub">${qty} board${qty === 1 ? '' : 's'}</div></div>
-                ${totalCost != null ? `<div class="jig-result"><div class="jig-result-label">Total cost</div><div class="jig-result-value">$${fmtNum(totalCost, 2)}</div></div>` : ''}
+                <div class="jig-result"><div class="jig-result-label">Board feet / board</div><div class="jig-result-value">${fmtNum(calc.bfPerBoard, 3)} bf</div></div>
+                <div class="jig-result"><div class="jig-result-label">Total board feet</div><div class="jig-result-value big">${fmtNum(calc.totalBf, 3)} bf</div><div class="jig-result-sub">${calc.qty} board${calc.qty === 1 ? '' : 's'}</div></div>
+                ${calc.totalCost != null ? `<div class="jig-result"><div class="jig-result-label">Total cost</div><div class="jig-result-value">$${fmtNum(calc.totalCost, 2)}</div></div>` : ''}
             `;
         }
         ['bfThickness', 'bfWidth', 'bfLength', 'bfLengthUnit', 'bfQty', 'bfPrice'].forEach(id => {
@@ -846,8 +903,100 @@
                 syncQuickpickHighlight();
             });
         });
+
+        /* =====================================================================
+           SHOPPING ORDER — running tally of the last 20 boards added, so a
+           trip to the lumberyard can price out a whole cart, not just one board.
+           Stored locally only (kerph-prefixed, so it rides along with the
+           existing Export/Import/Reset-All local-data tools in the account panel).
+           ===================================================================== */
+
+        const BF_ORDER_KEY = 'kerphBoardFeetOrder';
+        const BF_ORDER_MAX = 20;
+
+        function loadBfOrder() {
+            try {
+                const parsed = JSON.parse(localStorage.getItem(BF_ORDER_KEY) || '[]');
+                return Array.isArray(parsed) ? parsed : [];
+            } catch (e) { return []; }
+        }
+        function saveBfOrder() { localStorage.setItem(BF_ORDER_KEY, JSON.stringify(bfOrder)); }
+        let bfOrder = loadBfOrder();
+
+        function addToOrder() {
+            const calc = currentBfCalc();
+            if (calc.bfPerBoard <= 0) { showToast('Enter thickness, width, and length before adding to your order.'); return; }
+            bfOrder.unshift({
+                id: Date.now().toString(36) + Math.random().toString(36).slice(2, 8),
+                thickness: calc.thickness,
+                width: calc.width,
+                length: calc.length,
+                lengthUnit: calc.lengthUnit,
+                qty: calc.qty,
+                totalBf: calc.totalBf,
+                totalCost: calc.totalCost,
+            });
+            if (bfOrder.length > BF_ORDER_MAX) bfOrder.length = BF_ORDER_MAX;
+            saveBfOrder();
+            renderBfOrder();
+            showToast('Added to your order.');
+        }
+
+        function renderBfOrder() {
+            const countEl = document.getElementById('bfTallyCount');
+            countEl.textContent = bfOrder.length ? `${bfOrder.length} of ${BF_ORDER_MAX} boards` : '';
+
+            const list = document.getElementById('bfTallyList');
+            if (!bfOrder.length) {
+                list.innerHTML = '<div class="bf-tally-empty">No boards added yet. Calculate a board, then click &ldquo;+ Add to Order&rdquo;.</div>';
+            } else {
+                list.innerHTML = bfOrder.map(item => {
+                    const lenLabel = item.lengthUnit === 'ft' ? `${fmtNum(item.length, 2)}'` : `${fmtNum(item.length, 2)}"`;
+                    const qtyLabel = item.qty > 1 ? ` &times; ${item.qty}` : '';
+                    const costLabel = item.totalCost != null ? ` &middot; $${fmtNum(item.totalCost, 2)}` : ' &middot; no price entered';
+                    return `
+                        <div class="bf-tally-item">
+                            <div class="bf-tally-item-info">
+                                <div class="bf-tally-item-dims">${fmtNum(item.thickness, 3)}" &times; ${fmtNum(item.width, 3)}" &times; ${lenLabel}${qtyLabel}</div>
+                                <div class="bf-tally-item-sub">${fmtNum(item.totalBf, 2)} bf${costLabel}</div>
+                            </div>
+                            <button type="button" class="bf-tally-item-del" data-id="${item.id}" title="Remove this board">&#10005;</button>
+                        </div>
+                    `;
+                }).join('');
+                list.querySelectorAll('.bf-tally-item-del').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        bfOrder = bfOrder.filter(i => i.id !== btn.dataset.id);
+                        saveBfOrder();
+                        renderBfOrder();
+                    });
+                });
+            }
+
+            const totalBf = bfOrder.reduce((sum, i) => sum + i.totalBf, 0);
+            const pricedItems = bfOrder.filter(i => i.totalCost != null);
+            const totalCost = pricedItems.reduce((sum, i) => sum + i.totalCost, 0);
+            const missingPriceCount = bfOrder.length - pricedItems.length;
+
+            document.getElementById('bfTallyTotals').innerHTML = `
+                <div class="bf-tally-total-row"><span>Total board feet</span><span>${fmtNum(totalBf, 2)} bf</span></div>
+                <div class="bf-tally-total-row grand"><span>Order total</span><span>$${fmtNum(totalCost, 2)}</span></div>
+                ${missingPriceCount > 0 ? `<div class="bf-tally-missing-note">${missingPriceCount} board${missingPriceCount === 1 ? '' : 's'} had no price entered — excluded from the total.</div>` : ''}
+            `;
+        }
+
+        document.getElementById('bfAddToOrderBtn').addEventListener('click', addToOrder);
+        document.getElementById('bfTallyResetBtn').addEventListener('click', () => {
+            if (!bfOrder.length) return;
+            if (!confirm('Clear every board from your shopping order? This cannot be undone.')) return;
+            bfOrder = [];
+            saveBfOrder();
+            renderBfOrder();
+        });
+
         runBoardFeet();
         syncQuickpickHighlight();
+        renderBfOrder();
     </script>
 </body>
 </html>
