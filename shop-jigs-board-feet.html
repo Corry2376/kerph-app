@@ -276,6 +276,7 @@
         .jig-field label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: #6b7280; }
         .jig-field input, .jig-field select { padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; font-weight: 600; width: 108px; background: #ffffff; }
         .jig-field input.narrow { width: 64px; }
+        .jig-field input.bf-wood-input { width: 160px; }
 
         .jig-results-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-top: 4px; }
         .jig-result { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px; }
@@ -310,6 +311,7 @@
         .bf-tally-list { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; }
         .bf-tally-item { display: flex; align-items: flex-start; gap: 8px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 10px; }
         .bf-tally-item-info { flex: 1; min-width: 0; }
+        .bf-tally-item-wood { font-size: 12px; font-weight: 800; color: #1e3a8a; margin-bottom: 1px; }
         .bf-tally-item-dims { font-size: 12.5px; font-weight: 700; color: #1e293b; }
         .bf-tally-item-sub { font-size: 11px; color: #6b7280; margin-top: 2px; }
         .bf-tally-item-del { flex-shrink: 0; border: none; background: none; color: #b91c1c; cursor: pointer; font-size: 14px; padding: 2px; line-height: 1; }
@@ -446,16 +448,20 @@
             <div class="help-article bf-calculator">
                 <div class="jig-input-row">
                     <div class="jig-field">
+                        <label for="bfWoodType">Wood Type</label>
+                        <input type="text" id="bfWoodType" class="bf-wood-input" placeholder="e.g. Walnut" autocomplete="off">
+                    </div>
+                    <div class="jig-field">
                         <label for="bfThickness">Thickness (in)</label>
-                        <input type="number" id="bfThickness" value="1" step="0.125" min="0">
+                        <input type="number" id="bfThickness" placeholder="0" step="0.125" min="0" autocomplete="off">
                     </div>
                     <div class="jig-field">
                         <label for="bfWidth">Width (in)</label>
-                        <input type="number" id="bfWidth" value="6" step="0.125" min="0">
+                        <input type="number" id="bfWidth" placeholder="0" step="0.125" min="0" autocomplete="off">
                     </div>
                     <div class="jig-field">
                         <label for="bfLength">Length</label>
-                        <input type="number" id="bfLength" value="8" step="0.5" min="0">
+                        <input type="number" id="bfLength" placeholder="0" step="0.5" min="0" autocomplete="off">
                     </div>
                     <div class="jig-field">
                         <label for="bfLengthUnit">Length unit</label>
@@ -863,6 +869,7 @@
         }
 
         function currentBfCalc() {
+            const woodType = document.getElementById('bfWoodType').value.trim();
             const thickness = parseFloat(document.getElementById('bfThickness').value) || 0;
             const width = parseFloat(document.getElementById('bfWidth').value) || 0;
             const length = parseFloat(document.getElementById('bfLength').value) || 0;
@@ -876,7 +883,7 @@
             const totalBf = bfPerBoard * qty;
             const totalCost = price != null ? totalBf * price : null;
 
-            return { thickness, width, length, lengthUnit, qty, price, bfPerBoard, totalBf, totalCost };
+            return { woodType, thickness, width, length, lengthUnit, qty, price, bfPerBoard, totalBf, totalCost };
         }
 
         function runBoardFeet() {
@@ -928,6 +935,7 @@
             if (calc.bfPerBoard <= 0) { showToast('Enter thickness, width, and length before adding to your order.'); return; }
             bfOrder.unshift({
                 id: Date.now().toString(36) + Math.random().toString(36).slice(2, 8),
+                woodType: calc.woodType,
                 thickness: calc.thickness,
                 width: calc.width,
                 length: calc.length,
@@ -954,9 +962,11 @@
                     const lenLabel = item.lengthUnit === 'ft' ? `${fmtNum(item.length, 2)}'` : `${fmtNum(item.length, 2)}"`;
                     const qtyLabel = item.qty > 1 ? ` &times; ${item.qty}` : '';
                     const costLabel = item.totalCost != null ? ` &middot; $${fmtNum(item.totalCost, 2)}` : ' &middot; no price entered';
+                    const woodLabel = item.woodType ? `<div class="bf-tally-item-wood">${escapeHtml(item.woodType)}</div>` : '';
                     return `
                         <div class="bf-tally-item">
                             <div class="bf-tally-item-info">
+                                ${woodLabel}
                                 <div class="bf-tally-item-dims">${fmtNum(item.thickness, 3)}" &times; ${fmtNum(item.width, 3)}" &times; ${lenLabel}${qtyLabel}</div>
                                 <div class="bf-tally-item-sub">${fmtNum(item.totalBf, 2)} bf${costLabel}</div>
                             </div>
