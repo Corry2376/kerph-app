@@ -245,7 +245,7 @@
 
         /* ---------- SINGLE-JIG PAGE LAYOUT ---------- */
         .jig-page-layout {
-            max-width: 1180px;
+            max-width: 1320px;
             margin: 0 auto;
             padding: 40px 24px 100px;
         }
@@ -292,11 +292,11 @@
 
         /* ---------- BOARD FOOT CALCULATOR — shopping-order tally ---------- */
         .bf-layout { display: flex; align-items: flex-start; gap: 24px; }
-        .bf-calculator { flex: 1 1 560px; min-width: 0; }
+        .bf-calculator { flex: 1 1 580px; min-width: 0; }
         .bf-add-order-btn { margin-top: 16px; width: 100%; padding: 10px; font-size: 13px; }
 
         .bf-tally-panel {
-            flex: 0 0 360px;
+            flex: 0 0 480px;
             background-color: #ffffff;
             border: 1px solid #cbd5e1;
             border-radius: 14px;
@@ -309,11 +309,11 @@
         .bf-tally-reset-btn { flex: none; padding: 6px 10px; font-size: 11px; }
 
         .bf-tally-list { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; }
-        .bf-tally-item { display: flex; align-items: flex-start; gap: 8px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 10px; }
-        .bf-tally-item-info { flex: 1; min-width: 0; }
-        .bf-tally-item-wood { font-size: 12px; font-weight: 800; color: #1e3a8a; margin-bottom: 1px; }
-        .bf-tally-item-dims { font-size: 12.5px; font-weight: 700; color: #1e293b; }
-        .bf-tally-item-sub { font-size: 11px; color: #6b7280; margin-top: 2px; }
+        .bf-tally-item { display: flex; align-items: center; gap: 8px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 10px; }
+        .bf-tally-item-line { flex: 1; min-width: 0; font-size: 12.5px; font-weight: 600; color: #1e293b; line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .bf-tally-item-wood-inline { font-weight: 800; color: #1e3a8a; }
+        .bf-tally-item-cost-inline { font-weight: 800; color: #1e3a8a; }
+        .bf-tally-item-noprice { font-style: italic; color: #92400e; }
         .bf-tally-item-del { flex-shrink: 0; border: none; background: none; color: #b91c1c; cursor: pointer; font-size: 14px; padding: 2px; line-height: 1; }
         .bf-tally-item-del:hover { color: #7f1d1d; }
         .bf-tally-empty { font-size: 12px; color: #9ca3af; font-style: italic; text-align: center; padding: 18px 4px; }
@@ -961,15 +961,19 @@
                 list.innerHTML = bfOrder.map(item => {
                     const lenLabel = item.lengthUnit === 'ft' ? `${fmtNum(item.length, 2)}'` : `${fmtNum(item.length, 2)}"`;
                     const qtyLabel = item.qty > 1 ? ` &times; ${item.qty}` : '';
-                    const costLabel = item.totalCost != null ? ` &middot; $${fmtNum(item.totalCost, 2)}` : ' &middot; no price entered';
-                    const woodLabel = item.woodType ? `<div class="bf-tally-item-wood">${escapeHtml(item.woodType)}</div>` : '';
+                    const woodPrefix = item.woodType ? `<span class="bf-tally-item-wood-inline">${escapeHtml(item.woodType)}</span> &mdash; ` : '';
+                    const dimsPart = `${fmtNum(item.thickness, 3)}" &times; ${fmtNum(item.width, 3)}" &times; ${lenLabel}${qtyLabel}`;
+                    const bfPart = `${fmtNum(item.totalBf, 2)} bf`;
+                    const costPart = item.totalCost != null
+                        ? `<span class="bf-tally-item-cost-inline">$${fmtNum(item.totalCost, 2)}</span>`
+                        : `<span class="bf-tally-item-noprice">no price</span>`;
+                    const line = `${woodPrefix}${dimsPart} &middot; ${bfPart} &middot; ${costPart}`;
+                    const plainDims = `${fmtNum(item.thickness, 3)}" x ${fmtNum(item.width, 3)}" x ${lenLabel}${item.qty > 1 ? ` x ${item.qty}` : ''}`;
+                    const plainCost = item.totalCost != null ? `$${fmtNum(item.totalCost, 2)}` : 'no price entered';
+                    const plainLine = `${item.woodType ? item.woodType + ' — ' : ''}${plainDims} · ${fmtNum(item.totalBf, 2)} bf · ${plainCost}`;
                     return `
                         <div class="bf-tally-item">
-                            <div class="bf-tally-item-info">
-                                ${woodLabel}
-                                <div class="bf-tally-item-dims">${fmtNum(item.thickness, 3)}" &times; ${fmtNum(item.width, 3)}" &times; ${lenLabel}${qtyLabel}</div>
-                                <div class="bf-tally-item-sub">${fmtNum(item.totalBf, 2)} bf${costLabel}</div>
-                            </div>
+                            <div class="bf-tally-item-line" title="${escapeHtml(plainLine)}">${line}</div>
                             <button type="button" class="bf-tally-item-del" data-id="${item.id}" title="Remove this board">&#10005;</button>
                         </div>
                     `;
