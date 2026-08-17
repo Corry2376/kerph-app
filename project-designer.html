@@ -1132,7 +1132,7 @@
             </div>
 
             <div class="header-field" style="width:100%; margin-top:10px;">
-                <label class="header-field-label">Position (in) &mdash; leave blank to auto-place</label>
+                <label class="header-field-label" id="panelPositionLabel">Position (in) &mdash; leave blank to auto-place</label>
                 <div style="display:flex; gap:8px;">
                     <input type="number" class="input-box" id="panelXInput" placeholder="X" step="0.0625">
                     <input type="number" class="input-box" id="panelYInput" placeholder="Y" step="0.0625">
@@ -1168,11 +1168,11 @@
                         </select>
                     </div>
                     <div style="flex:1;">
-                        <label class="header-field-label" style="font-size:10px;">X</label>
+                        <label class="header-field-label" style="font-size:10px;" id="holeXLabel">X</label>
                         <input type="number" class="input-box" id="holeXInput" step="0.0625" value="0">
                     </div>
                     <div style="flex:1;">
-                        <label class="header-field-label" style="font-size:10px;">Y</label>
+                        <label class="header-field-label" style="font-size:10px;" id="holeYLabel">Y</label>
                         <input type="number" class="input-box" id="holeYInput" step="0.0625" value="0">
                     </div>
                     <div style="flex:1;">
@@ -1451,7 +1451,7 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
             </select>
         </div>
         <div class="form-row" id="jointDepthRow">
-            <label for="jointDepthInput">Cut depth (in)</label>
+            <label for="jointDepthInput" id="jointDepthLabel">Cut depth (in)</label>
             <input type="number" class="input-box" id="jointDepthInput" value="0.375" step="0.0625">
         </div>
         <button type="button" class="mini-btn modal-primary-btn" id="addJointBtn" style="width:100%; margin-top:4px;">Add Joint</button>
@@ -1497,7 +1497,7 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
                     <div class="floating-panel-title">Selected</div>
                     <div class="viewer-hint" id="preview3DSelectionName" style="font-weight:700; color:#0f172a; margin-top:-4px; margin-bottom:2px;"></div>
                     <div class="selection-pos-labels-row" id="preview3DPosLabelsRow">
-                        <span>X (in)</span><span>Y (in)</span><span>Z (in)</span>
+                        <span id="preview3DPosXLabel">X (in)</span><span id="preview3DPosYLabel">Y (in)</span><span id="preview3DPosZLabel">Z (in)</span>
                     </div>
                     <div class="selection-pos-row" id="preview3DPosFields">
                         <input type="number" step="0.25" class="input-box" id="preview3DPosX" title="X (in)">
@@ -1526,6 +1526,7 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
                         <input type="number" class="input-box" id="quickAddWidthInput" placeholder="W&quot;" step="0.125" min="0.125">
                         <input type="number" class="input-box" id="quickAddHeightInput" placeholder="H&quot;" step="0.125" min="0.125">
                         <input type="number" class="input-box" id="quickAddThicknessInput" placeholder="T&quot;" step="0.125" min="0.125">
+                        <!-- placeholders relabeled to the current unit's suffix by refreshDesignerUnitLabels() -->
                     </div>
                     <select class="input-box" id="quickAddMaterialSelect" style="margin-top:6px;"></select>
                     <div style="display:flex; gap:8px; margin-top:8px;">
@@ -1829,6 +1830,12 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
                     showToast(error.message || 'Could not save profile.');
                     return;
                 }
+                if (unitSystem !== unitsSelect.value) {
+                    unitSystem = unitsSelect.value;
+                    refreshDesignerUnitLabels();
+                    renderAll();
+                    if (typeof window.refreshDesignerUnitLabels3D === 'function') window.refreshDesignerUnitLabels3D();
+                }
                 overlay.style.display = 'none';
                 showToast('Profile saved.');
             });
@@ -2044,6 +2051,40 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
         const PANELS_KEY = 'kerphProjectPanels';
         const CUTLIST_HANDOFF_KEY = 'kerphCutListHandoff';
 
+        // Boundary-conversion pattern, same shape as workshop-planner.html's
+        // inchesToDisplay/displayToInches (see that file for the established precedent).
+        // Canonical storage for every panel field is ALWAYS inches (and lbs for the Sag
+        // Check load) -- conversion happens only where a value crosses into/out of the UI.
+        // Imperial mode is a pure passthrough (no rounding) so the app's existing
+        // fractional-inch precision (e.g. a 0.8125" / 13/16" panel from a 1/16" step input)
+        // is never altered for today's default users -- only metric mode actually converts.
+        let unitSystem = ((typeof kerphGetCachedProfile === 'function') && kerphGetCachedProfile().unitSystem)
+            || localStorage.getItem('kerphUnitSystem') || 'imperial';
+        const CM_PER_INCH = 2.54;
+        const FT_PER_METER = 3.28084;
+        const KG_PER_LB = 0.45359237;
+        function inchesToDisplay(inches) {
+            return unitSystem === 'metric' ? Math.round(inches * CM_PER_INCH * 100) / 100 : inches;
+        }
+        function displayToInches(value) {
+            return unitSystem === 'metric' ? value / CM_PER_INCH : value;
+        }
+        function dimUnitSuffix() { return unitSystem === 'metric' ? 'cm' : '"'; }
+        function dimUnitWord() { return unitSystem === 'metric' ? 'cm' : 'in'; }
+        function ftToDisplay(feet) {
+            return unitSystem === 'metric' ? Math.round((feet / FT_PER_METER) * 100) / 100 : feet;
+        }
+        function lengthUnitLabel() { return unitSystem === 'metric' ? 'm' : 'ft'; }
+        function sqFtToDisplay(sqft) {
+            return unitSystem === 'metric' ? Math.round(sqft * 0.09290304 * 100) / 100 : sqft;
+        }
+        function areaUnitLabel() { return unitSystem === 'metric' ? 'sq m' : 'sq ft'; }
+        function lbsToDisplay(lbs) {
+            return unitSystem === 'metric' ? Math.round(lbs * KG_PER_LB * 10) / 10 : lbs;
+        }
+        function displayToLbs(value) { return unitSystem === 'metric' ? value / KG_PER_LB : value; }
+        function weightUnitLabel() { return unitSystem === 'metric' ? 'kg' : 'lbs'; }
+
         // Shared with cutlist-optimizer.html (keep both copies in sync) — 'sheet' materials get
         // 2D-packed onto sheet goods, 'linear' materials get 1D-packed along board lengths.
         // Species-specific entries exist so two panels using the same generic "hardwood"/
@@ -2155,18 +2196,18 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
             const mat = MATERIALS[panel.material] || MATERIALS.custom;
             document.getElementById('sagCheckPanelLabel').textContent =
                 `${panel.name} (${escapeHtml(mat.label)}) — fields below start from this piece's own dimensions; edit span if it's actually supported partway across.`;
-            document.getElementById('sagSpanInput').value = panel.widthIn;
-            document.getElementById('sagDepthInput').value = panel.heightIn;
-            document.getElementById('sagThicknessInput').value = panel.thicknessIn;
+            document.getElementById('sagSpanInput').value = inchesToDisplay(panel.widthIn);
+            document.getElementById('sagDepthInput').value = inchesToDisplay(panel.heightIn);
+            document.getElementById('sagThicknessInput').value = inchesToDisplay(panel.thicknessIn);
             runSagCheck();
             document.getElementById('sagCheckModalOverlay').style.display = 'flex';
         }
         function runSagCheck() {
             if (!sagCheckPanel) return;
-            const spanIn = parseFloat(document.getElementById('sagSpanInput').value) || 0;
-            const depthIn = parseFloat(document.getElementById('sagDepthInput').value) || 0;
-            const thicknessIn = parseFloat(document.getElementById('sagThicknessInput').value) || 0;
-            const loadLbs = parseFloat(document.getElementById('sagLoadInput').value) || 0;
+            const spanIn = displayToInches(parseFloat(document.getElementById('sagSpanInput').value)) || 0;
+            const depthIn = displayToInches(parseFloat(document.getElementById('sagDepthInput').value)) || 0;
+            const thicknessIn = displayToInches(parseFloat(document.getElementById('sagThicknessInput').value)) || 0;
+            const loadLbs = displayToLbs(parseFloat(document.getElementById('sagLoadInput').value)) || 0;
             const fixed = document.getElementById('sagSupportSelect').value === 'fixed';
             const moePsi = MATERIAL_MOE_PSI[sagCheckPanel.material] != null ? MATERIAL_MOE_PSI[sagCheckPanel.material] : MATERIAL_MOE_PSI.custom;
             const result = document.getElementById('sagCheckResult');
@@ -2180,10 +2221,11 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
             if (ratio <= 0.6) { color = '#16a34a'; verdict = 'Comfortably stiff'; }
             else if (ratio <= 1.0) { color = '#d97706'; verdict = 'Borderline — noticeable under load'; }
             else { color = '#dc2626'; verdict = 'Likely to sag visibly — add support or go thicker'; }
+            const su = dimUnitSuffix();
             result.innerHTML = `
                 <div style="padding:10px; border-radius:6px; background:${color}14; border-left:3px solid ${color};">
                     <div style="font-size:13px; font-weight:700; color:${color};">${verdict}</div>
-                    <div style="font-size:12px; color:#374151; margin-top:4px;">Predicted sag: <strong>${deflectionIn.toFixed(3)}&quot;</strong> at midspan (${pct}% of the ${limitIn.toFixed(3)}&quot; L/360 comfort limit for a ${spanIn}&quot; span)</div>
+                    <div style="font-size:12px; color:#374151; margin-top:4px;">Predicted sag: <strong>${inchesToDisplay(deflectionIn).toFixed(3)}${su}</strong> at midspan (${pct}% of the ${inchesToDisplay(limitIn).toFixed(3)}${su} L/360 comfort limit for a ${inchesToDisplay(spanIn)}${su} span)</div>
                 </div>
             `;
         }
@@ -2580,9 +2622,9 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
         // since nobody cares about the individual axes, just that it moved.
         const DIFF_PANEL_FIELDS = [
             { key: 'name', label: 'Name' },
-            { key: 'widthIn', label: 'Width', suffix: '"' },
-            { key: 'heightIn', label: 'Height', suffix: '"' },
-            { key: 'thicknessIn', label: 'Thickness', suffix: '"' },
+            { key: 'widthIn', label: 'Width', isLength: true },
+            { key: 'heightIn', label: 'Height', isLength: true },
+            { key: 'thicknessIn', label: 'Thickness', isLength: true },
             { key: 'material', label: 'Material' },
             { key: 'qty', label: 'Qty' },
             { key: 'groupName', label: 'Group' }
@@ -2600,7 +2642,10 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
                 DIFF_PANEL_FIELDS.forEach(f => {
                     const ov = oldP[f.key], nv = newP[f.key];
                     if ((ov == null ? '' : ov) !== (nv == null ? '' : nv)) {
-                        fieldChanges.push(`${f.label}: ${ov != null ? ov : '—'}${f.suffix || ''} → ${nv != null ? nv : '—'}${f.suffix || ''}`);
+                        const suffix = f.isLength ? dimUnitSuffix() : '';
+                        const ovDisp = ov != null ? (f.isLength ? inchesToDisplay(ov) : ov) : '—';
+                        const nvDisp = nv != null ? (f.isLength ? inchesToDisplay(nv) : nv) : '—';
+                        fieldChanges.push(`${f.label}: ${ovDisp}${suffix} → ${nvDisp}${suffix}`);
                     }
                 });
                 if (typeof oldP.xIn === 'number' && typeof newP.xIn === 'number') {
@@ -2643,8 +2688,8 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
                     list.appendChild(row);
                 });
             }
-            section('Added', '#16a34a', diff.added, p => `<strong>${escapeHtml(p.name || 'Panel')}</strong> &mdash; ${p.widthIn}&quot; &times; ${p.heightIn}&quot;`);
-            section('Removed', '#dc2626', diff.removed, p => `<strong>${escapeHtml(p.name || 'Panel')}</strong> &mdash; ${p.widthIn}&quot; &times; ${p.heightIn}&quot;`);
+            section('Added', '#16a34a', diff.added, p => `<strong>${escapeHtml(p.name || 'Panel')}</strong> &mdash; ${inchesToDisplay(p.widthIn)}${dimUnitSuffix()} &times; ${inchesToDisplay(p.heightIn)}${dimUnitSuffix()}`);
+            section('Removed', '#dc2626', diff.removed, p => `<strong>${escapeHtml(p.name || 'Panel')}</strong> &mdash; ${inchesToDisplay(p.widthIn)}${dimUnitSuffix()} &times; ${inchesToDisplay(p.heightIn)}${dimUnitSuffix()}`);
             section('Changed', '#d97706', diff.changed, c => `<strong>${escapeHtml(c.name || 'Panel')}</strong><br>${c.changes.map(escapeHtml).join('<br>')}`);
 
             document.getElementById('projectDiffModalOverlay').style.display = 'flex';
@@ -2884,9 +2929,10 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
                 row.className = 'hardware-item';
                 const desc = document.createElement('span');
                 desc.className = 'hardware-item-name';
+                const su = dimUnitSuffix();
                 desc.textContent = h.shape === 'circle'
-                    ? `○ ⌀${h.dIn}" at (${h.xIn}, ${h.yIn})`
-                    : `▭ ${h.wIn}"x${h.hIn}" at (${h.xIn}, ${h.yIn})`;
+                    ? `○ ⌀${inchesToDisplay(h.dIn)}${su} at (${inchesToDisplay(h.xIn)}, ${inchesToDisplay(h.yIn)})`
+                    : `▭ ${inchesToDisplay(h.wIn)}${su}x${inchesToDisplay(h.hIn)}${su} at (${inchesToDisplay(h.xIn)}, ${inchesToDisplay(h.yIn)})`;
                 const removeBtn = document.createElement('button');
                 removeBtn.className = 'hardware-item-remove';
                 removeBtn.textContent = '✕';
@@ -2909,10 +2955,10 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
 
         function addHoleFromModalFields() {
             const shape = document.getElementById('holeShapeSelect').value;
-            const xIn = parseFloat(document.getElementById('holeXInput').value) || 0;
-            const yIn = parseFloat(document.getElementById('holeYInput').value) || 0;
-            const sizeA = parseFloat(document.getElementById('holeSizeAInput').value);
-            const sizeB = parseFloat(document.getElementById('holeSizeBInput').value);
+            const xIn = displayToInches(parseFloat(document.getElementById('holeXInput').value) || 0);
+            const yIn = displayToInches(parseFloat(document.getElementById('holeYInput').value) || 0);
+            const sizeA = displayToInches(parseFloat(document.getElementById('holeSizeAInput').value));
+            const sizeB = displayToInches(parseFloat(document.getElementById('holeSizeBInput').value));
             const id = 'hole_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
             if (shape === 'circle') {
                 if (!sizeA || sizeA <= 0) { showToast('Give the hole a diameter greater than 0.'); return; }
@@ -2933,8 +2979,8 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
         // the panel's own width/height, same bounding box every shape already uses for
         // placement, holes, and cut-list grouping (see buildPanelGeometry).
         const SHAPE_PARAM_CONFIG = {
-            'arched-top': { label: 'Arch Rise (in)', field: 'archRiseIn', default: 3 },
-            'rounded-corners': { label: 'Corner Radius (in)', field: 'cornerRadiusIn', default: 1 }
+            'arched-top': { label: 'Arch Rise', field: 'archRiseIn', default: 3 },
+            'rounded-corners': { label: 'Corner Radius', field: 'cornerRadiusIn', default: 1 }
         };
         const SHAPE_LABELS = {
             'arched-top': 'Arched Top', 'rounded-corners': 'Rounded Corners',
@@ -2945,7 +2991,7 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
             const shapeType = document.getElementById('panelShapeSelect').value;
             const config = SHAPE_PARAM_CONFIG[shapeType];
             document.getElementById('panelShapeParamField').style.display = config ? '' : 'none';
-            if (config) document.getElementById('panelShapeParamLabel').textContent = config.label;
+            if (config) document.getElementById('panelShapeParamLabel').textContent = `${config.label} (${dimUnitWord()})`;
         }
 
         function openPanelModal(panel) {
@@ -2956,26 +3002,26 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
             updateHoleShapeFields();
             document.getElementById('panelModalTitle').textContent = panel ? 'Edit Panel' : 'Add Panel';
             document.getElementById('panelNameInput').value = panel ? panel.name : '';
-            document.getElementById('panelWidthInput').value = panel ? panel.widthIn : '';
-            document.getElementById('panelHeightInput').value = panel ? panel.heightIn : '';
+            document.getElementById('panelWidthInput').value = panel ? inchesToDisplay(panel.widthIn) : '';
+            document.getElementById('panelHeightInput').value = panel ? inchesToDisplay(panel.heightIn) : '';
             const shapeType = (panel && panel.shapeType) || 'rectangle';
             document.getElementById('panelShapeSelect').value = shapeType;
             updateShapeParamFieldVisibility();
             const shapeConfig = SHAPE_PARAM_CONFIG[shapeType];
             document.getElementById('panelShapeParamInput').value = shapeConfig
-                ? ((panel && panel[shapeConfig.field] != null) ? panel[shapeConfig.field] : shapeConfig.default)
+                ? inchesToDisplay((panel && panel[shapeConfig.field] != null) ? panel[shapeConfig.field] : shapeConfig.default)
                 : '';
             const material = panel ? panel.material : 'plywood-34';
             document.getElementById('panelMaterialSelect').value = material;
-            document.getElementById('panelThicknessInput').value = panel ? panel.thicknessIn : MATERIALS[material].thicknessIn;
+            document.getElementById('panelThicknessInput').value = inchesToDisplay(panel ? panel.thicknessIn : MATERIALS[material].thicknessIn);
             document.getElementById('panelQtyInput').value = panel ? panel.qty : 1;
             document.getElementById('panelGroupInput').value = (panel && panel.groupName) || '';
             document.querySelector(`input[name="panelGrain"][value="${panel && panel.grainLocked ? 'locked' : 'free'}"]`).checked = true;
             // Position stays blank for a brand-new panel (auto-placed the first time the 3D
             // tab opens — see rebuild3DPreviewMeshes) unless editing one that already has it.
-            document.getElementById('panelXInput').value = (panel && panel.xIn != null) ? panel.xIn : '';
-            document.getElementById('panelYInput').value = (panel && panel.yIn != null) ? panel.yIn : '';
-            document.getElementById('panelZInput').value = (panel && panel.zIn != null) ? panel.zIn : '';
+            document.getElementById('panelXInput').value = (panel && panel.xIn != null) ? inchesToDisplay(panel.xIn) : '';
+            document.getElementById('panelYInput').value = (panel && panel.yIn != null) ? inchesToDisplay(panel.yIn) : '';
+            document.getElementById('panelZInput').value = (panel && panel.zIn != null) ? inchesToDisplay(panel.zIn) : '';
             document.getElementById('panelRotXInput').value = (panel && panel.rotXDeg != null) ? panel.rotXDeg : 0;
             document.getElementById('panelRotYInput').value = (panel && panel.rotYDeg != null) ? panel.rotYDeg : 0;
             document.getElementById('panelRotZInput').value = (panel && panel.rotZDeg != null) ? panel.rotZDeg : 0;
@@ -2994,9 +3040,9 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
 
         function savePanelFromModal() {
             const name = document.getElementById('panelNameInput').value.trim();
-            const widthIn = parseFloat(document.getElementById('panelWidthInput').value);
-            const heightIn = parseFloat(document.getElementById('panelHeightInput').value);
-            const thicknessIn = parseFloat(document.getElementById('panelThicknessInput').value);
+            const widthIn = displayToInches(parseFloat(document.getElementById('panelWidthInput').value));
+            const heightIn = displayToInches(parseFloat(document.getElementById('panelHeightInput').value));
+            const thicknessIn = displayToInches(parseFloat(document.getElementById('panelThicknessInput').value));
             const material = document.getElementById('panelMaterialSelect').value;
             const qty = Math.max(1, parseInt(document.getElementById('panelQtyInput').value, 10) || 1);
             const groupName = document.getElementById('panelGroupInput').value.trim() || undefined;
@@ -3009,18 +3055,18 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
             // (harmless to buildPanelGeometry, which only ever reads the field matching the
             // current shapeType, but no reason to keep dead data in the saved object either).
             const archRiseIn = (shapeConfig && shapeConfig.field === 'archRiseIn')
-                ? (parseFloat(document.getElementById('panelShapeParamInput').value) || shapeConfig.default) : undefined;
+                ? (displayToInches(parseFloat(document.getElementById('panelShapeParamInput').value)) || shapeConfig.default) : undefined;
             const cornerRadiusIn = (shapeConfig && shapeConfig.field === 'cornerRadiusIn')
-                ? (parseFloat(document.getElementById('panelShapeParamInput').value) || shapeConfig.default) : undefined;
+                ? (displayToInches(parseFloat(document.getElementById('panelShapeParamInput').value)) || shapeConfig.default) : undefined;
 
             // Blank position fields stay undefined (JSON.stringify drops them entirely), which
             // is exactly what marks a panel as "not yet placed" for the 3D view's auto-arrange.
             const xRaw = parseFloat(document.getElementById('panelXInput').value);
             const yRaw = parseFloat(document.getElementById('panelYInput').value);
             const zRaw = parseFloat(document.getElementById('panelZInput').value);
-            const xIn = isNaN(xRaw) ? undefined : xRaw;
-            const yIn = isNaN(yRaw) ? undefined : yRaw;
-            const zIn = isNaN(zRaw) ? undefined : zRaw;
+            const xIn = isNaN(xRaw) ? undefined : displayToInches(xRaw);
+            const yIn = isNaN(yRaw) ? undefined : displayToInches(yRaw);
+            const zIn = isNaN(zRaw) ? undefined : displayToInches(zRaw);
             const rotXDeg = parseFloat(document.getElementById('panelRotXInput').value) || 0;
             const rotYDeg = parseFloat(document.getElementById('panelRotYInput').value) || 0;
             const rotZDeg = parseFloat(document.getElementById('panelRotZInput').value) || 0;
@@ -3106,11 +3152,11 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
                 const grainTag = p.grainLocked ? ' <span class="grain-badge" title="Grain locked — will not be rotated when nesting">&#8593; grain</span>' : '';
                 const movement = calcPanelWoodMovement(p);
                 const movementTag = movement
-                    ? ` <span class="grain-badge" style="background:#eef2ff; color:#4338ca;" title="Predicted width change across a typical indoor 30%-70% relative humidity swing, using published movement coefficients for this species. Solid wood only &mdash; sheet goods are dimensionally stable.">&#8596; &plusmn;${movement.deltaIn.toFixed(3)}&quot; seasonal</span>`
+                    ? ` <span class="grain-badge" style="background:#eef2ff; color:#4338ca;" title="Predicted width change across a typical indoor 30%-70% relative humidity swing, using published movement coefficients for this species. Solid wood only &mdash; sheet goods are dimensionally stable.">&#8596; &plusmn;${inchesToDisplay(movement.deltaIn).toFixed(3)}${dimUnitSuffix()} seasonal</span>`
                     : '';
                 item.innerHTML = `
                     <div class="panel-item-title">${escapeHtml(p.name)}${p.qty > 1 ? ` &times;${p.qty}` : ''}${grainTag}${movementTag}</div>
-                    <div class="panel-item-dims">${p.widthIn}" x ${p.heightIn}" x ${p.thicknessIn}" &mdash; ${escapeHtml(mat.label)}${shapeTag}</div>
+                    <div class="panel-item-dims">${inchesToDisplay(p.widthIn)}${dimUnitSuffix()} x ${inchesToDisplay(p.heightIn)}${dimUnitSuffix()} x ${inchesToDisplay(p.thicknessIn)}${dimUnitSuffix()} &mdash; ${escapeHtml(mat.label)}${shapeTag}</div>
                 `;
                 const actions = document.createElement('div');
                 actions.className = 'panel-item-actions';
@@ -3244,8 +3290,8 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
             document.getElementById('nonRectShapeNote').style.display = hasNonRectShape ? 'block' : 'none';
 
             document.getElementById('summaryPanelCount').textContent = totalPanelCount;
-            document.getElementById('summarySheetArea').textContent = sheetAreaSqFt.toFixed(1) + ' sq ft';
-            document.getElementById('summaryLinearLength').textContent = linearLengthFt.toFixed(1) + ' ft';
+            document.getElementById('summarySheetArea').textContent = sqFtToDisplay(sheetAreaSqFt).toFixed(1) + ' ' + areaUnitLabel();
+            document.getElementById('summaryLinearLength').textContent = ftToDisplay(linearLengthFt).toFixed(1) + ' ' + lengthUnitLabel();
 
             // Rough estimate, not an optimized nest: whole 4x8 (32 sq ft) sheets rounded up per
             // material, plus linear feet at their per-foot rate, plus hardware. Real material
@@ -3277,7 +3323,7 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td>${escapeHtml(Array.from(g.names).join(', '))}${grainTag}</td>
-                    <td>${g.widthIn}" x ${g.heightIn}" x ${g.thicknessIn}"${shapeTag}</td>
+                    <td>${inchesToDisplay(g.widthIn)}${dimUnitSuffix()} x ${inchesToDisplay(g.heightIn)}${dimUnitSuffix()} x ${inchesToDisplay(g.thicknessIn)}${dimUnitSuffix()}${shapeTag}</td>
                     <td>${materialCell}</td>
                     <td>${g.qty}</td>
                 `;
@@ -3313,11 +3359,13 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
             });
             Object.keys(linearFeetByMaterial).forEach(matKey => {
                 const mat = MATERIALS[matKey] || MATERIALS.custom;
+                // Purchasing/cost math stays in feet (matches the $/linear-ft price basis in
+                // MATERIALS) -- only the customer-facing name converts for display.
                 const feetNeeded = Math.ceil(linearFeetByMaterial[matKey]);
                 if (feetNeeded <= 0) return;
                 lines.push({
                     id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
-                    name: `${mat.label} — ${feetNeeded} ft`,
+                    name: `${mat.label} — ${ftToDisplay(feetNeeded).toFixed(1)} ${lengthUnitLabel()}`,
                     cost: feetNeeded * getMaterialPrice(matKey)
                 });
             });
@@ -3493,6 +3541,52 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
             localStorage.setItem('kerph_quote_seed', JSON.stringify(seed));
             window.location.href = 'quote-builder.html?seedFromProject=1';
         });
+
+        // Refreshes every static "(in)"/"lbs" label and default-value text that isn't already
+        // re-derived by a render function reading straight from panels/joints (those pick up
+        // unitSystem automatically the next time renderAll() runs). Called once real
+        // unitSystem is known at boot, and again whenever Account Settings saves a change.
+        function refreshDesignerUnitLabels() {
+            const w = dimUnitWord();
+            const setLabel = (sel, text) => { const el = document.querySelector(sel); if (el) el.textContent = text; };
+            setLabel('label[for="panelWidthInput"]', `Width (${w})`);
+            setLabel('label[for="panelHeightInput"]', `Height (${w})`);
+            setLabel('label[for="panelThicknessInput"]', `Thickness (${w})`);
+            const posLabel = document.getElementById('panelPositionLabel');
+            if (posLabel) posLabel.textContent = `Position (${w}) — leave blank to auto-place`;
+            updateShapeParamFieldVisibility();
+
+            setLabel('label[for="jointDepthInput"]', `Cut depth (${w})`);
+            // Joint modal has no populate-on-open (unlike the Add Panel/Sag Check modals, which
+            // re-derive their fields from real panel data every time they're opened) -- its only
+            // value is this static default, so it's safe to just re-stamp it here.
+            const jointDepthInput = document.getElementById('jointDepthInput');
+            if (jointDepthInput) jointDepthInput.value = inchesToDisplay(0.375);
+
+            setLabel('label[for="sagSpanInput"]', `Unsupported span (${w})`);
+            setLabel('label[for="sagDepthInput"]', `Depth, front-to-back (${w})`);
+            setLabel('label[for="sagThicknessInput"]', `Thickness (${w})`);
+            setLabel('label[for="sagLoadInput"]', `Expected total load (${weightUnitLabel()}, spread evenly)`);
+            const sagLoadInput = document.getElementById('sagLoadInput');
+            if (sagLoadInput) sagLoadInput.value = Math.round(lbsToDisplay(40));
+
+            ['quickAddWidthInput', 'quickAddHeightInput', 'quickAddThicknessInput'].forEach((id, i) => {
+                const el = document.getElementById(id);
+                if (el) el.placeholder = ['W', 'H', 'T'][i] + dimUnitSuffix();
+            });
+
+            const refMeasurement = document.getElementById('photoImportRefMeasurement');
+            if (refMeasurement) refMeasurement.placeholder = unitSystem === 'metric' ? 'e.g. 75' : 'e.g. 30';
+            document.querySelectorAll('#photoImportRefDescription option').forEach(opt => {
+                opt.textContent = opt.textContent.replace(/\(in\)|\(cm\)/, `(${w})`);
+            });
+
+            // Assembly Templates modal re-renders its fields from scratch every time it's
+            // opened (renderTemplateFields), so nothing to refresh here if it's closed --
+            // only re-run it live if the modal happens to be open during a switch.
+            const templateOverlay = document.getElementById('templateModalOverlay');
+            if (templateOverlay && templateOverlay.style.display !== 'none') renderTemplateFields();
+        }
 
         function renderAll() {
             renderPanelList();
@@ -3724,10 +3818,13 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
             const container = document.getElementById('templateFieldsContainer');
             let html = '';
             tpl.fields.forEach(f => {
+                const isLength = f.label.includes('(in)');
+                const label = f.label.replace('(in)', `(${dimUnitWord()})`);
+                const displayDefault = isLength ? inchesToDisplay(f.default) : f.default;
                 html += `
                     <div class="header-field" style="width:100%; margin-top:6px;">
-                        <label class="header-field-label" for="tplField_${f.key}">${escapeHtml(f.label)}</label>
-                        <input type="number" class="input-box" id="tplField_${f.key}" step="0.0625" value="${f.default}">
+                        <label class="header-field-label" for="tplField_${f.key}">${escapeHtml(label)}</label>
+                        <input type="number" class="input-box" id="tplField_${f.key}" step="0.0625" value="${displayDefault}">
                     </div>
                 `;
             });
@@ -3807,8 +3904,14 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
 
             const params = {};
             for (const f of tpl.fields) {
-                const val = parseFloat(document.getElementById('tplField_' + f.key).value);
-                if (!val || val <= 0) { showToast(`${f.label} must be greater than 0.`); return; }
+                // shelfCount (and any future non-length field) never carries "(in)" in its
+                // label -- that's the same flag renderTemplateFields()/the photo-import handoff
+                // use to know which fields are lengths, so a count like "3 shelves" never gets
+                // run through the inch<->cm conversion and silently corrupted into "1.18 shelves".
+                const isLength = f.label.includes('(in)');
+                const raw = parseFloat(document.getElementById('tplField_' + f.key).value);
+                const val = isLength ? displayToInches(raw) : raw;
+                if (!val || val <= 0) { showToast(`${f.label.replace('(in)', `(${dimUnitWord()})`)} must be greater than 0.`); return; }
                 params[f.key] = val;
             }
             for (const c of tpl.checks) {
@@ -3954,7 +4057,7 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
             document.getElementById('photoImportLoading').style.display = 'block';
             document.getElementById('photoImportAnalyzeBtn').disabled = true;
 
-            const refVal = parseFloat(document.getElementById('photoImportRefMeasurement').value);
+            const refVal = displayToInches(parseFloat(document.getElementById('photoImportRefMeasurement').value));
             const refMeasurement = (refVal > 0) ? refVal : undefined;
             const refDescription = document.getElementById('photoImportRefDescription').value;
             const base64Only = photoImportDataUrl.split(',')[1];
@@ -3986,7 +4089,8 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
             badge.style.background = colors.bg;
             badge.style.color = colors.fg;
 
-            const dims = `${fmtNum(draft.estimated_width_in)}"W x ${fmtNum(draft.estimated_height_in)}"H x ${fmtNum(draft.estimated_depth_in)}"D`;
+            const su = dimUnitSuffix();
+            const dims = `${fmtNum(inchesToDisplay(draft.estimated_width_in))}${su}W x ${fmtNum(inchesToDisplay(draft.estimated_height_in))}${su}H x ${fmtNum(inchesToDisplay(draft.estimated_depth_in))}${su}D`;
             const counts = [
                 draft.shelf_count ? `${draft.shelf_count} ${draft.shelf_count === 1 ? 'shelf' : 'shelves'}` : null,
                 draft.door_count ? `${draft.door_count} door${draft.door_count === 1 ? '' : 's'}` : null,
@@ -4025,10 +4129,14 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
             populateMaterialSelect(document.getElementById('templateMaterialSelect'));
             document.getElementById('templateTypeSelect').value = type;
             renderTemplateFields();
+            const fieldDefs = ASSEMBLY_TEMPLATES[type].fields;
             Object.keys(overrides).forEach(key => {
                 const val = overrides[key];
                 const el = document.getElementById('tplField_' + key);
-                if (el && typeof val === 'number' && val > 0) el.value = Math.round(val * 1000) / 1000;
+                if (!el || typeof val !== 'number' || val <= 0) return;
+                const fieldDef = fieldDefs.find(f => f.key === key);
+                const isLength = !fieldDef || fieldDef.label.includes('(in)');
+                el.value = Math.round((isLength ? inchesToDisplay(val) : val) * 1000) / 1000;
             });
             document.getElementById('templateModalOverlay').style.display = 'flex';
             showToast('Draft loaded into the template below — review and adjust before generating parts.');
@@ -4036,7 +4144,7 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
 
         document.getElementById('panelMaterialSelect').addEventListener('change', (e) => {
             const mat = MATERIALS[e.target.value];
-            if (mat) document.getElementById('panelThicknessInput').value = mat.thicknessIn;
+            if (mat) document.getElementById('panelThicknessInput').value = inchesToDisplay(mat.thicknessIn);
         });
 
         document.getElementById('holeShapeSelect').addEventListener('change', updateHoleShapeFields);
@@ -4148,7 +4256,8 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
                 const a = panelsByIdForPrint.get(j.panelAId), b = panelsByIdForPrint.get(j.panelBId);
                 if (!a || !b) return '';
                 const verb = j.type === 'dado' ? 'a stopped dado' : 'a rabbet';
-                return `<div class="print-joint-row">Cut ${verb}, ${j.depthIn}&quot; deep, into <strong>${escapeHtml(a.name)}</strong> to receive <strong>${escapeHtml(b.name)}</strong> (${b.widthIn}&quot; x ${b.heightIn}&quot; x ${b.thicknessIn}&quot;).</div>`;
+                const su = dimUnitSuffix();
+                return `<div class="print-joint-row">Cut ${verb}, ${inchesToDisplay(j.depthIn)}${su} deep, into <strong>${escapeHtml(a.name)}</strong> to receive <strong>${escapeHtml(b.name)}</strong> (${inchesToDisplay(b.widthIn)}${su} x ${inchesToDisplay(b.heightIn)}${su} x ${inchesToDisplay(b.thicknessIn)}${su}).</div>`;
             }).join('');
 
             const notesText = document.getElementById('projectNotesInput').value.trim();
@@ -4482,7 +4591,8 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
             const prevA = selA.value, prevB = selB.value;
             [selA, selB].forEach(sel => { sel.innerHTML = ''; });
             panels.forEach(p => {
-                const label = `${p.name} (${p.widthIn}" x ${p.heightIn}" x ${p.thicknessIn}")`;
+                const su = dimUnitSuffix();
+                const label = `${p.name} (${inchesToDisplay(p.widthIn)}${su} x ${inchesToDisplay(p.heightIn)}${su} x ${inchesToDisplay(p.thicknessIn)}${su})`;
                 const optA = document.createElement('option'); optA.value = p.id; optA.textContent = label;
                 const optB = document.createElement('option'); optB.value = p.id; optB.textContent = label;
                 selA.appendChild(optA); selB.appendChild(optB);
@@ -4525,7 +4635,7 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
             const panelBId = document.getElementById('jointPanelBSelect').value;
             if (!panelAId || !panelBId || panelAId === panelBId) { showToast('Pick two different pieces.'); return; }
             const type = document.getElementById('jointTypeSelect').value;
-            const depthIn = parseFloat(document.getElementById('jointDepthInput').value) || 0.375;
+            const depthIn = displayToInches(parseFloat(document.getElementById('jointDepthInput').value)) || 0.375;
             joints.push({ id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), panelAId, panelBId, type, depthIn });
             saveJoints();
             renderJointsList();
@@ -4561,6 +4671,12 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
         }
         window.escapeHtml = escapeHtml;
         window.renderAll = renderAll;
+        // Bridge for the separate <script type="module"> 3D preview block below, same pattern
+        // as escapeHtml/renderAll above -- these are closures over this script's unitSystem,
+        // so the module always sees the live value even though it's declared here.
+        window.inchesToDisplay = inchesToDisplay;
+        window.displayToInches = displayToInches;
+        window.dimUnitSuffix = dimUnitSuffix;
 
         document.getElementById('saveProjectBtn').addEventListener('click', saveCurrentProject);
         document.getElementById('loadProjectBtn').addEventListener('click', loadSelectedProject);
@@ -4573,6 +4689,12 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
         populateMaterialSelect(document.getElementById('panelMaterialSelect'));
 
         kerphAuthReady.then(async () => {
+            // Re-derive from the now-loaded real profile -- the module-load-time value above
+            // only had localStorage to go on, which can be stale if the user's preference was
+            // last changed on a different device.
+            unitSystem = kerphGetCachedProfile().unitSystem || localStorage.getItem('kerphUnitSystem') || 'imperial';
+            refreshDesignerUnitLabels();
+            if (typeof window.refreshDesignerUnitLabels3D === 'function') window.refreshDesignerUnitLabels3D();
             const { data: liveState } = await kerphLoadProjectLiveState();
             panels = liveState.panels || [];
             hardware = liveState.hardware || [];
@@ -5497,7 +5619,7 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
         }
 
         function formatInches(n) {
-            return n.toFixed(2) + '"';
+            return window.inchesToDisplay(n).toFixed(2) + window.dimUnitSuffix();
         }
 
         function rebuildMeasurementMeshes() {
@@ -5582,7 +5704,8 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
                 const anchor = new THREE.Vector3(box.max.x, center.y, center.z);
                 const labelPos = new THREE.Vector3(box.max.x + 6, center.y, center.z);
 
-                const sprite = makeDimensionSprite(`${p.widthIn}" x ${p.heightIn}" x ${p.thicknessIn}"`);
+                const su = window.dimUnitSuffix();
+                const sprite = makeDimensionSprite(`${window.inchesToDisplay(p.widthIn)}${su} x ${window.inchesToDisplay(p.heightIn)}${su} x ${window.inchesToDisplay(p.thicknessIn)}${su}`);
                 sprite.position.copy(labelPos);
                 scene.add(sprite);
 
@@ -5623,7 +5746,7 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
                 return {
                     panelId: p.id,
                     name: p.name,
-                    dims: `${p.widthIn}" x ${p.heightIn}" x ${p.thicknessIn}"`,
+                    dims: `${window.inchesToDisplay(p.widthIn)}${window.dimUnitSuffix()} x ${window.inchesToDisplay(p.heightIn)}${window.dimUnitSuffix()} x ${window.inchesToDisplay(p.thicknessIn)}${window.dimUnitSuffix()}`,
                     heightIn: p.heightIn,
                     assembled: new THREE.Vector3(p.xIn, p.yIn, p.zIn),
                     exploded
@@ -5775,6 +5898,21 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
         // the old read-only text line; panels/labels get live-editable X/Y/Z number fields
         // instead — typing an exact value is the fast path for "get these two pieces flush"
         // when eyeballing a drag is too fiddly.
+        // Bridge for the classic script's Account Settings save handler, same direction as
+        // window.renderAll() but the other way round -- called after unitSystem actually
+        // changes so the X/Y/Z labels/tooltips and any currently-shown position values don't
+        // sit stale if this panel happens to be open across a unit switch.
+        window.refreshDesignerUnitLabels3D = function () {
+            const w = window.dimUnitSuffix() === 'cm' ? 'cm' : 'in';
+            ['X', 'Y', 'Z'].forEach(axis => {
+                const label = document.getElementById(`preview3DPos${axis}Label`);
+                if (label) label.textContent = `${axis} (${w})`;
+                const input = document.getElementById(`preview3DPos${axis}`);
+                if (input) input.title = `${axis} (${w})`;
+            });
+            if (selectedMesh) updateSelectionCoords(selectedMesh);
+        };
+
         function updateSelectionCoords(mesh) {
             const textEl = document.getElementById('preview3DSelectionCoords');
             const fieldsEl = document.getElementById('preview3DPosFields');
@@ -5794,14 +5932,17 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
                 if (labelsEl) labelsEl.style.display = 'none';
                 textEl.style.display = 'block';
                 const params = mesh.geometry && mesh.geometry.parameters;
-                textEl.textContent = params ? `${params.width}" x ${params.height}" x ${params.depth}"` : '';
+                const su = window.dimUnitSuffix();
+                textEl.textContent = params
+                    ? `${window.inchesToDisplay(params.width)}${su} x ${window.inchesToDisplay(params.height)}${su} x ${window.inchesToDisplay(params.depth)}${su}`
+                    : '';
             } else {
                 textEl.style.display = 'none';
                 if (labelsEl) labelsEl.style.display = 'flex';
                 fieldsEl.style.display = 'flex';
-                if (document.activeElement !== document.getElementById('preview3DPosX')) document.getElementById('preview3DPosX').value = round2(mesh.position.x);
-                if (document.activeElement !== document.getElementById('preview3DPosY')) document.getElementById('preview3DPosY').value = round2(mesh.position.y);
-                if (document.activeElement !== document.getElementById('preview3DPosZ')) document.getElementById('preview3DPosZ').value = round2(mesh.position.z);
+                if (document.activeElement !== document.getElementById('preview3DPosX')) document.getElementById('preview3DPosX').value = round2(window.inchesToDisplay(mesh.position.x));
+                if (document.activeElement !== document.getElementById('preview3DPosY')) document.getElementById('preview3DPosY').value = round2(window.inchesToDisplay(mesh.position.y));
+                if (document.activeElement !== document.getElementById('preview3DPosZ')) document.getElementById('preview3DPosZ').value = round2(window.inchesToDisplay(mesh.position.z));
             }
         }
 
@@ -5816,9 +5957,9 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
         function applyPositionFieldEdit() {
             if (!selectedMesh || selectedMesh.userData.type === 'measurement' || explodedView) return;
             push3DUndoSnapshot();
-            const x = parseFloat(document.getElementById('preview3DPosX').value);
-            const y = parseFloat(document.getElementById('preview3DPosY').value);
-            const z = parseFloat(document.getElementById('preview3DPosZ').value);
+            const x = window.displayToInches(parseFloat(document.getElementById('preview3DPosX').value));
+            const y = window.displayToInches(parseFloat(document.getElementById('preview3DPosY').value));
+            const z = window.displayToInches(parseFloat(document.getElementById('preview3DPosZ').value));
             if (!isNaN(x)) selectedMesh.position.x = x;
             if (!isNaN(y)) selectedMesh.position.y = Math.max(0, y);
             if (!isNaN(z)) selectedMesh.position.z = z;
@@ -6472,9 +6613,9 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
         // without ever leaving the 3D view or hunting for it in the sidebar list.
         function commitQuickAdd() {
             const name = document.getElementById('quickAddNameInput').value.trim() || 'New Piece';
-            const widthIn = parseFloat(document.getElementById('quickAddWidthInput').value);
-            const heightIn = parseFloat(document.getElementById('quickAddHeightInput').value);
-            const thicknessIn = parseFloat(document.getElementById('quickAddThicknessInput').value);
+            const widthIn = window.displayToInches(parseFloat(document.getElementById('quickAddWidthInput').value));
+            const heightIn = window.displayToInches(parseFloat(document.getElementById('quickAddHeightInput').value));
+            const thicknessIn = window.displayToInches(parseFloat(document.getElementById('quickAddThicknessInput').value));
             const material = document.getElementById('quickAddMaterialSelect').value;
             if (!widthIn || !heightIn || !thicknessIn) {
                 window.showToast('Width, height, and thickness must be greater than 0.');
