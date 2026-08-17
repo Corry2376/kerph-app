@@ -1427,12 +1427,17 @@
             const dueText = q.dueDate
                 ? new Date(q.dueDate + 'T00:00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
                 : null;
+            // Date-only strings compare correctly as plain strings in YYYY-MM-DD form -- no
+            // need to parse either side into a Date object just to compare them.
+            const today = new Date().toISOString().slice(0, 10);
+            const isPastDue = !!q.dueDate && q.dueDate < today && status !== 'completed';
+            const dueColor = isPastDue ? '#dc2626' : '#16a34a';
             return `
                 <div class="panel-item">
                     <div>
                         <div class="panel-item-title">${escapeHtml(q.name || 'Untitled')}<span class="quote-status-badge quote-status-${status}">${QUOTE_STATUS_LABELS[status] || 'Draft'}</span></div>
                         <div class="panel-item-dims">${escapeHtml(q.clientName || 'No client name')} &mdash; ${fmtMoney(total)}</div>
-                        ${dueText ? `<div class="panel-item-dims" style="margin-top:2px;">Due ${dueText}</div>` : ''}
+                        ${dueText ? `<div class="panel-item-dims" style="margin-top:2px; font-weight:700; color:${dueColor};">Due ${dueText}</div>` : ''}
                     </div>
                     <div class="panel-item-actions">
                         <button type="button" class="mini-btn" data-load="${q.id}">Open</button>
