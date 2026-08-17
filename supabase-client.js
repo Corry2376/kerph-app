@@ -1454,8 +1454,11 @@
         'project-designer.html': 'pro',
         'shop-3d-viewer.html': 'pro',
         'quote-builder.html': 'premier',
-        'portfolio.html': 'pro',
-        'shop-jigs-part-finder.html': 'pro'
+        'portfolio.html': 'pro'
+        // shop-jigs-part-finder.html deliberately omitted -- Part Finder is disabled
+        // site-wide for now (pending the user funding Anthropic API usage post-launch),
+        // not just gated to a paid tier. See shop-jigs-part-finder.html's own
+        // "coming soon" replacement content.
     };
     const KERPH_TIER_LABELS = { pro: 'Pro', premier: 'Premier' };
 

@@ -74,7 +74,6 @@ document.write(`
             <a href="shop-jigs-wood-movement.html">Wood Movement Calculator</a>
             <a href="shop-jigs-speeds-feeds.html">Speeds &amp; Feeds</a>
             <a href="shop-jigs-sharpening-angles.html">Sharpening Angle Chart</a>
-            <a href="shop-jigs-part-finder.html">Part Finder &#128274; Premier</a>
             <div class="jigs-dropdown-menu-sep"></div>
             <a href="shop-jigs.html">All Shop Jigs &rarr;</a>
         </div>

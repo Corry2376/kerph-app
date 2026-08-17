@@ -2,7 +2,10 @@
 <html lang="en">
 <head>
     <script>(function(){var t=new URLSearchParams(location.search).get('kerphPreview');if(t==='ls-review-bm0j8zf5qs'){localStorage.setItem('kerphComingSoonBypass','true');}if(localStorage.getItem('kerphComingSoonBypass')!=='true'){location.replace('coming-soon.html');}})();</script>
-    <script>(function(){var r={free:0,pro:1,premier:2};if((r[localStorage.getItem('kerphPlan')||'free']||0)<r.pro){location.replace('pricing.html?locked=shop-jigs-part-finder.html');}})();</script>
+    <!-- Part Finder itself is disabled site-wide for now (not a plan-tier gate -- see
+         KERPH_TOOL_TIER_MAP in supabase-client.js), so the old Pro/Premier lock redirect
+         that used to live here has been removed. Every visitor, on every plan, sees the
+         "coming soon" content below instead of the live tool. -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kerph - Part Finder</title>
@@ -275,6 +278,7 @@
 
         .premier-badge { display: inline-block; background: #fef3c7; color: #92400e; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; border-radius: 4px; padding: 3px 8px; margin-bottom: 12px; }
         .pro-badge { display: inline-block; background: #dbeafe; color: #1e40af; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; border-radius: 4px; padding: 3px 8px; margin-bottom: 12px; }
+        .soon-badge { display: inline-block; background: #e2e8f0; color: #475569; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; border-radius: 4px; padding: 3px 8px; margin-bottom: 12px; }
 
         /* ---------- PART FINDER ---------- */
         .pf-photo-zone {
@@ -434,43 +438,17 @@
 
     <div class="jig-page-layout">
         <div class="jig-breadcrumb"><a href="shop-jigs.html">Shop Jigs</a> / Part Finder</div>
-        <div class="pro-badge">&#128274; Pro</div>
+        <div class="soon-badge">Coming Soon</div>
         <div class="help-title">Part Finder</div>
-        <div class="help-subtitle">Snap a photo of a mystery screw, bracket, or part — a vision model identifies it and links to where you can buy a match. Unlike the other free Shop Jigs, this one costs real money per photo, so it's a Pro feature with a daily limit: 3 lookups a day on Pro, 20 a day on Premier.</div>
+        <div class="help-subtitle">Snap a photo of a mystery screw, bracket, or part and get a best-guess identification plus links to buy a match. This Shop Jig isn't available yet — it's coming as a feature enhancement after Kerph launches.</div>
 
         <div class="help-article">
-            <div class="pf-photo-zone" id="pfPhotoZone">
-                <div id="pfPhotoPreviewWrap" style="display:none;">
-                    <img class="pf-photo-preview" id="pfPhotoPreview" alt="Photo of the part">
-                    <div>
-                        <button type="button" class="mini-btn pf-retake-btn" id="pfRetakeBtn" style="flex:none;">Choose a Different Photo</button>
-                    </div>
-                </div>
-                <div class="pf-photo-placeholder" id="pfPhotoPlaceholder">
+            <div class="pf-photo-zone">
+                <div class="pf-photo-placeholder">
                     <div class="pf-photo-placeholder-icon">&#128247;</div>
-                    <div class="pf-photo-placeholder-text">Take a clear, well-lit, close-up photo of the part — a plain background helps.</div>
-                    <button type="button" class="pf-choose-btn" id="pfChoosePhotoBtn">Take or Choose a Photo</button>
+                    <div class="pf-photo-placeholder-text">Part Finder is still being tuned before launch. Check back soon, or explore the free Shop Jigs calculators in the meantime.</div>
+                    <a href="shop-jigs.html" class="pf-choose-btn" style="display:inline-block; text-decoration:none;">Back to Shop Jigs</a>
                 </div>
-                <input type="file" id="pfPhotoInput" accept="image/*" capture="environment" style="display:none;">
-            </div>
-
-            <button type="button" class="pf-identify-btn" id="pfIdentifyBtn" disabled>Identify This Part</button>
-
-            <div id="pfLoading" class="pf-loading" style="display:none;">Looking closely at your photo&hellip;</div>
-            <div id="pfError" class="pf-error" style="display:none;"></div>
-
-            <div id="pfResult" class="pf-result" style="display:none;">
-                <div class="pf-result-name" id="pfResultName"></div>
-                <div class="pf-confidence" id="pfResultConfidence"></div>
-                <div class="pf-result-desc" id="pfResultDesc"></div>
-                <div class="pf-result-specs" id="pfResultSpecs"></div>
-                <div class="pf-buy-links-label">Where to buy a match</div>
-                <div class="pf-buy-links" id="pfBuyLinks"></div>
-            </div>
-
-            <div class="pf-history">
-                <div class="pf-history-title">Recent Lookups</div>
-                <div id="pfHistoryList"></div>
             </div>
         </div>
     </div>
@@ -826,11 +804,15 @@
         kerphAuthReady.then(() => {
             initHeaderSignIn();
             initAccountPanel();
-            renderPartFinderHistory();
         });
 
         /* =====================================================================
-           PART FINDER
+           PART FINDER — disabled site-wide for now (see the "coming soon" content
+           above and the KERPH_TOOL_TIER_MAP comment in supabase-client.js). The
+           functions below are unused while disabled but left intact, along with
+           kerphIdentifyPart()/kerphGetMyPartLookupHistory() in supabase-client.js
+           and the identify-part Edge Function, so re-enabling later is just
+           restoring the interactive markup and these two init calls.
            ===================================================================== */
         let pendingPhotoDataUrl = null;
 
@@ -925,8 +907,6 @@
                 </div>
             `).join('');
         }
-
-        initPartFinderPhoto();
     </script>
 </body>
 </html>
