@@ -657,17 +657,6 @@
             </div>
         </div>
 
-        <div class="settings-row" style="margin-top:6px;">
-            <label class="header-field-label" for="quoteStatusSelect">Status</label>
-            <select class="select-box" id="quoteStatusSelect">
-                <option value="draft">Draft</option>
-                <option value="sent">Sent</option>
-                <option value="accepted">Accepted</option>
-                <option value="rejected">Rejected</option>
-                <option value="completed">Completed</option>
-            </select>
-        </div>
-
         <button type="button" id="saveQuoteBtn" class="new-layout-btn" style="width:100%; margin-top:10px;">Save Quote</button>
     </div>
 
@@ -684,9 +673,21 @@
                 <button type="button" id="exportQuotePdfBtn" class="page-action-btn">&#128196; Export Client PDF</button>
             </div>
 
-            <div class="quote-header-card">
-                <div class="quote-header-title" id="quoteDisplayTitle">New Quote</div>
-                <div class="quote-header-meta" id="quoteDisplayMeta"></div>
+            <div class="quote-header-card" style="display:flex; align-items:flex-start; justify-content:space-between; gap:20px;">
+                <div style="min-width:0;">
+                    <div class="quote-header-title" id="quoteDisplayTitle">New Quote</div>
+                    <div class="quote-header-meta" id="quoteDisplayMeta"></div>
+                </div>
+                <div style="flex:none; width:150px;">
+                    <label class="header-field-label" for="quoteStatusSelect">Status</label>
+                    <select class="select-box" id="quoteStatusSelect">
+                        <option value="draft">Draft</option>
+                        <option value="sent">Sent</option>
+                        <option value="accepted">Accepted</option>
+                        <option value="rejected">Rejected</option>
+                        <option value="completed">Completed</option>
+                    </select>
+                </div>
             </div>
 
             <div class="quote-breakdown-card" id="clientResponseCard" style="display:none;"></div>
