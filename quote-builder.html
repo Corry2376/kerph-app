@@ -729,8 +729,8 @@
             <div class="quotes-subgroup-title" style="margin-top:0;">Open</div>
             <div class="empty-hint" id="dashboardOpenQuotesEmptyHint">No open quotes.</div>
             <div id="dashboardOpenQuotesList"></div>
-            <div class="quotes-subgroup-title">Past</div>
-            <div class="empty-hint" id="dashboardPastQuotesEmptyHint">No past quotes yet.</div>
+            <div class="quotes-subgroup-title">Completed</div>
+            <div class="empty-hint" id="dashboardPastQuotesEmptyHint">No completed quotes yet.</div>
             <div id="dashboardPastQuotesList"></div>
         </div>
         </div>
@@ -1439,7 +1439,9 @@
                     <div>
                         <div class="panel-item-title">${escapeHtml(q.name || 'Untitled')}<span class="quote-status-badge quote-status-${status}">${QUOTE_STATUS_LABELS[status] || 'Draft'}</span></div>
                         <div class="panel-item-dims">${escapeHtml(q.clientName || 'No client name')} &mdash; ${fmtMoney(total)}</div>
-                        ${dueText ? `<div class="panel-item-dims" style="margin-top:2px; font-weight:700; color:${dueColor};">Due ${dueText}</div>` : ''}
+                        ${status === 'completed'
+                            ? `<div class="panel-item-dims" style="margin-top:2px; font-weight:700; color:#16a34a;">Completed</div>`
+                            : (dueText ? `<div class="panel-item-dims" style="margin-top:2px; font-weight:700; color:${dueColor};">Due ${dueText}</div>` : '')}
                     </div>
                     <div class="panel-item-actions">
                         <button type="button" class="mini-btn" data-load="${q.id}">Open</button>
