@@ -142,7 +142,11 @@
         .input-box { width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; font-weight: 600; }
         .select-box { width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; font-weight: 600; background: #f8fafc; }
 
-        .modal-overlay { position: fixed; inset: 0; background-color: rgba(15, 23, 42, 0.5); z-index: 3000; display: flex; align-items: center; justify-content: center; padding: 24px; }
+        /* transform: translateZ(0) forces the overlay onto its own compositing layer --
+           without it, some mobile browsers (notably iOS Safari) can let a position:fixed
+           overlay lag behind a separately-scrolling ancestor's content during momentum
+           scroll, which reads as the overlay "scrolling behind" the page. */
+        .modal-overlay { position: fixed; inset: 0; background-color: rgba(15, 23, 42, 0.5); z-index: 3000; display: flex; align-items: center; justify-content: center; padding: 24px; transform: translateZ(0); }
         .modal-box { background-color: #ffffff; border-radius: 12px; padding: 24px; width: 320px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4); }
         .account-modal-box { width: 380px; max-height: 88vh; overflow-y: auto; }
         .account-member-since { font-size: 10.5px; color: #94a3b8; font-weight: 600; margin-top: 6px; }
@@ -254,11 +258,11 @@
         }
         /* Quote preview sits left instead of dead-center now that the dashboard occupies the
            right side — max-width caps prevents it from stretching too wide on its own. */
-        .quote-canvas-columns { display: flex; align-items: flex-start; gap: 32px; max-width: 1080px; margin: 0 auto; }
+        .quote-canvas-columns { display: flex; align-items: flex-start; gap: 32px; max-width: 1380px; margin: 0 auto; }
         #quoteWrap { max-width: 680px; flex: 1 1 auto; min-width: 0; }
 
         #quoteDashboardPanel {
-            width: 300px;
+            width: 600px;
             flex: none;
             background-color: #ffffff;
             border: 1px solid #cbd5e1;
@@ -398,8 +402,6 @@
             #quoteWrap { max-width: 100%; width: 100%; }
             #quoteDashboardPanel { width: 100%; position: static; top: auto; margin-top: 24px; }
 
-            #sidebarMyQuotesSection { display: none; }
-
             /* Touch targets: desktop-dense ~28px controls become >=40px. */
             .mini-btn { padding: 12px 14px; font-size: 13px; min-height: 40px; }
             .panel-item-actions .mini-btn { padding: 10px 12px; font-size: 12px; min-height: 40px; }
@@ -431,9 +433,12 @@
         @media print {
             @page { size: portrait; margin: 0.6in; }
             body { background: #fff !important; overflow: visible !important; height: auto !important; }
-            header, #sidebar-panel, .upgrade-nudge, #exportQuotePdfBtn, #shareQuoteBtn, #clientResponseCard, #quoteDashboardPanel { display: none !important; }
+            header, #sidebar-panel, .upgrade-nudge, #exportQuotePdfBtn, #shareQuoteBtn, #emailQuoteBtn, #newQuoteBtn, #clientResponseCard, #quoteDashboardPanel, #showLineItemsRow, #quoteBreakdown { display: none !important; }
             .print-only-header { display: block !important; margin-bottom: 18px; }
-            .print-only-header .print-title { font-size: 22px; font-weight: 800; color: #0f172a; }
+            #printOnlyBreakdown { display: block !important; }
+            .print-only-header .print-business-name { font-size: 15px; font-weight: 800; color: #1e3a8a; }
+            .print-only-header .print-business-contact { font-size: 11px; color: #64748b; margin: 2px 0 12px; }
+            .print-only-header .print-title { font-size: 22px; font-weight: 800; color: #0f172a; padding-top: 10px; border-top: 2px solid #1e3a8a; }
             .print-only-header .print-meta { font-size: 12px; color: #475569; margin-top: 2px; }
             .print-watermark.active {
                 display: block !important; position: fixed; top: 50%; left: 50%;
@@ -497,6 +502,23 @@
             <div class="header-field" style="display:flex; flex-direction:column; gap:4px; margin-top:14px;">
                 <label class="header-field-label">Saved Layouts</label>
                 <div id="accountLayoutsList" class="account-layouts-list"></div>
+            </div>
+
+            <div style="margin-top:16px;">
+                <div class="account-backup-title">Business Info</div>
+                <div class="account-backup-desc">Shown on the quotes you send clients — leave any of this blank to fall back to your username.</div>
+                <div class="header-field" style="width:100%; margin-top:8px;">
+                    <input type="text" class="input-box" id="accountBusinessNameInput" placeholder="Business / company name">
+                </div>
+                <div class="header-field" style="width:100%; margin-top:8px;">
+                    <input type="text" class="input-box" id="accountBusinessPhoneInput" placeholder="Phone">
+                </div>
+                <div class="header-field" style="width:100%; margin-top:8px;">
+                    <input type="email" class="input-box" id="accountBusinessEmailInput" placeholder="Contact email">
+                </div>
+                <div class="header-field" style="width:100%; margin-top:8px;">
+                    <input type="text" class="input-box" id="accountBusinessAddressInput" placeholder="Address (optional)">
+                </div>
             </div>
 
             <div class="modal-actions">
@@ -645,19 +667,6 @@
         </div>
 
         <button type="button" id="saveQuoteBtn" class="new-layout-btn" style="width:100%; margin-top:10px;">Save Quote</button>
-
-        <!-- Hidden below 1100px (see mobile media query) once #quoteDashboardPanel
-             renders the same Open/Past lists full-width in normal document flow —
-             keeps quotes from being listed twice on a stacked mobile layout. -->
-        <div id="sidebarMyQuotesSection">
-            <div class="sidebar-title" style="margin-top:20px;">My Quotes</div>
-            <div class="quotes-subgroup-title" style="margin-top:0;">Open</div>
-            <div class="empty-hint" id="openQuotesEmptyHint">No open quotes.</div>
-            <div id="openQuotesList"></div>
-            <div class="quotes-subgroup-title">Past</div>
-            <div class="empty-hint" id="pastQuotesEmptyHint">No past quotes yet.</div>
-            <div id="pastQuotesList"></div>
-        </div>
     </div>
 
     <div class="print-only-header" id="printOnlyHeader"></div>
@@ -667,6 +676,7 @@
         <div class="quote-canvas-columns">
         <div id="quoteWrap">
             <div class="quote-action-row" style="display:flex; justify-content:flex-end; gap:10px; margin-bottom:14px;">
+                <button type="button" id="newQuoteBtn" class="page-action-btn">&#10133; New Quote</button>
                 <button type="button" id="shareQuoteBtn" class="page-action-btn">&#128279; Share With Client</button>
                 <button type="button" id="emailQuoteBtn" class="page-action-btn">&#128231; Email to Client</button>
                 <button type="button" id="exportQuotePdfBtn" class="page-action-btn">&#128196; Export Client PDF</button>
@@ -679,7 +689,13 @@
 
             <div class="quote-breakdown-card" id="clientResponseCard" style="display:none;"></div>
 
+            <label id="showLineItemsRow" style="display:flex; align-items:center; gap:8px; font-size:12px; color:#475569; margin-bottom:8px; cursor:pointer;" title="Turn this off if you'd rather the client only see the bottom-line total -- itemized costs invite haggling over individual line items.">
+                <input type="checkbox" id="showLineItemsToggle" checked>
+                Show itemized breakdown to client (uncheck to share the total only)
+            </label>
+
             <div class="quote-breakdown-card" id="quoteBreakdown"></div>
+            <div class="quote-breakdown-card" id="printOnlyBreakdown" style="display:none;"></div>
 
             <div class="actual-card">
                 <div class="actual-card-title">Actual Costs (fill in after the job)</div>
@@ -859,6 +875,10 @@
             const unitsSelect = document.getElementById('accountUnitsSelect');
             const planSelect = document.getElementById('accountPlanSelect');
             const resetAllBtn = document.getElementById('accountResetAllBtn');
+            const businessNameInput = document.getElementById('accountBusinessNameInput');
+            const businessPhoneInput = document.getElementById('accountBusinessPhoneInput');
+            const businessEmailInput = document.getElementById('accountBusinessEmailInput');
+            const businessAddressInput = document.getElementById('accountBusinessAddressInput');
             let pendingAvatar = null;
 
             btn.addEventListener('click', () => {
@@ -866,7 +886,12 @@
                 usernameInput.value = acc.username || '';
                 pendingAvatar = acc.avatar || null;
                 applyAvatarTo(avatarLarge, pendingAvatar);
-                unitsSelect.value = kerphGetCachedProfile().unitSystem || 'imperial';
+                const profile = kerphGetCachedProfile();
+                unitsSelect.value = profile.unitSystem || 'imperial';
+                businessNameInput.value = profile.businessName || '';
+                businessPhoneInput.value = profile.businessPhone || '';
+                businessEmailInput.value = profile.businessEmail || '';
+                businessAddressInput.value = profile.businessAddress || '';
                 renderAccountMemberSince();
                 renderAccountStats();
                 renderAccountPlanCard();
@@ -890,7 +915,13 @@
                 const username = usernameInput.value.trim();
                 if (!username) { showToast('Enter a username to save your profile.'); return; }
                 localStorage.setItem('kerphUnitSystem', unitsSelect.value);
-                const { error } = await kerphSaveProfile({ username, avatarDataUrl: pendingAvatar, unitSystem: unitsSelect.value });
+                const { error } = await kerphSaveProfile({
+                    username, avatarDataUrl: pendingAvatar, unitSystem: unitsSelect.value,
+                    businessName: businessNameInput.value.trim(),
+                    businessPhone: businessPhoneInput.value.trim(),
+                    businessEmail: businessEmailInput.value.trim(),
+                    businessAddress: businessAddressInput.value.trim()
+                });
                 if (error) { showToast(error.message || 'Could not save profile.'); return; }
                 overlay.style.display = 'none';
                 showToast('Profile saved.');
@@ -1136,8 +1167,12 @@
                 id: null, name: '', clientName: '', clientEmail: '', projectName: '',
                 date: new Date().toISOString().slice(0, 10),
                 materials: [], laborHours: 0, laborRate: 0, consumables: 0,
-                overheadPct: 0, marginPct: 0, status: 'draft',
-                shareToken: null, clientNotes: null, clientRespondedAt: null,
+                overheadPct: 0, marginPct: 0, status: 'draft', hideLineItems: false,
+                // clientResponse mirrors the client's actual accept/decline choice, set once by
+                // respond_to_quote and never touched again -- kept separate from `status` so
+                // later marking the job "Completed" (a shop workflow stage, same field as
+                // draft/sent/accepted/rejected) doesn't erase the record of how the client responded.
+                shareToken: null, clientResponse: null, clientNotes: null, clientRespondedAt: null,
                 actual: { materialsCost: null, laborHours: null, consumables: null }
             };
         }
@@ -1180,6 +1215,7 @@
             quote.consumables = parseFloat(document.getElementById('consumablesInput').value) || 0;
             quote.overheadPct = parseFloat(document.getElementById('overheadPctInput').value) || 0;
             quote.marginPct = parseFloat(document.getElementById('marginPctInput').value) || 0;
+            quote.hideLineItems = !document.getElementById('showLineItemsToggle').checked;
         }
 
         function renderMaterialsList() {
@@ -1233,9 +1269,32 @@
             document.getElementById('materialModalOverlay').style.display = 'none';
         });
 
+        // Shared by the shop's own on-page view (always full detail, regardless of the
+        // toggle -- hiding the shop's own cost math from the shop would be actively harmful)
+        // and every client-facing output (PDF, email, print, quote-view.html), which respect
+        // showLineItemsToggle/quote.hideLineItems so a client only sees line items if the
+        // shop opted into that (unchecked = bottom-line total only, avoids per-item haggling).
+        function buildBreakdownHtml(q, fullDetail) {
+            const t = computeQuoteTotals(q);
+            if (!fullDetail) {
+                return `<div class="quote-line quote-line-total"><span class="quote-line-label">Total</span><span class="quote-line-value">${fmtMoney(t.clientTotal)}</span></div>`;
+            }
+            return `
+                <div class="quote-line"><span class="quote-line-label">Materials${q.materials.length ? ` (${q.materials.length} item${q.materials.length === 1 ? '' : 's'})` : ''}</span><span class="quote-line-value">${fmtMoney(t.materialsCost)}</span></div>
+                <div class="quote-line"><span class="quote-line-label">Labor (${q.laborHours || 0} hrs &times; ${fmtMoney(q.laborRate || 0)}/hr)</span><span class="quote-line-value">${fmtMoney(t.laborCost)}</span></div>
+                <div class="quote-line"><span class="quote-line-label">Consumables</span><span class="quote-line-value">${fmtMoney(t.consumables)}</span></div>
+                <div class="quote-line quote-line-sub"><span class="quote-line-label">Subtotal</span><span class="quote-line-value">${fmtMoney(t.subtotal)}</span></div>
+                <div class="quote-line"><span class="quote-line-label">Overhead (${q.overheadPct || 0}%)</span><span class="quote-line-value">${fmtMoney(t.overheadAmt)}</span></div>
+                <div class="quote-line"><span class="quote-line-label">Margin (${q.marginPct || 0}%)</span><span class="quote-line-value">${fmtMoney(t.marginAmt)}</span></div>
+                <div class="quote-line quote-line-total"><span class="quote-line-label">Total</span><span class="quote-line-value">${fmtMoney(t.clientTotal)}</span></div>
+            `;
+        }
+        function buildClientBreakdownHtml(q) {
+            return buildBreakdownHtml(q, !q.hideLineItems);
+        }
+
         function renderQuote() {
             readQuoteFromForm();
-            const t = computeQuoteTotals(quote);
 
             document.getElementById('quoteDisplayTitle').textContent = quote.name || 'New Quote';
             const metaParts = [];
@@ -1244,15 +1303,7 @@
             if (quote.date) metaParts.push(new Date(quote.date + 'T00:00:00').toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }));
             document.getElementById('quoteDisplayMeta').innerHTML = metaParts.join(' &middot; ') || 'Fill in the details on the left.';
 
-            document.getElementById('quoteBreakdown').innerHTML = `
-                <div class="quote-line"><span class="quote-line-label">Materials${quote.materials.length ? ` (${quote.materials.length} item${quote.materials.length === 1 ? '' : 's'})` : ''}</span><span class="quote-line-value">${fmtMoney(t.materialsCost)}</span></div>
-                <div class="quote-line"><span class="quote-line-label">Labor (${quote.laborHours || 0} hrs &times; ${fmtMoney(quote.laborRate || 0)}/hr)</span><span class="quote-line-value">${fmtMoney(t.laborCost)}</span></div>
-                <div class="quote-line"><span class="quote-line-label">Consumables</span><span class="quote-line-value">${fmtMoney(t.consumables)}</span></div>
-                <div class="quote-line quote-line-sub"><span class="quote-line-label">Subtotal</span><span class="quote-line-value">${fmtMoney(t.subtotal)}</span></div>
-                <div class="quote-line"><span class="quote-line-label">Overhead (${quote.overheadPct || 0}%)</span><span class="quote-line-value">${fmtMoney(t.overheadAmt)}</span></div>
-                <div class="quote-line"><span class="quote-line-label">Margin (${quote.marginPct || 0}%)</span><span class="quote-line-value">${fmtMoney(t.marginAmt)}</span></div>
-                <div class="quote-line quote-line-total"><span class="quote-line-label">Total</span><span class="quote-line-value">${fmtMoney(t.clientTotal)}</span></div>
-            `;
+            document.getElementById('quoteBreakdown').innerHTML = buildBreakdownHtml(quote, true);
 
             renderClientResponseCard();
             renderActual();
@@ -1260,11 +1311,11 @@
 
         function renderClientResponseCard() {
             const card = document.getElementById('clientResponseCard');
-            if (!quote.clientRespondedAt || (quote.status !== 'accepted' && quote.status !== 'rejected')) {
+            if (!quote.clientRespondedAt || !quote.clientResponse) {
                 card.style.display = 'none';
                 return;
             }
-            const isRejected = quote.status === 'rejected';
+            const isRejected = quote.clientResponse === 'rejected';
             card.className = 'quote-breakdown-card client-response-card' + (isRejected ? ' is-rejected' : '');
             const when = new Date(quote.clientRespondedAt).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
             card.innerHTML = `
@@ -1291,6 +1342,7 @@
         ['quoteNameInput', 'clientNameInput', 'clientEmailInput', 'projectNameInput', 'quoteDateInput', 'laborHoursInput', 'laborRateInput', 'consumablesInput', 'overheadPctInput', 'marginPctInput'].forEach(id => {
             document.getElementById(id).addEventListener('input', renderQuote);
         });
+        document.getElementById('showLineItemsToggle').addEventListener('change', renderQuote);
         ['actualMaterialsInput', 'actualLaborHoursInput', 'actualConsumablesInput'].forEach(id => {
             document.getElementById(id).addEventListener('input', () => {
                 quote.actual.materialsCost = document.getElementById('actualMaterialsInput').value === '' ? null : parseFloat(document.getElementById('actualMaterialsInput').value);
@@ -1314,12 +1366,28 @@
             document.getElementById('consumablesInput').value = quote.consumables || 0;
             document.getElementById('overheadPctInput').value = quote.overheadPct || 0;
             document.getElementById('marginPctInput').value = quote.marginPct || 0;
+            document.getElementById('showLineItemsToggle').checked = !quote.hideLineItems;
             document.getElementById('actualMaterialsInput').value = quote.actual.materialsCost == null ? '' : quote.actual.materialsCost;
             document.getElementById('actualLaborHoursInput').value = quote.actual.laborHours == null ? '' : quote.actual.laborHours;
             document.getElementById('actualConsumablesInput').value = quote.actual.consumables == null ? '' : quote.actual.consumables;
             renderMaterialsList();
             renderQuote();
         }
+
+        // Same "has anything worth losing" gate as the account-reset confirm() above --
+        // avoids nagging when the form is already essentially blank (e.g. right after
+        // opening the page or right after a save).
+        function startNewQuote() {
+            const hasContent = quote.name || quote.clientName || quote.clientEmail || quote.projectName
+                || quote.materials.length || quote.laborHours || quote.consumables;
+            if (hasContent && !confirm('Start a new quote? Unsaved changes to the current one will be lost.')) return;
+            loadQuoteIntoForm(blankQuote());
+            // Drop ?loadQuote=/?seedFromProject= so a reload doesn't pull the old quote back in.
+            window.history.replaceState({}, '', window.location.pathname);
+            document.getElementById('quoteNameInput').focus();
+            showToast('Started a new quote.');
+        }
+        document.getElementById('newQuoteBtn').addEventListener('click', startNewQuote);
 
         const QUOTE_STATUS_LABELS = { draft: 'Draft', sent: 'Sent', accepted: 'Accepted', rejected: 'Rejected', completed: 'Completed' };
         const OPEN_QUOTE_STATUSES = ['draft', 'sent'];
@@ -1359,18 +1427,15 @@
             });
         }
 
-        // Renders both the compact sidebar list (visible while actively editing) and the
-        // larger dashboard panel in the canvas area (the primary "browse and open a quote"
-        // surface) from the same data — they're two views onto the same open/past split, not
-        // two separate lists to keep in sync by hand.
+        // "Your Quotes" (the dashboard panel) is now the single place quotes are browsed --
+        // it used to be duplicated verbatim in a sidebar "My Quotes" section too, which was
+        // removed as redundant (see quote-action-row area above).
         function renderQuotesList() {
             const sorted = savedQuotes.slice().reverse();
             const open = sorted.filter(q => OPEN_QUOTE_STATUSES.includes(q.status || 'draft'));
             const past = sorted.filter(q => !OPEN_QUOTE_STATUSES.includes(q.status || 'draft'));
 
             [
-                ['openQuotesList', 'openQuotesEmptyHint', open],
-                ['pastQuotesList', 'pastQuotesEmptyHint', past],
                 ['dashboardOpenQuotesList', 'dashboardOpenQuotesEmptyHint', open],
                 ['dashboardPastQuotesList', 'dashboardPastQuotesEmptyHint', past]
             ].forEach(([listId, hintId, items]) => {
@@ -1445,17 +1510,32 @@
             }
         });
 
-        // Builds an offscreen, print-styled copy of the quote (title/meta + the already-
-        // rendered breakdown lines) for html2pdf to rasterize — reuses #quoteBreakdown's
-        // current innerHTML rather than recomputing the totals a second time.
+        // Sender letterhead info for client-facing outputs (PDF, print) -- falls back through
+        // business name -> full name -> username so a quote never goes out with a blank
+        // sender line just because the user hasn't filled in the Business Info section yet.
+        function getSenderInfo() {
+            const p = kerphGetCachedProfile();
+            const name = p.businessName || p.fullName || p.username || 'Kerph';
+            const contactParts = [p.businessPhone, p.businessEmail].filter(Boolean).map(escapeHtml);
+            return { name, contactLine: contactParts.join(' &middot; '), address: p.businessAddress || '' };
+        }
+
+        // Builds an offscreen, print-styled copy of the quote -- a letterhead (sender name +
+        // contact info) up top, then the totals, recomputed here (via buildClientBreakdownHtml,
+        // which honors showLineItemsToggle) rather than reusing #quoteBreakdown's innerHTML,
+        // since the shop's own on-page view always shows full detail regardless of that toggle.
         function buildQuotePdfElement() {
             const el = document.createElement('div');
             el.style.cssText = 'font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 30px; width: 560px; color: #0f172a; position: fixed; top: -10000px; left: 0; background: #ffffff;';
             const dateStr = new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+            const sender = getSenderInfo();
             el.innerHTML = `
+                <div style="font-size:17px; font-weight:800; color:#1e3a8a;">${escapeHtml(sender.name)}</div>
+                <div style="font-size:11.5px; color:#64748b; margin-bottom:14px;">${[sender.contactLine, escapeHtml(sender.address)].filter(Boolean).join(' &middot; ')}</div>
+                <div style="border-top:2px solid #1e3a8a; margin-bottom:16px;"></div>
                 <div style="font-size:22px; font-weight:800; margin-bottom:4px;">${escapeHtml(quote.name || 'Kerph Quote')}</div>
-                <div style="font-size:13px; color:#475569; margin-bottom:20px;">Prepared ${dateStr}${quote.clientName ? ` for ${escapeHtml(quote.clientName)}` : ''}</div>
-                ${document.getElementById('quoteBreakdown').innerHTML}
+                <div style="font-size:13px; color:#475569; margin-bottom:20px;">Prepared ${dateStr}${quote.clientName ? ` for ${escapeHtml(quote.clientName)}` : ''}${quote.clientEmail ? ` (${escapeHtml(quote.clientEmail)})` : ''}</div>
+                ${buildClientBreakdownHtml(quote)}
             `;
             return el;
         }
@@ -1488,6 +1568,7 @@
                     body: JSON.stringify({
                         to: quote.clientEmail,
                         quoteName: quote.name,
+                        projectName: quote.projectName,
                         clientName: quote.clientName,
                         shareLink: link,
                         pdfBase64
@@ -1517,11 +1598,16 @@
         });
 
         function exportQuotePdf() {
+            readQuoteFromForm();
             const dateStr = new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+            const sender = getSenderInfo();
             document.getElementById('printOnlyHeader').innerHTML = `
+                <div class="print-business-name">${escapeHtml(sender.name)}</div>
+                <div class="print-business-contact">${[sender.contactLine, escapeHtml(sender.address)].filter(Boolean).join(' &middot; ')}</div>
                 <div class="print-title">${escapeHtml(quote.name || 'Kerph Quote')}</div>
-                <div class="print-meta">Prepared ${dateStr}${quote.clientName ? ` for ${escapeHtml(quote.clientName)}` : ''}</div>
+                <div class="print-meta">Prepared ${dateStr}${quote.clientName ? ` for ${escapeHtml(quote.clientName)}` : ''}${quote.clientEmail ? ` (${escapeHtml(quote.clientEmail)})` : ''}</div>
             `;
+            document.getElementById('printOnlyBreakdown').innerHTML = buildClientBreakdownHtml(quote);
             document.getElementById('printWatermark').classList.toggle('active', getPlan() === 'free');
             window.print();
         }

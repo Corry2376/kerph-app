@@ -172,7 +172,11 @@
             homeTileOrder: state.profile.home_tile_order || null,
             homeTileHidden: state.profile.home_tile_hidden || [],
             isAdmin: state.profile.is_admin === true,
-            preferredBrand: state.profile.preferred_brand || ''
+            preferredBrand: state.profile.preferred_brand || '',
+            businessName: state.profile.business_name || '',
+            businessPhone: state.profile.business_phone || '',
+            businessEmail: state.profile.business_email || '',
+            businessAddress: state.profile.business_address || ''
         };
     }
 
@@ -208,7 +212,7 @@
     // upsert (not update) so a missing profile row — trigger failure, edge case, whatever —
     // never permanently locks a signed-in user out of saving; the INSERT RLS policy exists
     // specifically to make this self-healing path work.
-    async function kerphSaveProfile({ username, fullName, avatarDataUrl, unitSystem, maintenanceRemindersEnabled, homeTileOrder, homeTileHidden, referralSource, preferredBrand } = {}) {
+    async function kerphSaveProfile({ username, fullName, avatarDataUrl, unitSystem, maintenanceRemindersEnabled, homeTileOrder, homeTileHidden, referralSource, preferredBrand, businessName, businessPhone, businessEmail, businessAddress } = {}) {
         if (!state.user) return { error: { message: 'Not signed in.' } };
         const updates = { id: state.user.id, username };
         if (fullName !== undefined) updates.full_name = fullName;
@@ -219,6 +223,10 @@
         if (homeTileHidden !== undefined) updates.home_tile_hidden = homeTileHidden;
         if (referralSource !== undefined) updates.referral_source = referralSource;
         if (preferredBrand !== undefined) updates.preferred_brand = preferredBrand;
+        if (businessName !== undefined) updates.business_name = businessName;
+        if (businessPhone !== undefined) updates.business_phone = businessPhone;
+        if (businessEmail !== undefined) updates.business_email = businessEmail;
+        if (businessAddress !== undefined) updates.business_address = businessAddress;
         const { data, error } = await kerphSupabase.from('profiles').upsert(updates).select().maybeSingle();
         if (!error && data) {
             state.profile = data;

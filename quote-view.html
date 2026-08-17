@@ -169,7 +169,9 @@
             document.getElementById('qvMeta').innerHTML = metaParts.join(' &middot; ') || '';
 
             const t = computeQuoteTotals(q);
-            document.getElementById('qvBreakdown').innerHTML = `
+            document.getElementById('qvBreakdown').innerHTML = q.hideLineItems
+                ? `<div class="qv-line qv-line-total"><span class="qv-line-label">Total</span><span class="qv-line-value">${fmtMoney(t.clientTotal)}</span></div>`
+                : `
                 <div class="qv-line"><span class="qv-line-label">Materials${(q.materials || []).length ? ` (${q.materials.length} item${q.materials.length === 1 ? '' : 's'})` : ''}</span><span class="qv-line-value">${fmtMoney(t.materialsCost)}</span></div>
                 <div class="qv-line"><span class="qv-line-label">Labor (${q.laborHours || 0} hrs &times; ${fmtMoney(q.laborRate || 0)}/hr)</span><span class="qv-line-value">${fmtMoney(t.laborCost)}</span></div>
                 <div class="qv-line"><span class="qv-line-label">Consumables</span><span class="qv-line-value">${fmtMoney(t.consumables)}</span></div>
@@ -179,7 +181,10 @@
                 <div class="qv-line qv-line-total"><span class="qv-line-label">Total</span><span class="qv-line-value">${fmtMoney(t.clientTotal)}</span></div>
             `;
 
-            if (q.status === 'accepted' || q.status === 'rejected') {
+            // Keyed on clientResponse (set once by respond_to_quote and never touched again),
+            // not status -- status is the shop's own workflow field and can move on to
+            // "completed" later without erasing the fact that the client already responded.
+            if (q.clientResponse === 'accepted' || q.clientResponse === 'rejected') {
                 showAlreadyResponded(q);
             }
         }
@@ -188,7 +193,7 @@
             document.getElementById('qvRespondPrompt').style.display = 'none';
             document.getElementById('qvRespondForm').classList.remove('active');
             const result = document.getElementById('qvResult');
-            const accepted = q.status === 'accepted';
+            const accepted = q.clientResponse === 'accepted';
             result.innerHTML = `
                 <div class="qv-result-icon">${accepted ? '✅' : '❌'}</div>
                 <div class="qv-result-title">${accepted ? 'You accepted this quote' : 'You declined this quote'}</div>
@@ -227,7 +232,7 @@
                 return;
             }
             document.getElementById('qvRespondForm').classList.remove('active');
-            showAlreadyResponded({ status: pendingResponse });
+            showAlreadyResponded({ clientResponse: pendingResponse });
         });
 
         (async function init() {

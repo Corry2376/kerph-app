@@ -43,7 +43,7 @@ Deno.serve(async (req) => {
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) return json({ error: 'Not signed in.' }, 401);
 
-    const { to, quoteName, clientName, shareLink, pdfBase64 } = await req.json();
+    const { to, quoteName, projectName, clientName, shareLink, pdfBase64 } = await req.json();
     if (!to || !pdfBase64) return json({ error: 'Missing recipient or PDF.' }, 400);
 
     const senderName = user.user_metadata?.username || user.email;
@@ -68,7 +68,7 @@ Deno.serve(async (req) => {
         from: FROM_ADDRESS,
         to: [to],
         reply_to: user.email,
-        subject: `Quote from ${senderName}: ${quoteName || 'Untitled Quote'}`,
+        subject: `Requested quote for ${projectName || quoteName || 'your project'}`,
         html,
         attachments: [
           {
