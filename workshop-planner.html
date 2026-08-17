@@ -5332,7 +5332,7 @@
                             </div>
                         </div>
                         <div class="tool-box-item" draggable="true" data-layer="dust-collection" data-width="0.35" data-length="5" data-height="7.0" data-name="4in Dust Duct Custom">
-                            <div><div class="tool-title">4" Dust Duct (Custom Length)</div><div class="tool-dims"><input type="number" class="input-box custom-duct-length-input" value="5" min="0.5" step="0.5" style="width:56px; display:inline-block; padding:2px 4px; font-size:11px;" draggable="false"> ft</div></div>
+                            <div><div class="tool-title">4" Dust Duct (Custom Length)</div><div class="tool-dims"><input type="number" class="input-box custom-duct-length-input" value="5" min="0.5" step="0.5" style="width:56px; display:inline-block; padding:2px 4px; font-size:11px;" draggable="false"> <span class="dc-custom-len-unit">ft</span></div></div>
                             <div class="tool-status-controls">
                                 <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
                                 <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
@@ -5374,7 +5374,7 @@
                             </div>
                         </div>
                         <div class="tool-box-item" draggable="true" data-layer="dust-collection" data-width="0.35" data-length="0.5" data-height="5" data-name="4in Duct Drop">
-                            <div><div class="tool-title">4" Duct Drop (to tool)</div><div class="tool-dims">Drops <input type="number" class="input-box custom-drop-length-input" value="5" min="1" max="20" step="0.5" style="width:56px; display:inline-block; padding:2px 4px; font-size:11px;" draggable="false"> ft from the run</div></div>
+                            <div><div class="tool-title">4" Duct Drop (to tool)</div><div class="tool-dims">Drops <input type="number" class="input-box custom-drop-length-input" value="5" min="1" max="20" step="0.5" style="width:56px; display:inline-block; padding:2px 4px; font-size:11px;" draggable="false"> <span class="dc-custom-len-unit">ft</span> from the run</div></div>
                             <div class="tool-status-controls">
                                 <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
                                 <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
@@ -5425,7 +5425,7 @@
                             </div>
                         </div>
                         <div class="tool-box-item" draggable="true" data-layer="dust-collection" data-width="0.5" data-length="5" data-height="7.0" data-name="6in Dust Duct Custom">
-                            <div><div class="tool-title">6" Dust Duct (Custom Length)</div><div class="tool-dims"><input type="number" class="input-box custom-duct-length-input" value="5" min="0.5" step="0.5" style="width:56px; display:inline-block; padding:2px 4px; font-size:11px;" draggable="false"> ft</div></div>
+                            <div><div class="tool-title">6" Dust Duct (Custom Length)</div><div class="tool-dims"><input type="number" class="input-box custom-duct-length-input" value="5" min="0.5" step="0.5" style="width:56px; display:inline-block; padding:2px 4px; font-size:11px;" draggable="false"> <span class="dc-custom-len-unit">ft</span></div></div>
                             <div class="tool-status-controls">
                                 <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
                                 <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
@@ -5467,7 +5467,7 @@
                             </div>
                         </div>
                         <div class="tool-box-item" draggable="true" data-layer="dust-collection" data-width="0.5" data-length="0.6" data-height="5" data-name="6in Duct Drop">
-                            <div><div class="tool-title">6" Duct Drop (to tool)</div><div class="tool-dims">Drops <input type="number" class="input-box custom-drop-length-input" value="5" min="1" max="20" step="0.5" style="width:56px; display:inline-block; padding:2px 4px; font-size:11px;" draggable="false"> ft from the run</div></div>
+                            <div><div class="tool-title">6" Duct Drop (to tool)</div><div class="tool-dims">Drops <input type="number" class="input-box custom-drop-length-input" value="5" min="1" max="20" step="0.5" style="width:56px; display:inline-block; padding:2px 4px; font-size:11px;" draggable="false"> <span class="dc-custom-len-unit">ft</span> from the run</div></div>
                             <div class="tool-status-controls">
                                 <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
                                 <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
@@ -8142,10 +8142,10 @@
             <div class="header-field">
                 <label class="header-field-label" for="clearanceMinWidth">Minimum Walkway Width</label>
                 <select class="select-box" id="clearanceMinWidth">
-                    <option value="24">24 in</option>
-                    <option value="30" selected>30 in</option>
-                    <option value="36">36 in (ADA)</option>
-                    <option value="42">42 in</option>
+                    <option value="24" data-imperial-label="24 in" data-metric-label="61cm">24 in</option>
+                    <option value="30" data-imperial-label="30 in" data-metric-label="76cm" selected>30 in</option>
+                    <option value="36" data-imperial-label="36 in (ADA)" data-metric-label="91cm (ADA)">36 in (ADA)</option>
+                    <option value="42" data-imperial-label="42 in" data-metric-label="107cm">42 in</option>
                 </select>
             </div>
 
@@ -8167,7 +8167,7 @@
     <div class="modal-overlay" id="clearanceSettingsModalOverlay" style="display:none;">
         <div class="modal-box" style="width:420px; max-height:80vh; overflow-y:auto;">
             <div class="modal-title">Tool Operating Clearance Defaults</div>
-            <p style="font-size:12px; color:#6b7280; line-height:1.5; margin:0 0 12px;">Minimum clear space (in feet) required around each machine type, measured from its un-rotated footprint — Left/Right run along the tool's infeed/outfeed axis for most feed-through machines, Top/Bottom are side clearance. The zone rotates with the tool if you rotate it on the grid.</p>
+            <p style="font-size:12px; color:#6b7280; line-height:1.5; margin:0 0 12px;" id="clearanceSettingsDesc">Minimum clear space (in feet) required around each machine type, measured from its un-rotated footprint — Left/Right run along the tool's infeed/outfeed axis for most feed-through machines, Top/Bottom are side clearance. The zone rotates with the tool if you rotate it on the grid.</p>
             <div id="clearanceSettingsList"></div>
             <div class="modal-actions">
                 <button type="button" id="clearanceSettingsCloseBtn" class="mini-btn modal-primary-btn" style="width:100%;">Done</button>
@@ -8208,7 +8208,7 @@
             <div class="sidebar-title" style="margin-top:14px;">Main Trunk (collector to first branch)</div>
             <div class="dims-row" style="display:flex; gap:6px;">
                 <div class="header-field" style="flex:1;">
-                    <label class="header-field-label" for="calcMainLen">Run (ft)</label>
+                    <label class="header-field-label" for="calcMainLen" id="calcMainLenLabel">Run (ft)</label>
                     <input type="number" class="input-box" id="calcMainLen" value="8" min="0">
                 </div>
                 <div class="header-field" style="flex:1;">
@@ -9173,7 +9173,7 @@
                 addCalcBranchRow('Custom');
                 const rows = document.querySelectorAll('.calc-branch-row');
                 const row = rows[rows.length - 1];
-                row.querySelector('.calc-len-input').value = t.lengthFt;
+                row.querySelector('.calc-len-input').value = feetToDisplay(t.lengthFt);
                 row.querySelector('.calc-elbow-input').value = t.elbows;
             });
             showToast(`Traced ${traced.length} branch${traced.length === 1 ? '' : 'es'} from the layout — pick the right tool for each, then Calculate.`);
@@ -9216,11 +9216,11 @@
             cfmWrap.appendChild(cfmInput);
 
             const lenWrap = document.createElement('div');
-            lenWrap.innerHTML = '<label class="header-field-label">Run (ft)</label>';
+            lenWrap.innerHTML = `<label class="header-field-label calc-len-label">Run (${unitSystem === 'metric' ? 'm' : 'ft'})</label>`;
             const lenInput = document.createElement('input');
             lenInput.type = 'number';
             lenInput.className = 'input-box calc-len-input';
-            lenInput.value = 10;
+            lenInput.value = feetToDisplay(10);
             lenWrap.appendChild(lenInput);
 
             const elbowWrap = document.createElement('div');
@@ -9257,6 +9257,14 @@
             const areaSqFt = cfm / 4000;
             const diameterIn = Math.sqrt(areaSqFt * 4 / Math.PI) * 12;
             return diameterIn <= 4.5 ? 4 : 6;
+        }
+
+        // 4in/6in are the actual standard duct sizes sold (a nominal trade name, same idea
+        // as "2x4" lumber) -- in metric mode this shows the real nominal metric duct size
+        // (100mm/150mm) rather than a raw unit conversion of 4/6.
+        function ductSizeLabel(diameterIn) {
+            if (unitSystem !== 'metric') return `${diameterIn}"`;
+            return diameterIn === 4 ? '100mm' : '150mm';
         }
 
         function estimateDuctLoss(diameterIn, lengthFt, elbows) {
@@ -9323,7 +9331,7 @@
             const systemLoss = parseFloat(document.getElementById('calcSystemLoss').value) || 0;
             const collectorCfm = parseFloat(document.getElementById('calcCollectorCfm').value) || 0;
             const collectorPreset = COLLECTOR_PRESETS[document.getElementById('calcCollectorModel').value];
-            const mainLenFt = parseFloat(document.getElementById('calcMainLen').value) || 0;
+            const mainLenFt = displayToFeet(parseFloat(document.getElementById('calcMainLen').value) || 0);
             const mainElbows = parseFloat(document.getElementById('calcMainElbows').value) || 0;
 
             const resultsEl = document.getElementById('calcResults');
@@ -9332,7 +9340,7 @@
             const branchData = Array.from(rows).map(row => ({
                 toolName: row.querySelector('.calc-tool-select').value,
                 cfm: parseFloat(row.querySelector('.calc-cfm-input').value) || 0,
-                lengthFt: parseFloat(row.querySelector('.calc-len-input').value) || 0,
+                lengthFt: displayToFeet(parseFloat(row.querySelector('.calc-len-input').value) || 0),
                 elbows: parseFloat(row.querySelector('.calc-elbow-input').value) || 0
             }));
 
@@ -9368,21 +9376,21 @@
                     else if (deliveredCfm < b.cfm) { cls = 'warn'; verdict = `Delivers ~${Math.round(deliveredCfm)} CFM (~${Math.round(pct)}% of the ${b.cfm} CFM needed) — workable but tight.`; }
                     else { verdict = `Delivers ~${Math.round(deliveredCfm)} CFM, comfortably above the ${b.cfm} CFM this tool needs.`; }
                 } else {
-                    if (totalSp > 7) { cls = 'danger'; verdict = 'High resistance — a single-stage collector will likely struggle. Shorten the run, cut elbows, or upsize to 6" duct.'; }
+                    if (totalSp > 7) { cls = 'danger'; verdict = `High resistance — a single-stage collector will likely struggle. Shorten the run, cut elbows, or upsize to ${ductSizeLabel(6)} duct.`; }
                     else if (totalSp > 4) { cls = 'warn'; verdict = 'Moderate resistance — expect somewhat reduced CFM from rated.'; }
                     else { verdict = 'Should perform close to rated CFM.'; }
                 }
 
                 let mainWarning = '';
                 if (diameter > mainDiameter) {
-                    mainWarning = `<div class="calc-result-line" style="color:#b91c1c; font-weight:700;">&#9888; This branch alone needs ${diameter}" duct, larger than the ${mainDiameter}" main trunk below — upsize the main.</div>`;
+                    mainWarning = `<div class="calc-result-line" style="color:#b91c1c; font-weight:700;">&#9888; This branch alone needs ${ductSizeLabel(diameter)} duct, larger than the ${ductSizeLabel(mainDiameter)} main trunk below — upsize the main.</div>`;
                 }
 
                 const card = document.createElement('div');
                 card.className = 'calc-result-card ' + cls;
                 card.innerHTML = `
-                    <div class="calc-result-title">${b.toolName} — recommend ${diameter}" duct</div>
-                    <div class="calc-result-line">${b.cfm} CFM at ~4000 FPM needs about ${diameter}" diameter.</div>
+                    <div class="calc-result-title">${b.toolName} — recommend ${ductSizeLabel(diameter)} duct</div>
+                    <div class="calc-result-line">${b.cfm} CFM at ~4000 FPM needs about ${ductSizeLabel(diameter)} diameter.</div>
                     <div class="calc-result-line">Estimated static pressure: ~${totalSp.toFixed(1)}" WC (${ductLoss.toFixed(1)}" branch + ${mainLoss.toFixed(1)}" main + ${systemLoss.toFixed(1)}" system).</div>
                     <div class="calc-result-line">${verdict}</div>
                     ${mainWarning}
@@ -9394,7 +9402,7 @@
             summary.className = 'calc-result-card' + (worstSp > 7 ? ' danger' : worstSp > 4 ? ' warn' : '');
             summary.innerHTML = `
                 <div class="calc-result-title">System summary</div>
-                <div class="calc-result-line">Main trunk: recommend ${mainDiameter}" duct (sized for the largest branch, ${maxBranchCfm} CFM).</div>
+                <div class="calc-result-line">Main trunk: recommend ${ductSizeLabel(mainDiameter)} duct (sized for the largest branch, ${maxBranchCfm} CFM).</div>
                 <div class="calc-result-line">Worst-case branch static pressure ~${worstSp.toFixed(1)}" WC against a ${collectorCfm} CFM rated collector.${anyDelivered ? ` Estimated worst-case delivered CFM: ~${Math.round(worstDeliveredCfm)}.` : ' Real delivered CFM will be lower than rated once static pressure rises — pick a collector model above for a fan-curve estimate instead of just the flat rating.'}</div>
                 <div class="calc-result-line">Estimated material cost: ~$${Math.round(totalCost)} (duct + elbows for the main trunk and all branches — blast gates, the collector itself, and labor aren't included).</div>
             `;
@@ -9408,6 +9416,14 @@
             document.getElementById('calcCheckConnectionsBtn').addEventListener('click', checkDuctConnections);
             initCollectorPresets();
             addCalcBranchRow('Table Saw');
+            // If a metric preference was already persisted from a previous session, convert
+            // the hardcoded "8" main-trunk default now -- same reasoning as initUnitToggle()'s
+            // equivalent on-load conversion for shop width/length/ceiling.
+            if (unitSystem === 'metric') {
+                const mainLenInput = document.getElementById('calcMainLen');
+                mainLenInput.value = feetToDisplay(parseFloat(mainLenInput.value) || 8);
+                document.getElementById('calcMainLenLabel').textContent = 'Run (m)';
+            }
         }
 
         const PORT_SNAP_PX = 18;
@@ -9868,7 +9884,7 @@
                 input.addEventListener('mousedown', (e) => e.stopPropagation());
                 input.addEventListener('click', (e) => e.stopPropagation());
                 input.addEventListener('input', () => {
-                    const ft = Math.max(0.5, parseFloat(input.value) || 0.5);
+                    const ft = Math.max(0.5, displayToFeet(parseFloat(input.value) || 0.5));
                     item.setAttribute('data-length', ft);
                 });
             });
@@ -9881,10 +9897,20 @@
                 input.addEventListener('mousedown', (e) => e.stopPropagation());
                 input.addEventListener('click', (e) => e.stopPropagation());
                 input.addEventListener('input', () => {
-                    const ft = Math.max(1, parseFloat(input.value) || 5);
+                    const ft = Math.max(1, displayToFeet(parseFloat(input.value) || 5));
                     item.setAttribute('data-height', ft);
                 });
             });
+
+            // If a metric preference is already persisted, convert these four cards' visible
+            // default values (and unit-suffix spans) now, same reasoning as every other
+            // on-load conversion in this file.
+            if (unitSystem === 'metric') {
+                document.querySelectorAll('.custom-duct-length-input, .custom-drop-length-input').forEach(input => {
+                    input.value = feetToDisplay(parseFloat(input.value) || 0);
+                });
+                document.querySelectorAll('.dc-custom-len-unit').forEach(span => { span.textContent = 'm'; });
+            }
 
             // Clicking empty grid space deselects whatever placed node was selected — but
             // not right after a click-drag pan, which would otherwise also land on `board`
@@ -10506,6 +10532,7 @@
                 }
                 dimsEl.textContent = text;
                 el.dataset.displayDims = text;
+                updateCabinetHeightBadge(el);
             });
         }
 
@@ -12905,7 +12932,7 @@
             if (!obstacles.length) {
                 resultEl.innerHTML = '<div class="elec-empty">No tools or cabinets placed yet.</div>';
             } else if (!issueCount) {
-                resultEl.innerHTML = `<div class="elec-status-badge ok">&#10003; No walkways narrower than ${minIn}in found</div>`;
+                resultEl.innerHTML = `<div class="elec-status-badge ok">&#10003; No walkways narrower than ${inchesToDisplay(minIn)}${dimUnitSuffix()} found</div>`;
             } else {
                 const itemCount = flaggedEls.size;
                 resultEl.innerHTML = `<div class="elec-status-badge warn">&#9888; ${issueCount} tight spot${issueCount === 1 ? '' : 's'} across ${itemCount} item${itemCount === 1 ? '' : 's'} — flagged in red on the grid</div>`;
@@ -13071,6 +13098,10 @@
         function renderClearanceSettingsList() {
             const container = document.getElementById('clearanceSettingsList');
             if (!container) return;
+            const descEl = document.getElementById('clearanceSettingsDesc');
+            const runUnitWord = unitSystem === 'metric' ? 'meters' : 'feet';
+            if (descEl) descEl.textContent = `Minimum clear space (in ${runUnitWord}) required around each machine type, measured from its un-rotated footprint — Left/Right run along the tool's infeed/outfeed axis for most feed-through machines, Top/Bottom are side clearance. The zone rotates with the tool if you rotate it on the grid.`;
+            const runUnit = unitSystem === 'metric' ? 'm' : 'ft';
             const overrides = loadClearanceOverrides();
             container.innerHTML = Object.keys(CLEARANCE_CATEGORY_DEFAULTS).map(category => {
                 const profile = getClearanceProfile(category);
@@ -13082,8 +13113,8 @@
                         <div class="clearance-settings-fields">
                             ${dirs.map(([key, label]) => `
                                 <label class="clearance-settings-field">
-                                    <span>${label}</span>
-                                    <input type="number" class="input-box clearance-dir-input" data-dir="${key}" min="0" step="0.5" value="${profile[key]}">
+                                    <span>${label} (${runUnit})</span>
+                                    <input type="number" class="input-box clearance-dir-input" data-dir="${key}" min="0" step="0.5" value="${feetToDisplay(profile[key])}">
                                 </label>
                             `).join('')}
                             <button type="button" class="mini-btn clearance-reset-btn" ${isCustom ? '' : 'disabled'}>Reset</button>
@@ -13098,7 +13129,7 @@
                     input.addEventListener('change', () => {
                         const overrides = loadClearanceOverrides();
                         const current = getClearanceProfile(category);
-                        current[input.dataset.dir] = Math.max(0, parseFloat(input.value) || 0);
+                        current[input.dataset.dir] = Math.max(0, displayToFeet(parseFloat(input.value) || 0));
                         overrides[category] = current;
                         saveClearanceOverrides(overrides);
                         renderClearanceSettingsList();
@@ -14133,7 +14164,7 @@
                 const rect = board.getBoundingClientRect();
                 const x = e.clientX - rect.left - board.clientLeft;
                 const y = e.clientY - rect.top - board.clientTop;
-                const thicknessIn = parseFloat(document.getElementById('wfWallThickness').value) || 4.5;
+                const thicknessIn = displayToInches(parseFloat(document.getElementById('wfWallThickness').value)) || 4.5;
                 const snapped = snapWallEndpoint(wallDrawStart, x, y);
                 renderWallDrawPreview(wallDrawStart, snapped, thicknessIn / 12);
             });
@@ -14149,7 +14180,7 @@
                 const lengthPx = Math.hypot(snapped.x - wallDrawStart.x, snapped.y - wallDrawStart.y);
                 if (lengthPx > 10) {
                     pushUndoSnapshot();
-                    const thicknessIn = parseFloat(document.getElementById('wfWallThickness').value) || 4.5;
+                    const thicknessIn = displayToInches(parseFloat(document.getElementById('wfWallThickness').value)) || 4.5;
                     const label = document.getElementById('wfWallLabel').value.trim();
                     internalWalls.push({
                         id: Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
@@ -14704,7 +14735,7 @@
             const badge = toolNode.querySelector('.cabinet-height-badge');
             if (!badge) return;
             const h = toolNode.dataset.mountHeightIn;
-            badge.textContent = h ? `${h}" high` : 'Set height';
+            badge.textContent = h ? `${inchesToDisplay(parseFloat(h))}${dimUnitSuffix()} high` : 'Set height';
             badge.title = 'Height off floor to bottom of cabinet — click to edit';
         }
 
@@ -15098,7 +15129,7 @@
         // inch-based field only needs adding to this list to pick up unit switching for free.
         const DIM_INPUT_IDS = ['cabWidthInput', 'cabDepthInput', 'cabHeightInput', 'cabShelfSpacingInput',
             'customToolWidthInput', 'customToolDepthInput', 'customToolHeightInput', 'cabinetHeightInput',
-            'wfDoorWidth', 'wfWindowWidth', 'outletHeightInput'];
+            'wfDoorWidth', 'wfWindowWidth', 'outletHeightInput', 'wfWallThickness'];
 
         function applyUnitLabels() {
             const widthLabel = document.querySelector('label[for="inputWidth"]');
@@ -15137,6 +15168,18 @@
             if (typeof refreshAllPlacedNodeDimsText === 'function') refreshAllPlacedNodeDimsText();
             if (typeof renderWallFeatures === 'function') renderWallFeatures();
             if (typeof renderRulers === 'function') renderRulers();
+
+            const runUnit = isMetric ? 'm' : 'ft';
+            const mainLenLabel = document.getElementById('calcMainLenLabel');
+            if (mainLenLabel) mainLenLabel.textContent = `Run (${runUnit})`;
+            document.querySelectorAll('.calc-len-label').forEach(label => { label.textContent = `Run (${runUnit})`; });
+            document.querySelectorAll('.dc-custom-len-unit').forEach(span => { span.textContent = runUnit; });
+
+            document.querySelectorAll('#clearanceMinWidth option').forEach(opt => {
+                const label = isMetric ? opt.dataset.metricLabel : opt.dataset.imperialLabel;
+                if (label) opt.textContent = label;
+            });
+            if (typeof renderClearanceSettingsList === 'function') renderClearanceSettingsList();
         }
 
         // The floor-tool catalog cards are static HTML (unlike Small Power Tools/Custom Tools,
@@ -15206,6 +15249,14 @@
                 const el = document.getElementById(id);
                 if (el && el.value !== '') dimValuesIn[id] = displayToInches(parseFloat(el.value));
             });
+            // Same pattern for the Dust Collection Calculator's feet-denominated run-length
+            // fields: main trunk plus every dynamically-created branch row.
+            const dcMainLenFt = displayToFeet(parseFloat(document.getElementById('calcMainLen').value) || 0);
+            const dcBranchLenEls = Array.from(document.querySelectorAll('.calc-len-input'));
+            const dcBranchLensFt = dcBranchLenEls.map(el => displayToFeet(parseFloat(el.value) || 0));
+            // Same pattern for the sidebar's 4 custom-length duct/drop catalog card inputs.
+            const dcCustomLenEls = Array.from(document.querySelectorAll('.custom-duct-length-input, .custom-drop-length-input'));
+            const dcCustomLensFt = dcCustomLenEls.map(el => displayToFeet(parseFloat(el.value) || 0));
 
             unitSystem = newUnit;
             localStorage.setItem('kerphUnitSystem', unitSystem);
@@ -15216,6 +15267,10 @@
                 if (!(id in dimValuesIn)) return;
                 document.getElementById(id).value = inchesToDisplay(dimValuesIn[id]);
             });
+            document.getElementById('calcMainLen').value = feetToDisplay(dcMainLenFt);
+            dcBranchLenEls.forEach((el, i) => { el.value = feetToDisplay(dcBranchLensFt[i]); });
+            dcCustomLenEls.forEach((el, i) => { el.value = feetToDisplay(dcCustomLensFt[i]); });
+            document.getElementById('calcResults').innerHTML = '';
             if (typeof renderDrawerList === 'function') renderDrawerList();
             applyUnitLabels();
         }

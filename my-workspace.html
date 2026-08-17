@@ -481,6 +481,24 @@
             return new Date(iso).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
         }
 
+        // Same feet<->meters boundary-conversion pattern as workshop-planner.html's
+        // feetToDisplay/footprintUnitSuffix -- canonical storage stays feet everywhere
+        // (shop layouts, tool footprints), this is display-only.
+        const FT_PER_METER = 3.28084;
+        function getUnitSystem() { return localStorage.getItem('kerphUnitSystem') || 'imperial'; }
+        function feetToDisplay(feet) {
+            return getUnitSystem() === 'metric'
+                ? Math.round((feet / FT_PER_METER) * 100) / 100
+                : Math.round(feet * 10) / 10;
+        }
+        function footprintUnitSuffix() { return getUnitSystem() === 'metric' ? 'm' : "'"; }
+        function fmtShopDims(w, l, h) {
+            const u = footprintUnitSuffix();
+            const parts = [`${feetToDisplay(w)}${u}`, `${feetToDisplay(l)}${u}`];
+            if (h) parts.push(`${feetToDisplay(h)}${u}`);
+            return parts.join(' x ');
+        }
+
         function getPlan() { return kerphGetCachedEffectivePlan(); }
         function initPlanSelector() {
             const select = document.getElementById('planSelector');
@@ -900,7 +918,8 @@
             const wrap = document.getElementById('workspaceCurrentShop');
             if (!layout || (!layout.widthFeet && !layout.tools)) { wrap.innerHTML = ''; return; }
             const toolCount = Array.isArray(layout.tools) ? layout.tools.length : 0;
-            const dims = (layout.widthFeet && layout.lengthFeet) ? `${layout.widthFeet}&prime; &times; ${layout.lengthFeet}&prime;` : 'Shop in progress';
+            const u = footprintUnitSuffix();
+            const dims = (layout.widthFeet && layout.lengthFeet) ? `${feetToDisplay(layout.widthFeet)}${u} &times; ${feetToDisplay(layout.lengthFeet)}${u}` : 'Shop in progress';
             wrap.innerHTML = `
                 <div class="workspace-shop-card">
                     <div class="workspace-shop-card-meta"><strong>Current shop:</strong> ${dims} &mdash; ${toolCount} item${toolCount === 1 ? '' : 's'} placed</div>
@@ -913,7 +932,8 @@
             const grid = document.getElementById('workspaceLayoutsGrid');
             if (!layouts.length) { grid.innerHTML = emptyBlock('No saved layouts yet — build one in the Workshop Layout Planner.'); return; }
             grid.innerHTML = layouts.slice().reverse().slice(0, 6).map((l) => {
-                const dims = (l.widthFeet && l.lengthFeet) ? `${l.widthFeet}&prime; &times; ${l.lengthFeet}&prime;` : fmtDate(l.savedAt);
+                const u = footprintUnitSuffix();
+                const dims = (l.widthFeet && l.lengthFeet) ? `${feetToDisplay(l.widthFeet)}${u} &times; ${feetToDisplay(l.lengthFeet)}${u}` : fmtDate(l.savedAt);
                 return cardLink(`workshop-planner.html?loadLayout=${encodeURIComponent(l.id)}`, l.name || 'Untitled Layout', dims, LAYOUT_TYPE_LABELS[l.layoutType] || 'Workshop');
             }).join('');
         }
@@ -1071,7 +1091,7 @@
             const rows = owned.map(([name, entry]) => {
                 const dispName = entry.nickname ? `${name} (${entry.nickname})` : name;
                 const dims = (entry.widthFt && entry.lengthFt)
-                    ? `${entry.widthFt}' x ${entry.lengthFt}'${entry.heightFt ? ' x ' + entry.heightFt + '\'' : ''}`
+                    ? fmtShopDims(entry.widthFt, entry.lengthFt, entry.heightFt)
                     : '—';
                 const hasValue = entry.replacementValue != null;
                 if (hasValue) { total += entry.replacementValue; valuedCount++; }

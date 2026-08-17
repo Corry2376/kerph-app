@@ -654,6 +654,19 @@
             return cachedSavedLayouts;
         }
 
+        // Same feet<->meters boundary-conversion pattern as workshop-planner.html's
+        // feetToDisplay/footprintUnitSuffix -- canonical storage stays feet, this is
+        // display-only, applied here to the quote-request text drafted for the sender's
+        // own saved shop dimensions.
+        const FT_PER_METER = 3.28084;
+        function getUnitSystem() { return localStorage.getItem('kerphUnitSystem') || 'imperial'; }
+        function feetToDisplay(feet) {
+            return getUnitSystem() === 'metric'
+                ? Math.round((feet / FT_PER_METER) * 100) / 100
+                : Math.round(feet * 10) / 10;
+        }
+        function footprintUnitSuffix() { return getUnitSystem() === 'metric' ? 'm' : "'"; }
+
         function escapeHtml(str) {
             const div = document.createElement('div');
             div.textContent = str == null ? '' : String(str);
@@ -1035,7 +1048,9 @@
             lines.push(`Hi — I'm looking for a quote on a ${projectType}${zip ? ` near ${zip}` : ''}.`);
             lines.push('');
             if (layout && layout.widthFeet && layout.lengthFeet) {
-                lines.push(`Planned size: ${layout.widthFeet}' x ${layout.lengthFeet}'${layout.ceilingHeightFt ? ` x ${layout.ceilingHeightFt}' ceiling` : ''}.`);
+                const u = footprintUnitSuffix();
+                const ceiling = layout.ceilingHeightFt ? ` x ${feetToDisplay(layout.ceilingHeightFt)}${u} ceiling` : '';
+                lines.push(`Planned size: ${feetToDisplay(layout.widthFeet)}${u} x ${feetToDisplay(layout.lengthFeet)}${u}${ceiling}.`);
             }
             lines.push(`Budget: ${budget}.`);
             lines.push(`Timeline: ${timeline}.`);
