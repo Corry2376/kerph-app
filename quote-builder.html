@@ -611,8 +611,8 @@
                 <input type="date" class="input-box" id="quoteDateInput">
             </div>
             <div class="settings-row">
-                <label class="header-field-label" for="deliveryDateInput">Expected Delivery</label>
-                <input type="date" class="input-box" id="deliveryDateInput">
+                <label class="header-field-label" for="dueDateInput">Due Date</label>
+                <input type="date" class="input-box" id="dueDateInput">
             </div>
         </div>
 
@@ -1192,7 +1192,7 @@
         function blankQuote() {
             return {
                 id: null, name: '', clientName: '', clientEmail: '', projectName: '',
-                date: new Date().toISOString().slice(0, 10), deliveryDate: '',
+                date: new Date().toISOString().slice(0, 10), dueDate: '',
                 materials: [], laborHours: 0, laborRate: 0, consumables: 0,
                 overheadPct: 0, marginPct: 0, status: 'draft', hideLineItems: false,
                 // clientResponse mirrors the client's actual accept/decline choice, set once by
@@ -1237,7 +1237,7 @@
             quote.projectName = document.getElementById('projectNameInput').value.trim();
             quote.status = document.getElementById('quoteStatusSelect').value;
             quote.date = document.getElementById('quoteDateInput').value || quote.date;
-            quote.deliveryDate = document.getElementById('deliveryDateInput').value;
+            quote.dueDate = document.getElementById('dueDateInput').value;
             quote.laborHours = parseFloat(document.getElementById('laborHoursInput').value) || 0;
             quote.laborRate = parseFloat(document.getElementById('laborRateInput').value) || 0;
             quote.consumables = parseFloat(document.getElementById('consumablesInput').value) || 0;
@@ -1367,7 +1367,7 @@
             `;
         }
 
-        ['quoteNameInput', 'clientNameInput', 'clientEmailInput', 'projectNameInput', 'quoteDateInput', 'deliveryDateInput', 'laborHoursInput', 'laborRateInput', 'consumablesInput', 'overheadPctInput', 'marginPctInput'].forEach(id => {
+        ['quoteNameInput', 'clientNameInput', 'clientEmailInput', 'projectNameInput', 'quoteDateInput', 'dueDateInput', 'laborHoursInput', 'laborRateInput', 'consumablesInput', 'overheadPctInput', 'marginPctInput'].forEach(id => {
             document.getElementById(id).addEventListener('input', renderQuote);
         });
         document.getElementById('showLineItemsToggle').addEventListener('change', renderQuote);
@@ -1389,7 +1389,7 @@
             document.getElementById('projectNameInput').value = quote.projectName || '';
             document.getElementById('quoteStatusSelect').value = quote.status || 'draft';
             document.getElementById('quoteDateInput').value = quote.date || '';
-            document.getElementById('deliveryDateInput').value = quote.deliveryDate || '';
+            document.getElementById('dueDateInput').value = quote.dueDate || '';
             document.getElementById('laborHoursInput').value = quote.laborHours || 0;
             document.getElementById('laborRateInput').value = quote.laborRate || 0;
             document.getElementById('consumablesInput').value = quote.consumables || 0;
@@ -1424,11 +1424,15 @@
         function quoteItemHtml(q) {
             const total = computeQuoteTotals(q).clientTotal;
             const status = q.status || 'draft';
+            const dueText = q.dueDate
+                ? new Date(q.dueDate + 'T00:00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
+                : null;
             return `
                 <div class="panel-item">
                     <div>
                         <div class="panel-item-title">${escapeHtml(q.name || 'Untitled')}<span class="quote-status-badge quote-status-${status}">${QUOTE_STATUS_LABELS[status] || 'Draft'}</span></div>
-                        <div class="panel-item-dims">${escapeHtml(q.clientName || '')} &mdash; ${fmtMoney(total)}</div>
+                        <div class="panel-item-dims">${escapeHtml(q.clientName || 'No client name')} &mdash; ${fmtMoney(total)}</div>
+                        ${dueText ? `<div class="panel-item-dims" style="margin-top:2px;">Due ${dueText}</div>` : ''}
                     </div>
                     <div class="panel-item-actions">
                         <button type="button" class="mini-btn" data-load="${q.id}">Open</button>
