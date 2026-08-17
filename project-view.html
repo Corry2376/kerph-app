@@ -150,6 +150,20 @@
             return div.innerHTML;
         }
 
+        // This is a public share-link page with no login, so there's no Account Settings
+        // modal to read a preference from -- just read the same localStorage key the
+        // logged-in pages write to. Falls back to imperial for a fresh/anonymous visitor.
+        const unitSystem = localStorage.getItem('kerphUnitSystem') || 'imperial';
+        const CM_PER_INCH = 2.54;
+        function inchesToDisplay(inches) {
+            return unitSystem === 'metric'
+                ? Math.round(inches * CM_PER_INCH * 10) / 10
+                : Math.round(inches * 10) / 10;
+        }
+        function dimUnitSuffix() {
+            return unitSystem === 'metric' ? 'cm' : '"';
+        }
+
         // Minimal, read-only subset of project-designer.html's own MATERIALS/rendering code —
         // duplicated rather than shared (this app has no build step to import a common module
         // from, same reasoning as quote-view.html's duplicated computeQuoteTotals). Keep this
@@ -404,7 +418,7 @@
             document.getElementById('pvTableBody').innerHTML = Object.values(groups).map(g => `
                 <tr>
                     <td>${escapeHtml(Array.from(g.names).join(', '))}</td>
-                    <td>${g.widthIn}" x ${g.heightIn}" x ${g.thicknessIn}"</td>
+                    <td>${inchesToDisplay(g.widthIn)}${dimUnitSuffix()} x ${inchesToDisplay(g.heightIn)}${dimUnitSuffix()} x ${inchesToDisplay(g.thicknessIn)}${dimUnitSuffix()}</td>
                     <td>${escapeHtml(MATERIAL_LABELS[g.material] || 'Custom / Other')}</td>
                     <td>${g.qty}</td>
                 </tr>
