@@ -266,10 +266,9 @@
             padding: 20px;
             position: sticky;
             top: 0;
-            /* Lines its top edge up with the quote-header-card in the middle column instead
-               of the action-row buttons above it -- matches the action row's own height
-               (~90px) plus its margin-bottom (14px). */
-            margin-top: 104px;
+            /* margin-top is set live by syncQuoteDashboardOffset() to exactly match the
+               action row's real rendered height -- a hardcoded px value here drifted out of
+               sync with real font/OS rendering, so JS measures it instead of guessing. */
             box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05), 0 4px 10px -4px rgba(15, 23, 42, 0.12);
         }
         .quote-dashboard-title { font-size: 15px; font-weight: 800; color: #0f172a; margin-bottom: 4px; }
@@ -1681,6 +1680,24 @@
         document.getElementById('quoteDateInput').value = quote.date;
         renderMaterialsList();
         renderQuote();
+
+        // Lines up #quoteDashboardPanel's top edge with .quote-header-card instead of the
+        // action-row buttons above it, by measuring the action row's real rendered height
+        // live rather than hardcoding a px guess -- font/OS/zoom differences across browsers
+        // meant a fixed value drifted out of sync with what actually renders.
+        function syncQuoteDashboardOffset() {
+            const actionRow = document.querySelector('.quote-action-row');
+            const dashboard = document.getElementById('quoteDashboardPanel');
+            if (!actionRow || !dashboard) return;
+            // Below 1100px the layout stacks into a single column (see the mobile media
+            // query), which sets its own fixed margin-top -- don't fight that here.
+            if (window.innerWidth <= 1100) { dashboard.style.marginTop = ''; return; }
+            const height = actionRow.getBoundingClientRect().height;
+            const marginBottom = parseFloat(getComputedStyle(actionRow).marginBottom) || 0;
+            dashboard.style.marginTop = (height + marginBottom) + 'px';
+        }
+        window.addEventListener('resize', syncQuoteDashboardOffset);
+        syncQuoteDashboardOffset();
     </script>
 </body>
 </html>
