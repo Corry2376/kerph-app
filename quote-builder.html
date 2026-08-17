@@ -1488,22 +1488,41 @@
             });
         }
 
-        document.getElementById('saveQuoteBtn').addEventListener('click', async () => {
-            if (!isSignedIn()) { showToast('Sign in (top right) to save quotes.'); return; }
-            readQuoteFromForm();
-            if (!quote.name) { showToast('Give this quote a name before saving.'); return; }
+        // Shared by the manual Save button and the Status dropdown's autosave (below) --
+        // silent/requireName let the status-change path skip the "sign in"/"name it first"
+        // toasts for a brand-new, not-yet-named quote (nothing meaningful to persist yet)
+        // instead of interrupting a simple dropdown click with an unrelated warning.
+        async function saveQuoteToServer({ silent = false } = {}) {
+            if (!isSignedIn()) { if (!silent) showToast('Sign in (top right) to save quotes.'); return false; }
+            if (!quote.name) { if (!silent) showToast('Give this quote a name before saving.'); return false; }
             let result;
             if (quote.id) {
                 result = await kerphUpdateQuote(quote.id, quote);
             } else {
                 result = await kerphInsertQuote(quote);
             }
-            if (result.error) { showToast(result.error.message || 'Could not save quote.'); return; }
+            if (result.error) { showToast(result.error.message || 'Could not save quote.'); return false; }
             quote = result.data;
             const idx = savedQuotes.findIndex(q => q.id === quote.id);
             if (idx >= 0) savedQuotes[idx] = quote; else savedQuotes.push(quote);
             renderQuotesList();
             showToast('Quote saved.');
+            return true;
+        }
+
+        document.getElementById('saveQuoteBtn').addEventListener('click', () => {
+            readQuoteFromForm();
+            saveQuoteToServer();
+        });
+
+        // Status lives in the header card now, away from the Save button in the left panel --
+        // marking a quote Completed (or any other status change) without an autosave would
+        // mean a trip back across the page just to persist it. Skips silently, rather than
+        // nagging, for a quote that isn't signed-in/named yet -- the manual Save button still
+        // catches that case with its normal toasts once the user does click it.
+        document.getElementById('quoteStatusSelect').addEventListener('change', () => {
+            readQuoteFromForm();
+            if (isSignedIn() && quote.name) saveQuoteToServer({ silent: true });
         });
 
         // The share link is a random token, not the quote's own DB id — keeps the public
