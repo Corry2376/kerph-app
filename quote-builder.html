@@ -142,11 +142,7 @@
         .input-box { width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; font-weight: 600; }
         .select-box { width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; font-weight: 600; background: #f8fafc; }
 
-        /* transform: translateZ(0) forces the overlay onto its own compositing layer --
-           without it, some mobile browsers (notably iOS Safari) can let a position:fixed
-           overlay lag behind a separately-scrolling ancestor's content during momentum
-           scroll, which reads as the overlay "scrolling behind" the page. */
-        .modal-overlay { position: fixed; inset: 0; background-color: rgba(15, 23, 42, 0.5); z-index: 3000; display: flex; align-items: center; justify-content: center; padding: 24px; transform: translateZ(0); }
+        .modal-overlay { position: fixed; inset: 0; background-color: rgba(15, 23, 42, 0.5); z-index: 3000; display: flex; align-items: center; justify-content: center; padding: 24px; }
         .modal-box { background-color: #ffffff; border-radius: 12px; padding: 24px; width: 320px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4); }
         .account-modal-box { width: 380px; max-height: 88vh; overflow-y: auto; }
         .account-member-since { font-size: 10.5px; color: #94a3b8; font-weight: 600; margin-top: 6px; }
@@ -609,9 +605,15 @@
             <label class="header-field-label" for="projectNameInput">Project</label>
             <input type="text" class="input-box" id="projectNameInput" placeholder="e.g. Kitchen cabinet rebuild">
         </div>
-        <div class="settings-row">
-            <label class="header-field-label" for="quoteDateInput">Date</label>
-            <input type="date" class="input-box" id="quoteDateInput">
+        <div class="settings-row-split">
+            <div class="settings-row">
+                <label class="header-field-label" for="quoteDateInput">Date</label>
+                <input type="date" class="input-box" id="quoteDateInput">
+            </div>
+            <div class="settings-row">
+                <label class="header-field-label" for="deliveryDateInput">Expected Delivery</label>
+                <input type="date" class="input-box" id="deliveryDateInput">
+            </div>
         </div>
 
         <div class="sidebar-title">Materials</div>
@@ -736,6 +738,30 @@
     <script src="supabase-client.js"></script>
     <script>
         const PLAN_KEY = 'kerphPlan';
+
+        // None of this page's 3 modals ever locked the page's own scroll while open -- the
+        // backdrop is only 50% opaque, so scrolling the mouse wheel with a modal open let
+        // #canvas-area's content (or, in the narrow layout, the whole page down to the
+        // site footer) visibly slide past behind the translucent overlay. That's the actual
+        // mechanism behind "content scrolling behind the modals" -- not a z-index/stacking
+        // bug (every .modal-overlay already sits correctly on top; DOM inspection at every
+        // scroll position confirms it). A MutationObserver on every .modal-overlay's `style`
+        // attribute means this covers all 3 modals (and any added later) without having to
+        // thread a lock/unlock call into each individual open/close site.
+        (function () {
+            const scrollTargets = [document.body, document.getElementById('canvas-area')].filter(Boolean);
+            function anyModalOpen() {
+                return [...document.querySelectorAll('.modal-overlay')].some(el => getComputedStyle(el).display !== 'none');
+            }
+            function syncScrollLock() {
+                const locked = anyModalOpen();
+                scrollTargets.forEach(el => { el.style.overflow = locked ? 'hidden' : ''; });
+            }
+            document.querySelectorAll('.modal-overlay').forEach(el => {
+                new MutationObserver(syncScrollLock).observe(el, { attributes: true, attributeFilter: ['style'] });
+            });
+            syncScrollLock();
+        })();
 
         function showToast(message) {
             const nudge = document.getElementById('upgradeNudge');
@@ -1165,7 +1191,7 @@
         function blankQuote() {
             return {
                 id: null, name: '', clientName: '', clientEmail: '', projectName: '',
-                date: new Date().toISOString().slice(0, 10),
+                date: new Date().toISOString().slice(0, 10), deliveryDate: '',
                 materials: [], laborHours: 0, laborRate: 0, consumables: 0,
                 overheadPct: 0, marginPct: 0, status: 'draft', hideLineItems: false,
                 // clientResponse mirrors the client's actual accept/decline choice, set once by
@@ -1210,6 +1236,7 @@
             quote.projectName = document.getElementById('projectNameInput').value.trim();
             quote.status = document.getElementById('quoteStatusSelect').value;
             quote.date = document.getElementById('quoteDateInput').value || quote.date;
+            quote.deliveryDate = document.getElementById('deliveryDateInput').value;
             quote.laborHours = parseFloat(document.getElementById('laborHoursInput').value) || 0;
             quote.laborRate = parseFloat(document.getElementById('laborRateInput').value) || 0;
             quote.consumables = parseFloat(document.getElementById('consumablesInput').value) || 0;
@@ -1339,7 +1366,7 @@
             `;
         }
 
-        ['quoteNameInput', 'clientNameInput', 'clientEmailInput', 'projectNameInput', 'quoteDateInput', 'laborHoursInput', 'laborRateInput', 'consumablesInput', 'overheadPctInput', 'marginPctInput'].forEach(id => {
+        ['quoteNameInput', 'clientNameInput', 'clientEmailInput', 'projectNameInput', 'quoteDateInput', 'deliveryDateInput', 'laborHoursInput', 'laborRateInput', 'consumablesInput', 'overheadPctInput', 'marginPctInput'].forEach(id => {
             document.getElementById(id).addEventListener('input', renderQuote);
         });
         document.getElementById('showLineItemsToggle').addEventListener('change', renderQuote);
@@ -1361,6 +1388,7 @@
             document.getElementById('projectNameInput').value = quote.projectName || '';
             document.getElementById('quoteStatusSelect').value = quote.status || 'draft';
             document.getElementById('quoteDateInput').value = quote.date || '';
+            document.getElementById('deliveryDateInput').value = quote.deliveryDate || '';
             document.getElementById('laborHoursInput').value = quote.laborHours || 0;
             document.getElementById('laborRateInput').value = quote.laborRate || 0;
             document.getElementById('consumablesInput').value = quote.consumables || 0;
