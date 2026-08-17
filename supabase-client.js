@@ -607,8 +607,18 @@
 
     // Sitewide footer -- injected here (not added to ~26 pages' own HTML) for the same reason
     // as the sign-up interception above: one shared source of truth instead of duplicated
-    // markup. Normal document flow (not position:fixed), so it can never overlap the floating
-    // toolbars/panels several canvas-heavy pages already have.
+    // markup.
+    //
+    // Appended inside #canvas-area (its last child) when that element exists, body otherwise.
+    // #canvas-area (quote-builder.html, project-designer.html, cutlist-optimizer.html) is a
+    // position:absolute, independently-scrolling content region with no background of its
+    // own -- appending the footer to body put it in NORMAL document flow at roughly the same
+    // spot #canvas-area starts, so it never moved as #canvas-area's own content scrolled, and
+    // showed through #canvas-area's transparent gaps between cards. From the content's own
+    // scroll frame, that reads as the footer "scrolling behind" everything else, since it's the
+    // one thing on screen that visibly stays still while the rest moves. Appending it as
+    // #canvas-area's own last child instead makes it part of that scrolling content, where it
+    // belongs, and where the comment above always assumed it would land.
     function kerphInjectFooter() {
         if (document.getElementById('kerphSiteFooter')) return;
         const el = document.createElement('footer');
@@ -623,7 +633,7 @@
             <div style="margin-top:6px;">&copy; ${new Date().getFullYear()} Kerph</div>
             <div style="margin-top:6px; max-width:480px; margin-left:auto; margin-right:auto;">As an Amazon Associate, Kerph earns from qualifying purchases.</div>
         `;
-        document.body.appendChild(el);
+        (document.getElementById('canvas-area') || document.body).appendChild(el);
         el.querySelector('#kerphFooterContactLink').addEventListener('click', (e) => {
             e.preventDefault();
             kerphShowContactModal();
