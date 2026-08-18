@@ -2032,18 +2032,20 @@
         /* A real 45deg fitting is a straight mitered cut, not a curved bend like the 90deg
            elbow above -- drawn as a straight diagonal band instead of an arc. One flat
            (vertical) face on the left where it mates flush with a straight duct, one
-           angled face where it exits -- a quadrilateral, not a rectangle. The band's four
-           corners are derived from this piece's own ports (see DUCT_PORTS.elbow45): the
-           left face is centered on the west port (fx=0,fy=0.5), the angled face is centered
-           on the 45deg exit port (fx=0.8536,fy=0.8536), each face offset perpendicular to
-           the piece's own centerline by the same half-thickness the 90deg elbow uses (scaled
-           down slightly so the corner nearest the box edge doesn't overshoot the viewBox). */
+           angled face where it exits -- a quadrilateral, not a rectangle. The band's left
+           face uses the EXACT SAME half-thickness as the 90deg elbow's own band (8.5-31.5 for
+           4in, 7.5-32.5 for 6in -- same y-span, so the two fittings read as the same pipe
+           diameter sitting side by side) instead of a thinner one, which is what made this
+           fitting look visibly smaller than the 90 before. The far corner (near the 45deg
+           exit port at fx=0.8536,fy=0.8536 -- see DUCT_PORTS.elbow45) lands past x=40/y=40 at
+           full thickness, so that one point is clipped to exactly where the band's edge
+           crosses y=40, instead of shrinking the whole band down to avoid it. */
         .placed-tool-node.elbow45-node.fitting-4in {
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M0,13.5 L36.63,28.13 L31.65,40 L0,26.5 Z' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5' stroke-linejoin='round'/%3E%3C/svg%3E");
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M0,8.5 L38.54,23.52 L31.71,40 L0,31.5 Z' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5' stroke-linejoin='round'/%3E%3C/svg%3E");
         }
 
         .placed-tool-node.elbow45-node.fitting-6in {
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M0,13 L36.82,27.67 L31.46,40 L0,27 Z' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5' stroke-linejoin='round'/%3E%3C/svg%3E");
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M0,7.5 L38.92,22.59 L31.71,40 L0,32.5 Z' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5' stroke-linejoin='round'/%3E%3C/svg%3E");
         }
 
         /* One single mitered outline (not 3 overlapping rects) so there's no internal seam
