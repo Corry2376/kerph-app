@@ -612,6 +612,67 @@
             padding: 20px;
             z-index: 90;
             overflow-y: auto;
+            transition: width 0.15s ease, padding 0.15s ease;
+        }
+
+        /* Small edge tab that collapses the catalog sidebar down to nothing, and a matching
+           one on the right that collapses every stacked floating panel at once (they're
+           already individually collapsible one at a time -- this is the "give me the whole
+           grid back" shortcut for both sides). #canvas-view-space's left/width are normally
+           hardcoded to leave room for the 310px sidebar (see its own rule) -- the collapsed
+           state overrides both so the grid actually reclaims the freed space instead of just
+           leaving it blank. */
+        .sidebar-collapse-btn {
+            position: fixed;
+            top: 165px;
+            left: 310px;
+            z-index: 95;
+            width: 20px;
+            height: 40px;
+            border: 1px solid #cbd5e1;
+            border-left: none;
+            border-radius: 0 8px 8px 0;
+            background-color: #ffffff;
+            color: #1e3a8a;
+            cursor: pointer;
+            font-size: 11px;
+            transition: left 0.15s ease;
+        }
+        .sidebar-collapse-btn:hover { background-color: #eef2ff; }
+
+        .panels-collapse-btn {
+            position: fixed;
+            top: 150px;
+            right: 24px;
+            z-index: 1500;
+            padding: 5px 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            background-color: #ffffff;
+            color: #1e3a8a;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .panels-collapse-btn:hover { background-color: #eef2ff; }
+        .panels-collapse-btn.active { background-color: #1e3a8a; color: #ffffff; border-color: #1e3a8a; }
+
+        body.sidebar-collapsed #sidebar-panel {
+            width: 0;
+            padding: 0;
+            overflow: hidden;
+            border-right: none;
+        }
+        body.sidebar-collapsed .sidebar-collapse-btn {
+            left: 0;
+        }
+        body.sidebar-collapsed #canvas-view-space {
+            left: 0;
+            width: 100vw;
+        }
+        body.sidebar-collapsed .measure-toolbar,
+        body.sidebar-collapsed .layers-bar {
+            left: 10px;
         }
 
         .sidebar-title {
@@ -1435,6 +1496,15 @@
             font-size: 11.5px; color: #92400e; background: #fffbeb; border: 1px solid #fde68a;
             border-radius: 6px; padding: 8px 10px; margin-top: 6px; line-height: 1.6;
         }
+        .clearance-conflict-row .checkbox-label {
+            align-items: flex-start; font-weight: 400; color: inherit; gap: 6px;
+        }
+        .clearance-conflict-row .checkbox-label input[type="checkbox"] {
+            margin-top: 2px; flex-shrink: 0;
+        }
+        .clearance-conflict-ignored {
+            text-decoration: line-through; opacity: 0.6;
+        }
         .clearance-settings-row {
             border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px; margin-bottom: 10px;
         }
@@ -1982,6 +2052,7 @@
         .placed-tool-node.elbow45-node,
         .placed-tool-node.y-joint-node,
         .placed-tool-node.t-joint-node,
+        .placed-tool-node.wye45-node,
         .placed-tool-node.drop-node,
         .placed-tool-node.reducer-node {
             background-color: transparent;
@@ -2067,6 +2138,19 @@
 
         .placed-tool-node.t-joint-node.fitting-6in {
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M0,9 L40,9 L40,31 L31,31 L31,40 L9,40 L9,31 L0,31 Z' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5'/%3E%3C/svg%3E");
+        }
+
+        /* Same straight through-run band as the T-joint above, but the branch notch is cut
+           at a true 45deg instead of square -- one continuous outline (trunk boundary, then
+           out along the branch's near edge to its tip, back along the far edge), computed so
+           the branch's outer corner lands exactly on this piece's 45deg port (see DUCT_PORTS'
+           wye45 entry, fx=0.8536/fy=0.8536) with no separate overlapping shape or seam line. */
+        .placed-tool-node.wye45-node.fitting-4in {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M0,10 L40,10 L40,25.86 L41.21,27.07 L27.07,41.21 L15.86,30 L0,30 Z' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5' stroke-linejoin='round'/%3E%3C/svg%3E");
+        }
+
+        .placed-tool-node.wye45-node.fitting-6in {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M0,9 L40,9 L40,24.44 L41.92,26.36 L26.36,41.92 L15.44,31 L0,31 Z' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5' stroke-linejoin='round'/%3E%3C/svg%3E");
         }
 
         .placed-tool-node.bracket-node {
@@ -2690,6 +2774,15 @@
             #sidebarToggleBtn {
                 display: flex;
             }
+            /* Below this breakpoint the sidebar already has its own dedicated hamburger
+               toggle (#sidebarToggleBtn/body.sidebar-open, right above), and the right-hand
+               panels already collapse into the #mobilePanelTabBar bottom sheet -- both new
+               desktop collapse buttons would just be a redundant, confusing second control
+               fighting the mobile-specific system already built for these breakpoints. */
+            .sidebar-collapse-btn,
+            .panels-collapse-btn {
+                display: none;
+            }
             #canvas-view-space {
                 left: 0;
                 width: 100vw;
@@ -3052,6 +3145,9 @@
          viewport. Hidden entirely above that breakpoint via #sidebarToggleBtn's CSS. -->
     <button type="button" id="sidebarToggleBtn" title="Show tool catalog" aria-label="Show tool catalog">&#9776;</button>
     <div id="sidebarBackdrop"></div>
+
+    <button type="button" id="sidebarCollapseBtn" class="sidebar-collapse-btn" title="Collapse the tool catalog for more grid room">&#9664;</button>
+    <button type="button" id="collapseAllPanelsBtn" class="panels-collapse-btn" title="Collapse all the right-hand panels for more grid room">&#9654; Collapse Panels</button>
 
     <div id="sidebar-panel">
         <div class="sidebar-title">Drag Machinery onto Grid</div>
@@ -5386,6 +5482,13 @@
                                 <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
                             </div>
                         </div>
+                        <div class="tool-box-item" draggable="true" data-layer="dust-collection" data-width="0.7" data-length="0.7" data-height="7.0" data-name="4in Duct Wye 45">
+                            <div><div class="tool-title">4" Duct Wye (45&deg;)</div><div class="tool-dims">0.7' x 0.7' Footprint</div></div>
+                            <div class="tool-status-controls">
+                                <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
+                                <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
+                            </div>
+                        </div>
                         <div class="tool-box-item" draggable="true" data-layer="dust-collection" data-width="0.5" data-length="0.15" data-height="7.0" data-name="4in Pipe Bracket">
                             <div><div class="tool-title">4" Pipe Bracket</div><div class="tool-dims">0.5' x 0.15' Footprint</div></div>
                             <div class="tool-status-controls">
@@ -5481,6 +5584,13 @@
                         </div>
                         <div class="tool-box-item" draggable="true" data-layer="dust-collection" data-width="0.9" data-length="0.9" data-height="7.0" data-name="6in Duct T-Joint">
                             <div><div class="tool-title">6" Duct T-Joint</div><div class="tool-dims">0.9' x 0.9' Footprint</div></div>
+                            <div class="tool-status-controls">
+                                <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
+                                <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
+                            </div>
+                        </div>
+                        <div class="tool-box-item" draggable="true" data-layer="dust-collection" data-width="0.9" data-length="0.9" data-height="7.0" data-name="6in Duct Wye 45">
+                            <div><div class="tool-title">6" Duct Wye (45&deg;)</div><div class="tool-dims">0.9' x 0.9' Footprint</div></div>
                             <div class="tool-status-controls">
                                 <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
                                 <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
@@ -8008,7 +8118,7 @@
         <button type="button" class="wf-tab" data-layer-view="dust-collection">Dust Collection</button>
         <button type="button" class="wf-tab" data-layer-view="lighting">Lighting</button>
         <button type="button" class="wf-tab" data-layer-view="cabinets">Cabinets</button>
-        <label class="checkbox-label" style="margin-left:4px;" title="When off, cabinets only show on the dedicated Cabinets layer instead of as background context on every layer">
+        <label class="checkbox-label" style="margin-left:4px; background-color:#f9fafb; border:1px solid #cbd5e1; border-radius:6px; padding:5px 8px;" title="When off, cabinets only show on the dedicated Cabinets layer instead of as background context on every layer">
             <input type="checkbox" id="showCabinetsOnOtherLayersCheckbox" checked> Show Cabinets on other layers
         </label>
     </div>
@@ -8988,6 +9098,10 @@
             elbow45: [{ fx: 0, fy: 0.5, angle: 180 }, { fx: 0.8536, fy: 0.8536, angle: 45 }],
             tjoint: [{ fx: 0, fy: 0.5, angle: 180 }, { fx: 1, fy: 0.5, angle: 0 }, { fx: 0.5, fy: 1, angle: 90 }],
             yjoint: [{ fx: 0.5, fy: 1, angle: 90 }, { fx: 0.8536, fy: 0.1464, angle: 315 }, { fx: 0.1464, fy: 0.1464, angle: 225 }],
+            // A straight through-run (same left/right ports as a duct) with a third port
+            // branching off at a true 45deg bearing instead of the T-joint's 90 -- a gentler
+            // tap into the main run, same diagonal-port convention as elbow45's exit port.
+            wye45: [{ fx: 0, fy: 0.5, angle: 180 }, { fx: 1, fy: 0.5, angle: 0 }, { fx: 0.8536, fy: 0.8536, angle: 45 }],
             // Straight two-port piece geometrically identical to a duct segment — the only
             // thing that makes it a reducer is that its two ports are different sizes (see
             // getPortSizeClasses), letting a 4in run snap onto one end and a 6in run onto
@@ -9003,11 +9117,26 @@
             // "Duct Elbow" too, so the more specific match has to win first.
             if (name.includes('Duct Elbow') && name.includes('45')) return 'elbow45';
             if (name.includes('Duct Elbow')) return 'elbow';
+            if (name.includes('Wye 45')) return 'wye45';
             if (name.includes('Y-Joint')) return 'yjoint';
             if (name.includes('T-Joint')) return 'tjoint';
             if (name.includes('Duct Reducer')) return 'reducer';
             if (name.includes('Dust Duct')) return 'duct';
             return null;
+        }
+
+        // Product-name substrings that identify a placed node as a dust collector UNIT
+        // (JET/Oneida/WEN/Laguna etc.) rather than a flow-through fitting -- collectors have
+        // no DUCT_PORTS entry of their own (they're not a port-based shape), so anything that
+        // traces or snaps against the duct network has to recognize them by name instead. Must
+        // stay in sync with the actual collector entries in the catalog sidebar (the items at
+        // the top of the Dust Collection category, before the reducer/duct/fitting items) --
+        // missing one here (as 'WEN DC3401' was) silently breaks tracing, connection-checking,
+        // AND magnetic snapping for anyone using that model, with no visible error at the time.
+        const DUST_COLLECTOR_NAME_PATTERNS = ['DC-1100VX', 'Dust Deputy', 'DC3401', 'C-Flux'];
+        function isDustCollectorNode(name) {
+            name = name || '';
+            return DUST_COLLECTOR_NAME_PATTERNS.some(p => name.includes(p));
         }
 
         function getDuctSizeClass(name) {
@@ -9108,10 +9237,7 @@
             const nodes = Array.from(document.querySelectorAll('.placed-tool-node[data-layer="dust-collection"]'));
             if (!nodes.length) return [];
 
-            const collectorNode = nodes.find(n => {
-                const name = n.dataset.toolName || '';
-                return name.includes('DC-1100VX') || name.includes('Dust Deputy') || name.includes('C-Flux');
-            });
+            const collectorNode = nodes.find(n => isDustCollectorNode(n.dataset.toolName));
             if (!collectorNode) return [];
 
             const blastGates = nodes.filter(n => n.dataset.toolName === 'Blast Gate' || n.dataset.toolName === '6in Blast Gate');
@@ -9181,18 +9307,20 @@
             // collector's intake would otherwise be flagged "open" even though it's actually
             // connected — exclude anything within a few inches of a collector's box.
             const collectorBoxesFt = nodes
-                .filter(n => (n.dataset.toolName || '').match(/DC-1100VX|Dust Deputy|C-Flux/))
+                .filter(n => isDustCollectorNode(n.dataset.toolName))
                 .map(n => getNodeBoxFt(n));
             const genuinelyOpen = openPorts.filter(p => {
                 const pxFt = p.x / ppi, pyFt = p.y / ppi;
                 const nearCollector = collectorBoxesFt.some(b => pxFt > b.x1 - 0.5 && pxFt < b.x2 + 0.5 && pyFt > b.y1 - 0.5 && pyFt < b.y2 + 0.5);
                 if (nearCollector) return false;
-                // A blast gate's downstream side normally terminates right at the tool it
-                // serves — tools aren't port-based shapes, so that side never finds a match
-                // and would always look "open" even when the gate is correctly installed.
-                // Only flag a blast gate if it isn't hooked into the duct network on EITHER
-                // side (a genuinely stranded gate, not just one terminating at its tool).
-                if (getPortItemType(p.node.dataset.toolName) === 'blastgate' && (adjacency.get(p.node) || []).length > 0) return false;
+                // A blast gate's downstream side, and a drop's bottom (tool) side, both
+                // normally terminate right at the tool they serve — tools aren't port-based
+                // shapes, so that side never finds a match and would always look "open" even
+                // when the piece is correctly installed. Only flag one of these if it isn't
+                // hooked into the duct network on EITHER side (genuinely stranded, not just
+                // one end terminating at its tool).
+                const portType = getPortItemType(p.node.dataset.toolName);
+                if ((portType === 'blastgate' || portType === 'drop') && (adjacency.get(p.node) || []).length > 0) return false;
                 return true;
             });
             genuinelyOpen.forEach(p => {
@@ -9590,6 +9718,8 @@
                 toolNode.classList.add('pipe-node', 'elbow45-node', sizeClass);
             } else if (name.includes('Duct Elbow')) {
                 toolNode.classList.add('pipe-node', 'elbow-node', sizeClass);
+            } else if (name.includes('Wye 45')) {
+                toolNode.classList.add('pipe-node', 'wye45-node', sizeClass);
             } else if (name.includes('Y-Joint')) {
                 toolNode.classList.add('pipe-node', 'y-joint-node', sizeClass);
             } else if (name.includes('T-Joint')) {
@@ -9658,7 +9788,7 @@
 
             dcNodes.forEach(el => {
                 const name = el.dataset.toolName || '';
-                if (!/DC-1100VX|Dust Deputy|C-Flux/.test(name)) return;
+                if (!isDustCollectorNode(name)) return;
                 const left = parseFloat(el.style.left), top = parseFloat(el.style.top);
                 const w = parseFloat(el.style.width), h = parseFloat(el.style.height);
                 [[0, -1], [0, 1], [-1, 0], [1, 0]].forEach(([dx, dy]) => {
@@ -10394,64 +10524,59 @@
             });
         }
 
-        function makeElementInteractive(el, wPx, hPx) {
-            let activeDrag = false;
-            let moved = false;
-            let activePointerId = null;
-            let startMouseX = 0;
-            let startMouseY = 0;
-            let startLeft = 0;
-            let startTop = 0;
-            // Under this many px of total movement, a pointerdown->pointerup is treated as a
-            // tap (select) rather than a drag (move) — see selectNode() in the pointerup/
-            // pointercancel handler below. This didn't matter much for a mouse (a genuinely
-            // stationary click rarely drifts a pixel), but a fingertip tap on glass almost
-            // always jitters a couple px, so without a real threshold nearly every tap-to-select
-            // on touch would misfire as a micro-drag instead.
-            const TAP_MOVE_THRESHOLD = 8;
-            el.addEventListener('pointerdown', (e) => {
-                pushUndoSnapshot();
-                activeDrag = true;
-                moved = false;
-                activePointerId = e.pointerId;
-                startMouseX = e.clientX;
-                startMouseY = e.clientY;
-                startLeft = el.offsetLeft;
-                startTop = el.offsetTop;
-                el.setPointerCapture(e.pointerId);
-                e.stopPropagation();
-            });
-            el.addEventListener('dblclick', (e) => {
-                e.stopPropagation();
-                startRenamePlacedNode(el);
-            });
-            document.addEventListener('pointermove', (e) => {
-                if (!activeDrag || e.pointerId !== activePointerId) return;
-                // A second finger touching down mid-gesture hands off to pinch-zoom instead of
-                // continuing to move this item.
-                if (isMultiTouch()) return;
-                const deltaX = e.clientX - startMouseX;
-                const deltaY = e.clientY - startMouseY;
-                if (!moved) {
+        // Shared, delegated pointermove/pointerup/pointercancel listeners for every placed
+        // node's move/rotate/resize gestures — registered ONCE here instead of once per node.
+        // The old approach had makeElementInteractive/makeElementRotatable/makeElementResizable
+        // each call document.addEventListener for their own node, and that leaked: every reload
+        // of a saved layout (applyLayoutState, which fires on every tab-visibility regain via
+        // kerphOnVisible) tears down the DOM nodes but never removes their listeners, so
+        // `document` accumulated 3 new listeners per node, forever, for the life of the tab.
+        // Beyond the memory growth, a node removed mid-gesture (e.g. a visibility-regain reload
+        // firing while a drag/resize/rotate was in flight) left that gesture's "am I active"
+        // flag stuck true inside a dead closure — and since Chrome's primary mouse pointer
+        // always reports pointerId 1, every later mouse gesture anywhere on the page would
+        // satisfy that stale closure's pointerId check and silently re-target a detached,
+        // invisible element instead of whatever the user actually clicked (selectedNode getting
+        // hijacked onto a ghost node this way is a plausible explanation for "delete/move on a
+        // saved item does nothing"). A single shared interaction record makes a stuck state
+        // impossible: there's only ever one, and starting a new gesture always replaces it.
+        let activeNodeInteraction = null;
+        // Under this many px of total movement, a pointerdown->pointerup is treated as a
+        // tap (select) rather than a drag (move). This didn't matter much for a mouse (a
+        // genuinely stationary click rarely drifts a pixel), but a fingertip tap on glass
+        // almost always jitters a couple px, so without a real threshold nearly every
+        // tap-to-select on touch would misfire as a micro-drag instead.
+        const TAP_MOVE_THRESHOLD = 8;
+
+        document.addEventListener('pointermove', (e) => {
+            const ix = activeNodeInteraction;
+            if (!ix || e.pointerId !== ix.pointerId) return;
+            // A second finger touching down mid-gesture hands off to pinch-zoom instead of
+            // continuing this gesture.
+            if (isMultiTouch()) return;
+            const el = ix.el;
+
+            if (ix.type === 'move') {
+                const deltaX = e.clientX - ix.startMouseX;
+                const deltaY = e.clientY - ix.startMouseY;
+                if (!ix.moved) {
                     if (Math.hypot(deltaX, deltaY) < TAP_MOVE_THRESHOLD) return;
-                    moved = true;
+                    ix.moved = true;
                 }
-                let targetX = startLeft + deltaX;
-                let targetY = startTop + deltaY;
+                let targetX = ix.startLeft + deltaX;
+                let targetY = ix.startTop + deltaY;
                 // Fixed 1in placement snap regardless of ruler grid scale — see the drop handler above.
                 const currentSnap = el.dataset.layer === 'dust-collection' ? (ppi / 6) : (ppi / 12);
                 targetX = Math.round(targetX / currentSnap) * currentSnap;
                 targetY = Math.round(targetY / currentSnap) * currentSnap;
 
                 // A rotated element's true visual bounding box differs from its unrotated
-                // wPx/hPx (e.g. at 90deg the visual footprint is hPx x wPx), and since CSS
+                // width/height (e.g. at 90deg the visual footprint is swapped), and since CSS
                 // rotates around the center, the visual box is inset/outset from the logical
                 // left/top box. Clamp against the rotated AABB so the object can reach every
                 // edge instead of stopping short (or overshooting) by that inset amount.
-                // Width/height are re-read from the live style (not the wPx/hPx closure params)
-                // so clamping stays correct after a cabinet has been edge-resized.
-                const currentWPx = parseFloat(el.style.width) || wPx;
-                const currentHPx = parseFloat(el.style.height) || hPx;
+                const currentWPx = parseFloat(el.style.width) || 0;
+                const currentHPx = parseFloat(el.style.height) || 0;
                 const angle = parseFloat(el.dataset.rotation) || 0;
                 const { visualW, visualH } = getRotatedAabb(currentWPx, currentHPx, angle);
                 const minX = (visualW - currentWPx) / 2;
@@ -10484,15 +10609,77 @@
 
                 el.style.left = targetX + 'px';
                 el.style.top = targetY + 'px';
-            });
-            function endInteractiveDrag(e) {
-                if (!activeDrag || e.pointerId !== activePointerId) return;
-                if (!moved) selectNode(el);
-                if (moved && el.dataset.layer === 'dust-collection') applyDustCollectionSnap(el);
-                activeDrag = false;
+            } else if (ix.type === 'resize') {
+                const snap = ppi / 12;
+                const minPx = snap;
+                const angle = parseFloat(el.dataset.rotation) || 0;
+                const curW = parseFloat(el.style.width) || 0;
+                const curH = parseFloat(el.style.height) || 0;
+
+                let newW = curW, newH = curH;
+                if (ix.mode === 'right') {
+                    newW = ix.startW + (e.clientX - ix.startMouseX);
+                    newW = Math.round(newW / snap) * snap;
+                    newW = Math.max(minPx, Math.min(newW, board.clientWidth - ix.startLeft));
+                } else if (ix.mode === 'bottom') {
+                    newH = ix.startH + (e.clientY - ix.startMouseY);
+                    newH = Math.round(newH / snap) * snap;
+                    newH = Math.max(minPx, Math.min(newH, board.clientHeight - ix.startTop));
+                }
+
+                // Autonomously stops growing right at the point it would touch a neighboring
+                // cabinet/door/window, rather than allowing the overlap and reverting after
+                // the fact — each frame that would collide is simply skipped, so the edge
+                // just stops moving once it hits something.
+                const testRect = rectFromCenter(el.offsetLeft + newW / 2, el.offsetTop + newH / 2, newW, newH, angle);
+                if (overlapsProtectedItem(testRect, el, null)) return;
+
+                el.style.width = newW + 'px';
+                el.style.height = newH + 'px';
+                updateNodeDims(el);
+            } else if (ix.type === 'rotate') {
+                const dx = e.clientX - ix.centerX;
+                const dy = e.clientY - ix.centerY;
+                let angle = Math.atan2(dy, dx) * (180 / Math.PI) + 90;
+                angle = Math.round(angle / 5) * 5;
+                applyRotationDeg(el, angle);
             }
-            document.addEventListener('pointerup', endInteractiveDrag);
-            document.addEventListener('pointercancel', endInteractiveDrag);
+        });
+
+        function endActiveNodeInteraction(e) {
+            const ix = activeNodeInteraction;
+            if (!ix || e.pointerId !== ix.pointerId) return;
+            if (ix.type === 'move') {
+                if (!ix.moved) selectNode(ix.el);
+                if (ix.moved && ix.el.dataset.layer === 'dust-collection') applyDustCollectionSnap(ix.el);
+            } else if (ix.type === 'rotate') {
+                ix.readout.classList.remove('visible');
+            }
+            activeNodeInteraction = null;
+        }
+        document.addEventListener('pointerup', endActiveNodeInteraction);
+        document.addEventListener('pointercancel', endActiveNodeInteraction);
+
+        function makeElementInteractive(el) {
+            el.addEventListener('pointerdown', (e) => {
+                pushUndoSnapshot();
+                activeNodeInteraction = {
+                    type: 'move',
+                    pointerId: e.pointerId,
+                    el,
+                    moved: false,
+                    startMouseX: e.clientX,
+                    startMouseY: e.clientY,
+                    startLeft: el.offsetLeft,
+                    startTop: el.offsetTop
+                };
+                el.setPointerCapture(e.pointerId);
+                e.stopPropagation();
+            });
+            el.addEventListener('dblclick', (e) => {
+                e.stopPropagation();
+                startRenamePlacedNode(el);
+            });
         }
 
         // Single source of truth for actually applying a rotation angle to a placed node (style
@@ -10520,41 +10707,22 @@
             el.appendChild(readout);
             el.appendChild(handle);
 
-            let rotating = false;
-            let rotatePointerId = null;
-            let centerX = 0;
-            let centerY = 0;
-
             handle.addEventListener('pointerdown', (e) => {
                 pushUndoSnapshot();
-                rotating = true;
-                rotatePointerId = e.pointerId;
                 const rect = el.getBoundingClientRect();
-                centerX = rect.left + rect.width / 2;
-                centerY = rect.top + rect.height / 2;
+                activeNodeInteraction = {
+                    type: 'rotate',
+                    pointerId: e.pointerId,
+                    el,
+                    readout,
+                    centerX: rect.left + rect.width / 2,
+                    centerY: rect.top + rect.height / 2
+                };
                 readout.classList.add('visible');
                 handle.setPointerCapture(e.pointerId);
                 e.preventDefault();
                 e.stopPropagation();
             });
-
-            document.addEventListener('pointermove', (e) => {
-                if (!rotating || e.pointerId !== rotatePointerId) return;
-                if (isMultiTouch()) return;
-                const dx = e.clientX - centerX;
-                const dy = e.clientY - centerY;
-                let angle = Math.atan2(dy, dx) * (180 / Math.PI) + 90;
-                angle = Math.round(angle / 5) * 5;
-                applyRotationDeg(el, angle);
-            });
-
-            function endRotate(e) {
-                if (!rotating || e.pointerId !== rotatePointerId) return;
-                rotating = false;
-                readout.classList.remove('visible');
-            }
-            document.addEventListener('pointerup', endRotate);
-            document.addEventListener('pointercancel', endRotate);
         }
 
         // Re-renders every already-placed item's dims text for the current unit system.
@@ -10618,23 +10786,21 @@
             el.appendChild(handleRight);
             el.appendChild(handleBottom);
 
-            let mode = null;
-            let resizePointerId = null;
-            let startMouseX = 0, startMouseY = 0;
-            let startW = 0, startH = 0;
-            let startLeft = 0, startTop = 0;
-
-            function begin(m) {
+            function begin(mode) {
                 return (e) => {
                     pushUndoSnapshot();
-                    mode = m;
-                    resizePointerId = e.pointerId;
-                    startMouseX = e.clientX;
-                    startMouseY = e.clientY;
-                    startW = parseFloat(el.style.width) || 0;
-                    startH = parseFloat(el.style.height) || 0;
-                    startLeft = el.offsetLeft;
-                    startTop = el.offsetTop;
+                    activeNodeInteraction = {
+                        type: 'resize',
+                        pointerId: e.pointerId,
+                        el,
+                        mode,
+                        startMouseX: e.clientX,
+                        startMouseY: e.clientY,
+                        startW: parseFloat(el.style.width) || 0,
+                        startH: parseFloat(el.style.height) || 0,
+                        startLeft: el.offsetLeft,
+                        startTop: el.offsetTop
+                    };
                     e.currentTarget.setPointerCapture(e.pointerId);
                     e.preventDefault();
                     e.stopPropagation();
@@ -10642,47 +10808,6 @@
             }
             handleRight.addEventListener('pointerdown', begin('right'));
             handleBottom.addEventListener('pointerdown', begin('bottom'));
-
-            document.addEventListener('pointermove', (e) => {
-                if (!mode || e.pointerId !== resizePointerId) return;
-                if (isMultiTouch()) return;
-                // Fixed 1in snap regardless of ruler grid scale — matches the placement/
-                // reposition snap everywhere else on the board.
-                const snap = ppi / 12;
-                const minPx = snap;
-                const angle = parseFloat(el.dataset.rotation) || 0;
-                const curW = parseFloat(el.style.width) || 0;
-                const curH = parseFloat(el.style.height) || 0;
-
-                let newW = curW, newH = curH;
-                if (mode === 'right') {
-                    newW = startW + (e.clientX - startMouseX);
-                    newW = Math.round(newW / snap) * snap;
-                    newW = Math.max(minPx, Math.min(newW, board.clientWidth - startLeft));
-                } else if (mode === 'bottom') {
-                    newH = startH + (e.clientY - startMouseY);
-                    newH = Math.round(newH / snap) * snap;
-                    newH = Math.max(minPx, Math.min(newH, board.clientHeight - startTop));
-                }
-
-                // Autonomously stops growing right at the point it would touch a neighboring
-                // cabinet/door/window, rather than allowing the overlap and reverting after
-                // the fact — each frame that would collide is simply skipped, so the edge
-                // just stops moving once it hits something.
-                const testRect = rectFromCenter(el.offsetLeft + newW / 2, el.offsetTop + newH / 2, newW, newH, angle);
-                if (overlapsProtectedItem(testRect, el, null)) return;
-
-                el.style.width = newW + 'px';
-                el.style.height = newH + 'px';
-                updateNodeDims(el);
-            });
-
-            function endResize(e) {
-                if (e.pointerId !== resizePointerId) return;
-                mode = null;
-            }
-            document.addEventListener('pointerup', endResize);
-            document.addEventListener('pointercancel', endResize);
         }
 
         function initResizeHandles() {
@@ -12183,7 +12308,8 @@
                 mountHeightIn: node.dataset.mountHeightIn || null,
                 layer: node.dataset.layer || 'tools',
                 estCost: node.dataset.estCost || '',
-                clearanceCategory: node.dataset.clearanceCategory || null
+                clearanceCategory: node.dataset.clearanceCategory || null,
+                clearanceIgnored: node.dataset.clearanceIgnored === 'true'
             }));
 
             const normalizedWallFeatures = (typeof wallFeatures !== 'undefined' ? wallFeatures : [])
@@ -12248,6 +12374,7 @@
             toolNode.dataset.layer = t.layer || (t.cabType ? 'cabinets' : 'tools');
             toolNode.dataset.estCost = t.estCost || '';
             if (t.clearanceCategory) toolNode.dataset.clearanceCategory = t.clearanceCategory;
+            if (t.clearanceIgnored) toolNode.dataset.clearanceIgnored = 'true';
             const w = t.width * zoomFactor;
             const h = t.height * zoomFactor;
             toolNode.style.width = w + 'px';
@@ -12289,7 +12416,8 @@
                 mountHeightIn: node.dataset.mountHeightIn || null,
                 layer: node.dataset.layer || 'tools',
                 estCost: node.dataset.estCost || '',
-                clearanceCategory: node.dataset.clearanceCategory || null
+                clearanceCategory: node.dataset.clearanceCategory || null,
+                clearanceIgnored: node.dataset.clearanceIgnored === 'true'
             };
         }
 
@@ -12998,6 +13126,14 @@
             document.getElementById('clearanceMinWidth').addEventListener('change', () => {
                 if (!document.getElementById('clearancePanel').classList.contains('collapsed')) runAllClearanceChecks();
             });
+            document.getElementById('toolClearanceResults').addEventListener('change', (e) => {
+                if (!e.target.classList.contains('clearance-ignore-checkbox')) return;
+                const node = clearanceConflictRowNodes[parseInt(e.target.dataset.rowIndex, 10)];
+                if (!node) return;
+                if (e.target.checked) node.dataset.clearanceIgnored = 'true';
+                else delete node.dataset.clearanceIgnored;
+                checkToolOperatingClearance();
+            });
             initClearanceSettingsModal();
         }
 
@@ -13090,6 +13226,8 @@
             document.querySelectorAll('.clearance-zone-flag-item').forEach(n => n.classList.remove('clearance-zone-flag-item'));
         }
 
+        let clearanceConflictRowNodes = [];
+
         function checkToolOperatingClearance() {
             clearToolClearanceZones();
             const resultEl = document.getElementById('toolClearanceResults');
@@ -13120,26 +13258,42 @@
                     if (other === owner) return;
                     if (rectsOverlap(zoneRect, other.rect)) intrudedBy.push(other.label);
                 });
+                const isIgnored = owner.el.dataset.clearanceIgnored === 'true';
                 const zone = document.createElement('div');
-                zone.className = 'clearance-zone-overlay' + (intrudedBy.length ? ' violated' : '');
+                zone.className = 'clearance-zone-overlay' + (intrudedBy.length && !isIgnored ? ' violated' : '');
                 zone.style.left = zoneRect.left + 'px';
                 zone.style.top = zoneRect.top + 'px';
                 zone.style.width = (zoneRect.right - zoneRect.left) + 'px';
                 zone.style.height = (zoneRect.bottom - zoneRect.top) + 'px';
                 board.insertBefore(zone, board.firstChild);
                 if (intrudedBy.length) {
-                    flaggedEls.add(owner.el);
-                    conflicts.push(`${owner.label} needs clear space — ${intrudedBy.join(', ')} ${intrudedBy.length === 1 ? 'is' : 'are'} too close`);
+                    if (!isIgnored) flaggedEls.add(owner.el);
+                    conflicts.push({
+                        el: owner.el,
+                        ignored: isIgnored,
+                        text: `${owner.label} needs clear space — ${intrudedBy.join(', ')} ${intrudedBy.length === 1 ? 'is' : 'are'} too close`
+                    });
                 }
             });
 
             flaggedEls.forEach(el => el.classList.add('clearance-zone-flag-item'));
 
+            const activeCount = conflicts.filter(c => !c.ignored).length;
             if (!conflicts.length) {
                 resultEl.innerHTML = `<div class="elec-status-badge ok">&#10003; Operating clearance looks good for ${zoned.length} tool${zoned.length === 1 ? '' : 's'}</div>`;
             } else {
-                resultEl.innerHTML = `<div class="elec-status-badge warn">&#9888; ${conflicts.length} clearance conflict${conflicts.length === 1 ? '' : 's'}</div>` +
-                    `<div class="clearance-conflict-list">${conflicts.map(c => `<div>${escapeHtml(c)}</div>`).join('')}</div>`;
+                clearanceConflictRowNodes = conflicts.map(c => c.el);
+                resultEl.innerHTML =
+                    (activeCount
+                        ? `<div class="elec-status-badge warn">&#9888; ${activeCount} clearance conflict${activeCount === 1 ? '' : 's'}</div>`
+                        : `<div class="elec-status-badge ok">&#10003; No active clearance conflicts</div>`) +
+                    `<div class="clearance-conflict-list">${conflicts.map((c, i) => `
+                        <div class="clearance-conflict-row">
+                            <label class="checkbox-label" title="Dismiss this conflict if the tight spot doesn't actually matter for how you use the shop">
+                                <input type="checkbox" class="clearance-ignore-checkbox" data-row-index="${i}" ${c.ignored ? 'checked' : ''}>
+                                <span class="${c.ignored ? 'clearance-conflict-ignored' : ''}">${escapeHtml(c.text)}</span>
+                            </label>
+                        </div>`).join('')}</div>`;
             }
             if (typeof arrangeFloatingPanels === 'function') arrangeFloatingPanels();
         }
@@ -13215,11 +13369,11 @@
            up their own numbers. Values live in dataset.estCost on each placed node and ride
            along through the same descriptor pipeline as everything else (serialize/restore/
            paste), so they survive save/load and undo/redo like any other placement detail. */
-        const COST_LAYER_LABELS = { tools: 'Tools', cabinets: 'Cabinets', 'dust-collection': 'Dust Collection', lighting: 'Lighting' };
+        const COST_LAYER_LABELS = { tools: 'Tools', 'dust-collection': 'Dust Collection', lighting: 'Lighting' };
         let costRowNodes = [];
 
         function getCostItems() {
-            return Array.from(document.querySelectorAll('.placed-tool-node')).map(n => ({
+            return Array.from(document.querySelectorAll('.placed-tool-node:not(.placed-cabinet-node)')).map(n => ({
                 el: n,
                 label: n.dataset.displayName || n.dataset.toolName || 'Item',
                 layer: n.dataset.layer || 'tools'
@@ -15028,6 +15182,49 @@
             panels.forEach(p => observer.observe(p));
         }
 
+        // Collapsing/expanding a panel through this bulk toggle reuses the exact same
+        // panel-specific refresh its own title-bar click already does (see the individual
+        // makeDraggable() callbacks in initDraggablePanels) -- so bulk-expanding never leaves
+        // Electrical Load, Clearance, or Cost Rollup showing stale/empty content the way a
+        // blind classList.toggle() on all of them would.
+        function setPanelCollapsed(panel, collapsed) {
+            if (panel.classList.contains('collapsed') === collapsed) return;
+            panel.classList.toggle('collapsed', collapsed);
+            if (panel.id === 'electricalPanel') {
+                if (!collapsed) renderElectricalPanel();
+            } else if (panel.id === 'clearancePanel') {
+                if (collapsed) { clearClearanceFlags(); clearToolClearanceZones(); }
+                else runAllClearanceChecks();
+            } else if (panel.id === 'costPanel') {
+                if (!collapsed) renderCostPanel();
+            }
+        }
+
+        // Two independent "give me the whole grid back" shortcuts: the left catalog sidebar
+        // (a single fixed panel, so just a plain show/hide) and the right-hand dock (several
+        // already-individually-collapsible panels -- this collapses/expands all of them at
+        // once instead of clicking each title bar one at a time).
+        function initCollapseButtons() {
+            const sidebarBtn = document.getElementById('sidebarCollapseBtn');
+            sidebarBtn.addEventListener('click', () => {
+                const collapsed = document.body.classList.toggle('sidebar-collapsed');
+                sidebarBtn.innerHTML = collapsed ? '&#9654;' : '&#9664;';
+                sidebarBtn.title = collapsed ? 'Show the tool catalog' : 'Collapse the tool catalog for more grid room';
+            });
+
+            const panelsBtn = document.getElementById('collapseAllPanelsBtn');
+            panelsBtn.addEventListener('click', () => {
+                const panels = ['cabinetPanel', 'projectImportPanel', 'wallFeaturePanel', 'electricalPanel', 'clearancePanel', 'costPanel', 'calcPanel']
+                    .map(id => document.getElementById(id))
+                    .filter(Boolean);
+                const anyExpanded = panels.some(p => !p.classList.contains('collapsed'));
+                panels.forEach(p => setPanelCollapsed(p, anyExpanded));
+                panelsBtn.classList.toggle('active', anyExpanded);
+                panelsBtn.innerHTML = anyExpanded ? '&#9664; Expand Panels' : '&#9654; Collapse Panels';
+                arrangeFloatingPanels();
+            });
+        }
+
         function initDraggablePanels() {
             const cabinetPanel = document.getElementById('cabinetPanel');
             const wallFeaturePanel = document.getElementById('wallFeaturePanel');
@@ -15478,7 +15675,36 @@
             // board width == old board height after the resize below, so rotating against the OLD
             // height lands each point correctly in the NEW board.
             const isCustomShape = shapeMode === 'custom' && shapePoints.length;
-            if (isCustomShape) shapePoints = shapePoints.map(p => rotatePoint(p.x, p.y));
+            if (isCustomShape) {
+                shapePoints = shapePoints.map(p => rotatePoint(p.x, p.y));
+
+                // A hand-drawn shape doesn't necessarily touch every edge of its own bounding
+                // rectangle (see finishShapeDrawing — nothing forces the drawn polygon to reach
+                // all 4 sides of the board it was drawn on). rotatePoint's pivot is the OLD
+                // board's full height, so a shape that didn't touch every edge still rotates
+                // correctly relative to itself, but its bounding box can land away from (0,0)
+                // in the new orientation. Re-anchor explicitly so "rotate 90" always keeps the
+                // shop's top-left corner at the grid origin — the same guarantee a plain
+                // rectangle already gets for free from the board's own (0,0) top-left.
+                const xs = shapePoints.map(p => p.x), ys = shapePoints.map(p => p.y);
+                const offsetX = -Math.min(...xs), offsetY = -Math.min(...ys);
+                if (offsetX || offsetY) {
+                    shapePoints = shapePoints.map(p => ({ x: p.x + offsetX, y: p.y + offsetY }));
+                    document.querySelectorAll('.placed-tool-node').forEach(node => {
+                        node.style.left = ((parseFloat(node.style.left) || 0) + offsetX) + 'px';
+                        node.style.top = ((parseFloat(node.style.top) || 0) + offsetY) + 'px';
+                    });
+                    if (typeof internalWalls !== 'undefined') {
+                        internalWalls.forEach(wall => {
+                            wall.x1 += offsetX; wall.y1 += offsetY;
+                            wall.x2 += offsetX; wall.y2 += offsetY;
+                        });
+                    }
+                    if (typeof wallFeatures !== 'undefined') {
+                        wallFeatures.forEach(f => { f.x += offsetX; f.y += offsetY; });
+                    }
+                }
+            }
 
             // skipWallFeatureAnchor: wallFeatures were just rotated exactly above -- the generic
             // nearest-wall re-anchor this function normally does for a plain resize would only
@@ -15756,6 +15982,7 @@
         initJigsDropdown();
         initDraggablePanels();
         initPanelAutoStack();
+        initCollapseButtons();
         initNewLayoutModal();
         initUnitToggle();
         initShopTypeToggle();
