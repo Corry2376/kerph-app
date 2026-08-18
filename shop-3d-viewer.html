@@ -385,6 +385,7 @@
         .touch-edit-bar-actions { display: flex; gap: 6px; }
         .touch-edit-bar-actions .mini-btn { flex: 1; padding: 14px 4px; font-size: 12px; min-height: 44px; }
         .touch-edit-bar-actions .mini-btn.active { background-color: #1e3a8a; color: #ffffff; border-color: #1e3a8a; }
+        #walkModeBtn.active { background-color: #1e3a8a; color: #ffffff; border-color: #1e3a8a; }
 
             .header-quick-links { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; font-size: 11px; }
             .header-quick-links-row { display: flex; align-items: center; gap: 6px; }
@@ -535,6 +536,7 @@
         <div class="floating-panel-title">3D Shop Viewer</div>
         <button type="button" id="backToWorkshopBtn" class="mini-btn" style="width:100%; margin-bottom:8px;">&larr; Back to Workshop Layout</button>
         <button type="button" id="refresh3dBtn" class="mini-btn" style="width:100%;">&#8635; Refresh from Layout</button>
+        <button type="button" id="walkModeBtn" class="mini-btn" style="width:100%; margin-top:8px;" title="Walk around at eye height with WASD, look around with the mouse -- Esc to exit">&#128694; Walk Mode</button>
         <label class="viewer-legend-row" style="margin-top:8px; font-weight:700;"><input type="checkbox" id="moveObjectsCheckbox"> Move Objects</label>
         <div class="viewer-hint" id="viewerHint">Drag empty space to orbit &middot; right-drag to pan &middot; scroll to zoom &middot; wall features slide along their wall.</div>
         <div class="viewer-legend">
@@ -619,6 +621,7 @@
         import * as THREE from 'three';
         import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
         import { TransformControls } from 'three/addons/controls/TransformControls.js';
+        import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
         import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
         /* ---------- SHARED HEADER / ACCOUNT (same pattern as every other page) ---------- */
@@ -1188,7 +1191,11 @@
             controls.zoomSpeed = 0.8;
             controls.rotateSpeed = 0.7;
             controls.panSpeed = 0.8;
-            controls.minDistance = 1.5;
+            // Was 1.5ft -- close enough for a whole-room overview, but not for actually
+            // inspecting a specific placed item up close (a 0.6ft duct fitting is smaller than
+            // this used to let you get to the ORBIT TARGET, let alone the object's own surface),
+            // which read as "stuck" outside the very thing you zoomed in to look at.
+            controls.minDistance = 0.3;
             controls.maxDistance = 300;
 
             raycaster = new THREE.Raycaster();
@@ -1210,9 +1217,134 @@
             renderer.setSize(canvasWrap.clientWidth, canvasWrap.clientHeight);
         }
 
-        function animate() {
+        // ---------- WALK MODE (first-person WASD + mouse-look) ----------
+        // OrbitControls' entire model is "orbit around one fixed target point" -- zooming in
+        // just moves the camera closer to whatever that target happens to be, and there's no
+        // way to freely look around from wherever you currently are, which is what actually
+        // reads as "stuck" when what you want is to walk into a corner and look up close at
+        // something. This is a second, independent camera mode built on Three.js's own
+        // PointerLockControls (the same official add-on class the OrbitControls import above
+        // comes from): WASD moves at an ordinary walking pace, the mouse looks around via the
+        // browser's real pointer-lock, and a simple point-in-polygon check against the shop's
+        // own outer wall (getWallSegmentsFt, already used elsewhere for wall placement) keeps
+        // you from walking through it.
+        let walkControls = null;
+        let walkModeActive = false;
+        const walkKeys = { forward: false, back: false, left: false, right: false };
+        const WALK_EYE_HEIGHT_FT = 5.5;
+        const WALK_SPEED_FTPS = 4.5; // an unhurried human walking pace
+        let lastWalkFrameTime = null;
+
+        // Standard ray-casting point-in-polygon test against the shop's own outer boundary
+        // (rectangle or custom shape, same source getWallSegmentsFt already draws walls from).
+        function pointInShopPolygon(x, z) {
+            if (!currentShopWidthFt || !currentShopLengthFt) return true;
+            const segments = getWallSegmentsFt(currentShopWidthFt, currentShopLengthFt);
+            let inside = false;
+            segments.forEach(([a, b]) => {
+                const crosses = ((a.y > z) !== (b.y > z)) &&
+                    (x < (b.x - a.x) * (z - a.y) / (b.y - a.y) + a.x);
+                if (crosses) inside = !inside;
+            });
+            return inside;
+        }
+
+        function initWalkControls() {
+            walkControls = new PointerLockControls(camera, renderer.domElement);
+            walkControls.addEventListener('unlock', exitWalkMode);
+            // PointerLockControls only relays a real 'unlock' event when pointer lock was
+            // actually acquired and then released -- if requestPointerLock() itself fails
+            // (unsupported browser, embedded/iframed context, user/OS denial), the browser
+            // fires a raw 'pointerlockerror' DOM event instead, which the library swallows
+            // into a console.error and never turns into 'unlock'. Without this listener,
+            // enterWalkMode()'s optimistic UI/orbit-disable state never gets undone and the
+            // viewer is stuck: no orbit, no working walk controls, no way out but a reload.
+            document.addEventListener('pointerlockerror', onWalkLockError);
+            document.addEventListener('keydown', (e) => {
+                if (!walkModeActive) return;
+                if (e.code === 'KeyW' || e.code === 'ArrowUp') walkKeys.forward = true;
+                else if (e.code === 'KeyS' || e.code === 'ArrowDown') walkKeys.back = true;
+                else if (e.code === 'KeyA' || e.code === 'ArrowLeft') walkKeys.left = true;
+                else if (e.code === 'KeyD' || e.code === 'ArrowRight') walkKeys.right = true;
+            });
+            document.addEventListener('keyup', (e) => {
+                if (e.code === 'KeyW' || e.code === 'ArrowUp') walkKeys.forward = false;
+                else if (e.code === 'KeyS' || e.code === 'ArrowDown') walkKeys.back = false;
+                else if (e.code === 'KeyA' || e.code === 'ArrowLeft') walkKeys.left = false;
+                else if (e.code === 'KeyD' || e.code === 'ArrowRight') walkKeys.right = false;
+            });
+        }
+
+        function enterWalkMode() {
+            if (!camera || !renderer) return;
+            if (!walkControls) initWalkControls();
+            // Starts from wherever the orbit camera currently is (XZ), at a fixed eye height,
+            // so switching modes doesn't teleport you somewhere unrelated to what you were
+            // just looking at.
+            camera.position.y = WALK_EYE_HEIGHT_FT;
+            controls.enabled = false;
+            walkModeActive = true;
+            lastWalkFrameTime = null;
+            const btn = document.getElementById('walkModeBtn');
+            if (btn) { btn.classList.add('active'); btn.textContent = '🚶 Exit Walk Mode (Esc)'; }
+            const hint = document.getElementById('viewerHint');
+            if (hint) hint.textContent = 'WASD to walk, mouse to look around, Esc to exit.';
+            walkControls.lock();
+        }
+
+        function onWalkLockError() {
+            if (!walkModeActive) return;
+            exitWalkMode();
+            const hint = document.getElementById('viewerHint');
+            if (hint) hint.textContent = "Walk mode isn't available in this browser -- drag to orbit, scroll to zoom instead.";
+        }
+
+        function exitWalkMode() {
+            if (!walkModeActive) return;
+            walkModeActive = false;
+            walkKeys.forward = walkKeys.back = walkKeys.left = walkKeys.right = false;
+            if (controls) controls.enabled = true;
+            const btn = document.getElementById('walkModeBtn');
+            if (btn) { btn.classList.remove('active'); btn.textContent = '🚶 Walk Mode'; }
+            const hint = document.getElementById('viewerHint');
+            if (hint) hint.textContent = 'Drag empty space to orbit · right-drag to pan · scroll to zoom · wall features slide along their wall.';
+            // Gives the orbit camera's own target something sane to look at from here instead
+            // of leaving it wherever it last was, often now far behind the camera after walking.
+            if (controls && camera) {
+                const dir = new THREE.Vector3();
+                camera.getWorldDirection(dir);
+                controls.target.copy(camera.position).addScaledVector(dir, 5);
+            }
+        }
+
+        function updateWalkMovement(now) {
+            if (!walkModeActive || !walkControls || !walkControls.isLocked) return;
+            if (lastWalkFrameTime == null) { lastWalkFrameTime = now; return; }
+            const delta = Math.min((now - lastWalkFrameTime) / 1000, 0.1); // clamps a tab-switch-sized gap
+            lastWalkFrameTime = now;
+
+            const moveZ = (walkKeys.forward ? 1 : 0) - (walkKeys.back ? 1 : 0);
+            const moveX = (walkKeys.right ? 1 : 0) - (walkKeys.left ? 1 : 0);
+            if (!moveZ && !moveX) return;
+            // Normalized so diagonal movement isn't faster than moving straight.
+            const len = Math.hypot(moveZ, moveX) || 1;
+            const step = WALK_SPEED_FTPS * delta;
+            const startX = camera.position.x, startZ = camera.position.z;
+
+            if (moveZ) walkControls.moveForward((moveZ / len) * step);
+            if (moveX) walkControls.moveRight((moveX / len) * step);
+            camera.position.y = WALK_EYE_HEIGHT_FT;
+
+            // Per-axis wall clamp, tested independently so walking diagonally toward a wall
+            // slides you along it instead of stopping dead the instant either axis touches it.
+            if (!pointInShopPolygon(camera.position.x, startZ)) camera.position.x = startX;
+            if (!pointInShopPolygon(camera.position.x, camera.position.z)) camera.position.z = startZ;
+        }
+
+        function animate(now) {
             requestAnimationFrame(animate);
-            if (controls) controls.update();
+            updateWalkMovement(now || performance.now());
+            if (controls && controls.enabled) controls.update();
             if (renderer && scene && camera) renderer.render(scene, camera);
         }
 
@@ -2490,6 +2622,7 @@
         // comments), which is what leaves OrbitControls free to orbit on 1-finger drag whenever
         // "Move" isn't explicitly armed.
         function onPointerDownCapture(e) {
+            if (walkModeActive) return;
             if (e.button !== 0) return;
 
             // ---- Touch mode system ----
@@ -2713,7 +2846,7 @@
         // from data already available on the mesh — rebuilds the card's HTML only when the
         // hovered mesh actually changes, not on every mousemove frame.
         function onHoverMove(e) {
-            if (dragState) return;
+            if (walkModeActive || dragState) return;
             raycastFromEvent(e);
             const hits = raycaster.intersectObjects(clickableMeshes, false);
             const top = hits.length ? hits[0].object : null;
@@ -3087,6 +3220,11 @@
         document.getElementById('refresh3dBtn').addEventListener('click', () => {
             loadSharedLayout();
             showToast('Refreshed from your current layout.');
+        });
+
+        document.getElementById('walkModeBtn').addEventListener('click', () => {
+            if (walkModeActive) walkControls.unlock();
+            else enterWalkMode();
         });
 
         document.getElementById('backToWorkshopBtn').addEventListener('click', () => {
