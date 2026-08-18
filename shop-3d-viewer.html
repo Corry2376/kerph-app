@@ -1451,6 +1451,130 @@
             return makeLabelSprite(text, { fontSize: 64, worldHeight: 1.1, bordered: true });
         }
 
+        // Mirrors workshop-planner.html's DUCT_PORTS table (same fx/fy fractional-of-footprint
+        // positions for every fitting) so a fitting's 3D shape connects at exactly the same
+        // points its 2D icon does -- one geometric source of truth, just expressed twice
+        // because this file has no way to import the other one. Converted to real local X/Z
+        // feet via localX=(fx-0.5)*sizeFt, localZ=(fy-0.5)*sizeFt in buildDuctFittingMesh below
+        // (2D x maps straight to 3D X, 2D y maps straight to 3D Z -- no axis flip, matching how
+        // centerX/centerZ are already derived from leftFt/topFt everywhere else in this file).
+        const DUCT_FITTING_LOCAL_PORTS = {
+            elbow: [{ fx: 0, fy: 0.5 }, { fx: 0.5, fy: 1 }],
+            elbow45: [{ fx: 0, fy: 0.5 }, { fx: 0.8536, fy: 0.8536 }],
+            yjoint: [{ fx: 0.5, fy: 1 }, { fx: 0.8536, fy: 0.1464 }, { fx: 0.1464, fy: 0.1464 }],
+            tjoint: [{ fx: 0, fy: 0.5 }, { fx: 1, fy: 0.5 }, { fx: 0.5, fy: 1 }],
+            reducer: [{ fx: 0, fy: 0.5 }, { fx: 1, fy: 0.5 }]
+        };
+
+        // Same name-matching rules as workshop-planner.html's getPortItemType/
+        // applyDustCollectionNodeStyling, kept in sync by hand (see the comment above).
+        // null means "no dedicated shape" -- straight duct and any unrecognized dustcollection item both fall through to the plain pipeLen cylinder in addToolMesh.
+        function getDuctFittingType(label) {
+            const name = label || '';
+            if (name.includes('Duct Elbow') && name.includes('45')) return 'elbow45';
+            if (name.includes('Duct Elbow')) return 'elbow';
+            if (name.includes('Y-Joint')) return 'yjoint';
+            if (name.includes('T-Joint')) return 'tjoint';
+            if (name.includes('Duct Reducer')) return 'reducer';
+            return null;
+        }
+
+        // Real geometry per fitting type instead of the one-size-fits-all straight cylinder
+        // every dust-collection piece used to render as (an elbow, a Y-joint, and a straight
+        // duct all looked identical -- just a squat pipe stub). Returns a Group built flat in
+        // its own local space (y=0, unrotated) -- the caller positions it at the run's mount
+        // elevation and applies the placed item's own board rotation, same as every other mesh.
+        function buildDuctFittingMesh(fittingType, sizeFt, pipeRadius, mat) {
+            // An invisible hit-target IS the returned object (not a bare Group) -- every
+            // raycaster.intersectObjects(clickableMeshes, ...) call in this file passes
+            // recursive:false, so a bare Group (no geometry of its own) could never actually
+            // be clicked/dragged even with userData set on it. Same pattern addWallFeatureMesh
+            // already uses: an invisible box sized to the footprint is what's pushed to
+            // clickableMeshes, with every visible part added as ITS child so they move/rotate
+            // together automatically.
+            const group = new THREE.Mesh(
+                new THREE.CylinderGeometry(sizeFt / 2, sizeFt / 2, pipeRadius * 2, 8),
+                new THREE.MeshBasicMaterial()
+            );
+            group.visible = false;
+            const ports = DUCT_FITTING_LOCAL_PORTS[fittingType];
+            const toLocal = (p) => new THREE.Vector3((p.fx - 0.5) * sizeFt, 0, (p.fy - 0.5) * sizeFt);
+
+            function addBranch(target) {
+                const len = target.length();
+                const geo = new THREE.CylinderGeometry(pipeRadius, pipeRadius, len, 12);
+                const branchMesh = new THREE.Mesh(geo, mat);
+                // CylinderGeometry's native long-axis is +Y -- rotate it to point from the
+                // fitting's own center toward this port instead.
+                branchMesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), target.clone().normalize());
+                branchMesh.position.copy(target).multiplyScalar(0.5);
+                branchMesh.castShadow = true;
+                branchMesh.receiveShadow = true;
+                group.add(branchMesh);
+            }
+            function addKnuckle() {
+                const knuckle = new THREE.Mesh(new THREE.SphereGeometry(pipeRadius * 1.25, 12, 10), mat);
+                knuckle.castShadow = true;
+                knuckle.receiveShadow = true;
+                group.add(knuckle);
+            }
+
+            if (fittingType === 'reducer') {
+                // Bridges a real 4in port to a real 6in port (see DUCT_PORTS.reducer's own
+                // comment in workshop-planner.html) -- fixed real-world radii, not derived
+                // from this placed item's own (asymmetric, 0.45x0.6ft) footprint the way
+                // every uniform-diameter fitting's pipeRadius is.
+                const [pA, pB] = ports.map(toLocal);
+                const radiusA = 4 / 12 / 2, radiusB = 6 / 12 / 2;
+                const geo = new THREE.CylinderGeometry(radiusB, radiusA, pA.distanceTo(pB), 16);
+                const mesh = new THREE.Mesh(geo, mat);
+                mesh.rotation.z = Math.PI / 2;
+                mesh.position.set((pA.x + pB.x) / 2, 0, (pA.z + pB.z) / 2);
+                mesh.castShadow = true;
+                mesh.receiveShadow = true;
+                group.add(mesh);
+                return group;
+            }
+
+            if (fittingType === 'elbow' || fittingType === 'elbow45') {
+                // A smooth bend: quadratic curve from port0 through the fitting's own center
+                // (the control point) to port1 -- identical construction for both angles, just
+                // different port positions, so a future custom-angle elbow needs no new code,
+                // only a new DUCT_FITTING_LOCAL_PORTS entry.
+                const [pA, pB] = ports.map(toLocal);
+                const curve = new THREE.QuadraticBezierCurve3(pA, new THREE.Vector3(0, 0, 0), pB);
+                const geo = new THREE.TubeGeometry(curve, 16, pipeRadius, 12, false);
+                const mesh = new THREE.Mesh(geo, mat);
+                mesh.castShadow = true;
+                mesh.receiveShadow = true;
+                group.add(mesh);
+                return group;
+            }
+
+            if (fittingType === 'tjoint') {
+                // Ports 0/1 are always collinear (opposite sides of the box, see
+                // DUCT_FITTING_LOCAL_PORTS.tjoint) -- one continuous through-run, not two
+                // stubs meeting at the center, plus one perpendicular branch stub.
+                const [pThroughA, pThroughB, pBranch] = ports.map(toLocal);
+                const throughGeo = new THREE.CylinderGeometry(pipeRadius, pipeRadius, pThroughA.distanceTo(pThroughB), 12);
+                const throughMesh = new THREE.Mesh(throughGeo, mat);
+                throughMesh.rotation.z = Math.PI / 2;
+                throughMesh.castShadow = true;
+                throughMesh.receiveShadow = true;
+                group.add(throughMesh);
+                addBranch(pBranch);
+                addKnuckle();
+                return group;
+            }
+
+            // yjoint: all 3 arms genuinely diverge from the center (no two ports are
+            // opposite), so unlike the T-joint above there's no single "through" pair to
+            // treat as one piece -- three independent stubs plus a knuckle.
+            ports.map(toLocal).forEach(addBranch);
+            addKnuckle();
+            return group;
+        }
+
         function addToolMesh(t, ceilingFt, index) {
             const layer = t.layer || 'tools';
             const leftFt = ftFromPx(t.left), topFt = ftFromPx(t.top);
@@ -1524,17 +1648,52 @@
                     clickableMeshes.push(mesh);
                     return;
                 }
-                const pipeLen = Math.max(wFt, hFt);
-                const geo = new THREE.CylinderGeometry(pipeRadius, pipeRadius, pipeLen, 12);
                 // Explicit hint (galvanized sheet duct) rather than a COLORS-value lookup —
                 // see the comment above MATERIAL_HINTS for why COLORS.duct can't be keyed there.
                 const mat = materialForColor(COLORS.duct, null, { roughness: 0.4, metalness: 0.6 });
-                mesh = new THREE.Mesh(geo, mat);
-                mesh.rotation.z = Math.PI / 2;
+                const fittingType = getDuctFittingType(t.label);
+                if (fittingType) {
+                    // A real elbow/Y/T/reducer shape (see buildDuctFittingMesh) instead of the
+                    // plain pipe stub below, which used to be the ENTIRE 3D representation for
+                    // every dust-collection fitting regardless of type -- an elbow, a Y-joint,
+                    // and a straight duct all rendered as the exact same squat cylinder.
+                    mesh = buildDuctFittingMesh(fittingType, Math.max(wFt, hFt), pipeRadius, mat);
+                } else if ((t.label || '').includes('Blast Gate')) {
+                    // A gate valve reads as "a fitting, not just pipe" mainly via its handle --
+                    // same pipe-radius cylinder body every straight run uses, plus a small
+                    // raised tab (a distinct accent color, not duct gray) standing in for the
+                    // slide handle real hardware has sticking out the top.
+                    // Invisible hit-target as the real returned object, same reasoning as
+                    // buildDuctFittingMesh above — raycasting can't hit a bare Group here.
+                    const bodyLen = Math.max(wFt, hFt);
+                    mesh = new THREE.Mesh(new THREE.CylinderGeometry(pipeRadius, pipeRadius, bodyLen, 8), new THREE.MeshBasicMaterial());
+                    mesh.visible = false;
+                    // Matches the visible body's own rotation below -- without this the hit
+                    // target stays a tall vertical sliver (a cylinder's native long axis is Y)
+                    // instead of lying flat along the pipe's actual horizontal length, and
+                    // clicking almost anywhere along a real placed gate would miss it.
+                    mesh.rotation.z = Math.PI / 2;
+                    const body = new THREE.Mesh(new THREE.CylinderGeometry(pipeRadius, pipeRadius, bodyLen, 12), mat);
+                    body.rotation.z = Math.PI / 2;
+                    body.castShadow = true;
+                    body.receiveShadow = true;
+                    mesh.add(body);
+                    const handleMat = materialForColor(COLORS.toolAccentDark);
+                    const handle = new THREE.Mesh(new THREE.BoxGeometry(bodyLen * 0.18, pipeRadius * 1.8, pipeRadius * 0.7), handleMat);
+                    handle.position.y = pipeRadius + pipeRadius * 0.9;
+                    handle.castShadow = true;
+                    handle.receiveShadow = true;
+                    mesh.add(handle);
+                } else {
+                    const pipeLen = Math.max(wFt, hFt);
+                    const geo = new THREE.CylinderGeometry(pipeRadius, pipeRadius, pipeLen, 12);
+                    mesh = new THREE.Mesh(geo, mat);
+                    mesh.rotation.z = Math.PI / 2;
+                    mesh.castShadow = true;
+                    mesh.receiveShadow = true;
+                }
                 mesh.position.set(centerX, elevFt, centerZ);
                 mesh.rotation.y = rotY;
-                mesh.castShadow = true;
-                mesh.receiveShadow = true;
                 // Draggable in XZ only — elevation stays fixed since onDragMove never
                 // touches position.y. No port-snapping/duct-auto-reconnect parity with the
                 // 2D planner, see the plan.
