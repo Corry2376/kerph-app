@@ -1979,6 +1979,7 @@
            square .placed-tool-node/.pipe-node box, whose corners the curve doesn't cover
            made the fitting look boxed-in. */
         .placed-tool-node.elbow-node,
+        .placed-tool-node.elbow45-node,
         .placed-tool-node.y-joint-node,
         .placed-tool-node.t-joint-node,
         .placed-tool-node.drop-node,
@@ -2026,6 +2027,23 @@
 
         .placed-tool-node.elbow-node.fitting-6in {
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M0,7.5 A32.5,32.5 0 0 1 32.5,40 L7.5,40 A7.5,7.5 0 0 0 0,32.5 Z' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5'/%3E%3C/svg%3E");
+        }
+
+        /* A real 45deg fitting is a straight mitered cut, not a curved bend like the 90deg
+           elbow above -- drawn as a straight diagonal band instead of an arc. One flat
+           (vertical) face on the left where it mates flush with a straight duct, one
+           angled face where it exits -- a quadrilateral, not a rectangle. The band's four
+           corners are derived from this piece's own ports (see DUCT_PORTS.elbow45): the
+           left face is centered on the west port (fx=0,fy=0.5), the angled face is centered
+           on the 45deg exit port (fx=0.8536,fy=0.8536), each face offset perpendicular to
+           the piece's own centerline by the same half-thickness the 90deg elbow uses (scaled
+           down slightly so the corner nearest the box edge doesn't overshoot the viewBox). */
+        .placed-tool-node.elbow45-node.fitting-4in {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M0,13.5 L36.63,28.13 L31.65,40 L0,26.5 Z' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5' stroke-linejoin='round'/%3E%3C/svg%3E");
+        }
+
+        .placed-tool-node.elbow45-node.fitting-6in {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M0,13 L36.82,27.67 L31.46,40 L0,27 Z' fill='%23cbd5e1' stroke='%2364748b' stroke-width='1.5' stroke-linejoin='round'/%3E%3C/svg%3E");
         }
 
         /* One single mitered outline (not 3 overlapping rects) so there's no internal seam
@@ -5345,6 +5363,13 @@
                                 <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
                             </div>
                         </div>
+                        <div class="tool-box-item" draggable="true" data-layer="dust-collection" data-width="0.6" data-length="0.6" data-height="7.0" data-name="4in Duct Elbow 45">
+                            <div><div class="tool-title">4" Duct Elbow (45&deg;)</div><div class="tool-dims">0.6' x 0.6' Footprint</div></div>
+                            <div class="tool-status-controls">
+                                <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
+                                <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
+                            </div>
+                        </div>
                         <div class="tool-box-item" draggable="true" data-layer="dust-collection" data-width="0.7" data-length="0.7" data-height="7.0" data-name="4in Duct Y-Joint">
                             <div><div class="tool-title">4" Duct Y-Joint</div><div class="tool-dims">0.7' x 0.7' Footprint</div></div>
                             <div class="tool-status-controls">
@@ -5433,6 +5458,13 @@
                         </div>
                         <div class="tool-box-item" draggable="true" data-layer="dust-collection" data-width="0.8" data-length="0.8" data-height="7.0" data-name="6in Duct Elbow">
                             <div><div class="tool-title">6" Duct Elbow (90&deg;)</div><div class="tool-dims">0.8' x 0.8' Footprint</div></div>
+                            <div class="tool-status-controls">
+                                <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
+                                <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
+                            </div>
+                        </div>
+                        <div class="tool-box-item" draggable="true" data-layer="dust-collection" data-width="0.8" data-length="0.8" data-height="7.0" data-name="6in Duct Elbow 45">
+                            <div><div class="tool-title">6" Duct Elbow (45&deg;)</div><div class="tool-dims">0.8' x 0.8' Footprint</div></div>
                             <div class="tool-status-controls">
                                 <button type="button" class="status-btn owned-btn" draggable="false" title="Mark as Owned">&#10003;</button>
                                 <button type="button" class="status-btn wishlist-btn" draggable="false" title="Add to Wishlist">&#9733;</button>
@@ -8946,6 +8978,12 @@
             blastgate: [{ fx: 0, fy: 0.5, angle: 180 }, { fx: 1, fy: 0.5, angle: 0 }],
             drop: [{ fx: 0, fy: 0.5, angle: 180 }, { fx: 1, fy: 0.5, angle: 0 }],
             elbow: [{ fx: 0, fy: 0.5, angle: 180 }, { fx: 0.5, fy: 1, angle: 90 }],
+            // Entry port identical to the 90deg elbow's (so it connects to an incoming duct
+            // exactly the same way), exit port at a true 45deg bearing instead of 90 -- its
+            // fx/fy follow the same "position = center + 0.5*(cos angle, sin angle)" rule
+            // every other diagonal port here uses (see the Y-joint's ports just below for the
+            // clearest example of that rule in action).
+            elbow45: [{ fx: 0, fy: 0.5, angle: 180 }, { fx: 0.8536, fy: 0.8536, angle: 45 }],
             tjoint: [{ fx: 0, fy: 0.5, angle: 180 }, { fx: 1, fy: 0.5, angle: 0 }, { fx: 0.5, fy: 1, angle: 90 }],
             yjoint: [{ fx: 0.5, fy: 1, angle: 90 }, { fx: 0.8536, fy: 0.1464, angle: 315 }, { fx: 0.1464, fy: 0.1464, angle: 225 }],
             // Straight two-port piece geometrically identical to a duct segment — the only
@@ -8959,6 +8997,9 @@
             if (!name) return null;
             if (name === 'Blast Gate' || name === '6in Blast Gate') return 'blastgate';
             if (name.includes('Duct Drop')) return 'drop';
+            // Checked before the generic 90deg case below -- "Duct Elbow 45" contains
+            // "Duct Elbow" too, so the more specific match has to win first.
+            if (name.includes('Duct Elbow') && name.includes('45')) return 'elbow45';
             if (name.includes('Duct Elbow')) return 'elbow';
             if (name.includes('Y-Joint')) return 'yjoint';
             if (name.includes('T-Joint')) return 'tjoint';
@@ -9543,6 +9584,8 @@
                 toolNode.classList.add('blast-gate-node');
             } else if (name.includes('Duct Drop')) {
                 toolNode.classList.add('pipe-node', 'drop-node', sizeClass);
+            } else if (name.includes('Duct Elbow') && name.includes('45')) {
+                toolNode.classList.add('pipe-node', 'elbow45-node', sizeClass);
             } else if (name.includes('Duct Elbow')) {
                 toolNode.classList.add('pipe-node', 'elbow-node', sizeClass);
             } else if (name.includes('Y-Joint')) {
