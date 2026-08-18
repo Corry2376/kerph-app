@@ -8430,7 +8430,11 @@
             selectNode(null);
         }
 
-        function updateWorkshopGridSize() {
+        // skipWallFeatureAnchor: true when the caller has already repositioned wallFeatures
+        // itself with an exact transform (see swapOrientationBtn's true 90deg rotation) --
+        // running the generic nearest-wall re-anchor below on top of that would only risk
+        // snapping a feature to the wrong wall near a corner, not improve on an exact rotation.
+        function updateWorkshopGridSize({ skipWallFeatureAnchor = false } = {}) {
             const widthFeet = getShopWidthFeet() || 20;
             const lengthFeet = getShopLengthFeet() || 24;
             const scaleMultiplier = parseFloat(document.getElementById('inputScale').value) || 1.0;
@@ -8444,7 +8448,7 @@
             // below. Only handles the plain rectangle shape — a custom-drawn shape's edges
             // don't map onto a width/length resize this cleanly.
             let wallAnchors = null;
-            if (shapeMode === 'rectangle' && typeof wallFeatures !== 'undefined' && wallFeatures.length) {
+            if (!skipWallFeatureAnchor && shapeMode === 'rectangle' && typeof wallFeatures !== 'undefined' && wallFeatures.length) {
                 const oldSegments = getWallSegments();
                 wallAnchors = wallFeatures.map(f => {
                     let best = null;
@@ -15360,33 +15364,83 @@
 
         document.getElementById('inputWidth').addEventListener('input', updateWorkshopGridSize);
         document.getElementById('inputLength').addEventListener('input', updateWorkshopGridSize);
-        // Swaps the two field values (a plain resize, same as if the user retyped them
-        // themselves -- including the same existing caveat that already-placed items aren't
-        // repositioned) so the shop board rotates between portrait and landscape without
-        // re-entering both numbers.
+        // A true rigid-body 90deg rotation -- every placed tool/cabinet, internal wall, and
+        // wall feature rotates together with the board, instead of the board just resizing out
+        // from under everything that was sitting on it. Rotating a point (x,y) on the OLD
+        // WxH board by 90deg CW lands it at (oldBoardHeightPx - y, x) on the NEW HxW board --
+        // verified against a wall feature's angle field cycling correctly through all 4 walls
+        // (0=top -> 90=right -> 180=bottom -> 270=left -> 0) under repeated rotation.
         document.getElementById('swapOrientationBtn').addEventListener('click', () => {
+            pushUndoSnapshot();
+
             const widthField = document.getElementById('inputWidth');
             const lengthField = document.getElementById('inputLength');
             const w = widthField.value;
             widthField.value = lengthField.value;
             lengthField.value = w;
 
-            // A custom-drawn shape's points are independent absolute pixel coordinates --
-            // swapping Width/Length only resizes the underlying rectangle, so for a custom
-            // shape (Width/Length are even disabled for one, see applyCustomShape) nothing
-            // visibly happened. Rotate the shape's own points 90deg to fit the swapped
-            // rectangle: new board width == old board height after the resize below, so
-            // rotating against the OLD height is exactly the transform that lands each point
-            // correctly in the NEW board. Placed items/wall features keep their old absolute
-            // positions either way -- same existing limitation as a plain rectangle resize.
-            if (shapeMode === 'custom' && shapePoints.length) {
-                const oldBoardHeightPx = board.clientHeight;
-                shapePoints = shapePoints.map(p => ({ x: oldBoardHeightPx - p.y, y: p.x }));
-                updateWorkshopGridSize();
-                applyCustomShape();
-            } else {
-                updateWorkshopGridSize();
+            const oldBoardHeightPx = board.clientHeight;
+            const rotatePoint = (x, y) => ({ x: oldBoardHeightPx - y, y: x });
+
+            document.querySelectorAll('.placed-tool-node').forEach(node => {
+                const left = parseFloat(node.style.left) || 0;
+                const top = parseFloat(node.style.top) || 0;
+                const width = parseFloat(node.style.width) || 0;
+                const height = parseFloat(node.style.height) || 0;
+                const newCenter = rotatePoint(left + width / 2, top + height / 2);
+                node.style.left = (newCenter.x - width / 2) + 'px';
+                node.style.top = (newCenter.y - height / 2) + 'px';
+
+                const newRotation = ((parseFloat(node.dataset.rotation) || 0) + 90) % 360;
+                node.dataset.rotation = newRotation;
+                node.style.transform = newRotation ? `rotate(${newRotation}deg)` : '';
+                const readout = node.querySelector('.rotate-readout');
+                if (readout) readout.innerText = `${newRotation}°`;
+            });
+
+            if (typeof internalWalls !== 'undefined') {
+                internalWalls.forEach(wall => {
+                    const p1 = rotatePoint(wall.x1, wall.y1);
+                    const p2 = rotatePoint(wall.x2, wall.y2);
+                    wall.x1 = p1.x; wall.y1 = p1.y;
+                    wall.x2 = p2.x; wall.y2 = p2.y;
+                });
             }
+
+            if (typeof wallFeatures !== 'undefined') {
+                wallFeatures.forEach(f => {
+                    const p = rotatePoint(f.x, f.y);
+                    f.x = p.x; f.y = p.y;
+                    f.angle = ((f.angle || 0) + 90) % 360;
+                });
+            }
+
+            // Ephemeral tape-measure lines aren't part of the saved layout (serializeCurrentLayout
+            // doesn't include them) and have no rotation of their own worth preserving -- cleared
+            // the same way the Measure tool's own Clear button does, rather than left pointing at
+            // the wrong spot on the rotated board.
+            if (typeof measurements !== 'undefined' && measurements.length) {
+                measurements = [];
+                if (typeof renderMeasurements === 'function') renderMeasurements();
+                const clearBtn = document.getElementById('measureClearBtn');
+                if (clearBtn) clearBtn.style.display = 'none';
+            }
+
+            // A custom-drawn shape's points are independent absolute pixel coordinates -- swapping
+            // Width/Length only resizes the underlying rectangle, so for a custom shape (Width/
+            // Length are even disabled for one, see applyCustomShape) nothing visibly happened on
+            // its own. Rotate the shape's own points the same way as everything else above: new
+            // board width == old board height after the resize below, so rotating against the OLD
+            // height lands each point correctly in the NEW board.
+            const isCustomShape = shapeMode === 'custom' && shapePoints.length;
+            if (isCustomShape) shapePoints = shapePoints.map(p => rotatePoint(p.x, p.y));
+
+            // skipWallFeatureAnchor: wallFeatures were just rotated exactly above -- the generic
+            // nearest-wall re-anchor this function normally does for a plain resize would only
+            // risk snapping a feature to the wrong wall near a corner, not improve on that.
+            updateWorkshopGridSize({ skipWallFeatureAnchor: true });
+            if (isCustomShape) applyCustomShape();
+            if (typeof renderInternalWalls === 'function') renderInternalWalls();
         });
         document.getElementById('inputScale').addEventListener('change', updateWorkshopGridSize);
         initDragAndDropEngine();
