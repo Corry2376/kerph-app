@@ -1721,7 +1721,7 @@
             return group;
         }
 
-        function addToolMesh(t, ceilingFt, index) {
+        function addToolMesh(t, ceilingFt, index, stackElevationFt) {
             const layer = t.layer || 'tools';
             const leftFt = ftFromPx(t.left), topFt = ftFromPx(t.top);
             const wFt = ftFromPx(t.width) || 1, hFt = ftFromPx(t.height) || 1;
@@ -1896,9 +1896,13 @@
                 const mat = materialForColor(t.cabType ? COLORS.cabinet : COLORS.tool);
                 mesh = new THREE.Mesh(geo, mat);
                 // Wall cabinets float at their set mount height (inches, floor to cabinet
-                // bottom) instead of sitting on the floor like every other cabinet/tool —
-                // clamped so a too-tall entry can't poke the box through the ceiling.
-                const rawMountFt = (t.cabType === 'wall' && t.mountHeightIn) ? parseFloat(t.mountHeightIn) / 12 : 0;
+                // bottom); everything else sits on the floor UNLESS its footprint is stacked
+                // on top of a valid surface per computeStackElevations (a tool placed on a
+                // rolling cabinet in the 2D planner) — clamped either way so a too-tall entry
+                // (or a too-tall stack) can't poke the box through the ceiling.
+                const rawMountFt = (t.cabType === 'wall' && t.mountHeightIn)
+                    ? parseFloat(t.mountHeightIn) / 12
+                    : (stackElevationFt || 0);
                 const mountFt = Math.max(0, Math.min(rawMountFt, Math.max(0, ceilingFt - boxH)));
                 const centerY = mountFt > 0 ? mountFt + boxH / 2 : boxH / 2;
                 mesh.position.set(centerX, centerY, centerZ);
@@ -2064,6 +2068,41 @@
             'Turning', 'Routing', 'Crosscut & Miter', 'CNC & Digital Fab',
             'Assembly & Storage', 'Tool Storage', 'Dust Collection'
         ]);
+
+        // Placeholder until the real keyword classifier lands (see buildToolDecoration's Tool
+        // Storage branch) -- treats every Tool Storage item as the default 'rolling-cabinet'
+        // bucket for now, which is what isFloorSurfaceCandidate below needs to know is a valid
+        // stacking surface (slightly over-inclusive for totes/pegboards until the real
+        // classifier replaces this, which is fine for the short window in between).
+        function getToolStorageSubtype(label) {
+            return 'rolling-cabinet';
+        }
+
+        // Tool Storage sub-shapes that actually have a flat top something can rest on --
+        // totes/backpacks/pegboards/organizer trays don't.
+        const STACKABLE_TOOL_STORAGE_SUBTYPES = new Set(['rolling-cabinet', 'mobile-workbench', 'storage-cabinet', 'utility-cart', 'shelving']);
+
+        // Is this sharedLayout.tools[] entry a valid floor "surface" another item can sit on
+        // top of? User-built base/shelving cabinets always qualify; wall cabinets never do
+        // (they float, so they're a mount TARGET, not a floor surface). Catalog items qualify
+        // only for categories/subtypes that actually have a stable flat top -- not every Tool
+        // Storage item (a tote or pegboard panel has nothing for a saw to rest on).
+        function isFloorSurfaceCandidate(t) {
+            if (t.cabType === 'base' || t.cabType === 'shelving') return true;
+            if (t.cabType) return false; // 'wall'
+            const catalogEntry = CATALOG_ITEMS.find(c => c.name === t.label);
+            const category = catalogEntry ? catalogEntry.category : null;
+            if (category === 'Tool Storage') return STACKABLE_TOOL_STORAGE_SUBTYPES.has(getToolStorageSubtype(t.label));
+            return category === 'Assembly & Storage' || category === 'Mechanic Tool Storage';
+        }
+
+        // A rider's footprint must be at least this covered by a candidate surface's footprint
+        // to count as "sitting on it" -- high enough that two items merely touching/adjacent (a
+        // very common 2D placement) don't get treated as stacked, low enough that a tool
+        // overhanging a smaller cabinet lid (common -- a benchtop saw is often wider than the
+        // cart under it) still counts. Shared with the live drag-overlap check in
+        // isOverlappingOtherFloorItems so the two stay consistent with each other.
+        const STACK_CONTAINMENT_THRESHOLD = 0.6;
 
         /* ---------- TOOL OPERATING CLEARANCE ZONES (3D layer) ----------
            Same category defaults + localStorage override key as the Workshop Layout
@@ -2348,6 +2387,44 @@
             controls.update();
         }
 
+        // Derives a Y-elevation (feet) per sharedLayout.tools[] index from nothing but the
+        // static XZ footprints already stored there -- there is no explicit "sits on"
+        // relationship anywhere in the data model (2D placement is purely a fixed z-index paint
+        // order, see the plan), so this recomputes the relationship fresh every rebuild instead
+        // of trying to persist/maintain one. O(n^2) over the placed item count, fine at
+        // real-world shop scale (low hundreds of items at most).
+        function computeStackElevations() {
+            const tools = sharedLayout.tools || [];
+            const elevations = new Array(tools.length).fill(0);
+            const infos = tools.map((t, i) => ({
+                index: i, t,
+                leftFt: ftFromPx(t.left), topFt: ftFromPx(t.top),
+                wFt: ftFromPx(t.width) || 1, hFt: ftFromPx(t.height) || 1,
+                boxH: parseFloat(t.physicalHeight) || 3
+            }));
+
+            infos.forEach((rider) => {
+                if (rider.t.layer === 'dust-collection' || rider.t.layer === 'lighting') return;
+                if (rider.t.cabType === 'wall') return; // floats at its own mount height, never "on" a surface
+
+                let best = null; // { boxH, overlapArea }
+                infos.forEach((surface) => {
+                    if (surface === rider || !isFloorSurfaceCandidate(surface.t)) return;
+                    const ox1 = Math.max(rider.leftFt, surface.leftFt), oz1 = Math.max(rider.topFt, surface.topFt);
+                    const ox2 = Math.min(rider.leftFt + rider.wFt, surface.leftFt + surface.wFt);
+                    const oz2 = Math.min(rider.topFt + rider.hFt, surface.topFt + surface.hFt);
+                    if (ox2 <= ox1 || oz2 <= oz1) return;
+                    const overlapArea = (ox2 - ox1) * (oz2 - oz1);
+                    const coverage = overlapArea / (rider.wFt * rider.hFt || 1);
+                    if (coverage < STACK_CONTAINMENT_THRESHOLD) return;
+                    // Tie-break: whichever candidate surface covers the MOST of the rider's own area wins.
+                    if (!best || overlapArea > best.overlapArea) best = { boxH: surface.boxH, overlapArea };
+                });
+                if (best) elevations[rider.index] = best.boxH;
+            });
+            return elevations;
+        }
+
         function buildScene() {
             clearScene();
 
@@ -2438,8 +2515,9 @@
                 addWallSegmentWithOpenings(a, b, thicknessFt, ceilingFt, COLORS.innerWall, doorWindowFeatures);
             });
 
+            const stackElevations = computeStackElevations();
             (sharedLayout.tools || []).forEach((t, i) => {
-                if (isToolVisible(t)) addToolMesh(t, ceilingFt, i);
+                if (isToolVisible(t)) addToolMesh(t, ceilingFt, i, stackElevations[i] || 0);
             });
             (sharedLayout.wallFeatures || []).forEach(f => addWallFeatureMesh(f));
 
@@ -2739,10 +2817,22 @@
         // toolIndex) since they can't be on the floor to begin with.
         function isOverlappingOtherFloorItems(mesh, x, z) {
             const { halfW, halfD } = getMeshHalfExtentsFt(mesh);
+            const riderArea = (halfW * 2) * (halfD * 2) || 1;
             return clickableMeshes.some(other => {
                 if (other === mesh || other.userData.toolIndex == null) return false;
                 const o = getMeshHalfExtentsFt(other);
-                return rectsOverlap(x, z, halfW, halfD, other.position.x, other.position.z, o.halfW, o.halfD);
+                if (!rectsOverlap(x, z, halfW, halfD, other.position.x, other.position.z, o.halfW, o.halfD)) return false;
+                // An overlap against a valid stacking surface that clears the same containment
+                // threshold computeStackElevations uses isn't a real collision -- it's the tool
+                // about to legitimately land ON that surface (see the plan), so don't warn.
+                const otherT = sharedLayout.tools[other.userData.toolIndex];
+                if (otherT && isFloorSurfaceCandidate(otherT)) {
+                    const ox1 = Math.max(x - halfW, other.position.x - o.halfW), oz1 = Math.max(z - halfD, other.position.z - o.halfD);
+                    const ox2 = Math.min(x + halfW, other.position.x + o.halfW), oz2 = Math.min(z + halfD, other.position.z + o.halfD);
+                    const overlapArea = Math.max(0, ox2 - ox1) * Math.max(0, oz2 - oz1);
+                    if (overlapArea / riderArea >= STACK_CONTAINMENT_THRESHOLD) return false;
+                }
+                return true;
             });
         }
 
@@ -2803,15 +2893,20 @@
                         showToast('Saved.');
                     }
                 } else {
-                    if (dragState.originalColor != null && selectedMesh.material && selectedMesh.material.color) {
-                        selectedMesh.material.color.setHex(dragState.originalColor);
-                    }
                     const t = sharedLayout.tools[selectedMesh.userData.toolIndex];
                     if (t) {
                         const wFt = ftFromPx(t.width) || 1, hFt = ftFromPx(t.height) || 1;
                         t.left = (selectedMesh.position.x - wFt / 2) * BASE_PPI;
                         t.top = (selectedMesh.position.z - hFt / 2) * BASE_PPI;
-                        kerphSaveCurrentLayout(sharedLayout).catch(() => {});
+                        // A full rebuild (not just save+repaint) is what makes a stacking
+                        // relationship this drop just formed or broke (dropping a tool onto a
+                        // cabinet, or dragging a cabinet out from under its rider) actually show
+                        // up — computeStackElevations only runs at the top of buildScene(). Same
+                        // pattern every other mutation in this file already uses (rotate/edit/
+                        // delete), just newly extended to plain drag-drop. The dragged mesh
+                        // itself is destroyed and recreated by the rebuild, so there's no
+                        // leftover tint color on it to revert.
+                        persistAndRebuild(selectedMesh.userData.toolIndex);
                         showToast('Saved.');
                     }
                 }
