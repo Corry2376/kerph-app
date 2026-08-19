@@ -641,7 +641,21 @@
         .sidebar-collapse-btn:hover { background-color: #eef2ff; }
 
         .panels-collapse-btn {
-            position: fixed;
+            /* absolute, NOT fixed -- matches .floating-panel/.measure-toolbar/.layers-bar,
+               all of which are already position:absolute (document-relative) because header
+               is position:absolute too and the whole page scrolls together as one flow once
+               the panel stack runs taller than the viewport (see arrangeFloatingPanels'
+               comment). This button being the one leftover position:fixed element in that same
+               region meant it stayed pinned to the viewport while everything around it scrolled
+               with the page -- so as soon as the stack was tall enough to scroll (routine with
+               a few panels open), a scrolled panel would physically collide with this button,
+               and since both share z-index:1500, whichever panel comes later in DOM order
+               painted on top of it. Confirmed directly: scrolling 100px with all panels open
+               put cabinetPanel's rect fully over this button's fixed rect.
+               .sidebar-collapse-btn stays fixed on purpose -- the LEFT catalog sidebar is a
+               separate fixed-height, internally-scrolling panel (see syncMobileLayoutToHeaderHeight),
+               not part of the page's own vertical scroll the way the right-hand stack is. */
+            position: absolute;
             top: 150px;
             right: 24px;
             z-index: 1500;
