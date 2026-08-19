@@ -1595,7 +1595,11 @@
             elbow45: [{ fx: 0, fy: 0.5 }, { fx: 0.8536, fy: 0.8536 }],
             yjoint: [{ fx: 0.5, fy: 1 }, { fx: 0.8536, fy: 0.1464 }, { fx: 0.1464, fy: 0.1464 }],
             tjoint: [{ fx: 0, fy: 0.5 }, { fx: 1, fy: 0.5 }, { fx: 0.5, fy: 1 }],
-            reducer: [{ fx: 0, fy: 0.5 }, { fx: 1, fy: 0.5 }]
+            reducer: [{ fx: 0, fy: 0.5 }, { fx: 1, fy: 0.5 }],
+            // Mirrors workshop-planner.html's DUCT_PORTS.wye45 -- same two collinear
+            // through-ports as tjoint (fx 0/1, fy 0.5) so it reuses the tjoint geometry branch
+            // below, just with the third port at a 45deg corner instead of straight down.
+            wye45: [{ fx: 0, fy: 0.5 }, { fx: 1, fy: 0.5 }, { fx: 0.8536, fy: 0.8536 }]
         };
 
         // Same name-matching rules as workshop-planner.html's getPortItemType/
@@ -1607,6 +1611,7 @@
             if (name.includes('Duct Elbow')) return 'elbow';
             if (name.includes('Y-Joint')) return 'yjoint';
             if (name.includes('T-Joint')) return 'tjoint';
+            if (name.includes('Wye 45')) return 'wye45';
             if (name.includes('Duct Reducer')) return 'reducer';
             return null;
         }
@@ -1628,7 +1633,14 @@
                 new THREE.CylinderGeometry(sizeFt / 2, sizeFt / 2, pipeRadius * 2, 8),
                 new THREE.MeshBasicMaterial()
             );
-            group.visible = false;
+            // material.visible, NOT group.visible -- three.js's renderer skips an object's
+            // entire child subtree once the object itself is invisible (see the identical
+            // gotcha called out at the tool/cabinet decoration branch below), which silently
+            // hid every real fitting mesh added as this hit-target's child. group.visible=false
+            // shipped in 236b049 and made every elbow/Y/T/reducer invisible while still
+            // clickable (raycasting doesn't care about material), which is exactly what looked
+            // like the fittings had been "removed."
+            group.material.visible = false;
             const ports = DUCT_FITTING_LOCAL_PORTS[fittingType];
             const toLocal = (p) => new THREE.Vector3((p.fx - 0.5) * sizeFt, 0, (p.fy - 0.5) * sizeFt);
 
@@ -1683,10 +1695,12 @@
                 return group;
             }
 
-            if (fittingType === 'tjoint') {
+            if (fittingType === 'tjoint' || fittingType === 'wye45') {
                 // Ports 0/1 are always collinear (opposite sides of the box, see
-                // DUCT_FITTING_LOCAL_PORTS.tjoint) -- one continuous through-run, not two
-                // stubs meeting at the center, plus one perpendicular branch stub.
+                // DUCT_FITTING_LOCAL_PORTS.tjoint/wye45) -- one continuous through-run, not two
+                // stubs meeting at the center, plus one branch stub (perpendicular for a
+                // T-joint, 45deg for a wye -- addBranch below just points at wherever the
+                // third port actually is, so the same code covers both).
                 const [pThroughA, pThroughB, pBranch] = ports.map(toLocal);
                 const throughGeo = new THREE.CylinderGeometry(pipeRadius, pipeRadius, pThroughA.distanceTo(pThroughB), 12);
                 const throughMesh = new THREE.Mesh(throughGeo, mat);
@@ -1799,7 +1813,10 @@
                     // buildDuctFittingMesh above — raycasting can't hit a bare Group here.
                     const bodyLen = Math.max(wFt, hFt);
                     mesh = new THREE.Mesh(new THREE.CylinderGeometry(pipeRadius, pipeRadius, bodyLen, 8), new THREE.MeshBasicMaterial());
-                    mesh.visible = false;
+                    // material.visible, not mesh.visible -- same child-subtree-hiding gotcha as
+                    // buildDuctFittingMesh above, which was actually hiding the body/handle
+                    // added as this mesh's children below.
+                    mesh.material.visible = false;
                     // Matches the visible body's own rotation below -- without this the hit
                     // target stays a tall vertical sliver (a cylinder's native long axis is Y)
                     // instead of lying flat along the pipe's actual horizontal length, and
