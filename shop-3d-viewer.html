@@ -2094,7 +2094,9 @@
         const TOOL_CATEGORY_SHAPES = new Set([
             'Table Saws', 'Bandsaws', 'Jointers & Planers', 'Sanding', 'Drilling & Boring',
             'Turning', 'Routing', 'Crosscut & Miter', 'CNC & Digital Fab',
-            'Assembly & Storage', 'Tool Storage', 'Dust Collection'
+            'Assembly & Storage', 'Tool Storage', 'Dust Collection',
+            'Mini-Splits', '3D Printers', 'Air Compressors & Shop Air', 'Mechanic Tool Storage',
+            'Vehicle Lifts', 'Jacks & Lifting Equipment', 'Welding', 'Diagnostic & Specialty Equipment'
         ]);
 
         // Tool Storage carries real descriptive words in the catalog name (unlike Table Saws
@@ -2458,6 +2460,77 @@
                 addCylinderPart(group, r * 0.62, boxH * 0.34, 0, boxH * 0.29, 0, dark, 'y', 22);
                 const stubLen = Math.min(wFt, hFt) * 0.3;
                 addCylinderPart(group, r * 0.16, stubLen, r + stubLen / 2, -boxH * 0.05, 0, metal, 'x');
+            } else if (category === 'Mini-Splits') {
+                // Outdoor condenser unit -- distinct from the wall-mounted indoor head, which
+                // already has its own correct decoration elsewhere (the 'minisplit' wall
+                // feature). Squat housing, circular fan grille on the front, top louvers, feet.
+                addPart(group, wFt * 0.96, boxH * 0.8, hFt * 0.9, 0, boxH * 0.02, 0, body);
+                const fanR = Math.min(wFt, boxH) * 0.32;
+                addCylinderPart(group, fanR, 0.04, 0, boxH * 0.02, hFt / 2 + 0.02, dark, 'z', 20);
+                addCylinderPart(group, fanR * 0.7, 0.02, 0, boxH * 0.02, hFt / 2 + 0.05, metal, 'z', 16);
+                for (let i = -1; i <= 1; i++) addPart(group, wFt * 0.8, 0.02, 0.02, 0, boxH * 0.36 + i * 0.04, hFt / 2 + 0.01, dark);
+                const lx = wFt / 2 - 0.08, lz = hFt / 2 - 0.08;
+                [[-lx, -lz], [lx, -lz], [-lx, lz], [lx, lz]].forEach(([x, z]) => addPart(group, 0.05, boxH * 0.12, 0.05, x, -boxH * 0.44, z, dark));
+            } else if (category === '3D Printers') {
+                addPart(group, wFt * 0.9, boxH * 0.12, hFt * 0.9, 0, -boxH * 0.42, 0, dark); // base plinth
+                [[-1, -1], [1, -1], [-1, 1], [1, 1]].forEach(([sx, sz]) => {
+                    addPart(group, wFt * 0.06, boxH * 0.85, hFt * 0.06, sx * wFt * 0.4, boxH * 0.02, sz * hFt * 0.4, metal); // frame posts
+                });
+                addPart(group, wFt * 0.85, 0.04, hFt * 0.85, 0, -boxH * 0.15, 0, dark); // build plate
+                addPart(group, wFt * 0.9, 0.05, hFt * 0.06, 0, boxH * 0.4, -hFt * 0.42, dark); // gantry rail
+                addPart(group, wFt * 0.16, boxH * 0.14, 0.02, wFt * 0.3, -boxH * 0.2, hFt / 2 + 0.01, dark); // control screen
+            } else if (category === 'Air Compressors & Shop Air') {
+                // Real-world compressors are bimodal in shape, not just size -- an upright tank
+                // and a horizontal pancake/hotdog tank look nothing alike, so split on boxH
+                // rather than trying to force one silhouette to cover both.
+                const r = Math.min(wFt, hFt) * 0.4;
+                if (boxH > 3) {
+                    addCylinderPart(group, r, boxH * 0.75, 0, -boxH * 0.1, 0, body, 'y', 18); // upright tank
+                    addPart(group, wFt * 0.5, boxH * 0.18, hFt * 0.5, 0, boxH * 0.36, 0, dark); // pump head
+                    addCylinderPart(group, r * 0.15, boxH * 0.12, wFt * 0.2, boxH * 0.05, 0, metal, 'y', 10);
+                } else {
+                    addCylinderPart(group, r, wFt * 0.85, 0, -boxH * 0.28, 0, body, 'x', 20); // horizontal pancake/hotdog tank
+                    addPart(group, wFt * 0.4, boxH * 0.28, hFt * 0.5, 0, boxH * 0.05, 0, dark);
+                    addCylinderPart(group, r * 0.12, hFt * 0.3, 0, boxH * 0.02, hFt * 0.32, metal, 'z', 10); // gauge
+                    [[-wFt * 0.32], [wFt * 0.32]].forEach(([x]) => addCylinderPart(group, r * 0.35, 0.06, x, -boxH * 0.44, 0, dark, 'x', 14));
+                }
+            } else if (category === 'Mechanic Tool Storage') {
+                rollingCabinetShape(5); // same two-tier silhouette as Tool Storage's default bucket, more drawer lines for the larger pro boxes
+            } else if (category === 'Vehicle Lifts') {
+                // Bimodal like Air Compressors -- a 2/4-post lift and a low drive-on scissor
+                // lift share nothing visually, split on boxH again.
+                if (boxH > 2) {
+                    addPart(group, wFt * 0.96, 0.04, hFt * 0.96, 0, -boxH / 2 + 0.02, 0, dark); // base plate
+                    const lx = wFt / 2 - 0.15, lz = hFt / 2 - 0.15;
+                    [[-lx, -lz], [lx, -lz], [-lx, lz], [lx, lz]].forEach(([x, z]) => addCylinderPart(group, 0.09, boxH * 0.92, x, 0, z, metal));
+                    addPart(group, wFt * 0.9, boxH * 0.06, 0.1, 0, boxH * 0.34, 0, dark); // arm/crossbeam
+                } else {
+                    addPart(group, wFt * 0.95, boxH * 0.9, hFt * 0.95, 0, 0, 0, body); // low drive-on platform
+                    addPart(group, wFt * 0.16, boxH * 1.6, hFt * 0.9, -wFt * 0.42, boxH * 0.4, 0, dark);
+                    addPart(group, wFt * 0.16, boxH * 1.6, hFt * 0.9, wFt * 0.42, boxH * 0.4, 0, dark);
+                    addPart(group, wFt * 0.14, boxH * 3, hFt * 0.14, wFt * 0.35, boxH * 1.2, -hFt * 0.4, metal); // hydraulic unit
+                }
+            } else if (category === 'Jacks & Lifting Equipment') {
+                addPart(group, wFt * 0.55, boxH * 0.35, hFt * 0.85, -wFt * 0.1, -boxH * 0.32, 0, body); // floor-jack body
+                addCylinderPart(group, Math.min(wFt, hFt) * 0.1, boxH * 0.5, -wFt * 0.15, -boxH * 0.05, hFt * 0.2, metal); // ram
+                addPart(group, wFt * 0.06, boxH * 0.06, hFt * 0.9, wFt * 0.3, boxH * 0.1, 0, dark); // long handle
+                [[-hFt * 0.32], [hFt * 0.32]].forEach(([z]) => addCylinderPart(group, 0.06, 0.05, -wFt * 0.1, -boxH / 2, z, dark, 'x'));
+            } else if (category === 'Welding') {
+                addPart(group, wFt * 0.92, boxH * 0.8, hFt * 0.9, 0, -boxH * 0.05, 0, body);
+                addPart(group, wFt * 0.75, boxH * 0.35, 0.02, 0, boxH * 0.2, hFt / 2 + 0.01, dark); // control panel
+                addCylinderPart(group, 0.05, 0.03, -wFt * 0.15, boxH * 0.2, hFt / 2 + 0.03, metal, 'z', 12);
+                addCylinderPart(group, 0.05, 0.03, wFt * 0.05, boxH * 0.2, hFt / 2 + 0.03, metal, 'z', 12);
+                addPart(group, wFt * 0.5, 0.03, 0.03, 0, boxH * 0.44, 0, dark); // carry handle
+                [[-wFt * 0.32, -hFt * 0.32], [wFt * 0.32, -hFt * 0.32]].forEach(([x, z]) => addCylinderPart(group, 0.05, 0.04, x, -boxH * 0.48, z, dark, 'x'));
+            } else if (category === 'Diagnostic & Specialty Equipment') {
+                // Only one catalog entry today (a Coats tire changer) -- built as an actual
+                // tire changer rather than a generic shape, since with a single entry a generic
+                // shape would be strictly worse than just modeling the real thing.
+                const r = Math.min(wFt, hFt) * 0.45;
+                addCylinderPart(group, r, boxH * 0.1, 0, -boxH * 0.42, 0, dark, 'y', 20); // turntable
+                addCylinderPart(group, r * 0.4, boxH * 0.75, 0, -boxH * 0.05, 0, metal, 'y', 14); // mast
+                addPart(group, wFt * 0.35, boxH * 0.1, hFt * 0.12, wFt * 0.15, boxH * 0.28, 0, dark); // tool arm
+                addPart(group, wFt * 0.3, boxH * 0.06, hFt * 0.3, -wFt * 0.25, -boxH * 0.46, hFt * 0.15, dark); // foot pedal
             }
         }
 
