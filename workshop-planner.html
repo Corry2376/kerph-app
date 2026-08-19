@@ -8581,6 +8581,29 @@
             return displayToFeet(parseFloat(document.getElementById('inputLength').value) || 0);
         }
 
+        // A custom-drawn shape's own points are absolute px measured from the board's own
+        // top-left corner (0,0) -- completely independent of inputWidth/inputLength (see
+        // applyCustomShape's comment), and NEVER re-translated/re-centered at any point after
+        // being drawn. That means the board's own box has to stay at least as big as the
+        // polygon's farthest point from that same (0,0) origin, not just as big as the
+        // polygon's own width/height -- a shape drawn starting 15ft in from the corner still
+        // needs a board at least 15ft+its-own-width wide, or its far coordinates get clipped
+        // away by a smaller box that starts at the same (0,0) the polygon does. (Confirmed by
+        // testing the width/height-only version of this: the whole shape vanished, clipped
+        // against a box far smaller than where its points actually sit.) Returns null when
+        // there's no custom shape to protect (plain rectangle mode).
+        function getCustomShapeBoundsFeet() {
+            if (!(shapeMode === 'custom' && shapePoints && shapePoints.length >= 3)) return null;
+            const xs = shapePoints.map(p => p.x), ys = shapePoints.map(p => p.y);
+            // board.style.width comes from lengthFeet, board.style.height from widthFeet (see
+            // updateWorkshopGridSize) -- shapePoints.x runs along the board's width (lengthFeet),
+            // .y along its height (widthFeet), same axis convention as everywhere else here.
+            return {
+                lengthFeet: Math.max(...xs) / ppi,
+                widthFeet: Math.max(...ys) / ppi
+            };
+        }
+
         function getShopCeilingHeightFeet() {
             const raw = parseFloat(document.getElementById('inputCeilingHeight').value);
             return isNaN(raw) ? 10 : displayToFeet(raw);
@@ -15425,6 +15448,16 @@
                     startBtn.textContent = 'Apply Changes';
                     templateField.style.display = 'none';
                     nameField.style.display = 'none';
+                    // applyCustomShape() disables these while a custom shape is active (so
+                    // they can't be edited mid-draw) and nothing ever re-enabled them
+                    // afterward -- including here, which meant Edit Shop Settings permanently
+                    // showed uneditable Width/Length fields for the entire rest of a custom
+                    // shape's life, with zero indication why or any way to fix it short of
+                    // resetting the shape back to a plain rectangle. Re-enabling on every open
+                    // is safe: startBtn's Apply Changes path below clamps against the drawn
+                    // shape's own bounding box before applying, via getCustomShapeBoundsFeet().
+                    document.getElementById('inputWidth').disabled = false;
+                    document.getElementById('inputLength').disabled = false;
                 } else {
                     title.textContent = 'Start a New Shop Layout';
                     warning.style.display = 'block';
@@ -15468,8 +15501,31 @@
                     const typedName = nameInputModal.value.trim();
                     if (typedName) document.getElementById('layoutNameInput').value = typedName;
                 } else {
+                    // A custom shape's own points never rescale with Width/Length (see
+                    // getCustomShapeBoundsFeet) -- shrinking the board smaller than what's
+                    // actually drawn would just spill the room and everything in it outside
+                    // the visible board instead of shrinking anything. Clamp up to the drawn
+                    // shape's own extent rather than silently rejecting the whole change.
+                    const shapeBounds = getCustomShapeBoundsFeet();
+                    let message = 'Shop settings updated.';
+                    if (shapeBounds) {
+                        const widthInput = document.getElementById('inputWidth');
+                        const lengthInput = document.getElementById('inputLength');
+                        const minWidthDisplay = feetToDisplay(shapeBounds.widthFeet);
+                        const minLengthDisplay = feetToDisplay(shapeBounds.lengthFeet);
+                        let clamped = false;
+                        if ((parseFloat(widthInput.value) || 0) < minWidthDisplay - 0.05) {
+                            widthInput.value = Math.ceil(minWidthDisplay * 10) / 10;
+                            clamped = true;
+                        }
+                        if ((parseFloat(lengthInput.value) || 0) < minLengthDisplay - 0.05) {
+                            lengthInput.value = Math.ceil(minLengthDisplay * 10) / 10;
+                            clamped = true;
+                        }
+                        if (clamped) message = "Shop settings updated — width/length can't go smaller than your drawn shape, so they were adjusted to fit it.";
+                    }
                     updateWorkshopGridSize();
-                    showToast('Shop settings updated.');
+                    showToast(message);
                 }
                 if (typeof autosaveCurrentLayout === 'function') autosaveCurrentLayout();
                 closeModal();
