@@ -1055,6 +1055,30 @@
         };
         const DEFAULT_MATERIAL_HINT = { roughness: 0.8, metalness: 0.05 };
 
+        // Brand-flavored body tint, keyed by a lowercase substring of the catalog label so
+        // casing inconsistencies in catalog-data.js ("DeWalt" vs "DEWALT", "RIDGID" vs "Ridgid")
+        // don't matter. Every value reuses COLORS.tool's own "painted sheet-metal" roughness/
+        // metalness via the backfill loop below instead of hand-tuning a PBR hint per brand.
+        const BRAND_COLORS = {
+            milwaukee: 0xc8102e, dewalt: 0xffc60b, makita: 0x0a9396, ridgid: 0xff6600,
+            festool: 0x00843d, sawstop: 0x3d3d42, powermatic: 0xf4c200, grizzly: 0x3c6b1f,
+            jet: 0x0f6ab4, bosch: 0x1c3f94, ryobi: 0x9fd400, craftsman: 0x9e1b1b,
+            kobalt: 0x0d7377, klein: 0xf5a300, husky: 0xe2231a, metabo: 0x1f9e7a,
+            wen: 0x8ea832, delta: 0x6b6b70, 'snap-on': 0x0a2f5c
+        };
+        // Guarded so a hex that happens to already exist in COLORS.* never gets silently
+        // overwritten (checked against the full COLORS table -- no collision today, but this
+        // stays safe if COLORS grows more entries later).
+        Object.values(BRAND_COLORS).forEach((hex) => {
+            if (MATERIAL_HINTS[hex] == null) MATERIAL_HINTS[hex] = MATERIAL_HINTS[COLORS.tool];
+        });
+
+        function getBrandColorForLabel(label) {
+            const n = (label || '').toLowerCase();
+            for (const brand in BRAND_COLORS) if (n.includes(brand)) return BRAND_COLORS[brand];
+            return null;
+        }
+
         // Real-world default heights for wall features that don't carry stored height
         // data today (see the plan: only outlets store a real mountHeightIn). Also used
         // to decide where doors/windows leave a real gap in the wall (see
@@ -1893,7 +1917,11 @@
             } else {
                 const boxH = physFt || 3;
                 const geo = new THREE.BoxGeometry(wFt, boxH, hFt);
-                const mat = materialForColor(t.cabType ? COLORS.cabinet : COLORS.tool);
+                // Brand-flavored tint (see BRAND_COLORS) instead of the same flat blue for
+                // every tool -- cabType cabinets stay plain COLORS.cabinet always, since
+                // they're user-built, not a catalog brand item.
+                const bodyColorHex = t.cabType ? COLORS.cabinet : (getBrandColorForLabel(t.label) || COLORS.tool);
+                const mat = materialForColor(bodyColorHex);
                 mesh = new THREE.Mesh(geo, mat);
                 // Wall cabinets float at their set mount height (inches, floor to cabinet
                 // bottom); everything else sits on the floor UNLESS its footprint is stacked
@@ -1926,7 +1954,7 @@
                 const category = catalogEntry ? catalogEntry.category : null;
                 if (t.cabType || TOOL_CATEGORY_SHAPES.has(category)) {
                     const decoGroup = new THREE.Group();
-                    buildToolDecoration(decoGroup, category, !!t.cabType, wFt, hFt, boxH);
+                    buildToolDecoration(decoGroup, category, !!t.cabType, wFt, hFt, boxH, bodyColorHex, t.label);
                     mesh.add(decoGroup);
                     // Hide only this mesh's own material, not mesh.visible — three.js's
                     // renderer skips an object's entire child subtree when the object itself
@@ -2208,8 +2236,8 @@
         // the same two colors as the flat-box fallback (COLORS.tool / COLORS.cabinet) for the
         // body, plus a couple of shared neutral accents, so the Tools/Cabinets legend swatches
         // still mean the same thing at a glance.
-        function buildToolDecoration(group, category, cabType, wFt, hFt, boxH) {
-            const body = cabType ? COLORS.cabinet : COLORS.tool;
+        function buildToolDecoration(group, category, cabType, wFt, hFt, boxH, bodyColorHex, label) {
+            const body = cabType ? COLORS.cabinet : bodyColorHex;
             const dark = cabType ? COLORS.cabinetAccentDark : COLORS.toolAccentDark;
             const metal = COLORS.toolAccentMetal;
 
