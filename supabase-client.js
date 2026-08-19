@@ -926,8 +926,41 @@
         return result;
     }
 
+    // Defense-in-depth against the exact incident this comment is describing: a stale
+    // in-memory snapshot (captured before the real data had loaded) got wired into every
+    // owned/wishlist button's click handler, so the very first click after page load silently
+    // overwrote a user's entire tool_status record with just that one entry -- real,
+    // permanent data loss, not a display bug (see workshop-planner.html's wireToolStatusItem
+    // fix). That specific bug is now fixed at the source, but this exists so that ANY future
+    // bug shaped like it -- anything that ends up calling kerphSaveToolStatus with a
+    // near-empty object while the user's real record has substantially more in it -- gets
+    // caught and refused here too, instead of relying on every future change being perfect.
+    // Deliberately scoped to tool_status only, not current_layouts: un-marking a tool as owned
+    // only ever happens one click at a time in this app (no bulk-clear feature), so any save
+    // that drops more than half of a real existing record is never legitimate user intent.
+    // current_layouts has no such guarantee -- "New Shop Layout" legitimately clears every
+    // placed tool in one intentional save -- so the same guard there would block a real feature.
+    async function guardToolStatusDataLoss(newValue) {
+        if (!state.user) return { blocked: false };
+        try {
+            const { data } = await kerphSupabase.from('tool_status').select('data').eq('user_id', state.user.id).maybeSingle();
+            const prevCount = data && data.data ? Object.keys(data.data).length : 0;
+            const newCount = newValue ? Object.keys(newValue).length : 0;
+            if (prevCount >= 4 && newCount < prevCount / 2) {
+                console.error(`kerph data-loss guard: refused to save tool_status (${prevCount} -> ${newCount} entries)`);
+                return {
+                    blocked: true,
+                    error: { message: `Save blocked -- this would drop your saved tools from ${prevCount} to ${newCount}, which looks like a bug rather than something you did on purpose. Reload the page and try again; contact support if this keeps happening.` }
+                };
+            }
+        } catch (e) { /* the guard itself failing must never block a legitimate save */ }
+        return { blocked: false };
+    }
+
     async function kerphSaveToolStatus(value) {
         try { localStorage.setItem(TOOL_STATUS_LOCAL_KEY, JSON.stringify(value)); } catch (e) { /* private browsing / quota -- best effort */ }
+        const guard = await guardToolStatusDataLoss(value);
+        if (guard.blocked) return { error: guard.error };
         return toolStatusDomain.save(value);
     }
 

@@ -11036,9 +11036,24 @@
             return cachedToolStatuses;
         }
 
+        // Optimistic: updates the in-memory cache (and therefore the visible UI, via whatever
+        // just called applyStatusToItem) immediately, before the save round-trip even starts --
+        // reverted below only in the rare case kerphSaveToolStatus's own data-loss guard
+        // actually blocks the write (see its comment in supabase-client.js), so the display
+        // never quietly disagrees with what's really saved. The old version of this function
+        // fired the save with only `.catch(() => {})`, which catches a thrown/rejected promise
+        // but NOT a normal {error} return value -- the guard's own refusal (and its whole point
+        // of telling the user something's wrong instead of silently eating it) would have been
+        // invisible without this.
         function saveToolStatuses(statuses) {
+            const previous = cachedToolStatuses;
             cachedToolStatuses = statuses;
-            kerphSaveToolStatus(statuses).catch(() => {});
+            kerphSaveToolStatus(statuses).then(({ error }) => {
+                if (!error) return;
+                cachedToolStatuses = previous;
+                refreshToolStatusVisuals();
+                showToast(error.message || 'Could not save your tool status — reload and try again.');
+            }).catch(() => {});
         }
 
         // Refreshes visual state (active buttons, nickname value, My Tools relocation) on
