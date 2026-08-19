@@ -601,6 +601,7 @@
         <button type="button" id="backToWorkshopBtn" class="mini-btn" style="width:100%; margin-bottom:8px;">&larr; Back to Workshop Layout</button>
         <button type="button" id="refresh3dBtn" class="mini-btn" style="width:100%;">&#8635; Refresh from Layout</button>
         <button type="button" id="resetViewBtn" class="mini-btn" style="width:100%; margin-top:8px;" title="Re-center and re-frame the camera on the shop">&#8982; Reset View</button>
+        <button type="button" id="undo3dBtn" class="mini-btn" style="width:100%; margin-top:8px;" title="Undo the last move/rotate/add/delete (Ctrl+Z)" disabled>&#8630; Undo</button>
         <button type="button" id="walkModeBtn" class="mini-btn" style="width:100%; margin-top:8px;" title="Walk around at eye height with WASD, look around with the mouse -- Esc to exit">&#128694; Walk Mode</button>
         <label class="viewer-legend-row" style="margin-top:8px; font-weight:700;"><input type="checkbox" id="moveObjectsCheckbox"> Move Objects</label>
         <div class="viewer-hint" id="viewerHint">Drag empty space to orbit &middot; right-drag to pan &middot; scroll to zoom &middot; wall features slide along their wall.</div>
@@ -2668,14 +2669,14 @@
             hitMesh.userData.decorationGroup = group;
         }
 
-        // Remembered so the "Reset View" button (and nothing else -- buildScene's own call
-        // computes these fresh every rebuild) can re-frame on demand without redoing a full
-        // scene rebuild just to recover from a lost/disorienting camera position.
+        // Remembered so the "Reset View" button can re-frame on demand without redoing a full
+        // scene rebuild just to recover from a lost/disorienting camera position. Set fresh by
+        // buildScene() itself on every rebuild (see there), regardless of whether that rebuild
+        // also calls frameCamera -- so Reset View always frames against the shop's current real
+        // bounds, not stale ones from whenever the camera last auto-framed.
         let lastSceneBounds = null, lastCeilingFt = null;
 
         function frameCamera(bounds, ceilingFt) {
-            lastSceneBounds = bounds;
-            lastCeilingFt = ceilingFt;
             const centerX = (bounds.minX + bounds.maxX) / 2, centerZ = (bounds.minZ + bounds.maxZ) / 2;
             const maxDim = Math.max(bounds.widthFt, bounds.lengthFt, ceilingFt, 1);
             camera.position.set(centerX + maxDim * 0.9, maxDim * 0.85, centerZ + maxDim * 0.9);
@@ -2737,7 +2738,15 @@
             return elevations;
         }
 
-        function buildScene() {
+        // reframe: whether this rebuild should also snap the camera back to the shop's framed
+        // default view. Defaults to false -- every routine edit (drag-drop, rotate, delete,
+        // add item, toggle a layer) goes through this same rebuild-from-source-of-truth path,
+        // and resetting the user's current pan/zoom/orbit position every time they move a
+        // single object was disorienting and made the viewer feel broken. Only the very first
+        // load of a shop (loadSharedLayout) opts in -- there's no meaningful "current camera"
+        // to preserve yet at that point. The explicit "Reset View" button covers every other
+        // case where a user actually wants to re-frame.
+        function buildScene({ reframe = false } = {}) {
             clearScene();
 
             // workshop-planner.html sizes the 2D board's CSS width from lengthFeet and its
@@ -2757,6 +2766,11 @@
             // uses this instead; wall geometry and walk-mode collision already used the real
             // shapePoints polygon and are untouched.
             const bounds = getShopBoundsFt(widthFt, lengthFt);
+            // Kept fresh on every rebuild regardless of `reframe`, so "Reset View" always frames
+            // against the shop's current real bounds instead of whatever they were the last
+            // time the camera actually auto-framed (see the variable's own comment above).
+            lastSceneBounds = bounds;
+            lastCeilingFt = ceilingFt;
             const boundsCenterX = (bounds.minX + bounds.maxX) / 2, boundsCenterZ = (bounds.minZ + bounds.maxZ) / 2;
 
             scene.background = new THREE.Color(0xdbe6f2);
@@ -2867,7 +2881,7 @@
             const selPanel = document.getElementById('selectionPanel');
             if (selPanel) selPanel.style.display = 'none';
 
-            frameCamera(bounds, ceilingFt);
+            if (reframe) frameCamera(bounds, ceilingFt);
         }
 
         function screenToNDC(e, rect) {
@@ -2975,6 +2989,36 @@
             }
         }
 
+        // Undo, mirroring the 2D planner's own undoStack/pushUndoSnapshot/performUndo pattern
+        // (workshop-planner.html) at the scale this page actually needs -- one flat JSON
+        // snapshot of sharedLayout per undoable gesture (drag-drop, rotate, delete, edit, add
+        // item), captured by pushUndoSnapshot3d() right before that gesture's own mutation, not
+        // after. No redo (not asked for, and this page has no keyboard-shortcut convention to
+        // hang it on the way the 2D planner's Ctrl+Shift+Z does).
+        const UNDO_3D_STACK_LIMIT = 50;
+        let undoStack3d = [];
+
+        function updateUndo3dButton() {
+            const btn = document.getElementById('undo3dBtn');
+            if (btn) btn.disabled = undoStack3d.length === 0;
+        }
+
+        function pushUndoSnapshot3d() {
+            undoStack3d.push(JSON.stringify(sharedLayout));
+            if (undoStack3d.length > UNDO_3D_STACK_LIMIT) undoStack3d.shift();
+            updateUndo3dButton();
+        }
+
+        function performUndo3d() {
+            if (!undoStack3d.length) return;
+            if (walkModeActive) walkControls.unlock();
+            sharedLayout = JSON.parse(undoStack3d.pop());
+            kerphSaveCurrentLayout(sharedLayout).catch(() => {});
+            buildScene();
+            updateUndo3dButton();
+            showToast('Undid last change.');
+        }
+
         // Persists the current in-memory sharedLayout and rebuilds the scene from that
         // just-saved state — same "mutate → persist → rebuild from source of truth" pattern
         // the 2D planner's applyLayoutState() uses, scoped to this page. buildScene() always
@@ -2982,6 +3026,9 @@
         // edited tool's index to re-select the same item afterward — e.g. so clicking
         // Rotate repeatedly keeps rotating the same object instead of needing a re-click
         // between every step. Omit it (e.g. after a delete) to leave nothing selected.
+        // buildScene() defaults to reframe:false here (not passed explicitly) -- every one of
+        // these edits (drag-drop, rotate, delete, add item) should leave the user's current
+        // camera position exactly where they left it, not snap back to the default framed view.
         function persistAndRebuild(reselectToolIndex, reselectWallFeatureId) {
             kerphSaveCurrentLayout(sharedLayout).catch(() => {});
             buildScene();
@@ -3209,6 +3256,7 @@
                 if (dragState.isWallFeature) {
                     const f = (sharedLayout.wallFeatures || []).find(wf => wf.id === dragState.wallFeatureId);
                     if (f) {
+                        pushUndoSnapshot3d();
                         f.x = selectedMesh.position.x * BASE_PPI;
                         f.y = selectedMesh.position.z * BASE_PPI;
                         // Unlike a floor-item drop, this needs a real rebuild — the wall gap
@@ -3220,6 +3268,7 @@
                 } else {
                     const t = sharedLayout.tools[selectedMesh.userData.toolIndex];
                     if (t) {
+                        pushUndoSnapshot3d();
                         const wFt = ftFromPx(t.width) || 1, hFt = ftFromPx(t.height) || 1;
                         t.left = (selectedMesh.position.x - wFt / 2) * BASE_PPI;
                         t.top = (selectedMesh.position.z - hFt / 2) * BASE_PPI;
@@ -3350,18 +3399,20 @@
             const idx = selectedMesh.userData.toolIndex;
             const t = sharedLayout.tools[idx];
             if (!t) return;
+            pushUndoSnapshot3d();
             t.rotation = ((parseFloat(t.rotation) || 0) + 90) % 360;
             persistAndRebuild(idx);
         }
 
         function removeSelected() {
             if (!selectedMesh || !selectedMesh.userData.draggable) return;
+            pushUndoSnapshot3d();
             if (selectedMesh.userData.wallFeatureId != null) {
                 sharedLayout.wallFeatures = (sharedLayout.wallFeatures || []).filter(f => f.id !== selectedMesh.userData.wallFeatureId);
             } else {
                 // toolIndex is a real array index (0 is valid) — must check with != null,
                 // not truthiness, or item 0 could never be removed this way.
-                if (selectedMesh.userData.toolIndex == null) return;
+                if (selectedMesh.userData.toolIndex == null) { undoStack3d.pop(); updateUndo3dButton(); return; }
                 sharedLayout.tools.splice(selectedMesh.userData.toolIndex, 1);
             }
             persistAndRebuild();
@@ -3409,6 +3460,7 @@
                 const dropTool = sharedLayout.tools[selectedMesh.userData.toolIndex];
                 const item = CATALOG_ITEMS.find(i => i.name === catalogName);
                 if (!dropTool || !item) return;
+                pushUndoSnapshot3d();
                 const centerLeft = dropTool.left + (parseFloat(dropTool.width) || 0) / 2;
                 const centerTop = dropTool.top + (parseFloat(dropTool.height) || 0) / 2;
                 sharedLayout.tools.push({
@@ -3466,6 +3518,7 @@
                     return;
                 }
 
+                pushUndoSnapshot3d();
                 const oldWFt = ftFromPx(t.width) || 1, oldDFt = ftFromPx(t.height) || 1;
                 const centerLeft = t.left + (oldWFt * BASE_PPI) / 2;
                 const centerTop = t.top + (oldDFt * BASE_PPI) / 2;
@@ -3511,7 +3564,12 @@
             document.getElementById('addItemPanel').style.display = 'block';
             document.getElementById('compassWidget').style.display = 'block';
             positionAddItemPanel();
-            buildScene();
+            // The one call site that opts into reframing -- see buildScene's own comment on why
+            // every other rebuild leaves the camera alone. Both the true first load AND a click
+            // on the explicit "Refresh from your current layout" button route through here, and
+            // in either case there's no in-progress camera position worth preserving over a
+            // fresh pull of the shop's real current state.
+            buildScene({ reframe: true });
             onWindowResize();
         }
 
@@ -3589,6 +3647,7 @@
                     // render sitting on the floor — editable afterward from the selection
                     // panel's cabinet fields.
                     if (template.type === 'wall') displayDims += ` @ 54"H`;
+                    pushUndoSnapshot3d();
                     sharedLayout.tools.push({
                         left: centerLeftFt * BASE_PPI,
                         top: centerTopFt * BASE_PPI,
@@ -3613,6 +3672,7 @@
                 if (!item) return;
                 const centerLeftFt = Math.max(0, currentShopWidthFt / 2 - item.widthFt / 2);
                 const centerTopFt = Math.max(0, currentShopLengthFt / 2 - item.lengthFt / 2);
+                pushUndoSnapshot3d();
                 sharedLayout.tools.push({
                     left: centerLeftFt * BASE_PPI,
                     top: centerTopFt * BASE_PPI,
@@ -3667,6 +3727,16 @@
             // needs to snap the orbit camera itself back to a sane framing.
             if (walkModeActive) walkControls.unlock();
             if (lastSceneBounds) frameCamera(lastSceneBounds, lastCeilingFt);
+        });
+
+        document.getElementById('undo3dBtn').addEventListener('click', performUndo3d);
+        document.addEventListener('keydown', (e) => {
+            const tag = (e.target && e.target.tagName) || '';
+            if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z' && !e.shiftKey) {
+                e.preventDefault();
+                performUndo3d();
+            }
         });
 
         document.getElementById('walkModeBtn').addEventListener('click', () => {
