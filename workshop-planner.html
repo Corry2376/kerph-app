@@ -11122,7 +11122,20 @@
         // Wires owned/wishlist controls + nickname input onto a single .tool-box-item.
         // Shared by the initial catalog pass and any tool added later (e.g. a custom tool),
         // since a one-time querySelectorAll pass at init can't reach items created afterward.
-        function wireToolStatusItem(item, statuses) {
+        // No `statuses` parameter -- every read/write below calls loadToolStatuses() fresh
+        // instead. This used to take a `statuses` object as a parameter, captured ONCE at wire
+        // time (typically initToolStatusControls(), which runs synchronously at page load --
+        // BEFORE kerphLoadToolStatus()'s async fetch has any chance to populate the real data,
+        // so that captured object was always the empty {} cachedToolStatuses starts as).
+        // Every click/edit handler below closed over that SAME stale object by reference, not
+        // a live read of cachedToolStatuses -- so even after the real data loaded and
+        // refreshToolStatusVisuals() correctly repainted the page to show it, the very next
+        // click on ANY owned/wishlist button (on ANY tool) would mutate and save that
+        // original stale, empty snapshot -- silently overwriting the user's entire tool_status
+        // record in Supabase with just the one newly-clicked entry. This is almost certainly
+        // the actual, permanent cause of "all my owned tools disappeared" -- not just a display
+        // bug, real data loss on every write after the first page load.
+        function wireToolStatusItem(item) {
             const ownedBtn = item.querySelector('.owned-btn');
             const wishlistBtn = item.querySelector('.wishlist-btn');
             if (!ownedBtn || !wishlistBtn) return; // cabinet items don't have owned/wishlist controls
@@ -11169,10 +11182,11 @@
             nicknameInput.style.display = 'none';
             item.appendChild(nicknameInput);
 
-            applyStatusToItem(item, nicknameInput, statuses[name]);
+            applyStatusToItem(item, nicknameInput, loadToolStatuses()[name]);
 
             ownedBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
+                const statuses = loadToolStatuses();
                 const existing = statuses[name];
                 if (existing && existing.status === 'owned') {
                     delete statuses[name];
@@ -11197,6 +11211,7 @@
 
             wishlistBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
+                const statuses = loadToolStatuses();
                 const existing = statuses[name];
                 if (existing && existing.status === 'wishlist') {
                     delete statuses[name];
@@ -11223,6 +11238,7 @@
             // waiting out the timer.
             let nicknameSaveTimer = null;
             function flushNicknameSave() {
+                const statuses = loadToolStatuses();
                 if (!(statuses[name] && statuses[name].status === 'owned')) return;
                 clearTimeout(nicknameSaveTimer);
                 statuses[name].nickname = nicknameInput.value;
@@ -11231,6 +11247,7 @@
                 setTimeout(() => nicknameInput.classList.remove('nickname-saved-flash'), 900);
             }
             nicknameInput.addEventListener('input', () => {
+                const statuses = loadToolStatuses();
                 if (!(statuses[name] && statuses[name].status === 'owned')) return;
                 statuses[name].nickname = nicknameInput.value;
                 clearTimeout(nicknameSaveTimer);
@@ -11262,10 +11279,12 @@
                 attachLabel.innerHTML = '<input type="checkbox" class="attach-dc-checkbox"> Attach to dust collection?';
                 item.appendChild(attachLabel);
                 const attachCheckbox = attachLabel.querySelector('input');
-                attachCheckbox.checked = !!(statuses[name] && statuses[name].attachDC);
+                const initialStatuses = loadToolStatuses();
+                attachCheckbox.checked = !!(initialStatuses[name] && initialStatuses[name].attachDC);
                 attachLabel.addEventListener('mousedown', (e) => e.stopPropagation());
                 attachLabel.addEventListener('click', (e) => e.stopPropagation());
                 attachCheckbox.addEventListener('change', () => {
+                    const statuses = loadToolStatuses();
                     const existing = statuses[name] || {};
                     existing.attachDC = attachCheckbox.checked;
                     statuses[name] = existing;
@@ -11499,8 +11518,7 @@
         }
 
         function initToolStatusControls() {
-            const statuses = loadToolStatuses();
-            document.querySelectorAll('.tool-box-item').forEach(item => wireToolStatusItem(item, statuses));
+            document.querySelectorAll('.tool-box-item').forEach(item => wireToolStatusItem(item));
         }
 
         /* ---------- CUSTOM TOOLS (user-added catalog entries) ----------
@@ -11558,7 +11576,7 @@
             container.appendChild(item);
 
             wireToolDragStart(item);
-            wireToolStatusItem(item, loadToolStatuses());
+            wireToolStatusItem(item);
 
             controls.querySelector('.custom-tool-delete-btn').addEventListener('click', (e) => {
                 e.stopPropagation();
