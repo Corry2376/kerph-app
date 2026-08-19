@@ -2097,13 +2097,35 @@
             'Assembly & Storage', 'Tool Storage', 'Dust Collection'
         ]);
 
-        // Placeholder until the real keyword classifier lands (see buildToolDecoration's Tool
-        // Storage branch) -- treats every Tool Storage item as the default 'rolling-cabinet'
-        // bucket for now, which is what isFloorSurfaceCandidate below needs to know is a valid
-        // stacking surface (slightly over-inclusive for totes/pegboards until the real
-        // classifier replaces this, which is fine for the short window in between).
+        // Tool Storage carries real descriptive words in the catalog name (unlike Table Saws
+        // below), so classify by keyword. Order matters: most-specific-first, so e.g. a
+        // "DEWALT ... Rolling Tool Bag" hits the tote bucket despite containing "Rolling", and
+        // "Ernst ... Socket Boss 3-Rail Organizer" hits organizer-tray before the generic
+        // default. Unmatched names (a handful of bare-SKU entries with no descriptive text)
+        // fall to 'rolling-cabinet' -- still a strict upgrade over one shared shape for all 149
+        // Tool Storage items.
         function getToolStorageSubtype(label) {
+            const n = label || '';
+            if (/Backpack|Tote|\bBag\b|\bCase\b|Trolley|Toolbox|MAKPAC|L-BOXX|MODbox|StackTech|VERSASTACK|TOUGHSYSTEM 2\.0 (Large|Small)|Modular Tool Box|Rolling Box|2-Wheel Cart/i.test(n)) return 'tote';
+            if (/Pegboard|GearWall|FastTrack|Slatwall|GearTrack|Wall Mount|Wall Cabinet|Wall Rack|Racking Kit|GearBox|PPE Storage Rack|Wire Shelf|Hose Reel|Cord Reel/i.test(n)) return 'wall-organizer';
+            if (/Utility Cart|Welding Cart/i.test(n)) return 'utility-cart';
+            if (/Shelving|Shelves/i.test(n)) return 'shelving';
+            if (/Organizer|Socket|Wrench/i.test(n)) return 'organizer-tray';
+            if (/Workbench|Workstation/i.test(n)) return 'mobile-workbench';
+            if (/Storage Cabinet|Storage Locker|Safety Cabinet|Parts Cabinet|Small Parts/i.test(n)) return 'storage-cabinet';
             return 'rolling-cabinet';
+        }
+
+        // Table Saws carry no descriptive sub-type text at all -- every catalog entry is a bare
+        // brand+model ("SawStop PCS175", "DeWalt DWE7491RS"), so there's no "cabinet saw"/
+        // "jobsite saw" keyword to match the way Tool Storage has. Height/footprint DO cluster
+        // into three real-world groups though: a gap at heightFt 1.7-2.5 separates stand-less
+        // benchtop saws, and among the rest a gap at max(w,h) 4.0-4.8 separates portable jobsite
+        // saws (folding stand) from full-size cabinet saws (enclosed base, wings).
+        function getTableSawSubtype(wFt, hFt, boxH) {
+            if (boxH < 2.0) return 'benchtop';
+            if (Math.max(wFt, hFt) < 4.5) return 'jobsite';
+            return 'cabinet';
         }
 
         // Tool Storage sub-shapes that actually have a flat top something can rest on --
@@ -2253,6 +2275,25 @@
                 });
             }
 
+            // Two-tier silhouette (wider bottom roller cabinet + narrower top chest stacked on
+            // it, side handle, corner casters) instead of one flat drawer-lined box -- the Tool
+            // Storage default bucket below, and reused by Mechanic Tool Storage with a bigger
+            // drawerLineCount for the larger pro rolling boxes.
+            function rollingCabinetShape(drawerLineCount) {
+                addPart(group, wFt * 0.95, boxH * 0.58, hFt * 0.95, 0, -boxH * 0.21, 0, body);
+                addPart(group, wFt * 0.8, boxH * 0.34, hFt * 0.82, 0, boxH * 0.33, 0, body);
+                for (let i = 0; i < drawerLineCount; i++) {
+                    const f = drawerLineCount > 1 ? i / (drawerLineCount - 1) : 0.5;
+                    addPart(group, wFt * 0.8, 0.012, 0.01, 0, -boxH * 0.42 + f * boxH * 0.5, hFt / 2 + 0.01, dark);
+                }
+                addPart(group, wFt * 0.65, 0.012, 0.01, 0, boxH * 0.42, hFt / 2 + 0.005, dark);
+                addPart(group, 0.04, boxH * 0.12, 0.04, wFt / 2 + 0.02, boxH * 0.33, 0, metal); // side handle
+                const lx = wFt / 2 - 0.12, lz = hFt / 2 - 0.12;
+                [[-lx, -lz], [lx, -lz], [-lx, lz], [lx, lz]].forEach(([x, z]) => {
+                    addCylinderPart(group, 0.06, 0.05, x, -boxH / 2, z, COLORS.toolAccentBlade, 'x');
+                });
+            }
+
             if (cabType) {
                 addPart(group, wFt * 0.98, boxH * 0.98, hFt * 0.98, 0, 0, 0, body);
                 addPart(group, wFt * 0.85, boxH * 0.85, 0.02, 0, 0, hFt / 2 + 0.01, dark);
@@ -2263,19 +2304,35 @@
             }
 
             if (category === 'Table Saws') {
-                addPart(group, wFt * 0.98, boxH * 0.06, hFt * 0.98, 0, boxH * 0.42, 0, body);
-                addLegs(0.15, 0.08, boxH * 0.39, -boxH / 2);
-                // A real circular blade (most of the disc sits below the tabletop and is
-                // naturally occluded by it via normal depth testing — only the top arc pokes
-                // up through the slot) reads as an actual blade instead of the thin vertical
-                // slot-marker box this used to be. Higher segment count than the shared
-                // default since a round part this close to camera shows faceting otherwise.
-                const bladeRadius = Math.min(wFt, hFt) * 0.22;
-                addCylinderPart(group, bladeRadius, 0.035, 0, boxH * 0.36, 0, COLORS.toolAccentBlade, 'x', 28);
-                addPart(group, wFt * 0.9, 0.05, 0.05, 0, boxH * 0.46, hFt * 0.3, metal);
-                // Motor housing hanging below the table at the back — without it the blade
-                // reads as spinning on nothing.
-                addPart(group, wFt * 0.22, boxH * 0.18, hFt * 0.2, 0, -boxH * 0.02, -hFt * 0.3, dark);
+                // No descriptive sub-type text exists in the catalog for this category (see
+                // getTableSawSubtype) -- classify by dimension cluster instead, three distinct
+                // silhouettes so a benchtop, a jobsite saw on a folding stand, and a full
+                // cabinet saw with wings don't all render identically.
+                const subtype = getTableSawSubtype(wFt, hFt, boxH);
+                const bladeRadius = Math.min(wFt, hFt) * (subtype === 'cabinet' ? 0.22 : subtype === 'jobsite' ? 0.24 : 0.26);
+                if (subtype === 'cabinet') {
+                    addPart(group, wFt * 0.98, boxH * 0.06, hFt * 0.98, 0, boxH * 0.42, 0, body);
+                    addPart(group, wFt * 0.7, boxH * 0.78, hFt * 0.75, 0, -boxH * 0.08, 0, dark); // enclosed cabinet base
+                    addCylinderPart(group, bladeRadius, 0.035, 0, boxH * 0.36, 0, COLORS.toolAccentBlade, 'x', 28);
+                    addPart(group, wFt * 0.9, 0.05, 0.05, 0, boxH * 0.46, hFt * 0.3, metal); // fence rail
+                    addPart(group, wFt * 0.22, boxH * 0.18, hFt * 0.2, 0, -boxH * 0.02, -hFt * 0.3, dark); // motor bulge
+                } else if (subtype === 'jobsite') {
+                    addPart(group, wFt * 0.92, boxH * 0.07, hFt * 0.85, 0, boxH * 0.36, 0, body);
+                    addCylinderPart(group, bladeRadius, 0.03, 0, boxH * 0.31, 0, COLORS.toolAccentBlade, 'x', 24);
+                    addPart(group, wFt * 0.85, 0.04, 0.04, 0, boxH * 0.4, hFt * 0.28, metal); // fence rail
+                    // Thin exposed folding-stand legs, no enclosed base and no foot pads --
+                    // reads as portable, unlike the cabinet saw's solid base.
+                    const lx = wFt / 2 - 0.1, lz = hFt / 2 - 0.1;
+                    [[-lx, -lz], [lx, -lz], [-lx, lz], [lx, lz]].forEach(([x, z]) => {
+                        addCylinderPart(group, 0.025, boxH * 0.62, x, boxH * 0.03, z, dark);
+                    });
+                } else {
+                    // Benchtop: no stand at all, just a squat table sitting directly on
+                    // whatever it's placed on, plus a small carry-handle nub.
+                    addPart(group, wFt * 0.95, boxH * 0.5, hFt * 0.9, 0, 0, 0, body);
+                    addCylinderPart(group, bladeRadius, 0.03, 0, boxH * 0.28, 0, COLORS.toolAccentBlade, 'x', 22);
+                    addPart(group, wFt * 0.06, boxH * 0.1, hFt * 0.3, 0, boxH * 0.32, -hFt * 0.25, dark);
+                }
             } else if (category === 'Bandsaws') {
                 addPart(group, wFt * 0.9, boxH * 0.25, hFt * 0.9, 0, -boxH * 0.375, 0, body);
                 addPart(group, wFt * 0.25, boxH * 0.9, hFt * 0.25, 0, 0, -hFt * 0.15, body);
@@ -2340,14 +2397,58 @@
                 addLegs(0.12, 0.08, boxH * 0.38, -boxH / 2);
                 addPart(group, wFt * 0.9, 0.04, hFt * 0.9, 0, -boxH * 0.3, 0, metal);
             } else if (category === 'Tool Storage') {
-                addPart(group, wFt * 0.95, boxH * 0.82, hFt * 0.95, 0, -boxH * 0.06, 0, body);
-                addPart(group, wFt * 0.85, 0.015, 0.01, 0, boxH * 0.18, hFt / 2 + 0.01, dark);
-                addPart(group, wFt * 0.85, 0.015, 0.01, 0, -boxH * 0.02, hFt / 2 + 0.01, dark);
-                addPart(group, wFt * 0.85, 0.015, 0.01, 0, -boxH * 0.22, hFt / 2 + 0.01, dark);
-                const lx = wFt / 2 - 0.12, lz = hFt / 2 - 0.12;
-                [[-lx, -lz], [lx, -lz], [-lx, lz], [lx, lz]].forEach(([x, z]) => {
-                    addCylinderPart(group, 0.06, 0.05, x, -boxH / 2, z, COLORS.toolAccentBlade, 'x');
-                });
+                const subtype = getToolStorageSubtype(label);
+                if (subtype === 'tote') {
+                    // Soft-sided box, no drawers -- a backpack/bag/case has nothing that reads
+                    // as a drawer line, so this needed its own silhouette rather than just a
+                    // smaller rollingCabinetShape.
+                    addPart(group, wFt * 0.88, boxH * 0.8, hFt * 0.88, 0, -boxH * 0.06, 0, body);
+                    addPart(group, wFt * 0.7, boxH * 0.1, hFt * 0.7, 0, boxH * 0.36, 0, dark);
+                    addPart(group, 0.03, boxH * 0.22, 0.03, -wFt * 0.22, boxH * 0.42, 0, metal);
+                    addPart(group, 0.03, boxH * 0.22, 0.03, wFt * 0.22, boxH * 0.42, 0, metal);
+                    addPart(group, wFt * 0.44, 0.03, 0.03, 0, boxH * 0.52, 0, metal); // carry handle
+                    addCylinderPart(group, 0.025, 0.04, -wFt * 0.28, 0, hFt / 2 + 0.01, dark, 'z');
+                    addCylinderPart(group, 0.025, 0.04, wFt * 0.28, 0, hFt / 2 + 0.01, dark, 'z');
+                } else if (subtype === 'wall-organizer') {
+                    // Thin panel, no real depth -- a pegboard/hose reel/rack has nothing a saw
+                    // could ever sit on, matching isFloorSurfaceCandidate excluding this bucket.
+                    addPart(group, wFt * 0.95, boxH * 0.9, hFt * 0.2, 0, 0, 0, body);
+                    for (let i = -1; i <= 1; i++) addPart(group, wFt * 0.82, 0.012, 0.01, 0, i * boxH * 0.24, hFt / 2 + 0.005, dark);
+                    [[-wFt * 0.28, boxH * 0.12], [0, -boxH * 0.1], [wFt * 0.28, boxH * 0.2]].forEach(([x, y]) => {
+                        addCylinderPart(group, 0.02, hFt * 0.35, x, y, hFt * 0.1, metal, 'z'); // hanging hook stubs
+                    });
+                    addPart(group, wFt * 0.9, 0.03, 0.03, 0, -boxH / 2, hFt * 0.1, dark);
+                } else if (subtype === 'utility-cart' || subtype === 'shelving') {
+                    const tierCount = subtype === 'shelving' ? 4 : 3;
+                    for (let i = 0; i < tierCount; i++) {
+                        addPart(group, wFt * 0.92, 0.03, hFt * 0.85, 0, -boxH / 2 + boxH * 0.9 * (i / (tierCount - 1)), 0, body);
+                    }
+                    const lx = wFt / 2 - 0.06, lz = hFt / 2 - 0.06;
+                    [[-lx, -lz], [lx, -lz], [-lx, lz], [lx, lz]].forEach(([x, z]) => {
+                        addCylinderPart(group, 0.025, boxH * 0.95, x, 0, z, metal);
+                        if (subtype === 'utility-cart') addCylinderPart(group, 0.05, 0.04, x, -boxH / 2, z, dark, 'x');
+                    });
+                } else if (subtype === 'organizer-tray') {
+                    addPart(group, wFt * 0.95, boxH * 0.7, hFt * 0.92, 0, 0, 0, body);
+                    for (let i = -1; i <= 1; i++) addPart(group, wFt * 0.85, boxH * 0.15, 0.03, 0, boxH * 0.1, i * hFt * 0.26, dark);
+                    addPart(group, wFt * 0.98, boxH * 0.15, hFt * 0.98, 0, -boxH * 0.32, 0, metal, 0.9);
+                } else if (subtype === 'mobile-workbench') {
+                    addPart(group, wFt, boxH * 0.06, hFt, 0, boxH * 0.42, 0, body); // overhanging worktop
+                    addPart(group, wFt * 0.85, boxH * 0.68, hFt * 0.85, 0, -boxH * 0.06, 0, body);
+                    for (let i = 0; i < 3; i++) addPart(group, wFt * 0.75, 0.012, 0.01, 0, -boxH * 0.28 + i * boxH * 0.22, hFt / 2 + 0.01, dark);
+                    const lx = wFt / 2 - 0.1, lz = hFt / 2 - 0.1;
+                    [[-lx, -lz], [lx, -lz], [-lx, lz], [lx, lz]].forEach(([x, z]) => {
+                        addCylinderPart(group, 0.06, 0.05, x, -boxH / 2, z, COLORS.toolAccentBlade, 'x');
+                    });
+                } else if (subtype === 'storage-cabinet') {
+                    addPart(group, wFt * 0.96, boxH * 0.95, hFt * 0.96, 0, 0, 0, body);
+                    addPart(group, 0.02, boxH * 0.9, 0.02, 0, 0, hFt / 2 + 0.01, dark); // door seam
+                    addPart(group, 0.03, boxH * 0.1, 0.02, -wFt * 0.08, 0, hFt / 2 + 0.02, metal);
+                    addPart(group, 0.03, boxH * 0.1, 0.02, wFt * 0.08, 0, hFt / 2 + 0.02, metal);
+                    addPart(group, wFt, boxH * 0.04, hFt, 0, -boxH / 2, 0, dark); // plinth, no wheels
+                } else {
+                    rollingCabinetShape(3);
+                }
             } else if (category === 'Dust Collection') {
                 // Collector units (JET DC-1100VX, Oneida Super Dust Deputy XL) — a standing
                 // drum with a smaller motor/filter housing on top and a side inlet stub where
