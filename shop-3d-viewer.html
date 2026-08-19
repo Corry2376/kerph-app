@@ -329,6 +329,58 @@
             justify-content: space-between;
         }
 
+        /* ---------- NAVIGATION COMPASS ----------
+           Fixed DOM overlay (not an in-scene 3D gizmo), matching every other floating-panel
+           HUD element in this file -- bottom-left is the one corner nothing else already
+           occupies (viewerControlsPanel is top-right, selectionPanel is left:24px only while
+           something's selected, the touch edit bar is bottom-center). Rotated each frame in
+           animate() -> updateCompass() to track the camera's current facing direction, which is
+           the whole point: makes orbiting/walking read as "which way am I facing in the shop"
+           instead of just an abstract camera drifting around a model. */
+        #compassWidget {
+            position: fixed;
+            left: 24px;
+            bottom: 24px;
+            width: 84px;
+            height: 84px;
+            z-index: 1500;
+            pointer-events: none;
+            filter: drop-shadow(0 8px 16px rgba(15, 23, 42, 0.25));
+        }
+        #compassWidget .compass-face {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.92);
+            border: 1px solid #cbd5e1;
+        }
+        #compassDial {
+            width: 100%;
+            height: 100%;
+            transform-origin: 50% 50%;
+        }
+        #compassDial text {
+            font: 700 13px system-ui, sans-serif;
+            fill: #334155;
+            text-anchor: middle;
+            dominant-baseline: middle;
+        }
+        #compassDial .compass-north-label { fill: #b91c1c; }
+        /* The forward-facing marker stays fixed at the top of the widget (it represents "you,
+           looking this way") while #compassDial rotates underneath it -- same convention as a
+           game/flight-sim heading compass, not a static map-style rose. */
+        #compassWidget .compass-forward-marker {
+            position: absolute;
+            top: -3px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-bottom: 9px solid #1e3a8a;
+        }
+
         .viewer-legend { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
         .viewer-legend-row { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #334155; cursor: pointer; }
         .viewer-legend-row input[type="checkbox"] { margin: 0; flex-shrink: 0; }
@@ -532,10 +584,23 @@
         <div id="viewer3dCanvas"></div>
     </div>
 
+    <div id="compassWidget" style="display:none;">
+        <div class="compass-forward-marker"></div>
+        <div class="compass-face">
+            <svg id="compassDial" viewBox="0 0 100 100">
+                <text x="50" y="14" class="compass-north-label">N</text>
+                <text x="86" y="50">E</text>
+                <text x="50" y="86">S</text>
+                <text x="14" y="50">W</text>
+            </svg>
+        </div>
+    </div>
+
     <div class="floating-panel" id="viewerControlsPanel" style="display:none;">
         <div class="floating-panel-title">3D Shop Viewer</div>
         <button type="button" id="backToWorkshopBtn" class="mini-btn" style="width:100%; margin-bottom:8px;">&larr; Back to Workshop Layout</button>
         <button type="button" id="refresh3dBtn" class="mini-btn" style="width:100%;">&#8635; Refresh from Layout</button>
+        <button type="button" id="resetViewBtn" class="mini-btn" style="width:100%; margin-top:8px;" title="Re-center and re-frame the camera on the shop">&#8982; Reset View</button>
         <button type="button" id="walkModeBtn" class="mini-btn" style="width:100%; margin-top:8px;" title="Walk around at eye height with WASD, look around with the mouse -- Esc to exit">&#128694; Walk Mode</button>
         <label class="viewer-legend-row" style="margin-top:8px; font-weight:700;"><input type="checkbox" id="moveObjectsCheckbox"> Move Objects</label>
         <div class="viewer-hint" id="viewerHint">Drag empty space to orbit &middot; right-drag to pan &middot; scroll to zoom &middot; wall features slide along their wall.</div>
@@ -1370,11 +1435,32 @@
             updateWalkMovement(now || performance.now());
             if (controls && controls.enabled) controls.update();
             if (renderer && scene && camera) renderer.render(scene, camera);
+            updateCompass();
         }
 
         function clearScene() {
             while (scene.children.length) scene.remove(scene.children[0]);
             clickableMeshes.length = 0;
+        }
+
+        // The stored widthFeet/lengthFeet is just the outer canvas a custom shape was drawn
+        // within (workshop-planner.html clamps the polygon to it but never shrinks it back down
+        // to match a smaller drawn room -- see the plan), so it can be dramatically bigger than
+        // the room actually occupies. getWallSegmentsFt/pointInShopPolygon already correctly use
+        // the real shapePoints polygon instead of this rectangle -- everything else that sizes
+        // itself off the plain widthFt/lengthFt args (camera framing, the floor mesh/grid, the
+        // shadow frustum, dimension labels) needs the polygon's own bounding box instead, or a
+        // shop drawn small inside a big canvas renders/navigates as if the canvas were the room
+        // (camera starts absurdly far back, floor/grid sprawl past the walls into empty space).
+        function getShopBoundsFt(widthFt, lengthFt) {
+            if (sharedLayout.shapeMode === 'custom' && sharedLayout.shapePoints && sharedLayout.shapePoints.length >= 3) {
+                const pts = sharedLayout.shapePoints.map(p => ({ x: ftFromPx(p.x), y: ftFromPx(p.y) }));
+                const xs = pts.map(p => p.x), zs = pts.map(p => p.y);
+                const minX = Math.min(...xs), maxX = Math.max(...xs);
+                const minZ = Math.min(...zs), maxZ = Math.max(...zs);
+                return { minX, maxX, minZ, maxZ, widthFt: maxX - minX || 1, lengthFt: maxZ - minZ || 1 };
+            }
+            return { minX: 0, maxX: widthFt, minZ: 0, maxZ: lengthFt, widthFt, lengthFt };
         }
 
         function getWallSegmentsFt(widthFt, lengthFt) {
@@ -2582,11 +2668,35 @@
             hitMesh.userData.decorationGroup = group;
         }
 
-        function frameCamera(widthFt, lengthFt, ceilingFt) {
-            const maxDim = Math.max(widthFt, lengthFt, ceilingFt, 1);
-            camera.position.set(widthFt / 2 + maxDim * 0.9, maxDim * 0.85, lengthFt / 2 + maxDim * 0.9);
-            controls.target.set(widthFt / 2, ceilingFt / 3, lengthFt / 2);
+        // Remembered so the "Reset View" button (and nothing else -- buildScene's own call
+        // computes these fresh every rebuild) can re-frame on demand without redoing a full
+        // scene rebuild just to recover from a lost/disorienting camera position.
+        let lastSceneBounds = null, lastCeilingFt = null;
+
+        function frameCamera(bounds, ceilingFt) {
+            lastSceneBounds = bounds;
+            lastCeilingFt = ceilingFt;
+            const centerX = (bounds.minX + bounds.maxX) / 2, centerZ = (bounds.minZ + bounds.maxZ) / 2;
+            const maxDim = Math.max(bounds.widthFt, bounds.lengthFt, ceilingFt, 1);
+            camera.position.set(centerX + maxDim * 0.9, maxDim * 0.85, centerZ + maxDim * 0.9);
+            controls.target.set(centerX, ceilingFt / 3, centerZ);
             controls.update();
+        }
+
+        // Navigation compass -- rotates #compassDial each frame to track the camera's current
+        // facing direction (see the CSS comment above #compassWidget for why it's a fixed-at-top
+        // marker with the dial rotating underneath, not a static map-style rose). Scene -Z is
+        // the arbitrary "North" reference (matches the dimension-label/wall convention already
+        // used everywhere else in this file); there's no real-world heading to track since this
+        // is a synthetic shop model, so it exists purely to make orbiting/walking read as "which
+        // way am I facing" instead of an abstract camera drifting around a model.
+        const compassDirVec = new THREE.Vector3();
+        function updateCompass() {
+            const dial = document.getElementById('compassDial');
+            if (!dial || !camera) return;
+            camera.getWorldDirection(compassDirVec);
+            const yawDeg = Math.atan2(compassDirVec.x, -compassDirVec.z) * 180 / Math.PI;
+            dial.style.transform = `rotate(${-yawDeg}deg)`;
         }
 
         // Derives a Y-elevation (feet) per sharedLayout.tools[] index from nothing but the
@@ -2641,6 +2751,13 @@
             const wallThicknessFt = 0.35;
             currentShopWidthFt = widthFt;
             currentShopLengthFt = lengthFt;
+            // The room's REAL occupied area -- see getShopBoundsFt's own comment. Everything
+            // that used to size/center itself off the raw widthFt/lengthFt canvas dims below
+            // (the sun/shadow frustum, floor mesh, floor grid, dimension labels, camera framing)
+            // uses this instead; wall geometry and walk-mode collision already used the real
+            // shapePoints polygon and are untouched.
+            const bounds = getShopBoundsFt(widthFt, lengthFt);
+            const boundsCenterX = (bounds.minX + bounds.maxX) / 2, boundsCenterZ = (bounds.minZ + bounds.maxZ) / 2;
 
             scene.background = new THREE.Color(0xdbe6f2);
 
@@ -2655,14 +2772,14 @@
             // keeps the shadow resolution tight/sharp instead of using a fixed frustum big
             // enough for the largest possible shop and wasting resolution on small ones).
             const dirLight = new THREE.DirectionalLight(0xfff3e0, 2.4);
-            const sunDist = Math.max(widthFt, lengthFt, ceilingFt) * 1.4;
-            dirLight.position.set(widthFt * 0.5 + sunDist * 0.5, ceilingFt + sunDist, lengthFt * 0.5 + sunDist * 0.35);
-            dirLight.target.position.set(widthFt / 2, 0, lengthFt / 2);
+            const sunDist = Math.max(bounds.widthFt, bounds.lengthFt, ceilingFt) * 1.4;
+            dirLight.position.set(boundsCenterX + sunDist * 0.5, ceilingFt + sunDist, boundsCenterZ + sunDist * 0.35);
+            dirLight.target.position.set(boundsCenterX, 0, boundsCenterZ);
             scene.add(dirLight.target);
             dirLight.castShadow = true;
             dirLight.shadow.mapSize.set(2048, 2048);
-            const shadowMargin = Math.max(widthFt, lengthFt) * 0.15 + 2;
-            const shadowHalfSize = Math.max(widthFt, lengthFt) / 2 + shadowMargin;
+            const shadowMargin = Math.max(bounds.widthFt, bounds.lengthFt) * 0.15 + 2;
+            const shadowHalfSize = Math.max(bounds.widthFt, bounds.lengthFt) / 2 + shadowMargin;
             dirLight.shadow.camera.left = -shadowHalfSize;
             dirLight.shadow.camera.right = shadowHalfSize;
             dirLight.shadow.camera.top = shadowHalfSize;
@@ -2680,19 +2797,23 @@
             fillLight.position.set(-sunDist * 0.4, ceilingFt * 2, -sunDist * 0.2);
             scene.add(fillLight);
 
-            const floorGeo = new THREE.PlaneGeometry(widthFt, lengthFt);
+            const floorGeo = new THREE.PlaneGeometry(bounds.widthFt, bounds.lengthFt);
             const floorMat = new THREE.MeshStandardMaterial({
                 color: COLORS.floor, side: THREE.DoubleSide, roughness: 0.88, metalness: 0.02,
-                map: getFloorTexture(widthFt, lengthFt)
+                map: getFloorTexture(bounds.widthFt, bounds.lengthFt)
             });
             const floor = new THREE.Mesh(floorGeo, floorMat);
             floor.rotation.x = -Math.PI / 2;
-            floor.position.set(widthFt / 2, 0, lengthFt / 2);
+            floor.position.set(boundsCenterX, 0, boundsCenterZ);
             floor.receiveShadow = true;
             scene.add(floor);
 
-            const grid = buildFloorGrid(widthFt, lengthFt);
-            grid.position.y = 0.01;
+            // buildFloorGrid draws its lines starting from its own local (0,0) -- shifting the
+            // whole LineSegments object to bounds.minX/minZ afterward (instead of teaching the
+            // function a separate offset) is what lets a custom shape's grid actually land under
+            // its real polygon instead of always starting at the oversized canvas's origin.
+            const grid = buildFloorGrid(bounds.widthFt, bounds.lengthFt);
+            grid.position.set(bounds.minX, 0.01, bounds.minZ);
             scene.add(grid);
 
             const doorWindowFeatures = (sharedLayout.wallFeatures || []).filter(f => f.type === 'door' || f.type === 'window');
@@ -2700,13 +2821,15 @@
             allWallSegments = exteriorSegments.map(([a, b]) => ({ a, b, thicknessFt: wallThicknessFt }));
             exteriorSegments.forEach(([a, b]) => addWallSegmentWithOpenings(a, b, wallThicknessFt, ceilingFt, COLORS.wall, doorWindowFeatures));
 
-            // Overall-footprint dimension labels, offset just outside the exterior walls.
+            // Overall-footprint dimension labels, offset just outside the exterior walls --
+            // labels the room's real bounds (and sits just outside ITS edges), not the
+            // oversized canvas, so a custom shape shows its actual footprint dimensions.
             const dimMargin = 2.2;
-            const xDimLabel = makeDimensionSprite(formatFeetLabel(widthFt));
-            xDimLabel.position.set(widthFt / 2, 1, -dimMargin);
+            const xDimLabel = makeDimensionSprite(formatFeetLabel(bounds.widthFt));
+            xDimLabel.position.set(boundsCenterX, 1, bounds.minZ - dimMargin);
             scene.add(xDimLabel);
-            const zDimLabel = makeDimensionSprite(formatFeetLabel(lengthFt));
-            zDimLabel.position.set(-dimMargin, 1, lengthFt / 2);
+            const zDimLabel = makeDimensionSprite(formatFeetLabel(bounds.lengthFt));
+            zDimLabel.position.set(bounds.minX - dimMargin, 1, boundsCenterZ);
             scene.add(zDimLabel);
 
             (sharedLayout.internalWalls || []).forEach(w => {
@@ -2744,7 +2867,7 @@
             const selPanel = document.getElementById('selectionPanel');
             if (selPanel) selPanel.style.display = 'none';
 
-            frameCamera(widthFt, lengthFt, ceilingFt);
+            frameCamera(bounds, ceilingFt);
         }
 
         function screenToNDC(e, rect) {
@@ -3378,6 +3501,7 @@
                 canvasWrap.style.display = 'none';
                 controlsPanel.style.display = 'none';
                 document.getElementById('addItemPanel').style.display = 'none';
+                document.getElementById('compassWidget').style.display = 'none';
                 return;
             }
 
@@ -3385,6 +3509,7 @@
             canvasWrap.style.display = 'block';
             controlsPanel.style.display = 'block';
             document.getElementById('addItemPanel').style.display = 'block';
+            document.getElementById('compassWidget').style.display = 'block';
             positionAddItemPanel();
             buildScene();
             onWindowResize();
@@ -3534,6 +3659,14 @@
         document.getElementById('refresh3dBtn').addEventListener('click', () => {
             loadSharedLayout();
             showToast('Refreshed from your current layout.');
+        });
+
+        document.getElementById('resetViewBtn').addEventListener('click', () => {
+            // Re-uses whatever buildScene last computed rather than recomputing bounds here --
+            // exiting Walk Mode already re-enables controls (see exitWalkMode), so this only
+            // needs to snap the orbit camera itself back to a sane framing.
+            if (walkModeActive) walkControls.unlock();
+            if (lastSceneBounds) frameCamera(lastSceneBounds, lastCeilingFt);
         });
 
         document.getElementById('walkModeBtn').addEventListener('click', () => {
