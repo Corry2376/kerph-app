@@ -165,9 +165,14 @@
         .library-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 10px; flex-wrap: wrap; }
         .library-heading-title { font-size: 26px; font-weight: 800; color: #0f172a; }
         .library-heading-sub { font-size: 13px; color: #6b7280; margin-top: 4px; }
-        .library-filters { display: flex; gap: 8px; margin: 18px 0 22px; flex-wrap: wrap; }
-        .library-filters input[type="text"] { min-width: 220px; }
-        .library-filters select { width: auto; min-width: 150px; }
+        .library-filters { display: flex; align-items: center; gap: 8px; margin: 18px 0 22px; flex-wrap: wrap; }
+        /* .input-box's own base style is width:100%, which (as the first flex child, with no
+           sibling yet competing for space) let this stretch to fill the whole row by itself
+           and push the category select onto its own line below. flex-basis/max-width keep it
+           the same compact size as the select next to it instead of dominating the row. */
+        .library-filters input[type="text"] { flex: 1 1 240px; max-width: 320px; width: auto; }
+        .library-filters select { width: auto; min-width: 150px; flex: 0 0 auto; }
+        .library-filters .mini-btn { flex: 0 0 auto; margin-left: auto; }
 
         .library-rules-banner {
             display: flex; gap: 10px; align-items: flex-start; font-size: 12px; color: #92400e; line-height: 1.55;
@@ -218,7 +223,8 @@
             .library-heading-title { font-size: 21px; }
             .library-filters { flex-direction: column; align-items: stretch; }
             .library-filters input[type="text"],
-            .library-filters select { width: 100%; min-width: 0; }
+            .library-filters select { width: 100%; min-width: 0; max-width: none; }
+            .library-filters .mini-btn { width: 100%; margin-left: 0; }
             .library-grid { grid-template-columns: 1fr; gap: 14px; }
             .stl-preview-box { height: 220px; }
             .plan-modal-row { flex-direction: column; }
@@ -353,17 +359,8 @@
             </div>
 
             <div class="header-field" style="width:100%; margin-top:10px;">
-                <label class="header-field-label" for="planCreatorInput">Designed By <span class="header-field-hint">(the actual creator of the design)</span></label>
+                <label class="header-field-label" for="planCreatorInput">Designed By <span class="header-field-hint">(optional — the actual creator of the design)</span></label>
                 <input type="text" class="input-box" id="planCreatorInput" placeholder="Your name, or the original designer's name/username">
-            </div>
-
-            <div class="license-fields" id="previewImageFields">
-                <label class="header-field-label">Preview Photo <span class="header-field-hint">(optional — shown on the library tile)</span></label>
-                <input type="file" id="planPreviewImageInput" accept="image/*" style="display:none;">
-                <div style="display:flex; align-items:center; gap:10px; margin-top:4px;">
-                    <span id="planPreviewImageLabel" style="font-size:12px; color:#6b7280; flex:1;">No photo chosen</span>
-                    <button type="button" class="mini-btn" id="planPreviewImageBtn" style="flex:none;">Choose Photo&hellip;</button>
-                </div>
             </div>
 
             <div class="license-fields" id="fileUploadFields">
@@ -373,6 +370,7 @@
                     <span id="planFileNameLabel" style="font-size:12px; color:#6b7280; flex:1;">No file chosen</span>
                     <button type="button" class="mini-btn" id="planFileBtn" style="flex:none;">Choose File&hellip;</button>
                 </div>
+                <div id="planFilePreviewHint" style="font-size:11px; color:#6b7280; margin-top:4px; display:none;">The tile preview picture is rendered automatically from your .stl model.</div>
             </div>
             <div class="license-fields" id="sourceUrlFields" style="display:none;">
                 <label class="header-field-label" for="planSourceUrlInput">Link to the original plan (required — Kerph won't host the file)</label>
@@ -398,7 +396,6 @@
                 <div class="library-heading-title">3D Print Library</div>
                 <div class="library-heading-sub">Printable jigs, fixtures, and shop fittings — your own designs, or links out to plans you found elsewhere.</div>
             </div>
-            <button type="button" class="mini-btn primary" id="sharePlanBtn" style="flex:none;">+ Share a Plan</button>
         </div>
         <div class="library-rules-banner">
             <span class="library-rules-banner-icon">&#9888;&#65039;</span>
@@ -414,6 +411,7 @@
                 <option value="tool-holder">Tool Holder</option>
                 <option value="other">Other</option>
             </select>
+            <button type="button" class="mini-btn primary" id="sharePlanBtn">+ Share a Plan</button>
         </div>
         <div class="library-grid" id="libraryGrid"></div>
     </div>
@@ -789,6 +787,19 @@
         let pendingFileName = null;
         let pendingPreviewImagePath = null;
         let editingCategoryValue = 'jig';
+        // null while sharing a new plan; the plan's id while editing an existing one -- the
+        // one flag that switches the whole modal (title, button text, save handler branch)
+        // between the two modes, since they're the same form.
+        let editingPlanId = null;
+
+        // Only decides what UI shows (Edit/Delete buttons) -- the real security boundary is
+        // the owner-or-admin RLS policy on print_plans/storage.objects (see
+        // sql/print-library-edit-and-admin.sql), same split kerphIsAdmin() already documents
+        // itself as everywhere else it's used.
+        function canManagePlan(p) {
+            if (!isSignedIn()) return false;
+            return kerphGetCachedUser().id === p.user_id || kerphIsAdmin();
+        }
 
         function matchesFilters(p, search, category) {
             if (category && p.category !== category) return false;
@@ -897,6 +908,54 @@
             });
         }
 
+        // Renders one still frame of an .stl off-screen (the canvas is never attached to the
+        // DOM) using the same fit-to-view framing as the live orbit viewer above, then reads it
+        // back as a PNG blob. This is how the tile preview picture gets generated automatically
+        // from the actual model instead of requiring a separate manual photo upload.
+        function renderStlSnapshotBlob(fileUrl) {
+            return new Promise((resolve, reject) => {
+                const dim = 480;
+                const scene = new THREE.Scene();
+                scene.background = new THREE.Color(0x0f172a);
+                const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 5000);
+                const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+                renderer.setSize(dim, dim);
+
+                scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+                const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
+                dirLight.position.set(1, 1.5, 1);
+                scene.add(dirLight);
+                const dirLight2 = new THREE.DirectionalLight(0x88aaff, 0.5);
+                dirLight2.position.set(-1, -0.5, -1);
+                scene.add(dirLight2);
+
+                const loader = new STLLoader();
+                loader.load(fileUrl, (geometry) => {
+                    geometry.computeBoundingBox();
+                    geometry.center();
+                    const size = new THREE.Vector3();
+                    geometry.boundingBox.getSize(size);
+                    const maxDim = Math.max(size.x, size.y, size.z) || 1;
+
+                    const material = new THREE.MeshStandardMaterial({ color: 0x60a5fa, roughness: 0.5, metalness: 0.15 });
+                    const mesh = new THREE.Mesh(geometry, material);
+                    scene.add(mesh);
+
+                    const dist = maxDim * 2.2;
+                    camera.position.set(dist, dist * 0.8, dist);
+                    camera.lookAt(0, 0, 0);
+                    renderer.render(scene, camera);
+
+                    renderer.domElement.toBlob((blob) => {
+                        renderer.dispose();
+                        geometry.dispose();
+                        material.dispose();
+                        if (blob) resolve(blob); else reject(new Error('Could not capture a preview image.'));
+                    }, 'image/png');
+                }, undefined, (err) => { renderer.dispose(); reject(err); });
+            });
+        }
+
         function openPlanView(p) {
             disposeStlPreview();
             const box = document.getElementById('planViewBox');
@@ -931,7 +990,7 @@
                     ${p.license === 'link-only'
                         ? `<a href="${escapeHtml(p.source_url)}" target="_blank" rel="noopener noreferrer" class="mini-btn modal-primary-btn" style="text-align:center; text-decoration:none;">View Original Plan &rarr;</a>`
                         : `<button type="button" class="mini-btn modal-primary-btn" id="downloadPlanBtn">&#11015;&#65039; Download</button>`}
-                    ${isSignedIn() && kerphGetCachedUser().id === p.user_id ? '<button type="button" class="mini-btn danger" id="deletePlanBtn">Delete</button>' : ''}
+                    ${canManagePlan(p) ? '<button type="button" class="mini-btn" id="editPlanBtn">Edit</button><button type="button" class="mini-btn danger" id="deletePlanBtn">Delete</button>' : ''}
                     <button type="button" class="mini-btn" id="closePlanViewBtn">Close</button>
                 </div>
             `;
@@ -949,11 +1008,20 @@
                     window.open(fileUrl, '_blank', 'noopener,noreferrer');
                 });
             }
+            const editBtn = document.getElementById('editPlanBtn');
+            if (editBtn) {
+                editBtn.addEventListener('click', () => {
+                    document.getElementById('planViewOverlay').style.display = 'none';
+                    disposeStlPreview();
+                    openEditModal(p);
+                });
+            }
             const deleteBtn = document.getElementById('deletePlanBtn');
             if (deleteBtn) {
                 deleteBtn.addEventListener('click', async () => {
                     if (!confirm('Delete this shared plan permanently?')) return;
-                    await kerphDeletePrintPlan(p.id, p.file_path, p.preview_image_path);
+                    const { error } = await kerphDeletePrintPlan(p.id, p.file_path, p.preview_image_path);
+                    if (error) { showToast(error.message || 'Could not delete this plan.'); return; }
                     allPlans = allPlans.filter(x => x.id !== p.id);
                     document.getElementById('planViewOverlay').style.display = 'none';
                     disposeStlPreview();
@@ -970,11 +1038,22 @@
             }
         }
 
-        function toggleLicenseFields() {
+        function updateLicenseFieldVisibility() {
             const license = document.getElementById('planLicenseSelect').value;
             const isLinkOnly = license === 'link-only';
             document.getElementById('fileUploadFields').style.display = isLinkOnly ? 'none' : 'block';
             document.getElementById('sourceUrlFields').style.display = isLinkOnly ? 'block' : 'none';
+        }
+
+        // Wired to the License select's own change event -- deliberately separate from
+        // updateLicenseFieldVisibility (called that too, plus the auto-fill below) so
+        // openEditModal can populate the form (including a possibly-legitimate existing
+        // creator value) without also running the auto-fill heuristic against it. That
+        // heuristic is only meant to react to the user actively changing License while the
+        // modal is already open, not to a fresh population of the form.
+        function toggleLicenseFields() {
+            updateLicenseFieldVisibility();
+            const license = document.getElementById('planLicenseSelect').value;
 
             // "My own design" can reasonably default Designed By to the uploader's own name --
             // anything else (CC/public-domain/found-elsewhere) almost never should, since the
@@ -987,8 +1066,20 @@
             if (isAutoFilledOrEmpty) creatorInput.value = license === 'own' ? myUsername : '';
         }
 
+        // Tracks what a plan's file/preview actually were when its edit session opened, so a
+        // successful save can tell "kept as-is" apart from "replaced with something new" and
+        // clean up the old Storage object in the latter case -- without this, replacing a file
+        // during edit would just orphan the previous upload forever instead of freeing it.
+        let originalFilePath = null;
+        let originalPreviewImagePath = null;
+
         function openShareModal() {
             if (!isSignedIn()) { showToast('Sign in (top right) to share a plan.'); return; }
+            editingPlanId = null;
+            originalFilePath = null;
+            originalPreviewImagePath = null;
+            document.getElementById('planModalTitle').textContent = 'Share a Plan';
+            document.getElementById('planSaveBtn').textContent = 'Share Plan';
             document.getElementById('planTitleInput').value = '';
             document.getElementById('planDescInput').value = '';
             document.getElementById('planCategorySelect').value = 'jig';
@@ -996,7 +1087,7 @@
             document.getElementById('planCreatorInput').value = (kerphGetCachedProfile().username || '').trim();
             document.getElementById('planSourceUrlInput').value = '';
             document.getElementById('planFileNameLabel').textContent = 'No file chosen';
-            document.getElementById('planPreviewImageLabel').textContent = 'No photo chosen';
+            document.getElementById('planFilePreviewHint').style.display = 'none';
             pendingFilePath = null;
             pendingFileName = null;
             pendingPreviewImagePath = null;
@@ -1004,6 +1095,28 @@
             document.getElementById('planModalOverlay').style.display = 'flex';
         }
         document.getElementById('sharePlanBtn').addEventListener('click', openShareModal);
+
+        function openEditModal(p) {
+            if (!canManagePlan(p)) return;
+            editingPlanId = p.id;
+            originalFilePath = p.file_path || null;
+            originalPreviewImagePath = p.preview_image_path || null;
+            document.getElementById('planModalTitle').textContent = 'Edit Plan';
+            document.getElementById('planSaveBtn').textContent = 'Save Changes';
+            document.getElementById('planTitleInput').value = p.title || '';
+            document.getElementById('planDescInput').value = p.description || '';
+            document.getElementById('planCategorySelect').value = p.category || 'jig';
+            document.getElementById('planLicenseSelect').value = p.license || 'own';
+            document.getElementById('planCreatorInput').value = p.creator || p.author || '';
+            document.getElementById('planSourceUrlInput').value = p.source_url || '';
+            document.getElementById('planFileNameLabel').textContent = p.file_name ? `Current: ${p.file_name} (choose a new file to replace it)` : 'No file chosen';
+            document.getElementById('planFilePreviewHint').style.display = 'none';
+            pendingFilePath = p.file_path || null;
+            pendingFileName = p.file_name || null;
+            pendingPreviewImagePath = p.preview_image_path || null;
+            updateLicenseFieldVisibility();
+            document.getElementById('planModalOverlay').style.display = 'flex';
+        }
         document.getElementById('planCancelBtn').addEventListener('click', () => { document.getElementById('planModalOverlay').style.display = 'none'; });
         document.getElementById('planLicenseSelect').addEventListener('change', toggleLicenseFields);
 
@@ -1011,23 +1124,35 @@
         document.getElementById('planFileInput').addEventListener('change', async () => {
             const file = document.getElementById('planFileInput').files[0];
             if (!file) return;
+            const hint = document.getElementById('planFilePreviewHint');
+            hint.style.display = 'none';
             document.getElementById('planFileNameLabel').textContent = 'Uploading...';
             const { data, error } = await kerphUploadPrintPlanFile(file);
             if (error) { showToast(error.message || 'Could not upload file.'); document.getElementById('planFileNameLabel').textContent = 'No file chosen'; return; }
             pendingFilePath = data.path;
             pendingFileName = data.fileName;
             document.getElementById('planFileNameLabel').textContent = data.fileName;
-        });
 
-        document.getElementById('planPreviewImageBtn').addEventListener('click', () => document.getElementById('planPreviewImageInput').click());
-        document.getElementById('planPreviewImageInput').addEventListener('change', async () => {
-            const file = document.getElementById('planPreviewImageInput').files[0];
-            if (!file) return;
-            document.getElementById('planPreviewImageLabel').textContent = 'Uploading...';
-            const { data, error } = await kerphUploadPrintPlanPreviewImage(file);
-            if (error) { showToast(error.message || 'Could not upload photo.'); document.getElementById('planPreviewImageLabel').textContent = 'No photo chosen'; return; }
-            pendingPreviewImagePath = data.path;
-            document.getElementById('planPreviewImageLabel').textContent = file.name;
+            // The tile preview picture is just a still render of the model itself, generated
+            // right here instead of asking the user to also go photograph or screenshot it.
+            // Only .stl has an in-browser renderer at all (see openPlanView's fallback chain),
+            // so other formats simply get no auto-preview -- the tile falls back to the
+            // category icon, same as it already does for link-only plans.
+            pendingPreviewImagePath = null;
+            if (/\.stl$/i.test(file.name)) {
+                hint.style.display = 'block';
+                hint.textContent = 'Rendering tile preview from your model...';
+                try {
+                    const blob = await renderStlSnapshotBlob(kerphPrintPlanFileUrl(data.path));
+                    const previewFile = new File([blob], 'preview.png', { type: 'image/png' });
+                    const { data: previewData, error: previewError } = await kerphUploadPrintPlanPreviewImage(previewFile);
+                    if (previewError) throw previewError;
+                    pendingPreviewImagePath = previewData.path;
+                    hint.textContent = 'Tile preview generated from your model.';
+                } catch (err) {
+                    hint.textContent = "Couldn't generate a tile preview from this file — the plan will still upload fine.";
+                }
+            }
         });
 
         document.getElementById('planSaveBtn').addEventListener('click', async () => {
@@ -1037,7 +1162,6 @@
             const category = document.getElementById('planCategorySelect').value;
             const description = document.getElementById('planDescInput').value.trim();
             const creator = document.getElementById('planCreatorInput').value.trim();
-            if (!creator) { showToast('Add who designed this — you, or the original creator if this isn’t your own design.'); return; }
 
             let sourceUrl = null;
             if (license === 'link-only') {
@@ -1048,16 +1172,36 @@
                 return;
             }
 
-            const { data, error } = await kerphCreatePrintPlan({
+            const fields = {
                 title, description, category, license, creator,
                 sourceUrl, filePath: pendingFilePath, fileName: pendingFileName,
                 previewImagePath: pendingPreviewImagePath
-            });
-            if (error) { showToast(error.message || 'Could not share this plan.'); return; }
-            allPlans.unshift(data);
-            renderLibraryGrid();
-            document.getElementById('planModalOverlay').style.display = 'none';
-            showToast('Plan shared with the library.');
+            };
+
+            if (editingPlanId) {
+                const { data, error } = await kerphUpdatePrintPlan(editingPlanId, fields);
+                if (error) { showToast(error.message || 'Could not save changes.'); return; }
+                // Only clean up the old file/preview once the new row is confirmed saved, and
+                // only when the edit actually replaced them -- reusing the same file/preview
+                // (unchanged during this edit) must never delete it out from under itself.
+                const replacedFile = originalFilePath && originalFilePath !== pendingFilePath;
+                const replacedPreview = originalPreviewImagePath && originalPreviewImagePath !== pendingPreviewImagePath;
+                if (replacedFile || replacedPreview) {
+                    await kerphDeletePrintPlanFiles(replacedFile ? originalFilePath : null, replacedPreview ? originalPreviewImagePath : null);
+                }
+                const idx = allPlans.findIndex(p => p.id === editingPlanId);
+                if (idx !== -1) allPlans[idx] = data;
+                renderLibraryGrid();
+                document.getElementById('planModalOverlay').style.display = 'none';
+                showToast('Plan updated.');
+            } else {
+                const { data, error } = await kerphCreatePrintPlan(fields);
+                if (error) { showToast(error.message || 'Could not share this plan.'); return; }
+                allPlans.unshift(data);
+                renderLibraryGrid();
+                document.getElementById('planModalOverlay').style.display = 'none';
+                showToast('Plan shared with the library.');
+            }
         });
 
         document.getElementById('planSearchInput').addEventListener('input', renderLibraryGrid);

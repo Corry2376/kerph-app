@@ -1340,11 +1340,39 @@
         }).select().single();
     }
 
+    // Edits the fields a re-share would have set -- everything except user_id/author (who
+    // originally shared it doesn't change) and downloads_count (unrelated to editing). Not
+    // scoped to .eq('user_id', ...) client-side: RLS (owner or kerph_is_admin(), see
+    // sql/print-library-edit-and-admin.sql) is the real enforcement, and a client-side filter
+    // here would silently zero-row an admin's edit of someone else's plan even though the
+    // database would have allowed it.
+    async function kerphUpdatePrintPlan(id, { title, description, category, license, sourceUrl, filePath, fileName, creator, previewImagePath }) {
+        if (!state.user) return { data: null, error: { message: 'Not signed in.' } };
+        return kerphSupabase.from('print_plans').update({
+            title, description: description || null,
+            category, license, source_url: sourceUrl || null,
+            file_path: filePath || null, file_name: fileName || null,
+            creator: (creator || '').trim() || null,
+            preview_image_path: previewImagePath || null
+        }).eq('id', id).select().single();
+    }
+
+    // Not scoped to .eq('user_id', ...) client-side for the same reason as the update above --
+    // RLS is what actually decides whether this is allowed (owner or admin).
     async function kerphDeletePrintPlan(id, filePath, previewImagePath) {
         if (filePath) await kerphSupabase.storage.from('print-plans').remove([filePath]);
         if (previewImagePath) await kerphSupabase.storage.from('print-plan-previews').remove([previewImagePath]);
-        const { error } = await kerphSupabase.from('print_plans').delete().eq('id', id).eq('user_id', state.user.id);
+        const { error } = await kerphSupabase.from('print_plans').delete().eq('id', id);
         return { error };
+    }
+
+    // Frees a plan's old model file and/or preview image from Storage after an edit replaces
+    // them with a new upload -- without this, every re-upload during an edit just orphans the
+    // previous file forever instead of freeing it. Row-independent (unlike kerphDeletePrintPlan)
+    // since the plan row itself isn't being deleted here.
+    async function kerphDeletePrintPlanFiles(filePath, previewImagePath) {
+        if (filePath) await kerphSupabase.storage.from('print-plans').remove([filePath]);
+        if (previewImagePath) await kerphSupabase.storage.from('print-plan-previews').remove([previewImagePath]);
     }
 
     async function kerphIncrementPrintPlanDownloads(id) {
@@ -1973,7 +2001,9 @@
     window.kerphPrintPlanPreviewImageUrl = kerphPrintPlanPreviewImageUrl;
     window.kerphLoadPrintPlans = kerphLoadPrintPlans;
     window.kerphCreatePrintPlan = kerphCreatePrintPlan;
+    window.kerphUpdatePrintPlan = kerphUpdatePrintPlan;
     window.kerphDeletePrintPlan = kerphDeletePrintPlan;
+    window.kerphDeletePrintPlanFiles = kerphDeletePrintPlanFiles;
     window.kerphIncrementPrintPlanDownloads = kerphIncrementPrintPlanDownloads;
 
     window.kerphLoadToolReviews = kerphLoadToolReviews;
