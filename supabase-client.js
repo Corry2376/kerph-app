@@ -1298,23 +1298,51 @@
         return kerphSupabase.storage.from('print-plans').getPublicUrl(path).data.publicUrl;
     }
 
+    // Tile/detail preview photo -- a separate bucket from the model file itself (print-plans),
+    // same split as showcase-photos vs. the layout data it illustrates. Downscaled the same way
+    // as every other Kerph photo upload (kerphDownscaleImageToBlob), just at a smaller 800px
+    // max since this only ever needs to render as a tile thumbnail or a detail-view preview,
+    // never a full-bleed photo.
+    async function kerphUploadPrintPlanPreviewImage(file) {
+        if (!state.user) return { data: null, error: { message: 'Not signed in.' } };
+        const blob = await kerphDownscaleImageToBlob(file, 800, 0.85);
+        const path = `${state.user.id}/${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}.jpg`;
+        const { error } = await kerphSupabase.storage.from('print-plan-previews').upload(path, blob, { contentType: 'image/jpeg' });
+        if (error) return { data: null, error };
+        return { data: { path }, error: null };
+    }
+
+    function kerphPrintPlanPreviewImageUrl(path) {
+        if (!path) return null;
+        return kerphSupabase.storage.from('print-plan-previews').getPublicUrl(path).data.publicUrl;
+    }
+
     async function kerphLoadPrintPlans() {
         const { data, error } = await kerphSupabase.from('print_plans').select('*').order('created_at', { ascending: false });
         return { data: data || [], error };
     }
 
-    async function kerphCreatePrintPlan({ title, description, category, license, sourceUrl, filePath, fileName }) {
+    async function kerphCreatePrintPlan({ title, description, category, license, sourceUrl, filePath, fileName, creator, previewImagePath }) {
         if (!state.user) return { data: null, error: { message: 'Not signed in.' } };
+        // author = the Kerph account that shared it (tracked for ownership/permissions, e.g.
+        // who's allowed to delete it) -- distinct from creator, the actual designer of the
+        // file, which is very often someone else entirely (a CC-licensed or public-domain
+        // plan the sharer found and is passing along, not authored). Falls back to author
+        // itself only when creator is left blank, so older behavior (no creator field existed
+        // yet) still shows something reasonable instead of "null".
         const author = (kerphGetCachedProfile().username || '').trim() || 'Anonymous';
         return kerphSupabase.from('print_plans').insert({
             user_id: state.user.id, title, description: description || null,
             category, license, source_url: sourceUrl || null,
-            file_path: filePath || null, file_name: fileName || null, author
+            file_path: filePath || null, file_name: fileName || null, author,
+            creator: (creator || '').trim() || author,
+            preview_image_path: previewImagePath || null
         }).select().single();
     }
 
-    async function kerphDeletePrintPlan(id, filePath) {
+    async function kerphDeletePrintPlan(id, filePath, previewImagePath) {
         if (filePath) await kerphSupabase.storage.from('print-plans').remove([filePath]);
+        if (previewImagePath) await kerphSupabase.storage.from('print-plan-previews').remove([previewImagePath]);
         const { error } = await kerphSupabase.from('print_plans').delete().eq('id', id).eq('user_id', state.user.id);
         return { error };
     }
@@ -1941,6 +1969,8 @@
 
     window.kerphUploadPrintPlanFile = kerphUploadPrintPlanFile;
     window.kerphPrintPlanFileUrl = kerphPrintPlanFileUrl;
+    window.kerphUploadPrintPlanPreviewImage = kerphUploadPrintPlanPreviewImage;
+    window.kerphPrintPlanPreviewImageUrl = kerphPrintPlanPreviewImageUrl;
     window.kerphLoadPrintPlans = kerphLoadPrintPlans;
     window.kerphCreatePrintPlan = kerphCreatePrintPlan;
     window.kerphDeletePrintPlan = kerphDeletePrintPlan;

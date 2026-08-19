@@ -169,6 +169,13 @@
         .library-filters input[type="text"] { min-width: 220px; }
         .library-filters select { width: auto; min-width: 150px; }
 
+        .library-rules-banner {
+            display: flex; gap: 10px; align-items: flex-start; font-size: 12px; color: #92400e; line-height: 1.55;
+            background-color: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 10px 14px; margin-top: 16px;
+        }
+        .library-rules-banner-icon { font-size: 16px; flex-shrink: 0; line-height: 1.4; }
+        .library-rules-banner strong { color: #78350f; }
+
         .library-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 20px; }
         .plan-card {
             background-color: #ffffff; border: 1px solid #cbd5e1; border-radius: 14px; overflow: hidden; cursor: pointer;
@@ -176,7 +183,8 @@
             display: flex; flex-direction: column;
         }
         .plan-card:hover { transform: translateY(-2px); box-shadow: 0 12px 24px rgba(15, 23, 42, 0.1); }
-        .plan-card-icon { width: 100%; height: 120px; background: #eef2ff; display: flex; align-items: center; justify-content: center; font-size: 44px; color: #a5b4fc; }
+        .plan-card-icon { width: 100%; height: 120px; background: #eef2ff; display: flex; align-items: center; justify-content: center; font-size: 44px; color: #a5b4fc; overflow: hidden; }
+        .plan-card-icon img { width: 100%; height: 100%; object-fit: cover; display: block; }
         .plan-card-body { padding: 14px 16px; flex: 1; }
         .plan-card-title { font-size: 14.5px; font-weight: 700; color: #0f172a; margin-bottom: 6px; }
         .plan-card-desc { font-size: 12px; color: #6b7280; line-height: 1.4; max-height: 34px; overflow: hidden; margin-bottom: 8px; }
@@ -187,6 +195,7 @@
         .badge-license.own { background: #dcfce7; color: #166534; }
         .badge-license.link-only { background: #fef3c7; color: #92400e; }
         .plan-card-footer { display: flex; align-items: center; justify-content: space-between; padding: 8px 16px; border-top: 1px solid #f1f5f9; font-size: 11px; color: #6b7280; }
+        .plan-card-footer span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
         .library-empty { text-align: center; padding: 60px 20px; color: #9ca3af; grid-column: 1 / -1; }
         .library-empty-icon { font-size: 40px; margin-bottom: 12px; }
@@ -196,10 +205,12 @@
         .plan-view-desc { font-size: 13.5px; color: #1e293b; line-height: 1.6; margin-bottom: 14px; }
         .stl-preview-box { width: 100%; height: 280px; border-radius: 10px; background: #0f172a; overflow: hidden; position: relative; margin-bottom: 14px; }
         .stl-preview-box canvas { display: block; width: 100%; height: 100%; }
+        .stl-preview-box img { width: 100%; height: 100%; object-fit: contain; display: block; }
         .stl-preview-hint { position: absolute; bottom: 8px; left: 0; right: 0; text-align: center; font-size: 10.5px; color: rgba(255,255,255,0.6); pointer-events: none; }
         .stl-preview-unavailable { display: flex; align-items: center; justify-content: center; height: 100%; color: #94a3b8; font-size: 12.5px; text-align: center; padding: 0 20px; }
 
         .license-fields { margin-top: 10px; }
+        .header-field-hint { font-weight: 400; text-transform: none; letter-spacing: 0; color: #9ca3af; }
 
         /* ---------- MOBILE ---------- */
         @media (max-width: 640px) {
@@ -341,6 +352,20 @@
                 </div>
             </div>
 
+            <div class="header-field" style="width:100%; margin-top:10px;">
+                <label class="header-field-label" for="planCreatorInput">Designed By <span class="header-field-hint">(the actual creator of the design)</span></label>
+                <input type="text" class="input-box" id="planCreatorInput" placeholder="Your name, or the original designer's name/username">
+            </div>
+
+            <div class="license-fields" id="previewImageFields">
+                <label class="header-field-label">Preview Photo <span class="header-field-hint">(optional — shown on the library tile)</span></label>
+                <input type="file" id="planPreviewImageInput" accept="image/*" style="display:none;">
+                <div style="display:flex; align-items:center; gap:10px; margin-top:4px;">
+                    <span id="planPreviewImageLabel" style="font-size:12px; color:#6b7280; flex:1;">No photo chosen</span>
+                    <button type="button" class="mini-btn" id="planPreviewImageBtn" style="flex:none;">Choose Photo&hellip;</button>
+                </div>
+            </div>
+
             <div class="license-fields" id="fileUploadFields">
                 <label class="header-field-label">Plan File (.stl preview supported; .3mf/.step also accepted for download)</label>
                 <input type="file" id="planFileInput" accept=".stl,.3mf,.step,.stp" style="display:none;">
@@ -374,6 +399,10 @@
                 <div class="library-heading-sub">Printable jigs, fixtures, and shop fittings — your own designs, or links out to plans you found elsewhere.</div>
             </div>
             <button type="button" class="mini-btn primary" id="sharePlanBtn" style="flex:none;">+ Share a Plan</button>
+        </div>
+        <div class="library-rules-banner">
+            <span class="library-rules-banner-icon">&#9888;&#65039;</span>
+            <span><strong>Before you share a plan:</strong> only upload files you have the right to share — your own designs, or work that's properly licensed for redistribution (Creative Commons, public domain). Always credit the actual designer in the Designed By field, even when you're not the one who made it — if it isn't your own work, "Found elsewhere" with a link to the original is usually the right choice instead of re-hosting the file here. Keep uploads shop-related (jigs, fixtures, dust collection, tool holders). Everything shared here is public and visible to every Kerph user.</span>
         </div>
         <div class="library-filters">
             <input type="text" class="input-box" id="planSearchInput" placeholder="Search plans...">
@@ -758,6 +787,7 @@
         let allPlans = [];
         let pendingFilePath = null;
         let pendingFileName = null;
+        let pendingPreviewImagePath = null;
         let editingCategoryValue = 'jig';
 
         function matchesFilters(p, search, category) {
@@ -785,9 +815,11 @@
 
             grid.innerHTML = filtered.map(p => {
                 const licenseClass = p.license === 'own' ? 'own' : (p.license === 'link-only' ? 'link-only' : '');
+                const previewUrl = p.preview_image_path ? kerphPrintPlanPreviewImageUrl(p.preview_image_path) : null;
+                const creatorName = p.creator || p.author || 'Anonymous';
                 return `
                     <div class="plan-card" data-id="${p.id}">
-                        <div class="plan-card-icon">${CATEGORY_ICONS[p.category] || CATEGORY_ICONS.other}</div>
+                        <div class="plan-card-icon">${previewUrl ? `<img src="${escapeHtml(previewUrl)}" alt="" loading="lazy">` : (CATEGORY_ICONS[p.category] || CATEGORY_ICONS.other)}</div>
                         <div class="plan-card-body">
                             <div class="plan-card-title">${escapeHtml(p.title)}</div>
                             <div class="plan-card-desc">${escapeHtml(p.description || '')}</div>
@@ -797,7 +829,7 @@
                             </div>
                         </div>
                         <div class="plan-card-footer">
-                            <span>${escapeHtml(p.author || 'Anonymous')}</span>
+                            <span title="Designed by ${escapeHtml(creatorName)}">${escapeHtml(creatorName)}</span>
                             <span>${p.license === 'link-only' ? 'View original &rarr;' : `&#11015;&#65039; ${p.downloads_count || 0}`}</span>
                         </div>
                     </div>
@@ -870,16 +902,29 @@
             const box = document.getElementById('planViewBox');
             const isStl = p.file_name && /\.stl$/i.test(p.file_name);
             const fileUrl = p.file_path ? kerphPrintPlanFileUrl(p.file_path) : null;
+            const previewUrl = p.preview_image_path ? kerphPrintPlanPreviewImageUrl(p.preview_image_path) : null;
+            const creatorName = p.creator || p.author || 'Anonymous';
+            // The live STL viewer wins when available (it's an actual 3D model, not just a
+            // photo of one) -- the uploaded preview photo is the fallback for everything else
+            // (3mf/step, which have no in-browser viewer at all) instead of just an empty
+            // "no preview available" box.
+            let previewBoxHtml;
+            if (isStl) {
+                previewBoxHtml = '<div class="stl-preview-hint">Drag to orbit</div>';
+            } else if (previewUrl) {
+                previewBoxHtml = `<img src="${escapeHtml(previewUrl)}" alt="${escapeHtml(p.title)}">`;
+            } else {
+                previewBoxHtml = `<div class="stl-preview-unavailable">${p.license === 'link-only' ? 'Hosted on the original site — no in-app preview.' : 'In-browser preview is only available for .stl files.'}</div>`;
+            }
 
             box.innerHTML = `
                 <div class="modal-title">${escapeHtml(p.title)}</div>
-                <div class="stl-preview-box" id="stlPreviewContainer">
-                    ${isStl ? '<div class="stl-preview-hint">Drag to orbit</div>' : `<div class="stl-preview-unavailable">${p.license === 'link-only' ? 'Hosted on the original site — no in-app preview.' : 'In-browser preview is only available for .stl files.'}</div>`}
-                </div>
+                <div class="stl-preview-box" id="stlPreviewContainer">${previewBoxHtml}</div>
                 <div class="plan-view-meta">
                     <div><strong>Category:</strong> ${CATEGORY_LABELS[p.category] || 'Other'}</div>
                     <div><strong>License:</strong> ${LICENSE_LABELS[p.license] || p.license}</div>
-                    <div><strong>Shared by:</strong> ${escapeHtml(p.author || 'Anonymous')}</div>
+                    <div><strong>Designed by:</strong> ${escapeHtml(creatorName)}</div>
+                    ${p.author && p.author !== creatorName ? `<div><strong>Shared by:</strong> ${escapeHtml(p.author)}</div>` : ''}
                 </div>
                 ${p.description ? `<div class="plan-view-desc">${escapeHtml(p.description)}</div>` : ''}
                 <div class="modal-actions">
@@ -908,7 +953,7 @@
             if (deleteBtn) {
                 deleteBtn.addEventListener('click', async () => {
                     if (!confirm('Delete this shared plan permanently?')) return;
-                    await kerphDeletePrintPlan(p.id, p.file_path);
+                    await kerphDeletePrintPlan(p.id, p.file_path, p.preview_image_path);
                     allPlans = allPlans.filter(x => x.id !== p.id);
                     document.getElementById('planViewOverlay').style.display = 'none';
                     disposeStlPreview();
@@ -930,6 +975,16 @@
             const isLinkOnly = license === 'link-only';
             document.getElementById('fileUploadFields').style.display = isLinkOnly ? 'none' : 'block';
             document.getElementById('sourceUrlFields').style.display = isLinkOnly ? 'block' : 'none';
+
+            // "My own design" can reasonably default Designed By to the uploader's own name --
+            // anything else (CC/public-domain/found-elsewhere) almost never should, since the
+            // whole point of those licenses is that someone ELSE made it. Only touches the
+            // field if it still holds exactly the auto-filled value (or is empty), so it never
+            // clobbers something the user already typed themselves.
+            const creatorInput = document.getElementById('planCreatorInput');
+            const myUsername = (kerphGetCachedProfile().username || '').trim();
+            const isAutoFilledOrEmpty = !creatorInput.value.trim() || creatorInput.value.trim() === myUsername;
+            if (isAutoFilledOrEmpty) creatorInput.value = license === 'own' ? myUsername : '';
         }
 
         function openShareModal() {
@@ -938,10 +993,13 @@
             document.getElementById('planDescInput').value = '';
             document.getElementById('planCategorySelect').value = 'jig';
             document.getElementById('planLicenseSelect').value = 'own';
+            document.getElementById('planCreatorInput').value = (kerphGetCachedProfile().username || '').trim();
             document.getElementById('planSourceUrlInput').value = '';
             document.getElementById('planFileNameLabel').textContent = 'No file chosen';
+            document.getElementById('planPreviewImageLabel').textContent = 'No photo chosen';
             pendingFilePath = null;
             pendingFileName = null;
+            pendingPreviewImagePath = null;
             toggleLicenseFields();
             document.getElementById('planModalOverlay').style.display = 'flex';
         }
@@ -961,12 +1019,25 @@
             document.getElementById('planFileNameLabel').textContent = data.fileName;
         });
 
+        document.getElementById('planPreviewImageBtn').addEventListener('click', () => document.getElementById('planPreviewImageInput').click());
+        document.getElementById('planPreviewImageInput').addEventListener('change', async () => {
+            const file = document.getElementById('planPreviewImageInput').files[0];
+            if (!file) return;
+            document.getElementById('planPreviewImageLabel').textContent = 'Uploading...';
+            const { data, error } = await kerphUploadPrintPlanPreviewImage(file);
+            if (error) { showToast(error.message || 'Could not upload photo.'); document.getElementById('planPreviewImageLabel').textContent = 'No photo chosen'; return; }
+            pendingPreviewImagePath = data.path;
+            document.getElementById('planPreviewImageLabel').textContent = file.name;
+        });
+
         document.getElementById('planSaveBtn').addEventListener('click', async () => {
             const title = document.getElementById('planTitleInput').value.trim();
             if (!title) { showToast('Give this plan a title.'); return; }
             const license = document.getElementById('planLicenseSelect').value;
             const category = document.getElementById('planCategorySelect').value;
             const description = document.getElementById('planDescInput').value.trim();
+            const creator = document.getElementById('planCreatorInput').value.trim();
+            if (!creator) { showToast('Add who designed this — you, or the original creator if this isn’t your own design.'); return; }
 
             let sourceUrl = null;
             if (license === 'link-only') {
@@ -978,8 +1049,9 @@
             }
 
             const { data, error } = await kerphCreatePrintPlan({
-                title, description, category, license,
-                sourceUrl, filePath: pendingFilePath, fileName: pendingFileName
+                title, description, category, license, creator,
+                sourceUrl, filePath: pendingFilePath, fileName: pendingFileName,
+                previewImagePath: pendingPreviewImagePath
             });
             if (error) { showToast(error.message || 'Could not share this plan.'); return; }
             allPlans.unshift(data);
