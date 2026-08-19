@@ -1394,6 +1394,23 @@
             display: none;
         }
 
+        /* Electrical Load's per-tool amp table and Clearance Checker's per-conflict list have
+           no natural size cap -- with enough tools/conflicts placed, either one can grow tall
+           enough to push the whole PAGE taller than the viewport (see updateCanvasBackgroundHeight's
+           own comment, which was written to cope with exactly that). That's the real cause of
+           the toolbar/layers-bar visually landing on top of the grid: .measure-toolbar and
+           .layers-bar are position:fixed (viewport-anchored, never move), while #canvas-view-space
+           and every .floating-panel are position:absolute (page-anchored, scroll WITH the page)
+           -- the two positioning models only agree with each other as long as the page never
+           actually needs to scroll. #sidebar-panel already avoids this by being bounded to the
+           viewport height with its own overflow-y:auto (see its own rule) instead of growing the
+           page; giving every panel's body the same treatment keeps the outer page from ever
+           needing to scroll in the first place, so the fixed and absolute elements can't diverge. */
+        .panel-body {
+            max-height: calc(100vh - 220px);
+            overflow-y: auto;
+        }
+
         .panel-toggle-chevron {
             font-size: 10px;
             color: #6b7280;
@@ -15125,6 +15142,24 @@
             const headerHeight = header ? header.getBoundingClientRect().height : 150;
             let currentTop = headerHeight + 16;
             const isMobileSheetLayout = window.matchMedia('(max-width: 900px)').matches;
+
+            const stacked = panels.filter(p => !(isMobileSheetLayout && MOBILE_SHEET_PANEL_IDS.includes(p.id)) && p.dataset.userPositioned !== 'true');
+            // What every panel from index i+1 onward will occupy at minimum -- its collapsed
+            // height (title bar plus the panel's own padding around it, .floating-panel-title's
+            // own rect doesn't include that), since a collapsed panel renders nothing else.
+            // Reserved ahead of time so capping panel i's body (below) leaves genuine room for
+            // what's still stacked under it, instead of treating panel i as if it were the last
+            // one in the column. Already-collapsed panels' real offsetHeight is used directly
+            // (exact); an expanded one's collapsed-equivalent height is estimated from its
+            // title bar plus its own top+bottom padding.
+            const titleHeights = stacked.map(p => {
+                if (p.classList.contains('collapsed')) return p.offsetHeight;
+                const t = p.querySelector('.floating-panel-title');
+                const titleH = t ? t.getBoundingClientRect().height : 0;
+                const cs = getComputedStyle(p);
+                return titleH + parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom);
+            });
+
             panels.forEach(panel => {
                 if (isMobileSheetLayout && MOBILE_SHEET_PANEL_IDS.includes(panel.id)) {
                     panel.style.top = '';
@@ -15136,6 +15171,38 @@
                 panel.style.top = currentTop + 'px';
                 panel.style.right = '24px';
                 panel.style.left = 'auto';
+
+                // .panel-body's static CSS max-height (calc(100vh - 220px)) is only a rough
+                // fallback -- it doesn't know where THIS specific panel actually lands in the
+                // stack, so a panel several slots down (or pushed lower by a taller-than-usual
+                // header) could still cap its own body at more room than actually fits before
+                // the viewport bottom, letting the PANEL's rendered bottom edge push past the
+                // window anyway -- which is exactly what grows the page and breaks
+                // position:fixed vs position:absolute apart (see .panel-body's own comment).
+                // Sizing the cap from this panel's real top, its own title bar height, AND
+                // everything still stacked below it (titleHeights, reserved above) guarantees
+                // the WHOLE column's rendered bottom never exceeds the viewport, not just this
+                // one panel's.
+                const body = panel.querySelector('.panel-body');
+                if (body && !panel.classList.contains('collapsed')) {
+                    const idx = stacked.indexOf(panel);
+                    const reservedBelow = titleHeights.slice(idx + 1).reduce((sum, h) => sum + h + gap, 0);
+                    // Space above the body specifically (title bar + the panel's own top
+                    // padding) -- titleHeights[idx] is this panel's *collapsed total* (title +
+                    // both paddings), which would double-count the bottom padding here since
+                    // that space actually comes after the body, not before it.
+                    const titleEl = panel.querySelector('.floating-panel-title');
+                    const titleOnlyH = titleEl ? titleEl.getBoundingClientRect().height : 0;
+                    const topPadding = parseFloat(getComputedStyle(panel).paddingTop) || 0;
+                    // A bit more than the panel's own bottom padding/border alone (~18px) to
+                    // absorb the small compounding rounding across a multi-panel stack --
+                    // erring toward a few px of unused space in the panel rather than the
+                    // stack's real bottom edge creeping back past the viewport.
+                    const bottomMargin = 34;
+                    const available = window.innerHeight - currentTop - titleOnlyH - topPadding - bottomMargin - reservedBelow;
+                    body.style.maxHeight = Math.max(80, available) + 'px';
+                }
+
                 currentTop += panel.offsetHeight + gap;
             });
             updateCanvasBackgroundHeight();
@@ -15165,7 +15232,13 @@
                 if (bottom > maxPanelBottom) maxPanelBottom = bottom;
             });
             const viewportFitHeight = window.innerHeight - topOffset;
-            const neededHeight = Math.max(viewportFitHeight, maxPanelBottom - topOffset + 40);
+            // The auto-stacked panels' own bottom edge is now kept within the viewport by
+            // arrangeFloatingPanels()'s per-panel body cap (see its comment) -- this buffer
+            // only needs to be large enough to cover a manually-dragged panel (uncapped,
+            // dataset.userPositioned) sitting a little further down, not a generic safety
+            // margin. Was +40, which re-introduced a small page overflow of its own once the
+            // auto-stacked case stopped needing it.
+            const neededHeight = Math.max(viewportFitHeight, maxPanelBottom - topOffset + 10);
             el.style.height = neededHeight + 'px';
         }
 
