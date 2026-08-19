@@ -15110,7 +15110,16 @@
                 const dx = e.clientX - startX;
                 const dy = e.clientY - startY;
                 if (!moved) {
-                    if (Math.abs(dx) < 3 && Math.abs(dy) < 3) return;
+                    // Was a 3px threshold -- easily crossed by ordinary mouse jitter during a
+                    // plain click on the title bar (not an attempt to drag at all), which
+                    // permanently marks the panel userPositioned and drops it out of the
+                    // auto-stack for good. Once that happens it freezes at whatever position
+                    // it was in at that instant, and every later expand/collapse elsewhere
+                    // keeps reflowing the OTHER panels around it -- so the frozen one drifts
+                    // into overlapping whichever panel now occupies its old slot. 8px matches
+                    // TAP_MOVE_THRESHOLD, the same tap-vs-drag distinction already used for
+                    // placed board items (see makeElementInteractive).
+                    if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return;
                     moved = true;
                     panel.style.right = 'auto';
                     panel.style.left = startLeft + 'px';
@@ -15176,15 +15185,16 @@
                 document.getElementById('calcPanel')
             ];
             const gap = 10;
-            // 166 = the same 150px-assumed-header baseline .measure-toolbar/.layers-bar used
-            // before their own fix (150 + 16px reserved-strip gap) -- also wrong whenever the
-            // header actually wraps taller than that (see syncMobileLayoutToHeaderHeight's
-            // comment). Anchoring off the header's real height keeps the panel stack's top
-            // edge consistent with the toolbar/layers-bar it visually stacks below, instead of
-            // the two drifting apart and overlapping each other whenever the header wraps.
+            // Anchoring off the header's real height (not a hardcoded 150px assumption) keeps
+            // the panel stack's top edge consistent with the toolbar/layers-bar it visually
+            // stacks below, instead of the two drifting apart whenever the header wraps taller
+            // (see syncMobileLayoutToHeaderHeight's comment). +37, not +16: #collapseAllPanelsBtn
+            // sits fixed at headerHeight+0 and is ~27px tall -- the stack has to start below
+            // that plus a real gap, or the first panel overlaps the button by however much the
+            // two windows intersect.
             const header = document.querySelector('header');
             const headerHeight = header ? header.getBoundingClientRect().height : 150;
-            let currentTop = headerHeight + 16;
+            let currentTop = headerHeight + 37;
             const isMobileSheetLayout = window.matchMedia('(max-width: 900px)').matches;
 
             panels.forEach(panel => {
@@ -15931,6 +15941,8 @@
             const toggleBtn = document.getElementById('sidebarToggleBtn');
             const measureToolbar = document.querySelector('.measure-toolbar');
             const layersBar = document.querySelector('.layers-bar');
+            const sidebarCollapseBtn = document.querySelector('.sidebar-collapse-btn');
+            const panelsCollapseBtn = document.querySelector('.panels-collapse-btn');
             if (!header || !canvasSpace || !sidebar) return;
 
             const headerHeight = header.getBoundingClientRect().height;
@@ -15949,6 +15961,14 @@
             // assumed position, on top of the grid that had correctly shifted down to clear it.
             if (measureToolbar) measureToolbar.style.top = (headerHeight + 3) + 'px';
             if (layersBar) layersBar.style.top = (headerHeight + 41) + 'px';
+            // Same hardcoded-150px-header assumption, same fix -- .sidebar-collapse-btn and
+            // .panels-collapse-btn's own CSS `top` (165px/150px) is a fixed +15px/+0px gap
+            // below the assumed header. Re-anchored here too so a taller header can't leave
+            // either button sitting too high, which for the panels button specifically meant
+            // overlapping the first panel in the stack once arrangeFloatingPanels() correctly
+            // started using the real header height but this button didn't.
+            if (sidebarCollapseBtn) sidebarCollapseBtn.style.top = (headerHeight + 15) + 'px';
+            if (panelsCollapseBtn) panelsCollapseBtn.style.top = headerHeight + 'px';
 
             // arrangeFloatingPanels() re-anchors the right-hand panel stack's own starting top
             // to this same real header height (see its own comment) and, at the end of that,
