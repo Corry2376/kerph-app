@@ -15115,7 +15115,15 @@
                 document.getElementById('calcPanel')
             ];
             const gap = 10;
-            let currentTop = 166;
+            // 166 = the same 150px-assumed-header baseline .measure-toolbar/.layers-bar used
+            // before their own fix (150 + 16px reserved-strip gap) -- also wrong whenever the
+            // header actually wraps taller than that (see syncMobileLayoutToHeaderHeight's
+            // comment). Anchoring off the header's real height keeps the panel stack's top
+            // edge consistent with the toolbar/layers-bar it visually stacks below, instead of
+            // the two drifting apart and overlapping each other whenever the header wraps.
+            const header = document.querySelector('header');
+            const headerHeight = header ? header.getBoundingClientRect().height : 150;
+            let currentTop = headerHeight + 16;
             const isMobileSheetLayout = window.matchMedia('(max-width: 900px)').matches;
             panels.forEach(panel => {
                 if (isMobileSheetLayout && MOBILE_SHEET_PANEL_IDS.includes(panel.id)) {
@@ -15859,6 +15867,8 @@
             const canvasSpace = document.getElementById('canvas-view-space');
             const sidebar = document.getElementById('sidebar-panel');
             const toggleBtn = document.getElementById('sidebarToggleBtn');
+            const measureToolbar = document.querySelector('.measure-toolbar');
+            const layersBar = document.querySelector('.layers-bar');
             if (!header || !canvasSpace || !sidebar) return;
 
             const headerHeight = header.getBoundingClientRect().height;
@@ -15867,13 +15877,25 @@
             sidebar.style.top = headerHeight + 'px';
             sidebar.style.height = `calc(100vh - ${headerHeight}px)`;
             if (toggleBtn) toggleBtn.style.top = (headerHeight + 10) + 'px';
+            // .measure-toolbar/.layers-bar's own CSS `top` (153px/191px) assumes a 150px-tall
+            // header -- a fixed +3px/+41px gap below it. The header can grow taller than that
+            // (site-header-brand.js wraps it onto more rows under 1100px width, which a newly
+            // appeared vertical scrollbar -- e.g. from a tall right-hand panel stack pushing
+            // the page past the viewport height -- can trigger by shrinking the header's
+            // available width just enough). canvasSpace/sidebar above already re-anchor to the
+            // real height; these two didn't, so a taller header left them sitting at their old
+            // assumed position, on top of the grid that had correctly shifted down to clear it.
+            if (measureToolbar) measureToolbar.style.top = (headerHeight + 3) + 'px';
+            if (layersBar) layersBar.style.top = (headerHeight + 41) + 'px';
 
-            // At desktop widths, updateCanvasBackgroundHeight() may need to grow canvasSpace
-            // taller still to reach a tall stacked-panel column (see its own comment) -- it
-            // writes the same style.height this function just set, so re-run it right after to
-            // give it the final say rather than leaving whichever of the two last happened to
-            // run in charge. Correctly a no-op below the mobile breakpoint (its own guard).
-            if (typeof updateCanvasBackgroundHeight === 'function') updateCanvasBackgroundHeight();
+            // arrangeFloatingPanels() re-anchors the right-hand panel stack's own starting top
+            // to this same real header height (see its own comment) and, at the end of that,
+            // calls updateCanvasBackgroundHeight() itself -- which also needs to run after
+            // canvasSpace/sidebar's writes above to give it the final say on canvasSpace's
+            // height rather than leaving whichever of the two last happened to run in charge.
+            // Routing through arrangeFloatingPanels() gets both effects from one call. Correctly
+            // a no-op below the mobile breakpoint (both functions' own guards).
+            if (typeof arrangeFloatingPanels === 'function') arrangeFloatingPanels();
         }
 
         function initMobileHeaderSync() {
