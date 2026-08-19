@@ -1706,7 +1706,10 @@
             if (handoff) {
                 try {
                     parts = JSON.parse(handoff) || [];
-                    trackSave(kerphSaveCutListParts(parts).catch(() => {}));
+                    // allowShrink: true -- this intentionally REPLACES whatever cut list was
+                    // here with a fresh import from Project Designer, which can legitimately be
+                    // smaller (see makeSingletonDomain's data-loss guard in supabase-client.js).
+                    trackSave(kerphSaveCutListParts(parts, { allowShrink: true }).catch(() => {}));
                     showToast(`Loaded ${parts.length} panel${parts.length === 1 ? '' : 's'} from Project Designer.`);
                 } catch (e) {
                     parts = [];

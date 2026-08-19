@@ -15574,7 +15574,10 @@
                     updateWorkshopGridSize();
                     showToast(message);
                 }
-                if (typeof autosaveCurrentLayout === 'function') autosaveCurrentLayout();
+                // Only the 'new' branch above is an intentional, already-confirmed
+                // (see the modal's own "this clears everything" warning) full reset -- that's
+                // the one autosave allowed to bypass the data-loss guard.
+                if (typeof autosaveCurrentLayout === 'function') autosaveCurrentLayout(modalMode === 'new' ? { allowShrink: true } : undefined);
                 closeModal();
             });
 
@@ -16279,13 +16282,19 @@
 
         let lastAutosavedContent = null;
 
-        function autosaveCurrentLayout() {
+        // opts.allowShrink: true bypasses kerphSaveCurrentLayout's data-loss guard, for the
+        // one caller (the "New Shop Layout" modal's Start Layout button, modalMode==='new')
+        // where intentionally clearing every placed tool in one save is the whole point of
+        // the action -- and the user already saw that modal's own "this clears everything"
+        // warning before this ever runs. Every other autosave (drag-drop, edits, deletes)
+        // stays guarded by default.
+        function autosaveCurrentLayout(opts) {
             try {
                 const layout = serializeCurrentLayout('Current Layout');
                 const comparable = serializeForChangeComparison(layout);
                 if (comparable === lastAutosavedContent) return;
                 lastAutosavedContent = comparable;
-                kerphSaveCurrentLayout(layout).catch(() => {});
+                kerphSaveCurrentLayout(layout, opts).catch(() => {});
             } catch (e) {
                 // best-effort — a save failure here shouldn't interrupt the user
             }

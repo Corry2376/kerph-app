@@ -829,15 +829,58 @@
 
     /* ---------- Singleton domains: one row per user, upsert-only ---------- */
 
-    function makeSingletonDomain(table, column, defaultValue) {
+    // Every singleton domain below (current_layouts, tool_status, custom_tools,
+    // cabinet_templates, cutlist_live_parts) stores its ENTIRE record as one JSON value that
+    // gets wholesale-replaced on every save -- there's no per-row delete like a normal table,
+    // so any bug anywhere in a domain's own save path (a stale cache, a bad merge, whatever)
+    // can silently destroy the whole thing in one write. That's exactly what happened to
+    // tool_status: a stale in-memory snapshot got saved over a real signed-in user's entire
+    // owned/wishlist list. Fixing that one call site isn't enough on its own -- it relies on
+    // every future change to every domain being perfect forever. This guard is built into the
+    // shared factory instead, so it protects all five existing domains AND any new one added
+    // the same way, automatically, with no separate guard to remember to write each time.
+    function makeSingletonDomain(table, column, defaultValue, opts) {
+        // countOf: how much real data a record holds, for the shrink check below. Default
+        // (array length / object key count) is correct for every domain except
+        // current_layouts, which passes its own (the meaningful count there is
+        // `.tools.length`, not the layout object's own fixed top-level keys).
+        const countOf = (opts && opts.countOf) || (v => {
+            if (!v) return 0;
+            if (Array.isArray(v)) return v.length;
+            if (typeof v === 'object') return Object.keys(v).length;
+            return 0;
+        });
+
         async function load() {
             if (!state.user) return { data: defaultValue, error: null };
             const { data, error } = await kerphSupabase.from(table)
                 .select(column).eq('user_id', state.user.id).maybeSingle();
             return { data: data ? data[column] : defaultValue, error };
         }
-        async function save(value) {
+        // allowShrink: true bypasses the guard for the rare, explicit, already-user-confirmed
+        // action that's SUPPOSED to clear most/all of a record (e.g. "New Shop Layout", which
+        // shows its own destructive-action warning before this ever runs, or importing a
+        // fresh cut list from Project Designer). Every other caller is guarded by default --
+        // no opt-in needed -- so a save that would drop a real, reasonably-sized record
+        // (4+ items) to less than half its size gets refused instead of silently going through.
+        async function save(value, { allowShrink = false } = {}) {
             if (!state.user) return { error: { message: 'Not signed in.' } };
+            if (!allowShrink) {
+                try {
+                    const { data: existing } = await kerphSupabase.from(table)
+                        .select(column).eq('user_id', state.user.id).maybeSingle();
+                    const prevCount = countOf(existing ? existing[column] : null);
+                    const newCount = countOf(value);
+                    if (prevCount >= 4 && newCount < prevCount / 2) {
+                        console.error(`kerph data-loss guard: refused to save ${table}.${column} (${prevCount} -> ${newCount})`);
+                        return {
+                            error: {
+                                message: `Save blocked -- this would drop your saved ${table.replace(/_/g, ' ')} from ${prevCount} to ${newCount} items, which looks like a bug rather than something you did on purpose. Reload the page and try again; contact support if this keeps happening.`
+                            }
+                        };
+                    }
+                } catch (e) { /* the guard itself failing must never block a legitimate save */ }
+            }
             const { error } = await kerphSupabase.from(table)
                 .upsert({ user_id: state.user.id, [column]: value, updated_at: new Date().toISOString() });
             return { error };
@@ -850,7 +893,12 @@
     // silently loses the board. Mirroring through localStorage first makes the round trip
     // safe for every visitor, signed in or not, and is also what lets the 3D viewer and the
     // 2D planner share a live layout without a network round-trip in between.
-    const currentLayoutDomain = makeSingletonDomain('current_layouts', 'data', null);
+    const currentLayoutDomain = makeSingletonDomain('current_layouts', 'data', null, {
+        // The layout object's own top-level keys (widthFeet, tools, wallFeatures, ...) are a
+        // fixed shape regardless of content -- the meaningful "how much is actually in here"
+        // count is how many tools are placed.
+        countOf: v => (v && Array.isArray(v.tools)) ? v.tools.length : 0
+    });
     const CURRENT_LAYOUT_LOCAL_KEY = 'kerphCurrentLayout';
 
     // Local-first only applies to a GUEST (no state.user) -- that's the actual gap the comment
@@ -885,9 +933,13 @@
         return result;
     }
 
-    async function kerphSaveCurrentLayout(value) {
+    // opts.allowShrink: true for the rare explicit/confirmed full-reset case ("New Shop
+    // Layout" in workshop-planner.html) -- see makeSingletonDomain's own comment. Every other
+    // caller (drag-drop, edits, deletes) is guarded against an accidental catastrophic drop by
+    // default.
+    async function kerphSaveCurrentLayout(value, opts) {
         try { localStorage.setItem(CURRENT_LAYOUT_LOCAL_KEY, JSON.stringify(value)); } catch (e) { /* private browsing / quota -- best effort */ }
-        return currentLayoutDomain.save(value);
+        return currentLayoutDomain.save(value, opts);
     }
 
     // Same gap as current_layouts above, same fix -- tool_status is where owned/wishlist
@@ -926,41 +978,11 @@
         return result;
     }
 
-    // Defense-in-depth against the exact incident this comment is describing: a stale
-    // in-memory snapshot (captured before the real data had loaded) got wired into every
-    // owned/wishlist button's click handler, so the very first click after page load silently
-    // overwrote a user's entire tool_status record with just that one entry -- real,
-    // permanent data loss, not a display bug (see workshop-planner.html's wireToolStatusItem
-    // fix). That specific bug is now fixed at the source, but this exists so that ANY future
-    // bug shaped like it -- anything that ends up calling kerphSaveToolStatus with a
-    // near-empty object while the user's real record has substantially more in it -- gets
-    // caught and refused here too, instead of relying on every future change being perfect.
-    // Deliberately scoped to tool_status only, not current_layouts: un-marking a tool as owned
-    // only ever happens one click at a time in this app (no bulk-clear feature), so any save
-    // that drops more than half of a real existing record is never legitimate user intent.
-    // current_layouts has no such guarantee -- "New Shop Layout" legitimately clears every
-    // placed tool in one intentional save -- so the same guard there would block a real feature.
-    async function guardToolStatusDataLoss(newValue) {
-        if (!state.user) return { blocked: false };
-        try {
-            const { data } = await kerphSupabase.from('tool_status').select('data').eq('user_id', state.user.id).maybeSingle();
-            const prevCount = data && data.data ? Object.keys(data.data).length : 0;
-            const newCount = newValue ? Object.keys(newValue).length : 0;
-            if (prevCount >= 4 && newCount < prevCount / 2) {
-                console.error(`kerph data-loss guard: refused to save tool_status (${prevCount} -> ${newCount} entries)`);
-                return {
-                    blocked: true,
-                    error: { message: `Save blocked -- this would drop your saved tools from ${prevCount} to ${newCount}, which looks like a bug rather than something you did on purpose. Reload the page and try again; contact support if this keeps happening.` }
-                };
-            }
-        } catch (e) { /* the guard itself failing must never block a legitimate save */ }
-        return { blocked: false };
-    }
-
+    // toolStatusDomain.save() already carries the data-loss guard (see makeSingletonDomain) --
+    // no bulk-clear feature exists for owned/wishlist tools (un-marking one only ever happens
+    // a single click at a time), so it's never passed allowShrink and stays fully guarded.
     async function kerphSaveToolStatus(value) {
         try { localStorage.setItem(TOOL_STATUS_LOCAL_KEY, JSON.stringify(value)); } catch (e) { /* private browsing / quota -- best effort */ }
-        const guard = await guardToolStatusDataLoss(value);
-        if (guard.blocked) return { error: guard.error };
         return toolStatusDomain.save(value);
     }
 
