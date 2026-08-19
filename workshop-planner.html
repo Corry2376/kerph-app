@@ -9874,6 +9874,19 @@
             return { left: cx - wPx / 2, top: cy - hPx / 2, rotation };
         }
 
+        // Reads the LIVE value of the matching Duct Drop catalog card's inline length input
+        // (already kept in feet via the .custom-drop-length-input 'input' listener above,
+        // which is what the user actually edits before dragging a drop out manually) --
+        // buildDcRoutePieces below used to just hardcode 5, silently ignoring whatever the
+        // user had actually set that input to before triggering an auto-route, so an
+        // auto-routed drop always came out 5ft regardless of the catalog card showing 1.5ft.
+        function getDropLengthFt(sizeClass) {
+            const name = sizeClass === '6in' ? '6in Duct Drop' : '4in Duct Drop';
+            const item = document.querySelector(`.tool-box-item[data-name="${name}"]`);
+            const ft = item ? parseFloat(item.getAttribute('data-height')) : NaN;
+            return (ft && ft > 0) ? ft : 5;
+        }
+
         // Builds the chain of piece descriptors (live px — caller normalizes to BASE_PPI)
         // from a tool's footprint out to the given target attachment point.
         function buildDcRoutePieces(toolLeft, toolTop, toolW, toolH, target) {
@@ -9949,8 +9962,9 @@
                 left: dropPlacement.left, top: dropPlacement.top, width: dropW, height: dropH,
                 // Unlike every other piece here, physicalHeight on a drop means its own
                 // vertical drop length (see the 3D viewer's addToolMesh), not a mount
-                // elevation — 5ft is the same default the catalog card's input starts at.
-                rotation: dropPlacement.rotation, layer: 'dust-collection', physicalHeight: 5
+                // elevation -- reads the catalog card's actual current input value (see
+                // getDropLengthFt) instead of always using its 5ft starting default.
+                rotation: dropPlacement.rotation, layer: 'dust-collection', physicalHeight: getDropLengthFt(sizeClass)
             });
             currentPort = getWorldPorts('drop', dropPlacement.left, dropPlacement.top, dropW, dropH, dropPlacement.rotation)[1];
 
