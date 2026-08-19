@@ -15079,12 +15079,13 @@
             let dragging = false;
             let moved = false;
             let dragPointerId = null;
-            let startX = 0, startY = 0, startLeft = 0, startTop = 0;
+            let startX = 0, startY = 0, startLeft = 0, startTop = 0, dragStartTime = 0;
 
             handle.addEventListener('pointerdown', (e) => {
                 dragging = true;
                 moved = false;
                 dragPointerId = e.pointerId;
+                dragStartTime = performance.now();
                 // .floating-panel is normally position:absolute (document-relative), but the
                 // measure toolbar shares this same function while staying position:fixed
                 // (viewport-relative), and these 3 panels switch to position:fixed too once the
@@ -15110,16 +15111,29 @@
                 const dx = e.clientX - startX;
                 const dy = e.clientY - startY;
                 if (!moved) {
-                    // Was a 3px threshold -- easily crossed by ordinary mouse jitter during a
-                    // plain click on the title bar (not an attempt to drag at all), which
-                    // permanently marks the panel userPositioned and drops it out of the
-                    // auto-stack for good. Once that happens it freezes at whatever position
-                    // it was in at that instant, and every later expand/collapse elsewhere
-                    // keeps reflowing the OTHER panels around it -- so the frozen one drifts
-                    // into overlapping whichever panel now occupies its old slot. 8px matches
-                    // TAP_MOVE_THRESHOLD, the same tap-vs-drag distinction already used for
-                    // placed board items (see makeElementInteractive).
-                    if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return;
+                    // A plain distance threshold (this used to be 8px, matching
+                    // TAP_MOVE_THRESHOLD for placed board items) turned out to still be way too
+                    // easy to cross by ordinary mouse/trackpad jitter during a ONE-CLICK attempt
+                    // to open the panel -- confirmed directly: a 9px wobble during a click is
+                    // enough. The moment that happens, this panel gets permanently marked
+                    // userPositioned and drops out of the auto-stack for good, with ZERO visible
+                    // feedback (it doesn't even toggle open) and no way to undo it short of a
+                    // page reload -- it just freezes at whatever position it was in, and every
+                    // later expand/collapse elsewhere keeps reflowing the OTHER panels around it,
+                    // so the frozen one drifts into overlapping whichever panel now occupies its
+                    // old slot. That's the exact "some panels just sit on top of the open one"
+                    // symptom.
+                    //
+                    // A real intentional drag is comfortably distinguishable from click jitter
+                    // by BOTH distance and hold time, not distance alone -- jitter during a click
+                    // happens in the first instant of a very brief press; a deliberate drag is
+                    // still moving well past that. Require real distance (18px, more than double
+                    // the old threshold) AND that the press has been held a beat (120ms) before
+                    // committing to "this is a drag" -- unless the movement is large enough
+                    // (40px+) to obviously be an intentional fast flick-drag regardless of timing.
+                    const dist = Math.max(Math.abs(dx), Math.abs(dy));
+                    const heldMs = performance.now() - dragStartTime;
+                    if (dist < 40 && (dist < 18 || heldMs < 120)) return;
                     moved = true;
                     panel.style.right = 'auto';
                     panel.style.left = startLeft + 'px';
@@ -15298,7 +15312,19 @@
                     .map(id => document.getElementById(id))
                     .filter(Boolean);
                 const anyExpanded = panels.some(p => !p.classList.contains('collapsed'));
-                panels.forEach(p => setPanelCollapsed(p, anyExpanded));
+                panels.forEach(p => {
+                    // Also un-sticks any panel knocked out of the auto-stack by an accidental
+                    // micro-drag (see makeDraggable's click-vs-drag threshold) -- this button
+                    // already promises "put my panels back," so it should actually do that even
+                    // for a frozen one instead of leaving it stuck until a page reload.
+                    if (p.dataset.userPositioned === 'true') {
+                        delete p.dataset.userPositioned;
+                        p.style.top = '';
+                        p.style.left = '';
+                        p.style.right = '';
+                    }
+                    setPanelCollapsed(p, anyExpanded);
+                });
                 panelsBtn.classList.toggle('active', anyExpanded);
                 panelsBtn.innerHTML = anyExpanded ? '&#9664; Expand Panels' : '&#9654; Collapse Panels';
                 arrangeFloatingPanels();
