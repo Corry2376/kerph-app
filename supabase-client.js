@@ -853,12 +853,36 @@
     const currentLayoutDomain = makeSingletonDomain('current_layouts', 'data', null);
     const CURRENT_LAYOUT_LOCAL_KEY = 'kerphCurrentLayout';
 
+    // Local-first only applies to a GUEST (no state.user) -- that's the actual gap the comment
+    // above describes. For a SIGNED-IN user this used to run unconditionally too: whatever
+    // happened to already be sitting in this browser's localStorage (stale, empty, or written
+    // during an earlier signed-out/guest moment on this same device) would win over the real
+    // Supabase record every single load, with no check and no reconciliation -- Supabase was
+    // only ever consulted if local was completely empty. A user signed OUT even briefly (a
+    // session expiring, testing sign-out, a different account on a shared browser) writes an
+    // empty/guest local cache that then permanently shadows their real signed-in data on every
+    // future load, on that device, until something clears it -- indistinguishable from actual
+    // data loss. Signed-in now always goes to Supabase (the authoritative synced copy) and
+    // re-syncs the local mirror to match; local is only the fallback if that fetch itself fails
+    // (offline, etc.), not the default source of truth.
     async function kerphLoadCurrentLayout() {
-        try {
-            const raw = localStorage.getItem(CURRENT_LAYOUT_LOCAL_KEY);
-            if (raw) return { data: JSON.parse(raw), error: null };
-        } catch (e) { /* ignore -- fall through to Supabase */ }
-        return currentLayoutDomain.load();
+        if (!state.user) {
+            try {
+                const raw = localStorage.getItem(CURRENT_LAYOUT_LOCAL_KEY);
+                if (raw) return { data: JSON.parse(raw), error: null };
+            } catch (e) { /* ignore */ }
+            return { data: null, error: null };
+        }
+        const result = await currentLayoutDomain.load();
+        if (result.error) {
+            try {
+                const raw = localStorage.getItem(CURRENT_LAYOUT_LOCAL_KEY);
+                if (raw) return { data: JSON.parse(raw), error: result.error };
+            } catch (e) { /* ignore */ }
+            return result;
+        }
+        try { localStorage.setItem(CURRENT_LAYOUT_LOCAL_KEY, JSON.stringify(result.data)); } catch (e) { /* private browsing / quota -- best effort */ }
+        return result;
     }
 
     async function kerphSaveCurrentLayout(value) {
@@ -874,12 +898,32 @@
     const toolStatusDomain = makeSingletonDomain('tool_status', 'data', {});
     const TOOL_STATUS_LOCAL_KEY = 'kerphToolStatus';
 
+    // Same local-first-for-guests-only fix as kerphLoadCurrentLayout above, same reason: this
+    // used to trust local unconditionally, signed in or not, so an empty/stale local cache
+    // (e.g. written during a moment signed out -- a session expiring, testing sign-out) would
+    // permanently mask a signed-in user's real owned/wishlist tools on that device with no
+    // reconciliation -- every "My Tools" item they'd marked owned would appear to have simply
+    // vanished, because moveToolItem() moves an item back out of My Tools the instant its
+    // status entry isn't found (see workshop-planner.html). Signed-in now always goes to
+    // Supabase and re-syncs the local mirror; local is only the fallback if that fetch fails.
     async function kerphLoadToolStatus() {
-        try {
-            const raw = localStorage.getItem(TOOL_STATUS_LOCAL_KEY);
-            if (raw) return { data: JSON.parse(raw), error: null };
-        } catch (e) { /* ignore -- fall through to Supabase */ }
-        return toolStatusDomain.load();
+        if (!state.user) {
+            try {
+                const raw = localStorage.getItem(TOOL_STATUS_LOCAL_KEY);
+                if (raw) return { data: JSON.parse(raw), error: null };
+            } catch (e) { /* ignore */ }
+            return { data: {}, error: null };
+        }
+        const result = await toolStatusDomain.load();
+        if (result.error) {
+            try {
+                const raw = localStorage.getItem(TOOL_STATUS_LOCAL_KEY);
+                if (raw) return { data: JSON.parse(raw), error: result.error };
+            } catch (e) { /* ignore */ }
+            return result;
+        }
+        try { localStorage.setItem(TOOL_STATUS_LOCAL_KEY, JSON.stringify(result.data)); } catch (e) { /* private browsing / quota -- best effort */ }
+        return result;
     }
 
     async function kerphSaveToolStatus(value) {
