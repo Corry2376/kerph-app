@@ -1,0 +1,65 @@
+<svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e3a8a"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+    <linearGradient id="board" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#d9a066"/>
+      <stop offset="100%" stop-color="#b8794a"/>
+    </linearGradient>
+    <linearGradient id="bowl" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#e0a868"/>
+      <stop offset="100%" stop-color="#a9713f"/>
+    </linearGradient>
+    <linearGradient id="bottle" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#fde68a"/>
+      <stop offset="100%" stop-color="#facc15"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="800" height="600" fill="url(#bg)"/>
+  <circle cx="400" cy="290" r="320" fill="#e2e8f0" opacity="0.04"/>
+
+  <!-- cutting board, angled -->
+  <g transform="translate(400 330) rotate(-6)">
+    <rect x="-220" y="-70" width="440" height="150" rx="26" fill="url(#board)" stroke="#0f172a" stroke-width="5"/>
+    <!-- board handle hole -->
+    <circle cx="180" cy="5" r="16" fill="#0f172a" opacity="0.35"/>
+    <!-- grain lines -->
+    <g stroke="#8a5a2e" stroke-width="3" opacity="0.4" fill="none">
+      <path d="M -190 -35 Q 0 -45 200 -35"/>
+      <path d="M -195 5 Q 0 -5 205 5"/>
+      <path d="M -190 45 Q 0 35 200 45"/>
+    </g>
+    <!-- oil sheen patch -->
+    <ellipse cx="-70" cy="-25" rx="70" ry="22" fill="#ffffff" opacity="0.18"/>
+  </g>
+
+  <!-- small wooden bowl to the left -->
+  <g transform="translate(180 430)">
+    <path d="M -85 0 Q -85 55 0 55 Q 85 55 85 0 Z" fill="url(#bowl)" stroke="#0f172a" stroke-width="5"/>
+    <ellipse cx="0" cy="0" rx="85" ry="18" fill="#c98a4b" stroke="#0f172a" stroke-width="5"/>
+    <ellipse cx="0" cy="0" rx="58" ry="10" fill="#7c4a24" opacity="0.6"/>
+  </g>
+
+  <!-- oil bottle to the right, with drip -->
+  <g transform="translate(600 420)">
+    <rect x="-30" y="-10" width="60" height="90" rx="10" fill="url(#bottle)" stroke="#0f172a" stroke-width="4"/>
+    <rect x="-14" y="-45" width="28" height="38" rx="6" fill="#facc15" stroke="#0f172a" stroke-width="4"/>
+    <rect x="-18" y="-52" width="36" height="12" rx="3" fill="#f97316"/>
+    <!-- drip falling toward board -->
+    <path d="M 0 90 Q -6 120 0 145 Q 6 120 0 90 Z" fill="#facc15" opacity="0.85"/>
+  </g>
+
+  <!-- droplet landing highlight on board -->
+  <ellipse cx="530" cy="345" rx="26" ry="9" fill="#facc15" opacity="0.4"/>
+
+  <!-- soft leaf accents (walnut/organic motif) top corners -->
+  <g fill="#f97316" opacity="0.5">
+    <path d="M 90 90 Q 130 60 170 90 Q 130 120 90 90 Z"/>
+  </g>
+  <g fill="#facc15" opacity="0.4">
+    <path d="M 650 100 Q 690 70 730 100 Q 690 130 650 100 Z"/>
+  </g>
+</svg>

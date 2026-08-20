@@ -1,0 +1,81 @@
+<svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg4" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#1e293b"/>
+    </linearGradient>
+    <linearGradient id="board4" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#f1f5f9"/>
+      <stop offset="100%" stop-color="#cbd5e1"/>
+    </linearGradient>
+    <linearGradient id="cabinetDoor" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#334155"/>
+      <stop offset="100%" stop-color="#1e293b"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="0" y="0" width="800" height="600" fill="url(#bg4)"/>
+  <circle cx="130" cy="100" r="160" fill="#1e3a8a" opacity="0.25"/>
+  <circle cx="670" cy="500" r="180" fill="#1e3a8a" opacity="0.22"/>
+
+  <!-- open cabinet door with checklist taped inside -->
+  <g transform="translate(90,120)">
+    <rect x="0" y="0" width="230" height="380" rx="10" fill="url(#cabinetDoor)" stroke="#0f172a" stroke-width="4"/>
+    <circle cx="215" cy="190" r="7" fill="#94a3b8"/>
+    <!-- taped paper -->
+    <g transform="translate(30,40) rotate(-2)">
+      <rect x="-6" y="-6" width="40" height="14" fill="#facc15" opacity="0.85"/>
+      <rect x="0" y="0" width="170" height="230" rx="4" fill="#f8fafc" stroke="#cbd5e1" stroke-width="2"/>
+      <rect x="18" y="24" width="90" height="10" rx="2" fill="#1e293b"/>
+      <g stroke="#94a3b8" stroke-width="3">
+        <line x1="18" y1="60" x2="150" y2="60"/>
+        <line x1="18" y1="90" x2="150" y2="90"/>
+        <line x1="18" y1="120" x2="150" y2="120"/>
+        <line x1="18" y1="150" x2="130" y2="150"/>
+        <line x1="18" y1="180" x2="140" y2="180"/>
+      </g>
+      <g stroke="#f97316" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="none">
+        <path d="M18 55 L26 63 L40 45"/>
+        <path d="M18 85 L26 93 L40 75"/>
+        <path d="M18 115 L26 123 L40 105"/>
+      </g>
+    </g>
+  </g>
+
+  <!-- wrench and oil can hanging tools -->
+  <g transform="translate(500,110)">
+    <g transform="rotate(25)">
+      <rect x="0" y="0" width="18" height="140" rx="9" fill="#e2e8f0" stroke="#94a3b8" stroke-width="3"/>
+      <circle cx="9" cy="10" r="22" fill="none" stroke="#e2e8f0" stroke-width="12"/>
+      <circle cx="9" cy="130" r="22" fill="none" stroke="#e2e8f0" stroke-width="12"/>
+    </g>
+  </g>
+
+  <g transform="translate(600,300)">
+    <path d="M10 40 L10 120 Q10 140 30 140 L70 140 Q90 140 90 120 L90 55 Q90 40 75 40 Z" fill="#f97316"/>
+    <rect x="30" y="15" width="16" height="30" rx="4" fill="#f97316"/>
+    <path d="M46 20 L85 5 L90 20 L52 34 Z" fill="#f97316"/>
+    <ellipse cx="50" cy="90" rx="26" ry="34" fill="#fb923c" opacity="0.5"/>
+  </g>
+
+  <!-- calendar / checkmark badge -->
+  <g transform="translate(430,340)">
+    <rect x="0" y="20" width="180" height="150" rx="14" fill="url(#board4)" stroke="#94a3b8" stroke-width="3"/>
+    <rect x="0" y="20" width="180" height="34" rx="14" fill="#facc15"/>
+    <rect x="30" y="0" width="14" height="34" rx="6" fill="#94a3b8"/>
+    <rect x="136" y="0" width="14" height="34" rx="6" fill="#94a3b8"/>
+    <g fill="#cbd5e1">
+      <rect x="18" y="70" width="24" height="24" rx="4"/>
+      <rect x="54" y="70" width="24" height="24" rx="4"/>
+      <rect x="90" y="70" width="24" height="24" rx="4"/>
+      <rect x="126" y="70" width="24" height="24" rx="4"/>
+      <rect x="18" y="106" width="24" height="24" rx="4"/>
+      <rect x="90" y="106" width="24" height="24" rx="4"/>
+      <rect x="126" y="106" width="24" height="24" rx="4"/>
+    </g>
+    <g transform="translate(54,106)">
+      <circle cx="12" cy="12" r="16" fill="#f97316"/>
+      <path d="M5 12 L10 18 L20 6" stroke="#fff" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+  </g>
+</svg>

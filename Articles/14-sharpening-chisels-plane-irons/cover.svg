@@ -1,0 +1,62 @@
+<svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#1e293b"/>
+    </linearGradient>
+    <linearGradient id="bench" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#334155"/>
+      <stop offset="100%" stop-color="#1e293b"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="600" fill="url(#bg2)"/>
+
+  <!-- workbench surface -->
+  <rect x="0" y="420" width="800" height="180" fill="url(#bench)"/>
+  <rect x="0" y="420" width="800" height="8" fill="#475569"/>
+
+  <!-- sharpening stones stacked, angled -->
+  <g transform="translate(150,340) rotate(-4)">
+    <rect x="0" y="60" width="360" height="34" rx="6" fill="#1e3a8a"/>
+    <rect x="10" y="30" width="340" height="34" rx="6" fill="#2563eb"/>
+    <rect x="20" y="0" width="320" height="34" rx="6" fill="#60a5fa"/>
+  </g>
+
+  <!-- honing guide holding a chisel at an angle -->
+  <g transform="translate(300,230)">
+    <!-- chisel blade going down to stone -->
+    <path d="M40 0 L64 0 L150 210 L128 220 Z" fill="#e2e8f0"/>
+    <path d="M128 220 L150 210 L160 240 L136 246 Z" fill="#cbd5e1"/>
+    <!-- handle -->
+    <rect x="18" y="-46" width="46" height="52" rx="10" fill="#f97316"/>
+    <!-- honing guide roller body clamped on blade -->
+    <g transform="translate(70,120)">
+      <rect x="-24" y="-16" width="70" height="34" rx="6" fill="#facc15"/>
+      <circle cx="46" cy="30" r="16" fill="#eab308"/>
+      <rect x="-30" y="-4" width="10" height="10" fill="#94a3b8"/>
+    </g>
+  </g>
+
+  <!-- burr close-up magnifier circle, upper right -->
+  <g transform="translate(560,90)">
+    <circle cx="70" cy="70" r="90" fill="#1e293b" stroke="#f97316" stroke-width="6"/>
+    <circle cx="70" cy="70" r="90" fill="none" stroke="#facc15" stroke-width="2" opacity="0.5"/>
+    <path d="M0 90 Q40 130 90 145" stroke="#f97316" stroke-width="10" fill="none" stroke-linecap="round"/>
+    <path d="M30 55 L110 40 L112 48 L34 66 Z" fill="#e2e8f0"/>
+    <path d="M110 40 L120 36 L115 46 L112 48 Z" fill="#facc15"/>
+    <!-- magnifier handle -->
+    <rect x="130" y="130" width="14" height="60" rx="6" fill="#94a3b8" transform="rotate(40 130 130)"/>
+  </g>
+
+  <!-- strop leather strip lower left -->
+  <g transform="translate(60,470)">
+    <rect x="0" y="0" width="200" height="26" rx="8" fill="#92400e"/>
+    <rect x="0" y="0" width="200" height="10" rx="5" fill="#b45309"/>
+    <rect x="-10" y="4" width="16" height="18" rx="4" fill="#475569"/>
+  </g>
+
+  <!-- small angle indicator arcs near chisel tip -->
+  <g transform="translate(430,430)" stroke="#facc15" stroke-width="3" fill="none" opacity="0.85">
+    <path d="M-40 0 A 40 40 0 0 1 -8 -38"/>
+  </g>
+</svg>

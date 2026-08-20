@@ -1,0 +1,49 @@
+<svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg18" x1="0" y1="0" x2="800" y2="600" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#1e3a8a"/>
+      <stop offset="1" stop-color="#0f172a"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="600" fill="url(#bg18)"/>
+
+  <!-- ducting -->
+  <g fill="none" stroke="#e2e8f0" stroke-width="14" stroke-linecap="round" opacity="0.9">
+    <path d="M 120 120 L 120 260 Q 120 290 150 290 L 560 290"/>
+    <path d="M 300 90 L 300 230 Q 300 260 330 260 L 560 260"/>
+    <path d="M 480 90 L 480 230 Q 480 260 510 260 L 560 260 Q 590 260 590 290 L 590 300"/>
+  </g>
+  <!-- blast gates on the branches -->
+  <rect x="104" y="150" width="32" height="20" rx="3" fill="#f97316"/>
+  <rect x="284" y="130" width="32" height="20" rx="3" fill="#facc15"/>
+  <rect x="464" y="130" width="32" height="20" rx="3" fill="#f97316"/>
+
+  <!-- cyclone collector body -->
+  <g transform="translate(400,430)">
+    <ellipse cx="0" cy="-90" rx="120" ry="26" fill="#334155" stroke="#64748b" stroke-width="3"/>
+    <path d="M -120 -90 L -120 -20 Q -120 10 -90 10 L 90 10 Q 120 10 120 -20 L 120 -90" fill="#1e293b" stroke="#64748b" stroke-width="3"/>
+    <path d="M -90 10 L -30 90 L 30 90 L 90 10 Z" fill="#334155" stroke="#64748b" stroke-width="3"/>
+    <ellipse cx="0" cy="90" rx="30" ry="10" fill="#0f172a"/>
+    <!-- inlet -->
+    <rect x="90" y="-70" width="60" height="26" rx="6" fill="#334155" stroke="#64748b" stroke-width="3"/>
+    <!-- collection bin -->
+    <path d="M -34 100 L 34 100 L 26 160 L -26 160 Z" fill="#1e293b" stroke="#64748b" stroke-width="3"/>
+  </g>
+
+  <!-- swirling airflow accent -->
+  <g fill="none" stroke="#facc15" stroke-width="5" stroke-linecap="round" opacity="0.75">
+    <path d="M 340 300 Q 400 260 460 300 Q 500 330 460 360"/>
+    <path d="M 330 330 Q 400 300 470 330"/>
+  </g>
+
+  <!-- micron/filter accent circle top right -->
+  <g transform="translate(650,140)">
+    <circle r="55" fill="#0f172a" stroke="#facc15" stroke-width="4"/>
+    <g stroke="#f8fafc" stroke-width="4" opacity="0.85">
+      <line x1="-25" y1="-25" x2="25" y2="25"/>
+      <line x1="-25" y1="-8" x2="25" y2="8"/>
+      <line x1="-25" y1="8" x2="25" y2="-8"/>
+      <line x1="-25" y1="25" x2="25" y2="-25"/>
+    </g>
+  </g>
+</svg>
