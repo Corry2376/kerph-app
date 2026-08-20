@@ -1,6 +1,6 @@
 # Garage Tips Articles
 
-18 articles for Kerph's Garage Tips feature — 15 new ones, plus the 3 already-published
+19 articles for Kerph's Garage Tips feature — 16 new ones, plus the 3 already-published
 articles rewritten to match the same house rules below (see "Existing articles" at the bottom).
 
 ## Folder structure
@@ -103,7 +103,7 @@ because a stock photo of the wrong product looks worse than no photo. Replace ea
 with a real photo (yours, or one you hand me) once you've got the shot; the site's own upload
 path downscales to 1200px/JPEG automatically.
 
-## The 15 new articles
+## The 16 new articles
 
 | # | Title | Category |
 |---|---|---|
@@ -122,10 +122,15 @@ path downscales to 1200px/JPEG automatically.
 | 13 | Your First Ten Tools: What to Actually Buy | Beginner Basics |
 | 14 | Sharpening Chisels and Plane Irons: A Realistic Beginner's System | Sharpening |
 | 15 | Humidity Control for Wood Storage Through the Seasons | Other |
+| 19 | Kickback: Why It Happens and How to Prevent It | Safety |
 
-Topics pulled from `Kerph Garage Tips - 200 Article Ideas.xlsx` in the repo root, picked for a
-mix of general-appeal shop knowledge and product-heavy topics (maintenance, safety gear,
-finishing) where affiliate links make sense.
+Topics 01–15 pulled from `Kerph Garage Tips - 200 Article Ideas.xlsx` in the repo root, picked
+for a mix of general-appeal shop knowledge and product-heavy topics (maintenance, safety gear,
+finishing) where affiliate links make sense. Article 19 was added by request as an extensive,
+standalone treatment of kickback — mechanics, all 9 real causes, and prevention. Its injury
+statistic (workpiece kickback/jump present in 40.5% of table/bench saw ER-treated injuries) is
+cited directly to the CPSC's own 2007–2008 stationary saw injury survey and was independently
+checked against the source PDF text, not just quoted from a secondary summary.
 
 ## Existing articles (16–18), rewritten to match
 
@@ -147,5 +152,5 @@ same as the original seed scripts do.
 2. **Tell me you're done** — I'll pull your edits back out of the .docx into `article.html` and
    confirm the results with you.
 3. **Import** — I'll write a SQL script (same pattern as the existing
-   `sql/garage-tips-articles.sql`) that inserts/updates all 18 into `garage_tips` at once,
+   `sql/garage-tips-articles.sql`) that inserts/updates all 19 into `garage_tips` at once,
    uploading each real cover photo to the site's storage bucket along the way.
