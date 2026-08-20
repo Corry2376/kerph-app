@@ -1,5 +1,5 @@
-https://www.pexels.com/photo/6196579/
+https://www.pexels.com/photo/woodworking-workshop-with-altendorf-f45-saw-37162555/
 Pexels License (free commercial use, no attribution required)
-Replaces the previous cover.jpg, which was an unrelated architectural staircase photo mistakenly
-carried over from images/garage-tips/dust-collection-cover.jpg -- that live production file has
-also been replaced with this same photo.
+Second replacement -- the first replacement (a generic shop vac on tile flooring) wasn't a
+strong enough match either. This one shows two real fabric-bag dust collectors with drop pipes
+in an actual wood shop, next to a table saw -- unambiguous, on-topic.
