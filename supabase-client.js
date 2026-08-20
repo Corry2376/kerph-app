@@ -1097,6 +1097,47 @@
     const kerphUpdateSavedProject = savedProjectsDomain.update;
     const kerphDeleteSavedProject = savedProjectsDomain.del;
 
+    /* ---------- My Workbench: running to-do list ----------
+       Real per-row table (sql/todos.sql), not a singleton blob -- deliberately, given this
+       session's whole conversation about that pattern's fragility. Each item can optionally
+       link to a real saved_projects row (project_id + a denormalized project_name snapshot);
+       "attach a project plan from the designer" in the UI just means setting those two fields
+       to one of the user's own kerphLoadSavedProjects() rows. Written as plain CRUD (not
+       makeNamedSaveDomain) since todos are flat columns, not a name+jsonb-blob shape. */
+
+    async function kerphLoadTodos() {
+        if (!state.user) return { data: [], error: null };
+        const { data, error } = await kerphSupabase.from('todos')
+            .select('*').eq('user_id', state.user.id).order('created_at', { ascending: true });
+        return { data: data || [], error };
+    }
+
+    async function kerphCreateTodo({ title, projectId, projectName }) {
+        if (!state.user) return { data: null, error: { message: 'Not signed in.' } };
+        return kerphSupabase.from('todos').insert({
+            user_id: state.user.id,
+            title,
+            project_id: projectId || null,
+            project_name: projectId ? (projectName || null) : null
+        }).select().single();
+    }
+
+    async function kerphUpdateTodo(id, { title, done, projectId, projectName }) {
+        if (!state.user) return { data: null, error: { message: 'Not signed in.' } };
+        return kerphSupabase.from('todos').update({
+            title, done,
+            project_id: projectId || null,
+            project_name: projectId ? (projectName || null) : null,
+            updated_at: new Date().toISOString()
+        }).eq('id', id).select().single();
+    }
+
+    async function kerphDeleteTodo(id) {
+        if (!state.user) return { error: { message: 'Not signed in.' } };
+        const { error } = await kerphSupabase.from('todos').delete().eq('id', id);
+        return { error };
+    }
+
     // Client-facing read-only 3D view (project-view.html) has no sign-in — same reasoning and
     // same security-definer-RPC pattern as get_quote_by_share_token below: the function bypasses
     // RLS but only ever returns the single row matching an exact, unguessable token.
@@ -2055,6 +2096,10 @@
     window.kerphInsertSavedProject = kerphInsertSavedProject;
     window.kerphUpdateSavedProject = kerphUpdateSavedProject;
     window.kerphDeleteSavedProject = kerphDeleteSavedProject;
+    window.kerphLoadTodos = kerphLoadTodos;
+    window.kerphCreateTodo = kerphCreateTodo;
+    window.kerphUpdateTodo = kerphUpdateTodo;
+    window.kerphDeleteTodo = kerphDeleteTodo;
     window.kerphGetProjectByShareToken = kerphGetProjectByShareToken;
     window.kerphUploadProjectThumbnail = kerphUploadProjectThumbnail;
     window.kerphProjectThumbnailUrl = kerphProjectThumbnailUrl;

@@ -200,6 +200,32 @@
         .workspace-shop-card-meta { font-size: 13px; color: #374151; }
         .workspace-shop-card-meta strong { color: #0f172a; }
 
+        .todo-modal-box { width: 460px; max-height: 88vh; overflow-y: auto; }
+        .todo-add-row { display: flex; gap: 8px; margin-bottom: 16px; }
+        .todo-add-row .input-box { flex: 1; }
+        .todo-add-row .mini-btn { flex: none; width: auto; padding: 8px 16px; }
+        .todo-list { display: flex; flex-direction: column; gap: 8px; }
+        .todo-item {
+            display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px;
+            border: 1px solid #e2e8f0; border-radius: 10px; background-color: #ffffff;
+        }
+        .todo-item.done { background-color: #f8fafc; }
+        .todo-item-checkbox { margin-top: 3px; width: 16px; height: 16px; flex: none; cursor: pointer; accent-color: #1e3a8a; }
+        .todo-item-body { flex: 1; min-width: 0; }
+        .todo-item-title { font-size: 13.5px; font-weight: 700; color: #0f172a; word-break: break-word; }
+        .todo-item.done .todo-item-title { text-decoration: line-through; color: #9ca3af; }
+        .todo-item-project { margin-top: 6px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+        .todo-item-project-link {
+            font-size: 11.5px; font-weight: 700; color: #1e3a8a; text-decoration: none; background-color: #eef2ff;
+            padding: 3px 8px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px;
+        }
+        .todo-item-project-link:hover { text-decoration: underline; }
+        .todo-item-project-unlink { border: none; background: none; color: #9ca3af; cursor: pointer; font-size: 13px; padding: 0 2px; }
+        .todo-item-project-unlink:hover { color: #b91c1c; }
+        .todo-item-attach-select { font-size: 11.5px; padding: 4px 6px; border: 1px solid #cbd5e1; border-radius: 6px; background-color: #f8fafc; max-width: 100%; }
+        .todo-item-delete { border: none; background: none; color: #cbd5e1; cursor: pointer; font-size: 18px; line-height: 1; flex: none; padding: 2px 4px; }
+        .todo-item-delete:hover { color: #b91c1c; }
+
         .workspace-tools-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
         .workspace-community-cols { grid-template-columns: repeat(3, 1fr); }
         .workspace-tools-panel { background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 16px; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04); }
@@ -268,7 +294,7 @@
             .workspace-stats-row { grid-template-columns: repeat(2, 1fr); }
             .workspace-section-head { flex-wrap: wrap; gap: 6px; }
             .modal-overlay { padding: 16px; overflow-y: auto; }
-            .modal-box, .account-modal-box { width: 100%; max-width: 340px; }
+            .modal-box, .account-modal-box, .todo-modal-box { width: 100%; max-width: 340px; }
         }
     </style>
 </head>
@@ -361,6 +387,23 @@
         </div>
     </div>
 
+    <div class="modal-overlay" id="todoModalOverlay" style="display:none;">
+        <div class="modal-box todo-modal-box">
+            <div class="modal-title">Project To-Do List</div>
+
+            <div class="todo-add-row">
+                <input type="text" class="input-box" id="todoNewTitleInput" placeholder="New project or task&hellip;" maxlength="200">
+                <button type="button" class="mini-btn primary" id="todoAddBtn">Add</button>
+            </div>
+
+            <div class="todo-list" id="todoListContainer"></div>
+
+            <div class="modal-actions">
+                <button type="button" id="todoCloseBtn" class="mini-btn">Close</button>
+            </div>
+        </div>
+    </div>
+
     <div class="upgrade-nudge" id="upgradeNudge"></div>
     <div id="insuranceReportPrintArea"></div>
 
@@ -375,6 +418,17 @@
 
         <div id="workspaceSignedIn" style="display:none;">
             <div class="workspace-stats-row" id="workspaceStatsRow"></div>
+
+            <div class="workspace-section">
+                <div class="workspace-section-head">
+                    <div class="workspace-section-title"><span class="emoji">&#128203;</span> Project To-Do List</div>
+                    <span class="workspace-section-count" id="workspaceTodoCount"></span>
+                </div>
+                <div class="workspace-shop-card">
+                    <div class="workspace-shop-card-meta" id="workspaceTodoSummary">Keep a running list of what's next — attach a saved Project Designer plan once you're ready to build it.</div>
+                    <button type="button" class="mini-btn primary" id="openTodoModalBtn" style="flex:none; width:auto; padding:8px 16px;">Open List</button>
+                </div>
+            </div>
 
             <div class="workspace-section">
                 <div class="workspace-section-head">
@@ -533,6 +587,8 @@
         }
         let cachedSavedLayouts = [];
         function loadLayouts() { return cachedSavedLayouts; }
+        let cachedSavedProjects = [];
+        let cachedTodos = [];
         const LAYOUT_TYPE_LABELS = { workshop: 'Workshop', 'dust-collection': 'Dust Collection', lighting: 'Lighting' };
 
         function renderAccountStats() {
@@ -831,6 +887,9 @@
            Read-only rollup: every card deep-links out to the real editor for that
            item (workshop-planner.html?loadLayout=, project-designer.html?loadProject=,
            quote-builder.html?loadQuote=) rather than duplicating any editing UI here.
+           The one deliberate exception is the Project To-Do List below -- there's no
+           separate "to-do editor" page to link out to, so its add/check-off/delete/attach
+           UI lives directly in this page's own modal instead.
            ===================================================================== */
 
         function showSignedOut() {
@@ -860,7 +919,7 @@
 
             const [
                 toolStatusRes, layoutsRes, currentLayoutRes, projectsRes, quotesRes,
-                portfolioRes, showcaseRes, reviewsRes, printPlansRes
+                portfolioRes, showcaseRes, reviewsRes, printPlansRes, todosRes
             ] = await Promise.all([
                 kerphLoadToolStatus(),
                 kerphLoadSavedLayouts(),
@@ -870,28 +929,31 @@
                 kerphLoadMyPortfolioProjects(),
                 kerphLoadShowcasePosts(),
                 kerphLoadToolReviews(),
-                kerphLoadPrintPlans()
+                kerphLoadPrintPlans(),
+                kerphLoadTodos()
             ]);
 
             cachedToolStatuses = toolStatusRes.data || {};
             cachedSavedLayouts = layoutsRes.data || [];
+            cachedSavedProjects = projectsRes.data || [];
+            cachedTodos = todosRes.data || [];
 
             const me = kerphGetCachedUser();
             const myShowcasePosts = (showcaseRes.data || []).filter((p) => p.user_id === me.id);
             const myReviews = (reviewsRes.data || []).filter((r) => r.user_id === me.id);
             const myPrintPlans = (printPlansRes.data || []).filter((p) => p.user_id === me.id);
-            const projects = projectsRes.data || [];
             const quotes = quotesRes.data || [];
             const portfolioProjects = portfolioRes.data || [];
 
-            renderStats(cachedToolStatuses, cachedSavedLayouts, projects, portfolioProjects, quotes);
+            renderStats(cachedToolStatuses, cachedSavedLayouts, cachedSavedProjects, portfolioProjects, quotes);
             renderCurrentShop(currentLayoutRes.data);
             renderLayouts(cachedSavedLayouts);
             renderTools(cachedToolStatuses);
-            renderProjects(projects);
+            renderProjects(cachedSavedProjects);
             renderQuotes(quotes);
             renderPortfolio(portfolioProjects);
             renderCommunity(myShowcasePosts, myReviews, myPrintPlans);
+            renderTodoSummary();
         }
 
         function renderStats(toolStatuses, layouts, projects, portfolioProjects, quotes) {
@@ -1205,10 +1267,147 @@
                 : '<div style="color:#9ca3af; font-style:italic;">Nothing shared yet.</div>';
         }
 
+        /* ---------- Project To-Do List ---------- */
+
+        function renderTodoSummary() {
+            const open = cachedTodos.filter((t) => !t.done).length;
+            const done = cachedTodos.length - open;
+            document.getElementById('workspaceTodoCount').textContent = cachedTodos.length ? `${open} open` : '';
+            const summaryEl = document.getElementById('workspaceTodoSummary');
+            if (!cachedTodos.length) {
+                summaryEl.textContent = "Nothing on your list yet — add your first project.";
+            } else if (open === 0) {
+                summaryEl.textContent = `All ${done} project${done === 1 ? '' : 's'} done. Nice work.`;
+            } else {
+                summaryEl.textContent = `${open} open project${open === 1 ? '' : 's'}${done ? `, ${done} done` : ''}.`;
+            }
+        }
+
+        function todoProjectOptionsHtml() {
+            return cachedSavedProjects.map((p) => `<option value="${escapeHtml(p.id)}">${escapeHtml(p.name || 'Untitled Project')}</option>`).join('');
+        }
+
+        function renderTodoList() {
+            const container = document.getElementById('todoListContainer');
+            if (!cachedTodos.length) {
+                container.innerHTML = emptyBlock('Nothing here yet — add your first project or task above.');
+                return;
+            }
+            // Open items float to the top (each group in the order added) so what's still
+            // outstanding is what you see first in a "running" list.
+            const sorted = cachedTodos.slice().sort((a, b) => (a.done === b.done) ? 0 : (a.done ? 1 : -1));
+            container.innerHTML = sorted.map((t) => {
+                const projectHtml = t.project_id
+                    ? `<a class="todo-item-project-link" href="project-designer.html?loadProject=${encodeURIComponent(t.project_id)}">&#128209; ${escapeHtml(t.project_name || 'Open Plan')}</a><button type="button" class="todo-item-project-unlink" data-unlink="${t.id}" title="Remove this plan link">&times;</button>`
+                    : (cachedSavedProjects.length
+                        ? `<select class="todo-item-attach-select" data-attach="${t.id}"><option value="">+ Attach a Plan from the Designer&hellip;</option>${todoProjectOptionsHtml()}</select>`
+                        : '');
+                return `
+                    <div class="todo-item ${t.done ? 'done' : ''}" data-id="${t.id}">
+                        <input type="checkbox" class="todo-item-checkbox" data-toggle="${t.id}" ${t.done ? 'checked' : ''}>
+                        <div class="todo-item-body">
+                            <div class="todo-item-title">${escapeHtml(t.title)}</div>
+                            <div class="todo-item-project">${projectHtml}</div>
+                        </div>
+                        <button type="button" class="todo-item-delete" data-delete="${t.id}" title="Delete">&times;</button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function initTodoModal() {
+            const overlay = document.getElementById('todoModalOverlay');
+            const openBtn = document.getElementById('openTodoModalBtn');
+            const closeBtn = document.getElementById('todoCloseBtn');
+            const addBtn = document.getElementById('todoAddBtn');
+            const newTitleInput = document.getElementById('todoNewTitleInput');
+            const listContainer = document.getElementById('todoListContainer');
+
+            openBtn.addEventListener('click', () => {
+                renderTodoList();
+                overlay.style.display = 'flex';
+                newTitleInput.focus();
+            });
+            closeBtn.addEventListener('click', () => { overlay.style.display = 'none'; });
+            overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.style.display = 'none'; });
+
+            async function addTodo() {
+                const title = newTitleInput.value.trim();
+                if (!title) return;
+                addBtn.disabled = true;
+                const { data, error } = await kerphCreateTodo({ title });
+                addBtn.disabled = false;
+                if (error) { showToast(error.message || 'Could not add that.'); return; }
+                cachedTodos.push(data);
+                newTitleInput.value = '';
+                renderTodoList();
+                renderTodoSummary();
+            }
+            addBtn.addEventListener('click', addTodo);
+            newTitleInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') addTodo(); });
+
+            // Checkbox toggle and the "attach a plan" select both fire 'change'.
+            listContainer.addEventListener('change', async (e) => {
+                const toggleId = e.target.dataset.toggle;
+                if (toggleId) {
+                    const todo = cachedTodos.find((t) => t.id === toggleId);
+                    if (!todo) return;
+                    const done = e.target.checked;
+                    const wasD = todo.done;
+                    todo.done = done;
+                    renderTodoList();
+                    renderTodoSummary();
+                    const { error } = await kerphUpdateTodo(toggleId, { title: todo.title, done, projectId: todo.project_id, projectName: todo.project_name });
+                    if (error) {
+                        todo.done = wasD;
+                        renderTodoList();
+                        renderTodoSummary();
+                        showToast(error.message || 'Could not update that.');
+                    }
+                    return;
+                }
+                const attachId = e.target.dataset.attach;
+                if (attachId) {
+                    const projectId = e.target.value;
+                    if (!projectId) return;
+                    const project = cachedSavedProjects.find((p) => p.id === projectId);
+                    const todo = cachedTodos.find((t) => t.id === attachId);
+                    if (!todo || !project) return;
+                    const { data, error } = await kerphUpdateTodo(attachId, { title: todo.title, done: todo.done, projectId: project.id, projectName: project.name || 'Untitled Project' });
+                    if (error) { showToast(error.message || 'Could not attach that plan.'); return; }
+                    Object.assign(todo, data);
+                    renderTodoList();
+                }
+            });
+
+            listContainer.addEventListener('click', async (e) => {
+                const unlinkId = e.target.dataset.unlink;
+                if (unlinkId) {
+                    const todo = cachedTodos.find((t) => t.id === unlinkId);
+                    if (!todo) return;
+                    const { data, error } = await kerphUpdateTodo(unlinkId, { title: todo.title, done: todo.done, projectId: null, projectName: null });
+                    if (error) { showToast(error.message || 'Could not remove that link.'); return; }
+                    Object.assign(todo, data);
+                    renderTodoList();
+                    return;
+                }
+                const deleteId = e.target.dataset.delete;
+                if (deleteId) {
+                    if (!confirm('Delete this item from your to-do list?')) return;
+                    const { error } = await kerphDeleteTodo(deleteId);
+                    if (error) { showToast(error.message || 'Could not delete that.'); return; }
+                    cachedTodos = cachedTodos.filter((t) => t.id !== deleteId);
+                    renderTodoList();
+                    renderTodoSummary();
+                }
+            });
+        }
+
         kerphAuthReady.then(async () => {
             initHeaderSignIn();
             initAccountPanel();
             initInsuranceReport();
+            initTodoModal();
             if (isSignedIn()) { await loadWorkspaceData(); } else { showSignedOut(); }
         });
 
