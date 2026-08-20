@@ -1,3 +1,6 @@
 # Local-only Claude Code settings (machine-specific permission allowlist)
 .claude/settings.local.json
 supabase/.temp/
+
+# Word/Excel lock files -- created transiently whenever a .docx/.xlsx is open, never real content
+~$*
