@@ -1,0 +1,5 @@
+https://www.pexels.com/photo/6196579/
+Pexels License (free commercial use, no attribution required)
+Replaces the previous cover.jpg, which was an unrelated architectural staircase photo mistakenly
+carried over from images/garage-tips/dust-collection-cover.jpg -- that live production file has
+also been replaced with this same photo.
