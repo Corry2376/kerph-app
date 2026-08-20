@@ -10,11 +10,20 @@ Each article is its own folder:
 ```
 Articles/
   01-cast-iron-rust-free/
-    article.html   <- metadata + body, ready to copy into the site
-    cover.svg       <- tile/cover image
+    article.docx        <- EDIT THIS. Real Word doc: title, cover photo, and body text.
+    article.html         <- source of truth for reimport (regenerated from your .docx edits)
+    cover.jpg             <- real photo, also embedded at the top of article.docx
+    cover-source.txt        <- where the photo came from, for reference
   02-cleaning-pitch-resin-blades/
     ...
 ```
+
+**Edit `article.docx`.** Open it in Word, change whatever you want — title, wording, swap the
+cover photo, delete a section, whatever. It's a real, normal Word document (headings, bold,
+real clickable hyperlinks, the cover photo embedded at the top) — no HTML or code visible
+anywhere. When you're done, save it and tell me; I'll read your changes back out of the .docx
+and update `article.html` to match before we import, so you never have to touch the HTML file
+yourself.
 
 ## `article.html` format
 
@@ -67,27 +76,32 @@ directly** (a particular size, color, or seller), that's an easy manual swap whi
 editing — just replace the `href` with the real product URL, keeping `?tag=kerphplans-20` on
 the end.
 
-## Photo placeholders
+## Cover photos
 
-Wherever a real photo would help, you'll find a block like this instead of a hotlinked image:
+Every article has a real `cover.jpg` — free-license stock photography (Pexels/Pixabay,
+commercial use allowed, no attribution required), same convention as the 3 original articles'
+covers (`images/garage-tips/*.jpg`, see `sql/garage-tips-covers.sql`). Each folder's
+`cover-source.txt` names where it came from. The cover is embedded right at the top of
+`article.docx` so you can see it (and swap it, if you've got a better one) while you edit.
 
-```html
-<div style="background:#f1f5f9; border:1px dashed #cbd5e1; border-radius:10px; padding:28px 16px; text-align:center; color:#64748b; font-size:13px; margin:16px 0;">
-    📷 Photo placeholder — [what the photo should actually show]
-</div>
-```
+**If you have your own photos — for a cover or anywhere in the body — just hand them to me**
+(attach them in chat, or tell me a file path) and say which article they belong to. Your own
+shop/product photos beat generic stock photography, especially for anything showing a specific
+product.
 
-No article hotlinks a third-party photo — that was a deliberate call, both for licensing
-safety and because a stock photo of the wrong product model looks worse than no photo. Replace
-each placeholder `<div>` with a real `<img src="...">` once you've got the shot (site convention
-uploads through the article editor, which downscales to 1200px/JPEG automatically).
+## In-body photo placeholders
 
-## Cover images
+Inside the body text (in both `article.docx` and `article.html`), wherever a real photo would
+help, you'll find a labeled placeholder instead of a made-up or hotlinked image — e.g. in the
+Word doc, a boxed note like:
 
-Each `cover.svg` is an original vector illustration, not a photo — 800×600 (4:3, matching the
-card tile's crop), Kerph's navy/orange palette, no baked-in title text (the site renders the
-title separately under the image). These are usable as-is, or swap in a real photo instead if
-you'd rather — same 4:3 framing applies either way.
+> 📷 Photo placeholder — a close-up of a hearing protection product label showing the NRR
+> rating, next to a pair of earmuffs
+
+No article hotlinks a third-party photo anywhere — deliberate, both for licensing safety and
+because a stock photo of the wrong product looks worse than no photo. Replace each placeholder
+with a real photo (yours, or one you hand me) once you've got the shot; the site's own upload
+path downscales to 1200px/JPEG automatically.
 
 ## The 15 new articles
 
@@ -129,10 +143,9 @@ same as the original seed scripts do.
 
 ## Loading these into the site
 
-Two options once you're done editing:
-1. **Manual** — copy each article's title/excerpt/category/tags/body into the Garage Tips
-   admin editor by hand (fine for a few at a time).
-2. **Batch** — tell me to write a SQL import script (same pattern as the existing
-   `sql/garage-tips-articles.sql`) that reads these files and inserts/updates all 18 at once,
-   after you've finished editing and uploading real cover/inline photos to replace the SVGs
-   and placeholders you want to swap out.
+1. **Edit** whatever you want in `article.docx` per folder (or hand me photos to drop in).
+2. **Tell me you're done** — I'll pull your edits back out of the .docx into `article.html` and
+   confirm the results with you.
+3. **Import** — I'll write a SQL script (same pattern as the existing
+   `sql/garage-tips-articles.sql`) that inserts/updates all 18 into `garage_tips` at once,
+   uploading each real cover photo to the site's storage bucket along the way.
