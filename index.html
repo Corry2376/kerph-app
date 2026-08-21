@@ -763,8 +763,8 @@
 
         /* ---------- MAIN CONTENT ---------- */
         main {
-            /* 320px/-25px instead of the base 310px/0 -- 10px right, 25px up total (the
-               original 10px nudge up, plus another 15px on top of that). Deliberately NOT a
+            /* 320px/-40px instead of the base 310px/0 -- 10px right, 40px up total (three
+               rounds: 10px, then +15px, then +15px again). Deliberately NOT a
                transform: translate() -- transform on an ancestor creates a new containing block
                for any position:fixed descendant, which silently broke .top-right-stack (My
                Workbench + Shop Rag) by repositioning it relative to main's shifted box instead
@@ -773,7 +773,7 @@
                was, so this class of bug can't recur here even if a future transform/filter lands
                on main.) */
             margin-left: 320px;
-            margin-top: -25px;
+            margin-top: -40px;
             max-width: 1360px;
             padding: 56px 353px 80px 24px;
         }
