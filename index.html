@@ -819,7 +819,11 @@
             margin-bottom: 24px;
         }
 
-        .snapshot-panel {
+        /* Fixed top-right stack -- holds My Workbench and the Shop Rag tile together, so both
+           stay pinned in place while the tool grid scrolls underneath, with the stack itself
+           (not each card individually) owning the fixed position -- adding a card here never
+           needs a hand-measured top offset for the next one, flex just stacks them. */
+        .top-right-stack {
             position: fixed;
             top: 165px;
             right: 15px;
@@ -827,18 +831,54 @@
             max-height: calc(100vh - 180px);
             overflow-y: auto;
             z-index: 90;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .snapshot-panel {
             min-height: 420px;
             background-color: #ffffff;
             background-image: linear-gradient(180deg, #ffffff 0%, #f6f8fb 100%);
             border: 1px solid #cbd5e1;
             border-radius: 14px;
             padding: 20px;
+            flex-shrink: 0;
             box-shadow:
                 inset 0 1px 0 rgba(255, 255, 255, 0.9),
                 0 1px 2px rgba(15, 23, 42, 0.06),
                 0 6px 14px -6px rgba(15, 23, 42, 0.16),
                 0 16px 28px -16px rgba(15, 23, 42, 0.16);
         }
+
+        .shop-rag-card {
+            display: block;
+            flex-shrink: 0;
+            background-color: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 14px;
+            padding: 18px 20px;
+            text-decoration: none;
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.9),
+                0 1px 2px rgba(15, 23, 42, 0.06),
+                0 6px 14px -6px rgba(15, 23, 42, 0.16),
+                0 16px 28px -16px rgba(15, 23, 42, 0.16);
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+        .shop-rag-card:hover { transform: translateY(-2px); box-shadow: 0 10px 20px -8px rgba(15, 23, 42, 0.22); }
+        .shop-rag-card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+        .shop-rag-card-title { font-size: 18px; font-weight: 800; color: #0f172a; }
+        .shop-rag-card-subheading {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: #b23b3b;
+            margin-bottom: 8px;
+        }
+        .shop-rag-card-desc { font-size: 12.5px; color: #6b7280; line-height: 1.45; margin-bottom: 10px; }
+        .shop-rag-card-cta { font-size: 12.5px; font-weight: 700; color: #1e3a8a; }
 
         .snapshot-title {
             font-size: 19px;
@@ -1248,7 +1288,7 @@
                 max-width: 100%;
                 padding-right: 24px;
             }
-            .snapshot-panel {
+            .top-right-stack {
                 position: static;
                 top: auto;
                 right: auto;
@@ -1261,7 +1301,7 @@
         @media (max-width: 640px) {
             main { padding: 24px 16px 60px; }
             .hero-row { flex-direction: column; }
-            .snapshot-panel { flex: 1 1 auto; width: 100%; }
+            .top-right-stack { flex: 1 1 auto; width: 100%; }
             .tool-grid { grid-template-columns: 1fr; }
             .tool-card.tool-card-featured { flex-direction: column; align-items: flex-start; }
             .tool-card-featured .tool-card-icon { margin-bottom: 8px; }
@@ -1693,12 +1733,6 @@
                         <div class="tool-card-desc">Share photos of your shop layout and browse everyone else's for inspiration.</div>
                     </a>
 
-                    <a href="garage-tips.html" class="tool-card">
-                        <div class="tool-card-icon">&#128221;</div>
-                        <div class="tool-card-title">Shop tricks and how-to's</div>
-                        <div class="tool-card-desc">Articles and videos on shop technique, tool care, and jigs &mdash; tips and how-to's for the garage.</div>
-                    </a>
-
                     <a href="portfolio.html" class="tool-card">
                         <div class="tool-card-icon">&#128188;</div>
                         <div class="tool-card-title">Portfolio</div>
@@ -1719,13 +1753,25 @@
                 </div>
             </div>
 
-            <div class="snapshot-panel">
-                <div class="snapshot-title">My Workbench</div>
-                <div class="snapshot-subtitle">Your shop at a glance</div>
-                <div class="account-stats-row" id="homeStatsRow"></div>
-                <div class="snapshot-current" id="snapshotCurrent"></div>
-                <div id="snapshotPremierPerk"></div>
-                <a href="my-workspace.html" class="snapshot-cta">Go to My Workbench &rarr;</a>
+            <div class="top-right-stack">
+                <div class="snapshot-panel">
+                    <div class="snapshot-title">My Workbench</div>
+                    <div class="snapshot-subtitle">Your shop at a glance</div>
+                    <div class="account-stats-row" id="homeStatsRow"></div>
+                    <div class="snapshot-current" id="snapshotCurrent"></div>
+                    <div id="snapshotPremierPerk"></div>
+                    <a href="my-workspace.html" class="snapshot-cta">Go to My Workbench &rarr;</a>
+                </div>
+
+                <a href="garage-tips.html" class="shop-rag-card">
+                    <div class="shop-rag-card-header">
+                        <div class="tool-card-icon" style="margin-bottom:0;">&#128221;</div>
+                        <div class="shop-rag-card-title">The Shop Rag</div>
+                    </div>
+                    <div class="shop-rag-card-subheading">Tips, Tricks and How To's</div>
+                    <div class="shop-rag-card-desc">Articles and videos on shop technique, tool care, and jigs &mdash; tips and how-to's for the garage.</div>
+                    <div class="shop-rag-card-cta">Read the latest &rarr;</div>
+                </a>
             </div>
         </div>
     </main>
