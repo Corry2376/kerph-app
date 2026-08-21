@@ -1,0 +1,14 @@
+# Excludes internal repo metadata from the Cloudflare Workers static-assets bundle.
+# assets.directory in wrangler.jsonc is "." (repo root), so without this the build
+# tries to upload .git itself as a servable asset -- including .git/objects/pack/*.pack,
+# which grows past Workers' 25 MiB per-file limit as the repo picks up real commits and
+# fails the entire deploy. None of this is ever meant to be served to a visitor anyway.
+.git
+.gitignore
+.github
+.claude
+wrangler.jsonc
+.assetsignore
+*.md
+sql
+Articles

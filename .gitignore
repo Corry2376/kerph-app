@@ -4,3 +4,10 @@ supabase/.temp/
 
 # Word/Excel lock files -- created transiently whenever a .docx/.xlsx is open, never real content
 ~$*
+
+# Cloudflare Workers local dev artifacts
+.wrangler
+.dev.vars*
+!.dev.vars.example
+.env*
+!.env.example
