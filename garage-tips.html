@@ -236,7 +236,9 @@
 
         .tips-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            /* 260px (down from 280px) so 4 cards fit per row at the page's 1200px max-width
+               instead of 3, while still collapsing gracefully on narrower screens. */
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
             gap: 16px;
         }
 
