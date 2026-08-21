@@ -763,10 +763,18 @@
 
         /* ---------- MAIN CONTENT ---------- */
         main {
-            margin-left: 310px;
+            /* 320px/-10px instead of the base 310px/0 -- shifts content 10px right, 10px up.
+               Deliberately NOT a transform: translate() -- transform on an ancestor creates a
+               new containing block for any position:fixed descendant, which silently broke
+               .top-right-stack (My Workbench + Shop Rag) by repositioning it relative to main's
+               shifted box instead of the real viewport. Plain margin doesn't have that side
+               effect. (.top-right-stack has also been moved out to be a sibling of main, same
+               as #sidebar-panel already was, so this class of bug can't recur here even if a
+               future transform/filter lands on main.) */
+            margin-left: 320px;
+            margin-top: -10px;
             max-width: 1360px;
             padding: 56px 353px 80px 24px;
-            transform: translate(10px, -10px);
         }
 
         .intro-title {
@@ -1805,29 +1813,34 @@
                     </a>
                 </div>
             </div>
-
-            <div class="top-right-stack">
-                <div class="snapshot-panel">
-                    <div class="snapshot-title">My Workbench</div>
-                    <div class="snapshot-subtitle">Your shop at a glance</div>
-                    <div class="account-stats-row" id="homeStatsRow"></div>
-                    <div class="snapshot-current" id="snapshotCurrent"></div>
-                    <div id="snapshotPremierPerk"></div>
-                    <a href="my-workspace.html" class="snapshot-cta">Go to My Workbench &rarr;</a>
-                </div>
-
-                <a href="garage-tips.html" class="shop-rag-card">
-                    <div class="shop-rag-card-header">
-                        <div class="tool-card-icon" style="margin-bottom:0;">&#128221;</div>
-                        <div class="shop-rag-card-title">The Shop Rag</div>
-                    </div>
-                    <div class="shop-rag-card-subheading">Tips, Tricks and How To's</div>
-                    <div class="shop-rag-card-desc">Articles and videos on shop technique, tool care, and jigs &mdash; tips and how-to's for the garage.</div>
-                    <div class="shop-rag-card-cta">Read the latest &rarr;</div>
-                </a>
-            </div>
         </div>
     </main>
+
+    <!-- Sibling of <main>, not nested inside it -- position:fixed here is relative to the real
+         viewport only as long as no ancestor between this and <body> ever gets a transform/
+         filter/will-change (any of those creates a new containing block for fixed descendants
+         and silently breaks this). Kept out of main for the same reason #sidebar-panel already
+         is. -->
+    <div class="top-right-stack">
+        <div class="snapshot-panel">
+            <div class="snapshot-title">My Workbench</div>
+            <div class="snapshot-subtitle">Your shop at a glance</div>
+            <div class="account-stats-row" id="homeStatsRow"></div>
+            <div class="snapshot-current" id="snapshotCurrent"></div>
+            <div id="snapshotPremierPerk"></div>
+            <a href="my-workspace.html" class="snapshot-cta">Go to My Workbench &rarr;</a>
+        </div>
+
+        <a href="garage-tips.html" class="shop-rag-card">
+            <div class="shop-rag-card-header">
+                <div class="tool-card-icon" style="margin-bottom:0;">&#128221;</div>
+                <div class="shop-rag-card-title">The Shop Rag</div>
+            </div>
+            <div class="shop-rag-card-subheading">Tips, Tricks and How To's</div>
+            <div class="shop-rag-card-desc">Articles and videos on shop technique, tool care, and jigs &mdash; tips and how-to's for the garage.</div>
+            <div class="shop-rag-card-cta">Read the latest &rarr;</div>
+        </a>
+    </div>
 
     <div class="tool-preview-popover" id="toolPreviewPopover"></div>
 
