@@ -319,6 +319,7 @@
         .detail-video-wrap { position: relative; width: 100%; padding-top: 56.25%; background: #000; }
         .detail-video-wrap iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
         .detail-body { padding: 22px; }
+        .detail-byline { font-size: 12px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 8px; }
         .detail-title { font-size: 20px; font-weight: 800; color: #0f172a; margin-bottom: 6px; }
         .detail-meta { font-size: 12px; color: #6b7280; margin-bottom: 14px; }
         .detail-desc { font-size: 13.5px; color: #374151; line-height: 1.7; margin-bottom: 14px; }
@@ -1033,6 +1034,7 @@
             box.innerHTML = `
                 ${mediaHtml}
                 <div class="detail-body">
+                    <div class="detail-byline">Kerph Garage Tips &middot; kerphplans.com</div>
                     <div class="detail-title">${escapeHtml(tip.title)}</div>
                     <div class="detail-meta">${escapeHtml(tip.category || '')} &middot; ${dateStr}${tip.author ? ` &middot; ${escapeHtml(tip.author)}` : ''}${!tip.published ? ' &middot; <b style="color:#92400e;">DRAFT</b>' : ''}</div>
                     ${tagsHtml ? `<div class="tip-tags">${tagsHtml}</div>` : ''}
