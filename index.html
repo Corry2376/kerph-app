@@ -713,7 +713,7 @@
         main {
             margin-left: 310px;
             max-width: 1360px;
-            padding: 56px 24px 80px;
+            padding: 56px 338px 80px 24px;
         }
 
         .intro-title {
@@ -820,7 +820,13 @@
         }
 
         .snapshot-panel {
-            flex: 0 0 310px;
+            position: fixed;
+            top: 150px;
+            right: 0;
+            width: 310px;
+            max-height: calc(100vh - 150px);
+            overflow-y: auto;
+            z-index: 90;
             min-height: 420px;
             background-color: #ffffff;
             background-image: linear-gradient(180deg, #ffffff 0%, #f6f8fb 100%);
@@ -1240,8 +1246,16 @@
             main {
                 margin-left: 0;
                 max-width: 100%;
+                padding-right: 24px;
             }
-            .snapshot-panel { flex: 1 1 260px; }
+            .snapshot-panel {
+                position: static;
+                top: auto;
+                right: auto;
+                width: auto;
+                max-height: none;
+                flex: 1 1 260px;
+            }
         }
 
         @media (max-width: 640px) {
