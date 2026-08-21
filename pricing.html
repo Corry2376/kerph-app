@@ -657,6 +657,7 @@
             <div class="pricing-footnote">Pro and Premier checkout above is real (Lemon Squeezy) and feature access is enforced against your actual subscription once you're signed in. Team seat invites are managed from the panel below once you're on a real Pro or Premier subscription.</div>
         </div>
 
+        <div class="team-panel" id="billingPanel" style="display:none; margin-bottom:16px;"></div>
         <div class="team-panel" id="teamPanel" style="display:none;"></div>
     </div>
 
@@ -1217,6 +1218,42 @@
             banner.style.display = 'block';
         }
 
+        // ---------- Billing panel (real Lemon Squeezy subscription management) ----------
+        // The only place in the app that surfaces customer_portal_url -- Lemon Squeezy's own
+        // hosted "update card / view invoices / cancel" page for this subscription. Hidden
+        // entirely for Free/signed-out, and if a plan row exists but has no portal URL yet
+        // (e.g. a manually-seeded row, never a real Lemon Squeezy checkout), the plan/renewal
+        // info still shows -- just without a button that would 404.
+        function formatBillingDate(iso) {
+            if (!iso) return null;
+            try { return new Date(iso).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }); }
+            catch (e) { return null; }
+        }
+        async function renderBillingPanel() {
+            const panel = document.getElementById('billingPanel');
+            if (!panel) return;
+            const user = (typeof kerphGetCachedUser === 'function') ? kerphGetCachedUser() : null;
+            if (!user) { panel.style.display = 'none'; return; }
+            const { data: sub } = await kerphGetMySubscription();
+            if (!sub || (sub.plan !== 'pro' && sub.plan !== 'premier')) { panel.style.display = 'none'; return; }
+
+            panel.style.display = 'block';
+            const planLabel = sub.plan === 'premier' ? 'Premier' : 'Pro';
+            const renews = formatBillingDate(sub.renewsAt);
+            const ends = formatBillingDate(sub.endsAt);
+            const statusLine = sub.status === 'cancelled' && ends
+                ? `Cancelled &mdash; access continues through ${ends}`
+                : (renews ? `Renews ${renews}` : 'Active');
+            const portalButton = sub.customerPortalUrl
+                ? `<a href="${sub.customerPortalUrl}" target="_blank" rel="noopener" class="mini-btn" style="display:inline-block; text-decoration:none; text-align:center;">Manage Billing</a>`
+                : `<span style="font-size:11px; color:#9ca3af;">Billing portal link not available yet &mdash; contact support to update payment or cancel.</span>`;
+            panel.innerHTML = `
+                <div class="team-panel-title">Billing</div>
+                <div class="team-panel-desc">You're on the ${escapeHtmlText(planLabel)} plan. ${escapeHtmlText(statusLine)}.</div>
+                ${portalButton}
+            `;
+        }
+
         // ---------- Team panel (Pro/Premier seat management) ----------
         // Hidden entirely unless the signed-in user's REAL subscription (not the local
         // kerphPlan preview toggle — that's trivially self-editable) is an entitled Premier
@@ -1340,12 +1377,14 @@
             kerphLoadToolStatus().then(({ data }) => { cachedToolStatuses = data || {}; });
             kerphLoadSavedLayouts().then(({ data }) => { cachedSavedLayouts = data || []; });
             renderTeamPanel();
+            renderBillingPanel();
         });
 
         kerphAuthReady.then(() => {
             initHeaderSignIn();
             initAccountPanel();
             renderTeamPanel();
+            renderBillingPanel();
             handleAcceptInviteParam();
         });
 
