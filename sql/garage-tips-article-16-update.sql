@@ -1,0 +1,108 @@
+-- Updates the live "Top 10 Most Popular Table Saws in 2026" article: removes the old
+-- inconsistent mix of hotlinked photos + small icon-art placeholders (5 of the 10 saws used
+-- icons because their manufacturer sites block hotlinking) in favor of a consistent labeled
+-- photo-placeholder box for all 10 entries, matching current house rules. Also swaps the
+-- Grizzly G0715P entry for a Harvey Alpha HW110TC-36Pro, and updates the cover photo.
+-- Same safe-to-rerun UPDATE-or-INSERT pattern as the other garage-tips SQL scripts.
+
+do $$
+declare
+    v_user_id uuid;
+    v_updated int;
+    v_title text := $title$Top 10 Most Popular Table Saws in 2026$title$;
+    v_excerpt text := $excerpt$Ask five people what the "best" table saw is and you'll get five different answers -- mostly depending on floor space and budget. Here are ten that keep coming up across every price bracket, and what actually sets each one apart.$excerpt$;
+    v_body text := $body$
+<p>Ask five people what the "best" table saw is and you'll get five different answers. That's not because nobody knows what they're talking about. It's because the question is the wrong one. The simple answer is "whichever one fits your shop and your budget." The real answer is that a $300 benchtop saw and a $3,500 cabinet saw aren't rivals at all -- they're not even solving the same problem. So instead of crowning one winner, here are ten saws that keep coming up across every price bracket, and what actually sets each one apart from the others in its own weight class.</p>
+
+<div style="background:#f1f5f9; border:1px dashed #cbd5e1; border-radius:10px; padding:28px 16px; text-align:center; color:#64748b; font-size:13px; margin:16px 0;">
+    📷 Photo placeholder — a cabinet table saw in a working shop setting (e.g. a SawStop or similar), showing the fence, blade guard, and overall footprint for scale.
+</div>
+
+<p>Broadly, saws fall into five tiers. Benchtop and jobsite saws you carry out to a truck and back. Contractor saws that live mostly in one place but still ride on wheels when they have to. Hybrid saws with an enclosed base that actually collects dust instead of just producing it. And full cabinet saws, built to run all day without complaining about it. Street prices track that order too, from a couple hundred dollars up into five figures for the biggest industrial cabinet saws -- you get what you pay for here more reliably than in most tool categories.</p>
+
+<p>This isn't a lab test, and it's not pretending to be one. It's a working list built from real specs, honest reputations, and what actually shows up in shop conversations and reviews across the price range. Ranking weighs motor power and rip capacity, fence quality, table size, safety features, and value within each saw's own category -- a $300 jobsite saw isn't getting docked points for dust collection it was never built to have.</p>
+
+<h2>The Top 10</h2>
+
+<h3>1. SawStop PCS175</h3>
+<p>SawStop built its whole reputation on one feature, and it's a genuinely good one: a flesh-detection system that stops the blade in under five milliseconds if it senses skin, dropping the whole assembly below the table before real damage happens. The Professional Cabinet Saw is where most shops meet that technology for the first time, and here's the part that surprises people -- the safety feature isn't even the only reason to buy it. The T-Glide fence locks in dead parallel and mostly gets set once and stays that way. At 1.75 HP and roughly 440 lbs, it's not the biggest saw on this list. It's just the one most often named when someone asks what to buy and doesn't want to think about a budget ceiling. <a href="https://www.amazon.com/s?k=SawStop+PCS175&tag=kerphplans-20" target="_blank" rel="noopener sponsored">See it on Amazon</a> for current pricing and configurations.</p>
+
+<h3>2. SawStop ICS</h3>
+<div style="background:#f1f5f9; border:1px dashed #cbd5e1; border-radius:10px; padding:28px 16px; text-align:center; color:#64748b; font-size:13px; margin:16px 0;">
+    📷 Photo placeholder — a SawStop Industrial Cabinet Saw's motor/drive side, showing the 3-phase motor options and heavier cabinet build versus the PCS.
+</div>
+<p>Step up from the PCS and you land on the Industrial Cabinet Saw -- same braking technology, built for shops that don't get a day off. Motor options run up to 5 HP with true 3-phase power, and the extra weight, around 600 lbs, shows up exactly where you'd want it: noticeably less vibration at the cut. Is it overkill for a home shop? Completely. Is it exactly right for a production one? Also completely. <a href="https://www.amazon.com/s?k=SawStop+Industrial+Cabinet+Saw&tag=kerphplans-20" target="_blank" rel="noopener sponsored">Browse the ICS lineup on Amazon</a>.</p>
+
+<h3>3. Powermatic PM1000</h3>
+<div style="background:#f1f5f9; border:1px dashed #cbd5e1; border-radius:10px; padding:28px 16px; text-align:center; color:#64748b; font-size:13px; margin:16px 0;">
+    📷 Photo placeholder — a Powermatic PM1000 with its Accu-Fence extended, showing the fence rail and table casting.
+</div>
+<p>Powermatic's Accu-Fence is one of the most imitated fence designs in the industry -- enough competitors have borrowed from it that it's practically the yardstick everyone else's fence gets measured against. The PM1000 is usually the saw people mean when they say they want "a Powermatic." At about 289 lbs it's genuinely lighter than a full cabinet saw, without feeling like a downgrade at the cut. It's the common landing spot for anyone who wants cabinet-saw manners without hauling cabinet-saw weight around. <a href="https://www.amazon.com/s?k=Powermatic+PM1000+table+saw&tag=kerphplans-20" target="_blank" rel="noopener sponsored">Check current listings on Amazon</a> for the available fence-length configurations.</p>
+
+<h3>4. Grizzly G0690</h3>
+<div style="background:#f1f5f9; border:1px dashed #cbd5e1; border-radius:10px; padding:28px 16px; text-align:center; color:#64748b; font-size:13px; margin:16px 0;">
+    📷 Photo placeholder — a Grizzly G0690's triple-belt drive and full-sized cast-iron table, ideally showing scale against a sheet of plywood.
+</div>
+<p>Grizzly's pitch has always been the same, and they've never really had to change it: full cabinet-saw performance without the full cabinet-saw price tag. The G0690 is the model that gets pointed to most often as proof it actually works. Three horsepower, triple belt drive, a table big enough to handle full sheets without you babysitting the offcut -- it undercuts the name-brand competition by enough that it's become the default answer in budget-conscious shop-building threads. Not the flashy pick. The correct one. <a href="https://www.amazon.com/s?k=Grizzly+G0690&tag=kerphplans-20" target="_blank" rel="noopener sponsored">See it on Amazon</a> for the full spec sheet and pricing.</p>
+
+<h3>5. Harvey Alpha HW110TC-36Pro</h3>
+<div style="background:#f1f5f9; border:1px dashed #cbd5e1; border-radius:10px; padding:28px 16px; text-align:center; color:#64748b; font-size:13px; margin:16px 0;">
+    📷 Photo placeholder — a Harvey Alpha HW110TC's Big Eye rip fence and nickel-coated trunnion, showing the fence's oversized viewing window against the scale.
+</div>
+<p>Harvey's a newer name to a lot of American shops, but the Alpha line has built its reputation fast, and on a specific detail: the dovetail trunnion system and the Big Eye rip fence, which uses an oversized scale window that's actually readable without crouching down to eye level with the table. The HW110TC-36Pro runs 3 HP with nickel-coated components on the table, wings, and trunnion -- a real corrosion-resistance upgrade over painted cast iron, not a cosmetic one. It's positioned squarely against the Powermatic and Grizzly cabinet saws above, and the fence alone is enough reason a lot of buyers are cross-shopping it against names that have been around three times as long. <a href="https://www.amazon.com/s?k=Harvey+Alpha+HW110TC+table+saw&tag=kerphplans-20" target="_blank" rel="noopener sponsored">See current listings on Amazon</a>.</p>
+
+<h3>6. Delta 36-L352</h3>
+<div style="background:#f1f5f9; border:1px dashed #cbd5e1; border-radius:10px; padding:28px 16px; text-align:center; color:#64748b; font-size:13px; margin:16px 0;">
+    📷 Photo placeholder — a Delta Unisaw's 52" Biesemeyer fence rail extended to full length, showing the fence rail scale markings.
+</div>
+<p>Delta's been in the table saw business since before most of the other names on this list existed, and the Unisaw line is where that history actually shows up in the iron. The 36-L352 pairs a 3 HP motor with a 52" Biesemeyer fence -- accurate to within 1/64", which is tighter than most people's actual cutting technique -- and a bi-level dust extraction system that keeps the cabinet interior clean instead of just claiming to on the box. <a href="https://www.amazon.com/s?k=Delta+36-L352+Unisaw&tag=kerphplans-20" target="_blank" rel="noopener sponsored">See current listings on Amazon</a>.</p>
+
+<h3>7. DeWalt DWE7491RS</h3>
+<div style="background:#f1f5f9; border:1px dashed #cbd5e1; border-radius:10px; padding:28px 16px; text-align:center; color:#64748b; font-size:13px; margin:16px 0;">
+    📷 Photo placeholder — a DeWalt DWE7491RS folded onto its rolling stand next to a truck tailgate, showing how compact it collapses for transport.
+</div>
+<p>If there's a default answer to "what jobsite saw should I buy," this is usually it. The rack-and-pinion fence stays accurate even after being folded up and thrown in a truck bed a hundred times, and the 32.5" rip capacity is unusually generous for something this portable. Fifteen amps, 120V, about 90 lbs with the rolling stand. Nothing on the spec sheet is exciting, and that's sort of the point -- it's not supposed to impress you, it's supposed to work every time you unfold it. <a href="https://www.amazon.com/s?k=DeWalt+DWE7491RS&tag=kerphplans-20" target="_blank" rel="noopener sponsored">See it on Amazon</a> for the full details.</p>
+
+<h3>8. RIDGID R4518</h3>
+<div style="background:#f1f5f9; border:1px dashed #cbd5e1; border-radius:10px; padding:28px 16px; text-align:center; color:#64748b; font-size:13px; margin:16px 0;">
+    📷 Photo placeholder — a RIDGID R4518 with its folding stand extended, next to the DeWalt DWE7491RS for a side-by-side size comparison.
+</div>
+<p>RIDGID's take on the same portable-saw formula trades a little of the DeWalt's polish for a friendlier price and RIDGID's lifetime service agreement, which matters more than it sounds like once a saw has spent a few years riding around in a truck bed. Folding stand, 15A motor, about 75 lbs -- close enough to the DeWalt on paper that the choice usually comes down to whichever one's on sale that week. <a href="https://www.amazon.com/s?k=RIDGID+R4518+table+saw&tag=kerphplans-20" target="_blank" rel="noopener sponsored">Check current pricing on Amazon</a>.</p>
+<p>For a closer side-by-side look at portable saws in this class, <a href="https://www.youtube.com/watch?v=GbBUPrrx77s" target="_blank" rel="noopener">this buyer's guide</a> walks through several 2026 jobsite models back to back.</p>
+
+<h3>9. Makita 2705</h3>
+<div style="background:#f1f5f9; border:1px dashed #cbd5e1; border-radius:10px; padding:28px 16px; text-align:center; color:#64748b; font-size:13px; margin:16px 0;">
+    📷 Photo placeholder — a Makita 2705 contractor saw on its stand, showing its overall proportions and open-stand base.
+</div>
+<p>The 2705 has been around long enough to earn a reputation most newer contractor saws haven't had the years to build yet. The 15A motor runs smoother and quieter than most saws in its class, and it's held up well enough over time that it still gets recommended by people whose own saw is a decade old and shows no sign of quitting. <a href="https://www.amazon.com/s?k=Makita+2705+table+saw&tag=kerphplans-20" target="_blank" rel="noopener sponsored">See it on Amazon</a>.</p>
+
+<h3>10. SKIL TS6307-00</h3>
+<div style="background:#f1f5f9; border:1px dashed #cbd5e1; border-radius:10px; padding:28px 16px; text-align:center; color:#64748b; font-size:13px; margin:16px 0;">
+    📷 Photo placeholder — a SKIL TS6307-00 with its folding stand set up, ideally cutting a sheet of plywood to show it handling real material.
+</div>
+<p>Every list like this needs a floor, and the TS6307-00 is a legitimate one -- not a toy, not a compromise dressed up as a bargain. Folding stand, a fence that actually holds its setting, enough power to handle plywood and dimensional lumber without complaint. It's not going to replace a cabinet saw. It's a completely reasonable first table saw for a shop that's just getting started, which is a real category, not a consolation prize. <a href="https://www.amazon.com/s?k=SKIL+TS6307-00&tag=kerphplans-20" target="_blank" rel="noopener sponsored">See current pricing on Amazon</a>.</p>
+
+<h2>Cabinet, Hybrid, Contractor, or Jobsite?</h2>
+<p>Jobsite and benchtop saws make sense when there's no permanent spot for one -- you're trading some accuracy for the ability to fold it up and roll it out of the way. Contractor saws step up in power but usually keep an open base, which means dust collection is a permanent, low-grade fight you never quite win. Hybrid saws close the base up and get real dust collection without the full jump to cabinet-saw weight -- it's the most common landing spot for anyone who's outgrown a jobsite saw and knows it. And full cabinet saws are, simply, as good as it gets: heaviest, quietest, flattest tables, worth every pound once a shop has a fixed address and the saw earns its keep every single day.</p>
+<p>Whatever ends up on the floor, it's worth laying out the space around it before it shows up -- clearances, outfeed room, where the dust collection branch is actually going to run. Figure it out on paper, not by tripping over an extension cord for the next five years. That's exactly what the <a href="workshop-planner.html">Workshop Planner</a> is for.</p>
+$body$;
+begin
+    select id into v_user_id from auth.users where email = 'cjstalcup@kerphplans.com';
+
+    update public.garage_tips
+    set excerpt = v_excerpt, body_html = v_body, category = 'Other',
+        tags = array['table-saws','buying-guide','tools','reviews'],
+        published = true, author = 'Kerph Team', cover_image_path = 'images/garage-tips/table-saws-cover.jpg',
+        video_url = 'https://www.youtube.com/watch?v=FrILkvFIdY4',
+        updated_at = now()
+    where user_id = v_user_id and title = v_title;
+
+    get diagnostics v_updated = row_count;
+
+    if v_updated = 0 then
+        insert into public.garage_tips (user_id, title, excerpt, body_html, category, tags, published, author, cover_image_path, video_url)
+        values (v_user_id, v_title, v_excerpt, v_body, 'Other',
+                array['table-saws','buying-guide','tools','reviews'], true, 'Kerph Team',
+                'images/garage-tips/table-saws-cover.jpg', 'https://www.youtube.com/watch?v=FrILkvFIdY4');
+    end if;
+end $$;
