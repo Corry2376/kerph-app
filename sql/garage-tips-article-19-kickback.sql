@@ -1,11 +1,14 @@
-<!--
-TITLE: Kickback: Why It Happens and How to Prevent It
-CATEGORY: Safety
-EXCERPT: Kickback isn't bad luck -- it's physics, and almost every real incident traces back to one of a handful of preventable causes worth knowing before your hand is anywhere near the blade.
-TAGS: kickback, table saw safety, riving knife, blade safety, shop safety
-AUTHOR: Kerph Team
--->
+-- Publishes Garage Tips article 19, "Kickback: Why It Happens and How to Prevent It", live for
+-- the first time. Same safe-to-rerun UPDATE-or-INSERT pattern as the other garage-tips SQL
+-- scripts -- matches by title, updates if the row already exists, inserts if it doesn't.
 
+do $$
+declare
+    v_user_id uuid;
+    v_updated int;
+    v_title text := $title$Kickback: Why It Happens and How to Prevent It$title$;
+    v_excerpt text := $excerpt$Kickback isn't bad luck -- it's physics, and almost every real incident traces back to one of a handful of preventable causes worth knowing before your hand is anywhere near the blade.$excerpt$;
+    v_body text := $body$
 <p>Ask anyone who's actually had it happen and they'll tell you the same thing: it's fast. Not "fast for a woodworking accident" fast. Actually fast -- gone before you've registered anything went wrong. The simple answer to "what is kickback" is that the workpiece gets thrown back at you. The real answer is a lot more specific than that, and it's worth understanding in detail, because the mechanism itself is exactly what tells you how to stop it from happening in the first place.</p>
 
 <h2>What Kickback Actually Is</h2>
@@ -41,3 +44,23 @@ AUTHOR: Kerph Team
 <p>And last, the one that's hardest to put a checklist next to: stay present. A real, honest look at how most kickback incidents actually happen turns up the same story again and again -- someone rushing to finish a cut before a phone call, someone distracted mid-project, someone who's made this exact cut five hundred times and stopped really looking at it on the five-hundred-and-first. The saw doesn't know the difference between an expert having an off moment and a beginner who's never made the cut before. It only knows whether the setup was right and whether your attention was actually on the wood.</p>
 
 <p>Setting the saw up right is half of this. The other half is where it lives in your shop -- how much room you've actually got to stand off to the side of that blade, whether there's a clear path behind you if something does go wrong, and whether the cut you're about to make even fits the space around the saw the way you think it does. Kerph's <a href="workshop-planner.html">Workshop Planner</a> lets you lay out real clearances around a table saw before you're standing in a tight spot wishing you had.</p>
+$body$;
+begin
+    select id into v_user_id from auth.users where email = 'cjstalcup@kerphplans.com';
+
+    update public.garage_tips
+    set excerpt = v_excerpt, body_html = v_body, category = 'Safety',
+        tags = array['kickback','table saw safety','riving knife','blade safety','shop safety'],
+        published = true, author = 'Kerph Team', cover_image_path = 'images/garage-tips/understanding-kickback-cover.jpg',
+        updated_at = now()
+    where user_id = v_user_id and title = v_title;
+
+    get diagnostics v_updated = row_count;
+
+    if v_updated = 0 then
+        insert into public.garage_tips (user_id, title, excerpt, body_html, category, tags, published, author, cover_image_path)
+        values (v_user_id, v_title, v_excerpt, v_body, 'Safety',
+                array['kickback','table saw safety','riving knife','blade safety','shop safety'], true, 'Kerph Team',
+                'images/garage-tips/understanding-kickback-cover.jpg');
+    end if;
+end $$;
