@@ -549,6 +549,58 @@
             transition: opacity 0.12s ease, transform 0.12s ease;
         }
         .tool-preview-popover.visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
+
+        /* ---------- INTRO VIDEO POPUP ---------- */
+        /* Shows once per browser (see INTRO_VIDEO_DISMISSED_KEY) in the bottom-right corner --
+           real screen space that's otherwise empty on this page. Closing it is permanent; it
+           never reappears once dismissed, same "ask once, respect the answer" pattern as every
+           other one-time nudge on this site. */
+        .intro-video-popup {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 320px;
+            background-color: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 14px;
+            box-shadow: 0 20px 40px -12px rgba(15, 23, 42, 0.35);
+            overflow: hidden;
+            z-index: 3000;
+            animation: introVideoSlideIn 0.35s ease;
+        }
+        @keyframes introVideoSlideIn {
+            from { opacity: 0; transform: translateY(16px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .intro-video-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            padding: 10px 8px 10px 14px;
+            background-color: #1e3a8a;
+            color: #ffffff;
+        }
+        .intro-video-title { font-size: 12.5px; font-weight: 700; }
+        .intro-video-close {
+            flex-shrink: 0;
+            background: none;
+            border: none;
+            color: #ffffff;
+            font-size: 20px;
+            line-height: 1;
+            padding: 2px 8px;
+            cursor: pointer;
+            opacity: 0.8;
+            border-radius: 6px;
+        }
+        .intro-video-close:hover { opacity: 1; background-color: rgba(255, 255, 255, 0.15); }
+        .intro-video-frame-wrap { position: relative; width: 100%; padding-top: 56.25%; background-color: #0f172a; }
+        .intro-video-frame-wrap iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+
+        @media (max-width: 640px) {
+            .intro-video-popup { width: calc(100vw - 32px); right: 16px; bottom: 16px; }
+        }
         .preview-photo {
             width: 100%;
             height: 90px;
@@ -1778,6 +1830,16 @@
 
     <div class="tool-preview-popover" id="toolPreviewPopover"></div>
 
+    <div class="intro-video-popup" id="introVideoPopup" style="display:none;">
+        <div class="intro-video-header">
+            <span class="intro-video-title">New to Kerph? 60-second overview</span>
+            <button type="button" class="intro-video-close" id="introVideoCloseBtn" aria-label="Close" title="Close">&times;</button>
+        </div>
+        <div class="intro-video-frame-wrap">
+            <iframe id="introVideoFrame" src="" title="What is Kerph" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        </div>
+    </div>
+
     <script src="catalog-data.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.7/dist/umd/supabase.js"></script>
     <script src="supabase-client.js"></script>
@@ -1879,6 +1941,60 @@
                 applyPlanGating();
             });
         }
+
+        /* ---------- INTRO VIDEO POPUP ---------- */
+        // TODO: set this to the real "what is Kerph" video once it exists (a YouTube or Vimeo
+        // URL is all toIntroEmbedUrl needs) -- left blank on purpose so nothing broken shows to
+        // real visitors in the meantime. initIntroVideoPopup() no-ops entirely while this is ''.
+        const INTRO_VIDEO_URL = '';
+        const INTRO_VIDEO_DISMISSED_KEY = 'kerphIntroVideoDismissed';
+
+        // Same host-detection approach as garage-tips.html's toEmbedUrl -- YouTube and Vimeo
+        // watch/share URLs both need converting to their respective embeddable player URL
+        // before an <iframe> will actually play them.
+        function toIntroEmbedUrl(url) {
+            if (!url) return null;
+            try {
+                const u = new URL(url);
+                if (u.hostname.includes('youtube.com')) {
+                    const id = u.searchParams.get('v');
+                    if (id) return `https://www.youtube.com/embed/${id}`;
+                    const parts = u.pathname.split('/').filter(Boolean);
+                    if (parts[0] === 'embed' && parts[1]) return `https://www.youtube.com/embed/${parts[1]}`;
+                }
+                if (u.hostname === 'youtu.be') {
+                    const id = u.pathname.slice(1);
+                    if (id) return `https://www.youtube.com/embed/${id}`;
+                }
+                if (u.hostname.includes('vimeo.com')) {
+                    const id = u.pathname.split('/').filter(Boolean).pop();
+                    if (id) return `https://player.vimeo.com/video/${id}`;
+                }
+            } catch (e) { /* not a real URL yet -- fall through */ }
+            return null;
+        }
+
+        function initIntroVideoPopup() {
+            if (localStorage.getItem(INTRO_VIDEO_DISMISSED_KEY) === 'true') return;
+            const embedUrl = toIntroEmbedUrl(INTRO_VIDEO_URL);
+            if (!embedUrl) return; // no real video wired up yet
+            const popup = document.getElementById('introVideoPopup');
+            const closeBtn = document.getElementById('introVideoCloseBtn');
+            const dismiss = () => {
+                popup.style.display = 'none';
+                document.getElementById('introVideoFrame').src = '';
+                localStorage.setItem(INTRO_VIDEO_DISMISSED_KEY, 'true');
+            };
+            closeBtn.addEventListener('click', dismiss);
+            // A short delay after load reads as "the page noticed you," not "the page ambushed
+            // you the instant you arrived" -- same reasoning as the existing upgrade-nudge toasts.
+            setTimeout(() => {
+                if (localStorage.getItem(INTRO_VIDEO_DISMISSED_KEY) === 'true') return;
+                document.getElementById('introVideoFrame').src = embedUrl;
+                popup.style.display = 'block';
+            }, 1500);
+        }
+        initIntroVideoPopup();
 
         /* ---------- LOCAL ACCOUNT PREVIEW (username + avatar) ---------- */
         // Thin wrapper over the real Supabase-backed profile cache (supabase-client.js) —
