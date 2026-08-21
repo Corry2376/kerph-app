@@ -314,6 +314,47 @@
         .checklist-item.checked .checklist-item-why { color: #b8c0cc; }
         .checklist-danger-tag { display: inline-block; font-size: 9.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; color: #991b1b; background: #fee2e2; border-radius: 4px; padding: 1px 6px; margin-left: 8px; vertical-align: middle; }
 
+        /* "How to check this" -- a plain <details> so expand/collapse needs no extra JS, and
+           sits as a sibling of the checkbox <label> (not nested inside it) so clicking to expand
+           never also toggles the checkbox underneath it. */
+        .checklist-howto { margin: 0 8px 10px 42px; }
+        .checklist-howto summary {
+            font-size: 12px;
+            font-weight: 700;
+            color: #1e3a8a;
+            cursor: pointer;
+            list-style: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .checklist-howto summary::-webkit-details-marker { display: none; }
+        .checklist-howto summary::before { content: '▸'; font-size: 10px; transition: transform 0.15s ease; }
+        .checklist-howto[open] summary::before { transform: rotate(90deg); }
+        .checklist-howto-body {
+            margin-top: 8px;
+            padding: 12px 14px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-left: 3px solid #1e3a8a;
+            border-radius: 8px;
+        }
+        .checklist-howto-steps { font-size: 12.5px; color: #334155; line-height: 1.6; }
+        .checklist-howto-tools { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+        .checklist-howto-tool-link {
+            font-size: 11px;
+            font-weight: 700;
+            color: #1e3a8a;
+            background: #eef2ff;
+            border: 1px solid #c7d2fe;
+            border-radius: 999px;
+            padding: 4px 10px;
+            text-decoration: none;
+        }
+        .checklist-howto-tool-link:hover { background: #dbe3ff; }
+        .checklist-howto-learnmore { font-size: 11.5px; margin-top: 10px; }
+        .checklist-howto-learnmore a { color: #1e3a8a; font-weight: 700; }
+
         @media (max-width: 640px) {
             .checklist-progress-row { flex-wrap: wrap; }
             .checklist-progress-track { order: 3; flex-basis: 100%; }
@@ -801,9 +842,11 @@
             {
                 title: 'Safety Equipment Present & Working',
                 items: [
-                    { id: 'safety-riving', label: 'Riving knife installed, and sized correctly for the blade in use (roughly the blade\'s kerf thickness)', why: 'The riving knife keeps the kerf from closing on the blade after the cut — the single biggest mechanical defense against kickback.', danger: true },
+                    { id: 'safety-riving', label: 'Riving knife installed, and sized correctly for the blade in use (roughly the blade\'s kerf thickness)', why: 'The riving knife keeps the kerf from closing on the blade after the cut — the single biggest mechanical defense against kickback.', danger: true,
+                      howTo: 'Make a shallow cut in a piece of scrap and measure the width of the slot it leaves — that\'s your kerf. The riving knife should be a little thinner than that kerf but thicker than the blade\'s own plate, so it holds the cut open without binding. Most saws ship with a knife correctly sized for their stock blade; this only becomes a real mismatch when you switch to a thin-kerf blade or a dado stack without swapping the knife to match.' },
                     { id: 'safety-guard', label: 'Blade guard installed and moves freely, not bound or removed', why: 'Guards get pulled for one cut and never go back on. If it\'s not slowing you down, there\'s no real reason to leave it off.' },
-                    { id: 'safety-pawls', label: 'Anti-kickback pawls present and functional — engage going one way, release the other', why: 'Pawls are the backup that catches a workpiece the instant it starts moving backward, before it builds real speed.' },
+                    { id: 'safety-pawls', label: 'Anti-kickback pawls present and functional — engage going one way, release the other', why: 'Pawls are the backup that catches a workpiece the instant it starts moving backward, before it builds real speed.',
+                      howTo: 'With the saw off and unplugged, push a scrap board under the pawls in the normal feed direction — it should slide through freely. Then pull the same board back out toward you: the pawls should dig their teeth in immediately and stop it. If it slides freely in both directions, the pawls are dull, misadjusted, or sitting too high to contact the stock, and they will not do their job in a real kickback.' },
                     { id: 'safety-pushsticks', label: 'A real push stick and push block within arm\'s reach of the saw', why: 'If it\'s not already sitting right there, it won\'t get used for the cut that actually needed it.' },
                     { id: 'safety-estop', label: 'Power switch or paddle easy to hit without looking, from your normal standing position', why: 'In an actual emergency you will not have time to hunt for it.' }
                 ]
@@ -821,18 +864,43 @@
                 items: [
                     { id: 'blade-correct', label: 'Blade matches the cut you\'re about to make (rip, crosscut, or combination)', why: 'The wrong tooth geometry for the cut means more burning, more tearout, and more resistance — which itself raises kickback risk.' },
                     { id: 'blade-condition', label: 'Blade inspected — no missing carbide, no cracked plate, no heavy pitch buildup', why: 'A damaged or gummed-up blade cuts less predictably and needs more force to push through the material.' },
-                    { id: 'blade-rotation', label: 'Blade mounted with teeth pointing the correct rotation direction', why: 'Installed backward, a blade can still spin and even seem to cut — right up until it doesn\'t, violently.', danger: true },
-                    { id: 'blade-arbor', label: 'Arbor nut torqued snug, not overtightened, with the arbor flange seated flat against the blade', why: 'Overtightening can crack a blade plate; undertightening lets the blade walk on the arbor under load.' },
+                    { id: 'blade-rotation', label: 'Blade mounted with teeth pointing the correct rotation direction', why: 'Installed backward, a blade can still spin and even seem to cut — right up until it doesn\'t, violently.', danger: true,
+                      howTo: 'Look at the rotation arrow printed on the blade plate near the arbor hole — it should point the same direction the arbor actually spins (check the direction arrow on the blade guard or cast into the trunnion housing). As a physical check: at the top of the blade\'s arc, the front-facing edge of each tooth should angle so it cuts down into the material and toward the table, not up and away from it.' },
+                    { id: 'blade-arbor', label: 'Arbor nut torqued snug, not overtightened, with the arbor flange seated flat against the blade', why: 'Overtightening can crack a blade plate; undertightening lets the blade walk on the arbor under load.',
+                      howTo: 'Use the arbor wrench (or wrench pair) that came with the saw — firm hand-tool leverage, never a cheater bar or an impact driver. There\'s no universal torque spec across brands, so "snug with the correct wrench, no more" is the real standard here, not a number. Before you tighten, confirm the inner flange, blade, and outer flange are all seated flat against each other with no sawdust or debris trapped between them — that alone causes more blade wobble than a slightly loose nut does.' },
                     { id: 'blade-height', label: 'Blade height set for the material and technique you\'re using', why: 'Consistent, correct blade height affects both cut quality and how much of the blade is exposed above the work.' }
                 ]
             },
             {
                 title: 'Alignment & Calibration',
                 items: [
-                    { id: 'align-slot', label: 'Blade parallel to the miter slot, front to back (within about 0.005" with a dial indicator)', why: 'Everything else on this list is referenced off this one measurement — the most important single check on the saw.' },
-                    { id: 'align-fence', label: 'Fence parallel to the blade, or toed out very slightly at the back — never toed in', why: 'A fence toeing in pinches the workpiece against the blade right as it exits the cut. That\'s a direct, physical cause of kickback and burning, not a maybe.', danger: true },
-                    { id: 'align-tilt', label: 'Blade tilt stops accurate at both 90° and 45°, checked against the blade plate, not a tooth', why: 'Carbide teeth have inconsistent set — checking against one instead of the flat plate will lie to you.' },
-                    { id: 'align-knife', label: 'Riving knife coplanar with the blade — no visible side-to-side offset against a straightedge', why: 'A knife angled off to one side pushes cut stock sideways and can bind instead of preventing kickback.' }
+                    { id: 'align-slot', label: 'Blade parallel to the miter slot, front to back (within about 0.005" with a dial indicator)', why: 'Everything else on this list is referenced off this one measurement — the most important single check on the saw.',
+                      howTo: 'Clamp a scrap block in the miter slot with a point — a screw tip works fine — just touching a tooth at the front of the blade. Rotate the blade by hand so that same tooth is now at the back, and check the gap again. With a dial indicator, the reading should hold within about 0.005" front to back. With a feeler gauge, you\'re checking whether a given thickness just barely fits at one end and not the other. If it\'s off, loosen the trunnion bolts under the table (most contractor and cabinet saws adjust the trunnion, not the blade itself) and nudge until front and back match, then retorque.',
+                      tools: [
+                        { label: 'combination square', url: 'https://www.amazon.com/s?k=Starrett+combination+square&tag=kerphplans-20' },
+                        { label: 'feeler gauge set', url: 'https://www.amazon.com/s?k=feeler+gauge+set&tag=kerphplans-20' },
+                        { label: 'dial indicator with magnetic base', url: 'https://www.amazon.com/s?k=dial+test+indicator+magnetic+base&tag=kerphplans-20' }
+                      ],
+                      learnMore: { label: "Kerph's full table saw tune-up guide", url: 'garage-tips.html?article=6354a461-b433-46bf-9568-08d4bf62627a' } },
+                    { id: 'align-fence', label: 'Fence parallel to the blade, or toed out very slightly at the back — never toed in', why: 'A fence toeing in pinches the workpiece against the blade right as it exits the cut. That\'s a direct, physical cause of kickback and burning, not a maybe.', danger: true,
+                      howTo: 'Lock the fence at a set distance from the blade, then measure from the fence face to the miter slot at the front of the table, and again at the back, using the same square or indicator both times. The fence should read dead parallel, or toe out very slightly at the back — no more than about 0.010". Never toe in. Most fences have two adjustment screws where the head locks to the rail — loosen those, tap the fence until the reading\'s right, and retighten while holding position.',
+                      tools: [
+                        { label: 'combination square', url: 'https://www.amazon.com/s?k=Starrett+combination+square&tag=kerphplans-20' },
+                        { label: 'dial indicator with magnetic base', url: 'https://www.amazon.com/s?k=dial+test+indicator+magnetic+base&tag=kerphplans-20' }
+                      ],
+                      learnMore: { label: "Kerph's full table saw tune-up guide", url: 'garage-tips.html?article=6354a461-b433-46bf-9568-08d4bf62627a' } },
+                    { id: 'align-tilt', label: 'Blade tilt stops accurate at both 90° and 45°, checked against the blade plate, not a tooth', why: 'Carbide teeth have inconsistent set — checking against one instead of the flat plate will lie to you.',
+                      howTo: 'Raise the blade fully, set the tilt to 90°, and check square against the flat body of the blade plate — never a tooth. If there\'s a gap, adjust the 90° set screw (usually near the handwheel or under the table by the trunnion) until the square sits flush, lock it down, then repeat for the 45° stop. Don\'t just trust the number on the tilt scale afterward — make an actual test cut in scrap and measure the resulting angle before trusting either stop on a real project.',
+                      tools: [
+                        { label: 'combination square', url: 'https://www.amazon.com/s?k=Starrett+combination+square&tag=kerphplans-20' }
+                      ],
+                      learnMore: { label: "Kerph's full table saw tune-up guide", url: 'garage-tips.html?article=6354a461-b433-46bf-9568-08d4bf62627a' } },
+                    { id: 'align-knife', label: 'Riving knife coplanar with the blade — no visible side-to-side offset against a straightedge', why: 'A knife angled off to one side pushes cut stock sideways and can bind instead of preventing kickback.',
+                      howTo: 'Lay a straightedge across the blade and the riving knife at the same height, and sight down it for any visible offset side to side — the knife should sit dead in line with the blade, not canted one way. Most riving knives have a quick-release lever: loosen it, square the knife against the blade by eye or straightedge, and reseat before locking it back down.',
+                      tools: [
+                        { label: 'steel straightedge', url: 'https://www.amazon.com/s?k=steel+straightedge+ruler&tag=kerphplans-20' }
+                      ],
+                      learnMore: { label: "Kerph's full table saw tune-up guide", url: 'garage-tips.html?article=6354a461-b433-46bf-9568-08d4bf62627a' } }
                 ]
             },
             {
@@ -889,14 +957,35 @@
                 const catChecked = cat.items.filter(it => state[it.id]).length;
                 const itemsHtml = cat.items.map(item => {
                     const isChecked = !!state[item.id];
-                    return `
-                        <label class="checklist-item${isChecked ? ' checked' : ''}" data-item-id="${item.id}">
-                            <input type="checkbox" ${isChecked ? 'checked' : ''} data-item-id="${item.id}">
-                            <div class="checklist-item-text">
-                                <div class="checklist-item-label">${escapeHtml(item.label)}${item.danger ? '<span class="checklist-danger-tag">Kickback risk</span>' : ''}</div>
-                                <div class="checklist-item-why">${item.why}</div>
+                    const howToHtml = item.howTo ? `
+                        <details class="checklist-howto">
+                            <summary>How to check this</summary>
+                            <div class="checklist-howto-body">
+                                <div class="checklist-howto-steps">${item.howTo}</div>
+                                ${item.tools && item.tools.length ? `
+                                    <div class="checklist-howto-tools">
+                                        ${item.tools.map(t => `<a href="${t.url}" class="checklist-howto-tool-link" target="_blank" rel="noopener sponsored">${escapeHtml(t.label)}</a>`).join('')}
+                                    </div>
+                                ` : ''}
+                                ${item.learnMore ? `
+                                    <div class="checklist-howto-learnmore">
+                                        <a href="${item.learnMore.url}" target="_blank" rel="noopener">${escapeHtml(item.learnMore.label)} &rarr;</a>
+                                    </div>
+                                ` : ''}
                             </div>
-                        </label>
+                        </details>
+                    ` : '';
+                    return `
+                        <div class="checklist-item-wrap">
+                            <label class="checklist-item${isChecked ? ' checked' : ''}" data-item-id="${item.id}">
+                                <input type="checkbox" ${isChecked ? 'checked' : ''} data-item-id="${item.id}">
+                                <div class="checklist-item-text">
+                                    <div class="checklist-item-label">${escapeHtml(item.label)}${item.danger ? '<span class="checklist-danger-tag">Kickback risk</span>' : ''}</div>
+                                    <div class="checklist-item-why">${item.why}</div>
+                                </div>
+                            </label>
+                            ${howToHtml}
+                        </div>
                     `;
                 }).join('');
                 return `
