@@ -326,6 +326,14 @@
 
             <div class="admin-section">
                 <div class="admin-section-head">
+                    <div class="admin-section-title"><span class="emoji">&#128680;</span> Client Errors</div>
+                    <span class="admin-section-note" id="adminErrorCount">Last 30 days</span>
+                </div>
+                <div id="adminErrorList"></div>
+            </div>
+
+            <div class="admin-section">
+                <div class="admin-section-head">
                     <div class="admin-section-title"><span class="emoji">&#128101;</span> Active Users Per Day</div>
                     <span class="admin-section-note">Last 14 days &middot; distinct signed-in users, once per user per day</span>
                 </div>
@@ -822,14 +830,19 @@
                 });
             }
 
-            return { profiles, subs, events, cancellations };
+            const errors = [
+                { id: 'demo-err-1', message: "Uncaught TypeError: Cannot read properties of undefined (reading 'x')", stack: 'at handleDrag (workshop-planner.html:2201)', page_url: 'https://kerphplans.com/workshop-planner', user_agent: 'Demo/1.0', user_id: null, created_at: new Date(now - 2 * day).toISOString() },
+                { id: 'demo-err-2', message: "Uncaught NotFoundError: Failed to execute 'setPointerCapture' on 'Element'", stack: 'at onPointerDown (workshop-planner.html:1875)', page_url: 'https://kerphplans.com/workshop-planner', user_agent: 'Demo/1.0', user_id: null, created_at: new Date(now - 5 * day).toISOString() },
+            ];
+
+            return { profiles, subs, events, cancellations, errors };
         }
         function KERPH_referralPoolForDemo() {
             return ['Google / Search', 'Instagram', 'Facebook', 'YouTube', 'Pinterest', 'X (Twitter)', 'Word of mouth', 'Reddit', 'Woodworking forum', 'Other', 'Prefer not to say'];
         }
 
         async function loadAdminDashboard() {
-            let profiles, allSubs, events, cancellations;
+            let profiles, allSubs, events, cancellations, errors;
 
             if (DEMO_MODE) {
                 document.getElementById('adminDemoBanner').style.display = 'block';
@@ -838,15 +851,17 @@
                 allSubs = demo.subs;
                 events = demo.events;
                 cancellations = demo.cancellations;
+                errors = demo.errors;
             } else {
                 const since30 = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
-                const [profilesRes, subsRes, eventsRes, cancelRes] = await Promise.all([
+                const [profilesRes, subsRes, eventsRes, cancelRes, errorsRes] = await Promise.all([
                     kerphSupabase.from('profiles').select('id, username, referral_source'),
                     kerphSupabase.from('subscriptions').select('user_id, plan, status, created_at, updated_at').order('updated_at', { ascending: false }),
                     kerphSupabase.from('analytics_events').select('event_type, path, user_id, session_id, created_at').gte('created_at', since30),
-                    kerphSupabase.from('cancellation_events').select('id, user_id, plan, cancelled_at, winback_email_sent_at, winback_email_error').order('cancelled_at', { ascending: false })
+                    kerphSupabase.from('cancellation_events').select('id, user_id, plan, cancelled_at, winback_email_sent_at, winback_email_error').order('cancelled_at', { ascending: false }),
+                    kerphSupabase.from('client_errors').select('id, message, stack, page_url, user_agent, user_id, created_at').gte('created_at', since30).order('created_at', { ascending: false })
                 ]);
-                if (profilesRes.error || subsRes.error || eventsRes.error || cancelRes.error) {
+                if (profilesRes.error || subsRes.error || eventsRes.error || cancelRes.error || errorsRes.error) {
                     showToast('Could not load dashboard data.');
                     return;
                 }
@@ -854,6 +869,7 @@
                 allSubs = subsRes.data || [];
                 events = eventsRes.data || [];
                 cancellations = cancelRes.data || [];
+                errors = errorsRes.data || [];
             }
 
             const currentSubs = currentSubscriptionPerUser(allSubs);
@@ -861,12 +877,65 @@
             profiles.forEach(p => { profileById[p.id] = p; });
 
             renderTierStats(profiles.length, currentSubs);
+            renderErrorList(errors);
             renderActiveUsersChart(events);
             renderPageUsageTable(events);
             renderReferralStats(profiles);
             renderSubscriberDeltas(allSubs);
             renderSubscriberList(currentSubs, profileById);
             renderCancellationsList(cancellations, profileById);
+        }
+
+        // Client-side JS errors have been captured into client_errors since 2026-08-05 (see
+        // supabase-client.js's window.addEventListener('error'/'unhandledrejection', and the
+        // log-telemetry Edge Function) -- but nothing ever surfaced them anywhere, so real
+        // production errors were sitting in the table completely unseen. Grouped by message +
+        // page here (same identical bug firing repeatedly is extremely common -- e.g. one
+        // pointer-capture race can fire dozens of times in a single session) so one recurring
+        // bug shows as one row with a count, not a flood of duplicates burying everything else.
+        function renderErrorList(errors) {
+            const countEl = document.getElementById('adminErrorCount');
+            const wrap = document.getElementById('adminErrorList');
+            if (!errors || !errors.length) {
+                countEl.textContent = 'Last 30 days';
+                wrap.innerHTML = '<div class="admin-empty">No client errors in the last 30 days. 🎉</div>';
+                return;
+            }
+
+            const groups = {};
+            errors.forEach(e => {
+                const key = e.message + ' ' + e.page_url;
+                if (!groups[key]) groups[key] = { message: e.message, page_url: e.page_url, stack: e.stack, count: 0, lastSeen: e.created_at };
+                groups[key].count++;
+                if (e.created_at > groups[key].lastSeen) { groups[key].lastSeen = e.created_at; groups[key].stack = e.stack; }
+            });
+            const rows = Object.values(groups).sort((a, b) => b.count - a.count);
+            const SHOWN_CAP = 30;
+            const shown = rows.slice(0, SHOWN_CAP);
+
+            countEl.textContent = `${errors.length} event${errors.length === 1 ? '' : 's'}, ${rows.length} distinct · last 30 days`;
+
+            wrap.innerHTML = `
+                <table class="admin-table">
+                    <thead><tr><th>Error</th><th>Page</th><th class="num">Count</th><th>Last Seen</th></tr></thead>
+                    <tbody>
+                        ${shown.map(r => `
+                            <tr>
+                                <td style="max-width:360px;">
+                                    <details>
+                                        <summary style="cursor:pointer; font-weight:600;">${escapeHtml(r.message.length > 100 ? r.message.slice(0, 100) + '…' : r.message)}</summary>
+                                        <pre style="white-space:pre-wrap; word-break:break-word; font-size:11px; color:#6b7280; margin-top:6px; background:#f8fafc; border-radius:6px; padding:8px;">${escapeHtml(r.stack || 'No stack trace available.')}</pre>
+                                    </details>
+                                </td>
+                                <td style="max-width:220px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${escapeHtml(r.page_url || '')}">${escapeHtml(r.page_url || '—')}</td>
+                                <td class="num">${r.count}</td>
+                                <td>${new Date(r.lastSeen).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+                ${rows.length > SHOWN_CAP ? `<div style="font-size:11px; color:#9ca3af; margin-top:8px; text-align:center;">+ ${rows.length - SHOWN_CAP} more distinct error${rows.length - SHOWN_CAP === 1 ? '' : 's'} not shown — query client_errors directly for the full list.</div>` : ''}
+            `;
         }
 
         function renderReferralStats(profiles) {
