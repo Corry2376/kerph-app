@@ -33,7 +33,7 @@ jobs:
         # with an endpoint-resolution error. Bucket names must be listed explicitly instead.
         # Update this list if a new Storage bucket is ever added in supabase-client.js.
         run: |
-          for bucket in garage-tips-images portfolio-photos print-plans project-thumbnails showcase-photos; do
+          for bucket in garage-tips-images portfolio-photos print-plans print-plan-previews project-thumbnails showcase-photos; do
             echo "Syncing bucket: $bucket"
             rclone sync "supabasestorage:$bucket" "b2remote:${{ secrets.B2_BUCKET_NAME }}/storage/$bucket/" --checksum
           done
