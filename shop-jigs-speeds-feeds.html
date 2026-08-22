@@ -426,14 +426,7 @@
             <div class="sf-table-wrap" style="margin-top:18px;">
                 <table class="sf-table">
                     <thead><tr><th>Cutter diameter</th><th>Max RPM</th></tr></thead>
-                    <tbody>
-                        <tr><td>Up to 1"</td><td class="num">24,000</td></tr>
-                        <tr><td>1" &ndash; 2"</td><td class="num">18,000</td></tr>
-                        <tr><td>2" &ndash; 2&frac12;"</td><td class="num">16,000</td></tr>
-                        <tr><td>2&frac12;" &ndash; 3&frac14;"</td><td class="num">14,000</td></tr>
-                        <tr><td>3&frac14;" &ndash; 4"</td><td class="num">12,000</td></tr>
-                        <tr><td>Over 4" (up to 5")</td><td class="num">10,000</td></tr>
-                    </tbody>
+                    <tbody id="sfRpmTableBody"></tbody>
                 </table>
             </div>
         </div>
@@ -845,6 +838,29 @@
         function getUnitSystem() { return localStorage.getItem('kerphUnitSystem') || 'imperial'; }
         function mmToIn(mm) { return mm / 25.4; }
 
+        // Fraction text (2½", 3¼") only applies to this table's own two fractional
+        // inch thresholds -- not a general-purpose formatter.
+        function fmtInchBoundary(inches) {
+            if (inches === 2.5) return '2&frac12;';
+            if (inches === 3.25) return '3&frac14;';
+            return String(inches);
+        }
+        function renderRouterRpmTable() {
+            const metric = getUnitSystem() === 'metric';
+            const unit = metric ? 'mm' : '"';
+            const label = (inches) => metric ? `${Math.round(inches * 25.4)}${unit}` : `${fmtInchBoundary(inches)}${unit}`;
+            let rows = '';
+            ROUTER_RPM_TABLE.forEach((row, i) => {
+                const prev = i === 0 ? null : ROUTER_RPM_TABLE[i - 1].max;
+                let rangeLabel;
+                if (i === 0) rangeLabel = `Up to ${label(row.max)}`;
+                else if (i === ROUTER_RPM_TABLE.length - 1) rangeLabel = `Over ${label(prev)} (up to ${label(row.max)})`;
+                else rangeLabel = `${label(prev)} &ndash; ${label(row.max)}`;
+                rows += `<tr><td>${rangeLabel}</td><td class="num">${row.rpm.toLocaleString()}</td></tr>`;
+            });
+            document.getElementById('sfRpmTableBody').innerHTML = rows;
+        }
+
         // ROUTER_RPM_TABLE thresholds stay canonical inches -- a metric diameter
         // is converted before the lookup rather than duplicating the table.
         function runRouterRpm() {
@@ -912,6 +928,7 @@
                 ? 'RPM = (surface speed &times; 1000) &divide; (&pi; &times; diameter). Pick a material for a typical starting surface speed (m/min), or type your own — then dial in whatever your machine\'s closest step-pulley or VFD setting is.'
                 : 'RPM = (surface speed &times; 12) &divide; (&pi; &times; diameter). Pick a material for a typical starting surface speed (SFM), or type your own — then dial in whatever your machine\'s closest step-pulley or VFD setting is.';
 
+            renderRouterRpmTable();
             runRouterRpm();
             runDrillRpm();
         }
