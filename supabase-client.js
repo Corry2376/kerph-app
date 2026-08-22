@@ -770,6 +770,52 @@
     }
     kerphInjectPreferredBrandField();
 
+    // Same retrofit approach again -- index.html has its own native "Tool Maintenance
+    // Reminders" checkbox (#accountRemindersCheckbox) wired into its own Save button, batch-
+    // saved with the rest of the form. The ~27 other pages' account modal copies never had
+    // this checkbox added at all, so the preference was only ever editable from the home
+    // page's account modal even though the backend field (maintenance_reminders_enabled) is
+    // fully live and drives real reminder behavior everywhere else. Guarded on the same ID so
+    // this is a no-op on index.html. Unlike the other injected fields, this one saves itself
+    // immediately on change rather than waiting on a Save button click, since the other pages'
+    // own save handlers have no idea this field exists and can't be taught to include it
+    // without hand-editing all 27 of them -- exactly the duplication this is working around.
+    function kerphInjectRemindersCheckbox() {
+        const unitsSelect = document.getElementById('accountUnitsSelect');
+        if (!unitsSelect || document.getElementById('accountRemindersCheckbox')) return;
+        const unitsWrapper = unitsSelect.closest('.header-field');
+        if (!unitsWrapper || !unitsWrapper.parentNode) return;
+        const wrapper = document.createElement('div');
+        wrapper.className = 'header-field';
+        wrapper.style.cssText = 'width:100%; margin-top:10px;';
+        wrapper.innerHTML = `
+            <label style="display:flex; align-items:center; gap:8px; cursor:pointer;" for="accountRemindersCheckbox">
+                <input type="checkbox" id="accountRemindersCheckbox" style="width:16px; height:16px; flex:none;">
+                <span class="header-field-label" style="margin:0;">Tool Maintenance Reminders</span>
+            </label>
+        `;
+        unitsWrapper.parentNode.insertBefore(wrapper, unitsWrapper.nextSibling);
+
+        const checkbox = document.getElementById('accountRemindersCheckbox');
+        checkbox.addEventListener('change', async () => {
+            const wasChecked = checkbox.checked;
+            const { error } = await kerphSaveProfile({ maintenanceRemindersEnabled: wasChecked });
+            if (error) checkbox.checked = !wasChecked; // revert the toggle if the save failed
+        });
+
+        // The other injected fields above are static once inserted, but this one needs its
+        // checked state refreshed every time the modal opens (same as every native field the
+        // page's own initAccountPanel() already re-syncs on open) -- adding a second listener
+        // on the account button rather than touching each page's own open handler.
+        const accountBtn = document.getElementById('accountBtn');
+        if (accountBtn) {
+            accountBtn.addEventListener('click', () => {
+                checkbox.checked = !!kerphGetCachedProfile().maintenanceRemindersEnabled;
+            });
+        }
+    }
+    kerphInjectRemindersCheckbox();
+
     // A visible X in the corner, same as the sign-up modal already has -- the account modal
     // only ever had its "Close"/"Cancel" button at the very bottom, past stats/plan/saved-
     // layouts/danger-zone content on a modal tall enough to scroll, so closing it meant
