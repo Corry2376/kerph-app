@@ -14980,7 +14980,15 @@
                     // Height is asked for in a popup rather than baked into the placement
                     // fields, so it's captured right at the moment/location an outlet is
                     // actually being placed. Placement doesn't finalize until confirmed there.
-                    openOutletHeightModal({ type, placeX, placeY, angle: clamped.angle, lengthFt, thicknessFt, label, voltage, widthIn });
+                    // segA/segB/x/y (not just angle) are carried along too -- the confirm
+                    // handler passes this whole object straight into resolveWallFeatureSpot()
+                    // if the chosen height turns out to conflict with something already on the
+                    // wall, and that function reads clamped.segA/segB/x/y directly. Dropping
+                    // them here was a real bug: a signed-in user hit it 10 times in one session
+                    // on 2026-08-14 (a TypeError reading .x off undefined), because nothing on
+                    // the wall was placed near this outlet until the height picked in the modal
+                    // created a real conflict for the first time.
+                    openOutletHeightModal({ type, placeX, placeY, x: clamped.x, y: clamped.y, angle: clamped.angle, segA: clamped.segA, segB: clamped.segB, lengthFt, thicknessFt, label, voltage, widthIn });
                     return;
                 }
 
