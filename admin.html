@@ -904,7 +904,7 @@
 
             const groups = {};
             errors.forEach(e => {
-                const key = e.message + ' ' + e.page_url;
+                const key = e.message + ' ' + e.page_url;
                 if (!groups[key]) groups[key] = { message: e.message, page_url: e.page_url, stack: e.stack, count: 0, lastSeen: e.created_at };
                 groups[key].count++;
                 if (e.created_at > groups[key].lastSeen) { groups[key].lastSeen = e.created_at; groups[key].stack = e.stack; }
