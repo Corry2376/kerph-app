@@ -684,9 +684,13 @@
         // to check out against a null/missing variant rather than silently falling back to
         // the monthly price, in case a tier's annual variant is ever unset again later.
         const LS_STORE_SLUG = 'kerphplans';
+        // Rebuilt 2026-08-23 -- Lemon Squeezy pulled the original products/variants (store-side,
+        // not a Kerph bug); these are the new IDs from the recreated Kerph Pro / Kerph Premier
+        // products. Matching Supabase secrets (LEMON_SQUEEZY_*_VARIANT_ID) updated to the same
+        // new variant IDs -- see supabase/functions/lemon-squeezy-webhook.
         const LS_CHECKOUT = {
-            pro: { productUuid: '0922ac82-41dc-4655-917b-5d54aae8f5b3', monthly: '1956245', annual: '1956244' },
-            premier: { productUuid: 'c7026ad4-b170-4cea-956c-9d25576adccd', monthly: '1956259', annual: '1956248' }
+            pro: { productUuid: '86d626aa-2568-4a5a-90b6-f1a8d88aa966', monthly: '2045412', annual: '2045408' },
+            premier: { productUuid: '912055cc-478a-41bd-8ef6-2ecfa262f86f', monthly: '2045414', annual: '2045416' }
         };
 
         // Introductory discount codes — set the `code` values once the matching discount is
@@ -756,7 +760,7 @@
         // billed automatically via the Edge Function's Lemon Squeezy API quantity update, no
         // repeat checkout needed. Same productUuid as Premier since the "Extra Seats" variant
         // lives under the Premier product in the LS dashboard, not a separate product.
-        const LS_EXTRA_SEAT_CHECKOUT = { productUuid: LS_CHECKOUT.premier.productUuid, variantId: '1260686' };
+        const LS_EXTRA_SEAT_CHECKOUT = { productUuid: LS_CHECKOUT.premier.productUuid, variantId: '2045418' };
         function launchExtraSeatsCheckout(quantity) {
             const user = (typeof kerphGetCachedUser === 'function') ? kerphGetCachedUser() : null;
             if (!user) { showToast('Sign in first.'); return; }
