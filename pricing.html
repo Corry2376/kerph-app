@@ -724,6 +724,32 @@
             banner.style.display = 'block';
             banner.textContent = `\u{1F389} Intro offer: ${m.percent}% off your first ${m.months} months on monthly, or ${a.percent}% off your first year on annual — applied automatically at checkout.`;
         }
+        // Url.Open() was being called with no LemonSqueezy.Setup() ever having run — the
+        // overlay opened fine, but Lemon.js had no registered eventHandler to tell it (or us)
+        // the checkout closed, succeeded, or was cancelled. Setup() is what actually wires up
+        // Lemon.js's own overlay lifecycle management; calling Url.Open() without it first is
+        // unsupported usage and is the most likely cause of a checkout overlay getting stuck
+        // open/unresponsive after a decline or an interrupted attempt (e.g. toggling Lemon
+        // Squeezy test mode mid-checkout). Guarded with a flag since Setup() should only run
+        // once per page load, called lazily right before the first checkout open — same point
+        // that already guarantees window.LemonSqueezy has finished loading.
+        let lemonSqueezySetupDone = false;
+        function ensureLemonSqueezySetup() {
+            if (lemonSqueezySetupDone || !window.LemonSqueezy || !window.LemonSqueezy.Setup) return;
+            window.LemonSqueezy.Setup({
+                eventHandler: (event) => {
+                    if (event && event.event === 'Checkout.Success') {
+                        showToast('Purchase complete! Refreshing your plan — this can take a few seconds.');
+                        // The webhook that actually writes the real subscription row runs
+                        // async, separate from this client-side success event, so there's a
+                        // real (if short) window where reloading immediately would still show
+                        // the old plan. A few seconds covers it without a manual polling loop.
+                        setTimeout(() => window.location.reload(), 3000);
+                    }
+                }
+            });
+            lemonSqueezySetupDone = true;
+        }
         function launchLemonSqueezyCheckout(tier) {
             const user = (typeof kerphGetCachedUser === 'function') ? kerphGetCachedUser() : null;
             if (!user) {
@@ -745,6 +771,7 @@
             if (introCode) params.set('checkout[discount_code]', introCode);
             const checkoutUrl = `https://${LS_STORE_SLUG}.lemonsqueezy.com/checkout/buy/${checkout.productUuid}?${params.toString()}`;
             if (window.LemonSqueezy && window.LemonSqueezy.Url) {
+                ensureLemonSqueezySetup();
                 window.LemonSqueezy.Url.Open(checkoutUrl);
             } else {
                 // Lemon.js hasn't finished loading yet (it's a deferred script) — a plain
@@ -774,7 +801,7 @@
             params.set('checkout[email]', user.email || '');
             params.set('checkout[custom][user_id]', user.id);
             const checkoutUrl = `https://${LS_STORE_SLUG}.lemonsqueezy.com/checkout/buy/${LS_EXTRA_SEAT_CHECKOUT.productUuid}?${params.toString()}`;
-            if (window.LemonSqueezy && window.LemonSqueezy.Url) window.LemonSqueezy.Url.Open(checkoutUrl);
+            if (window.LemonSqueezy && window.LemonSqueezy.Url) { ensureLemonSqueezySetup(); window.LemonSqueezy.Url.Open(checkoutUrl); }
             else window.location.href = checkoutUrl;
         }
 
