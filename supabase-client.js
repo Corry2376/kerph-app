@@ -838,6 +838,38 @@
     }
     kerphInjectAccountCloseButton();
 
+    // Same root cause already fixed once on quote-builder.html's 3 modals (see that commit's
+    // message): a .modal-overlay never locked the page's own scroll while open, so a wheel/
+    // trackpad scroll over the modal scrolled #canvas-area or the page behind it instead of
+    // the modal's own scrollable content -- not a z-index bug, a missing scroll-lock. Since
+    // the Account Settings modal is duplicated across ~28 pages with no shared include (see
+    // the injector functions above), fixing it here once via a MutationObserver covers every
+    // page's copy -- and every OTHER .modal-overlay on every page, current or future -- without
+    // hand-editing any of them individually.
+    (function () {
+        const scrollTargets = [document.body, document.getElementById('canvas-area')].filter(Boolean);
+        function anyModalOpen() {
+            return [...document.querySelectorAll('.modal-overlay')].some(el => getComputedStyle(el).display !== 'none');
+        }
+        function syncScrollLock() {
+            const locked = anyModalOpen();
+            scrollTargets.forEach(el => { el.style.overflow = locked ? 'hidden' : ''; });
+        }
+        function observeAllModals() {
+            document.querySelectorAll('.modal-overlay').forEach(el => {
+                if (el.dataset.kerphScrollLockObserved) return;
+                el.dataset.kerphScrollLockObserved = 'true';
+                new MutationObserver(syncScrollLock).observe(el, { attributes: true, attributeFilter: ['style'] });
+            });
+            syncScrollLock();
+        }
+        observeAllModals();
+        // A page's own modals are static markup present at load, but this file's own injected
+        // pieces (close button, etc.) run around the same time -- re-scanning after DOMContentLoaded
+        // catches any .modal-overlay added slightly later without needing this to run last.
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', observeAllModals);
+    })();
+
     // These fire on document, so they always run *after* each page's own click handler
     // bound directly to the button (target-phase listeners fire before the event bubbles
     // up to document) -- by the time these run, the modal is already open/populated or
