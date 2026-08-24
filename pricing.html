@@ -767,7 +767,14 @@
                 return;
             }
             const params = new URLSearchParams();
-            params.set('enabled', variantId);
+            // Passing both variant IDs (comma-separated) instead of just the one matching this
+            // page's current billing-cycle toggle makes Lemon Squeezy render a real Monthly/
+            // Annual picker inside its own checkout -- confirmed live. Without this, whichever
+            // variant matched the toggle at click time was final; there was no way to change it
+            // once the modal opened. `enabled` still takes a single value as first/pre-selected,
+            // so this page's toggle still controls which one shows selected by default.
+            const otherVariantId = billingCycle === 'annual' ? checkout.monthly : checkout.annual;
+            params.set('enabled', otherVariantId ? `${variantId},${otherVariantId}` : variantId);
             params.set('checkout[email]', user.email || '');
             params.set('checkout[custom][user_id]', user.id);
             const introCode = urlPromoCode || KERPH_INTRO_DISCOUNT[billingCycle].code;
