@@ -558,7 +558,7 @@
             </div>
             <div class="pricing-card tier-pro" data-tier="pro">
                 <div class="pricing-plan-name">Pro</div>
-                <div class="pricing-price" data-monthly="10" data-annual="8">$10<span class="period">/mo</span></div>
+                <div class="pricing-price" data-monthly="9" data-annual="7">$9<span class="period">/mo</span></div>
                 <div class="pricing-annual-note"></div>
                 <div class="pricing-blurb">Everything in Free, plus custom shop shapes, unlimited saved layouts, clean unwatermarked exports, full Project Designer access with 5 saved projects, the 3D Shop Viewer, and your project Portfolio.</div>
                 <button type="button" class="mini-btn pricing-cta" data-tier-btn="pro">Preview Pro</button>
@@ -651,7 +651,7 @@
 
                     <tr class="section-row"><td colspan="4">Account</td></tr>
                     <tr class="feature-row"><td>Team seats</td><td class="plan-cell dash">&mdash;</td><td class="plan-cell">2, then $7/mo each additional</td><td class="plan-cell">4, then $7/mo each additional</td></tr>
-                    <tr class="feature-row"><td>Price</td><td class="plan-cell">$0</td><td class="plan-cell">$10/mo<div style="font-size:10.5px; color:#9ca3af; font-weight:600;">$8/mo billed annually</div></td><td class="plan-cell">$19/mo<div style="font-size:10.5px; color:#9ca3af; font-weight:600;">$17/mo billed annually</div></td></tr>
+                    <tr class="feature-row"><td>Price</td><td class="plan-cell">$0</td><td class="plan-cell">$9/mo<div style="font-size:10.5px; color:#9ca3af; font-weight:600;">$7/mo billed annually</div></td><td class="plan-cell">$19/mo<div style="font-size:10.5px; color:#9ca3af; font-weight:600;">$17/mo billed annually</div></td></tr>
                 </tbody>
             </table>
             <div class="pricing-footnote">Pro and Premier checkout above is real (Lemon Squeezy) and feature access is enforced against your actual subscription once you're signed in. Team seat invites are managed from the panel below once you're on a real Pro or Premier subscription.</div>
@@ -684,13 +684,16 @@
         // to check out against a null/missing variant rather than silently falling back to
         // the monthly price, in case a tier's annual variant is ever unset again later.
         const LS_STORE_SLUG = 'kerphplans';
-        // Rebuilt 2026-08-23 -- Lemon Squeezy pulled the original products/variants (store-side,
-        // not a Kerph bug); these are the new IDs from the recreated Kerph Pro / Kerph Premier
-        // products. Matching Supabase secrets (LEMON_SQUEEZY_*_VARIANT_ID) updated to the same
-        // new variant IDs -- see supabase/functions/lemon-squeezy-webhook.
+        // Re-verified 2026-08-24 against Lemon Squeezy's Products list directly ("Pro Tier
+        // Subscription" / "Premier Tier Subscription" / "Individual Add-On Users") after the
+        // account's decline->approval cycle appears to have restored pre-wipe state -- these
+        // product UUIDs came from each product's own Share panel (confirmed live/working),
+        // paired with variant IDs pulled the same way. Matching Supabase secrets
+        // (LEMON_SQUEEZY_*_VARIANT_ID) updated to the same variant IDs -- see
+        // supabase/functions/lemon-squeezy-webhook.
         const LS_CHECKOUT = {
-            pro: { productUuid: '86d626aa-2568-4a5a-90b6-f1a8d88aa966', monthly: '2045412', annual: '2045408' },
-            premier: { productUuid: '912055cc-478a-41bd-8ef6-2ecfa262f86f', monthly: '2045414', annual: '2045416' }
+            pro: { productUuid: '18959ec0-b452-437d-bdd7-c623efc56f25', monthly: '1956245', annual: '1956244' },
+            premier: { productUuid: 'b233724c-e233-46cb-8761-a771f256cf6b', monthly: '1956259', annual: '1956248' }
         };
 
         // Introductory discount codes — set the `code` values once the matching discount is
@@ -785,9 +788,10 @@
         // invite/remove) reports requiresCheckout: true when this is needed — see
         // handleTeamSyncResult() below. Every seat added *after* this checkout completes is
         // billed automatically via the Edge Function's Lemon Squeezy API quantity update, no
-        // repeat checkout needed. Same productUuid as Premier since the "Extra Seats" variant
-        // lives under the Premier product in the LS dashboard, not a separate product.
-        const LS_EXTRA_SEAT_CHECKOUT = { productUuid: LS_CHECKOUT.premier.productUuid, variantId: '2045418' };
+        // repeat checkout needed. As of the 2026-08-24 re-verification this is its own
+        // standalone product ("Individual Add-On Users"), not a variant nested under Premier
+        // like the original setup -- it has its own productUuid now, not Premier's.
+        const LS_EXTRA_SEAT_CHECKOUT = { productUuid: 'd2a51882-a3f3-4575-a978-598b0e0ee87c', variantId: '1970654' };
         function launchExtraSeatsCheckout(quantity) {
             const user = (typeof kerphGetCachedUser === 'function') ? kerphGetCachedUser() : null;
             if (!user) { showToast('Sign in first.'); return; }
