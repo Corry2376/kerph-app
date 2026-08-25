@@ -1175,6 +1175,21 @@
     const kerphUpdateSavedProject = savedProjectsDomain.update;
     const kerphDeleteSavedProject = savedProjectsDomain.del;
 
+    // ---------- Cut List Optimizer: saved parts lists ----------
+    // Same shape/pattern as saved_projects above, minus share_token -- sharing a parts list
+    // was never requested, so that column doesn't exist on this table at all (see
+    // sql/saved-cut-lists.sql) rather than carrying an always-null field.
+    function rowToSavedCutList(row) {
+        return { id: row.id, name: row.name, parts: row.data.parts || [], savedAt: row.updated_at };
+    }
+    const savedCutListsDomain = makeNamedSaveDomain('saved_cut_lists', rowToSavedCutList, (list) => ({
+        name: list.name, data: { parts: list.parts }
+    }));
+    const kerphLoadSavedCutLists = savedCutListsDomain.load;
+    const kerphInsertSavedCutList = savedCutListsDomain.insert;
+    const kerphUpdateSavedCutList = savedCutListsDomain.update;
+    const kerphDeleteSavedCutList = savedCutListsDomain.del;
+
     /* ---------- My Workbench: running to-do list ----------
        Real per-row table (sql/todos.sql), not a singleton blob -- deliberately, given this
        session's whole conversation about that pattern's fragility. Each item can optionally
@@ -2174,6 +2189,10 @@
     window.kerphInsertSavedProject = kerphInsertSavedProject;
     window.kerphUpdateSavedProject = kerphUpdateSavedProject;
     window.kerphDeleteSavedProject = kerphDeleteSavedProject;
+    window.kerphLoadSavedCutLists = kerphLoadSavedCutLists;
+    window.kerphInsertSavedCutList = kerphInsertSavedCutList;
+    window.kerphUpdateSavedCutList = kerphUpdateSavedCutList;
+    window.kerphDeleteSavedCutList = kerphDeleteSavedCutList;
     window.kerphLoadTodos = kerphLoadTodos;
     window.kerphCreateTodo = kerphCreateTodo;
     window.kerphUpdateTodo = kerphUpdateTodo;
