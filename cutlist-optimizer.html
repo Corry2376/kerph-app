@@ -282,16 +282,19 @@
         }
         .mini-btn.danger:hover { background-color: #fef2f2; border-color: #b91c1c; }
 
-        /* One row, always -- every button divides the row evenly (flex:1) and truncates its
-           own label instead of wrapping, so 4 buttons of different natural widths (a longer
-           "Send to Project Designer →" next to short ones) still land as a single clean row
-           instead of 3-then-1. Lives in the main content area, above the diagrams/empty state,
-           not the left sidebar -- these are actions on the RESULT, not part-entry fields. */
-        .cutlist-toolbar { display: flex; flex-wrap: nowrap; gap: 8px; margin-bottom: 16px; }
-        .cutlist-toolbar > button {
-            flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-            margin: 0; width: auto;
+        /* A small, quiet utility row, NOT a big equal-width 4-button band spanning the page --
+           lives in the main content area above the diagrams/empty state (these are actions on
+           the RESULT, not part-entry fields, so they don't belong in the left sidebar form),
+           but sized to its own content and right-aligned rather than stretched full-width.
+           Saved Parts Lists is the one meant to stand out (it opens the actual full side
+           panel); the other three are deliberately quieter/smaller next to it. */
+        .cutlist-toolbar { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; margin-bottom: 16px; }
+        .cutlist-toolbar .quiet-btn {
+            flex: none; padding: 6px 11px; font-size: 11.5px; font-weight: 600;
+            border: 1px solid #e2e8f0; border-radius: 6px; background-color: #f8fafc;
+            color: #64748b; cursor: pointer; white-space: nowrap;
         }
+        .cutlist-toolbar .quiet-btn:hover { background-color: #eef2ff; border-color: #cbd5e1; color: #1e3a8a; }
 
         .input-box { width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; font-weight: 600; }
         .select-box { width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; font-weight: 600; background: #f8fafc; }
@@ -331,15 +334,20 @@
 
         /* Docked to the right instead of centered -- a real modal-overlay backdrop (click
            outside to close, same as every other modal here) but the box itself is a full-height
-           panel flush against the right edge, sliding in, matching the "modal out to the right"
-           request instead of the standard centered dialog every other modal in this file uses. */
+           panel flush against the right edge, matching the "modal out to the right" request
+           instead of the standard centered dialog every other modal in this file uses. No
+           slide-in transform/animation -- a first attempt at one left the panel permanently
+           stuck at its own off-screen starting transform (verified: still translateX(100%) of
+           its own width hundreds of ms after opening, not just a slow transition), which is
+           exactly why this panel never actually appeared correctly. Every other modal in this
+           file is a plain instant show/hide with no animation; matching that is what's
+           actually reliable. */
         .side-modal-overlay { justify-content: flex-end; align-items: stretch; }
         .side-modal-box {
-            width: 380px; max-width: 92vw; height: 100%; border-radius: 0;
+            width: 480px; max-width: 92vw; height: 100%; border-radius: 0; padding: 28px 30px;
             display: flex; flex-direction: column; box-shadow: -25px 0 50px -12px rgba(0, 0, 0, 0.4);
-            animation: sideModalSlideIn 0.18s ease-out;
         }
-        @keyframes sideModalSlideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+        #savedCutListsOverlay .modal-title { font-size: 20px; margin-bottom: 4px; }
         .saved-cutlist-count { font-size: 11.5px; color: #6b7280; font-weight: 700; margin-bottom: 10px; }
         .saved-cutlist-list { flex: 1; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 14px; }
         .saved-cutlist-item { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-bottom: 1px solid #f1f5f9; }
@@ -541,9 +549,13 @@
             line-height: 1.6;
         }
 
+        /* A fixed 3-column grid orphaned a 4th card (Total Parts/Sheets/Boards/Offcuts, or a
+           5th once Cost is also shown) onto its own row by itself every time. auto-fit sizes
+           columns to however many cards actually exist and spreads them across one row
+           instead of assuming a fixed count. */
         .preview-summary-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
             gap: 16px;
             margin-bottom: 24px;
         }
@@ -1059,10 +1071,10 @@
 
     <div id="canvas-area">
         <div class="cutlist-toolbar" id="cutlistToolbar">
-            <button type="button" id="optimizeBtn" class="new-layout-btn">Optimize Cut List</button>
-            <button type="button" id="exportPdfBtnTop" class="mini-btn">&#128196; Export PDF</button>
-            <button type="button" id="sendToProjectDesignerBtn" class="mini-btn">Send to Project Designer &rarr;</button>
-            <button type="button" id="openSavedCutListsBtn" class="mini-btn">&#128190; Saved Parts Lists</button>
+            <button type="button" id="optimizeBtn" class="quiet-btn" style="background-color:#1e3a8a; border-color:#1e3a8a; color:#ffffff;">Optimize Cut List</button>
+            <button type="button" id="exportPdfBtnTop" class="quiet-btn">&#128196; Export PDF</button>
+            <button type="button" id="sendToProjectDesignerBtn" class="quiet-btn">Send to Project Designer</button>
+            <button type="button" id="openSavedCutListsBtn" class="quiet-btn" style="font-weight:800; color:#1e3a8a; border-color:#93a5d8;">&#128190; Saved Parts Lists</button>
         </div>
 
         <div class="placeholder-box" id="emptyOptimizerState">
