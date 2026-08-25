@@ -332,31 +332,27 @@
         .account-layout-item:last-child { border-bottom: none; }
         .account-layout-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 700; color: #1e293b; }
 
-        /* A real persistent panel on the right, not a popup -- same "always there" treatment
-           as #sidebar-panel on the left, mirrored. Not a modal at all: no overlay/backdrop, no
-           open/close click handlers, nothing to trigger -- it's just always visible so you can
-           see every saved list, and clicking one loads it directly. #canvas-area's own width
-           is narrowed to leave room for it (see that rule). */
+        /* A real persistent panel on the right, not a popup -- always visible, no overlay, no
+           open/close trigger. Styled as a genuine card (white surface, border, radius, shadow)
+           matching #quoteDashboardPanel on quote-builder.html and every modal-box on this site,
+           rather than a flush-to-the-edge sidebar strip -- that's the "same feel and look as
+           the modal on the main page / quote builder page" this was asked to match. List rows
+           reuse .panel-item/.panel-item-title/.panel-item-dims verbatim, the same classes this
+           page's own Parts list (renderPartList) already uses, instead of inventing a separate
+           set of near-duplicate classes for what's visually the same kind of row. #canvas-area's
+           width is narrowed to leave room for it (see that rule). */
         #savedListsPanel {
-            position: absolute; top: 150px; right: 0; width: 300px; height: calc(100vh - 150px);
+            position: absolute; top: 170px; right: 20px; bottom: 20px; width: 300px;
             background-color: #ffffff;
-            background-image: radial-gradient(circle at 1px 1px, rgba(15, 23, 42, 0.06) 1px, transparent 0);
-            background-size: 16px 16px;
-            border-left: 1px solid #cbd5e1;
-            padding: 20px; overflow-y: auto;
+            border: 1px solid #cbd5e1;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05), 0 4px 10px -4px rgba(15, 23, 42, 0.12);
+            overflow-y: auto;
             display: flex; flex-direction: column;
         }
-        .saved-cutlist-count { font-size: 11.5px; color: #6b7280; font-weight: 700; margin-bottom: 10px; }
-        .saved-cutlist-list { flex: 1; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 14px; }
-        .saved-cutlist-item {
-            display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-bottom: 1px solid #f1f5f9;
-            cursor: pointer;
-        }
-        .saved-cutlist-item:last-child { border-bottom: none; }
-        .saved-cutlist-item:hover { background-color: #eef2ff; }
-        .saved-cutlist-info { flex: 1; min-width: 0; }
-        .saved-cutlist-name { font-weight: 700; color: #1e293b; font-size: 12.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .saved-cutlist-meta { font-size: 10.5px; color: #9ca3af; margin-top: 1px; }
+        .saved-cutlist-list { flex: 1; }
+        .saved-cutlist-num { font-variant-numeric: tabular-nums; color: #94a3b8; font-weight: 700; margin-right: 4px; }
         .saved-cutlist-empty { padding: 20px 12px; text-align: center; font-size: 12px; color: #9ca3af; font-style: italic; }
         .saved-cutlist-save-row { display: flex; gap: 8px; padding-top: 14px; border-top: 1px solid #e2e8f0; }
         .saved-cutlist-limit-note { font-size: 11px; color: #92400e; background: #fffbeb; border: 1px solid #fde68a; border-radius: 6px; padding: 8px 10px; margin-top: 8px; }
@@ -1087,8 +1083,8 @@
     </div>
 
     <div id="savedListsPanel">
-        <div class="sidebar-title">Saved Parts Lists</div>
-        <div class="saved-cutlist-count" id="savedCutListsCount"></div>
+        <div style="font-size:15px; font-weight:800; color:#0f172a; margin-bottom:4px;">Saved Parts Lists</div>
+        <div style="font-size:12px; color:#6b7280; line-height:1.5; margin-bottom:14px;">Click any list below to open it.</div>
         <div class="saved-cutlist-list" id="savedCutListsList"></div>
         <div class="saved-cutlist-save-row">
             <input type="text" class="input-box" id="saveCutListNameInput" placeholder="Name this list&hellip;">
@@ -1837,26 +1833,29 @@
 
         function renderSavedCutListsPanel() {
             const max = getMaxSavedCutLists();
-            document.getElementById('savedCutListsCount').textContent = `${cachedSavedCutLists.length} of ${max} saved`;
 
             const listEl = document.getElementById('savedCutListsList');
             if (!cachedSavedCutLists.length) {
                 listEl.innerHTML = '<div class="saved-cutlist-empty">No saved parts lists yet.</div>';
             } else {
-                // The whole row is the "open it to work on it" affordance (click anywhere ->
-                // load), not a separate Load button -- this is a persistent always-there panel
-                // now, not a modal you opened specifically to pick one. Delete stays a small
-                // dedicated control so it doesn't compete with the row's own click target.
-                listEl.innerHTML = cachedSavedCutLists.map(l => {
+                // Same row structure as this page's own Parts list (renderPartList) and
+                // quote-builder.html's Your Quotes dashboard -- .panel-item/-title/-dims/
+                // -actions, an explicit Open button rather than a whole-row click target,
+                // for the same reason quote-builder does it that way: consistent, and no risk
+                // of an accidental click near a row's edge loading the wrong list. A running
+                // number replaces a "2 of 25" count that added little once each item is
+                // already a numbered, visibly-countable list.
+                listEl.innerHTML = cachedSavedCutLists.map((l, i) => {
                     const partCount = (l.parts || []).reduce((sum, p) => sum + (p.qty || 1), 0);
                     const savedDate = l.savedAt ? new Date(l.savedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : '';
                     return `
-                        <div class="saved-cutlist-item" data-load-id="${l.id}" title="Click to open this list">
-                            <div class="saved-cutlist-info">
-                                <div class="saved-cutlist-name" title="${escapeHtml(l.name)}">${escapeHtml(l.name)}</div>
-                                <div class="saved-cutlist-meta">${partCount} part${partCount === 1 ? '' : 's'} &middot; ${savedDate}</div>
+                        <div class="panel-item saved-cutlist-item">
+                            <div class="panel-item-title"><span class="saved-cutlist-num">${i + 1}.</span>${escapeHtml(l.name)}</div>
+                            <div class="panel-item-dims">${partCount} part${partCount === 1 ? '' : 's'} &middot; ${savedDate}</div>
+                            <div class="panel-item-actions">
+                                <button type="button" class="mini-btn" data-load-id="${l.id}">Open</button>
+                                <button type="button" class="mini-btn danger" data-delete-id="${l.id}">Delete</button>
                             </div>
-                            <button type="button" class="account-layout-del" data-delete-id="${l.id}" title="Delete">&#10005;</button>
                         </div>
                     `;
                 }).join('');
