@@ -332,30 +332,31 @@
         .account-layout-item:last-child { border-bottom: none; }
         .account-layout-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 700; color: #1e293b; }
 
-        /* Docked to the right instead of centered -- a real modal-overlay backdrop (click
-           outside to close, same as every other modal here) but the box itself is a full-height
-           panel flush against the right edge, matching the "modal out to the right" request
-           instead of the standard centered dialog every other modal in this file uses. No
-           slide-in transform/animation -- a first attempt at one left the panel permanently
-           stuck at its own off-screen starting transform (verified: still translateX(100%) of
-           its own width hundreds of ms after opening, not just a slow transition), which is
-           exactly why this panel never actually appeared correctly. Every other modal in this
-           file is a plain instant show/hide with no animation; matching that is what's
-           actually reliable. */
-        .side-modal-overlay { justify-content: flex-end; align-items: stretch; }
-        .side-modal-box {
-            width: 480px; max-width: 92vw; height: 100%; border-radius: 0; padding: 28px 30px;
-            display: flex; flex-direction: column; box-shadow: -25px 0 50px -12px rgba(0, 0, 0, 0.4);
+        /* A real persistent panel on the right, not a popup -- same "always there" treatment
+           as #sidebar-panel on the left, mirrored. Not a modal at all: no overlay/backdrop, no
+           open/close click handlers, nothing to trigger -- it's just always visible so you can
+           see every saved list, and clicking one loads it directly. #canvas-area's own width
+           is narrowed to leave room for it (see that rule). */
+        #savedListsPanel {
+            position: absolute; top: 150px; right: 0; width: 300px; height: calc(100vh - 150px);
+            background-color: #ffffff;
+            background-image: radial-gradient(circle at 1px 1px, rgba(15, 23, 42, 0.06) 1px, transparent 0);
+            background-size: 16px 16px;
+            border-left: 1px solid #cbd5e1;
+            padding: 20px; overflow-y: auto;
+            display: flex; flex-direction: column;
         }
-        #savedCutListsOverlay .modal-title { font-size: 20px; margin-bottom: 4px; }
         .saved-cutlist-count { font-size: 11.5px; color: #6b7280; font-weight: 700; margin-bottom: 10px; }
         .saved-cutlist-list { flex: 1; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 14px; }
-        .saved-cutlist-item { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-bottom: 1px solid #f1f5f9; }
+        .saved-cutlist-item {
+            display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-bottom: 1px solid #f1f5f9;
+            cursor: pointer;
+        }
         .saved-cutlist-item:last-child { border-bottom: none; }
+        .saved-cutlist-item:hover { background-color: #eef2ff; }
         .saved-cutlist-info { flex: 1; min-width: 0; }
         .saved-cutlist-name { font-weight: 700; color: #1e293b; font-size: 12.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .saved-cutlist-meta { font-size: 10.5px; color: #9ca3af; margin-top: 1px; }
-        .saved-cutlist-actions { display: flex; gap: 4px; flex-shrink: 0; }
         .saved-cutlist-empty { padding: 20px 12px; text-align: center; font-size: 12px; color: #9ca3af; font-style: italic; }
         .saved-cutlist-save-row { display: flex; gap: 8px; padding-top: 14px; border-top: 1px solid #e2e8f0; }
         .saved-cutlist-limit-note { font-size: 11px; color: #92400e; background: #fffbeb; border: 1px solid #fde68a; border-radius: 6px; padding: 8px 10px; margin-top: 8px; }
@@ -519,7 +520,7 @@
             position: absolute;
             top: 150px;
             left: 300px;
-            width: calc(100vw - 300px);
+            width: calc(100vw - 600px);
             height: calc(100vh - 150px);
             overflow-y: auto;
             padding: 40px;
@@ -660,7 +661,7 @@
         @media print {
             @page { size: portrait; margin: 0.5in; }
             body { background: #fff !important; }
-            header, #sidebar-panel, .upgrade-nudge, #cutlistToolbar {
+            header, #sidebar-panel, #savedListsPanel, .upgrade-nudge, #cutlistToolbar {
                 display: none !important;
             }
             .print-only-header {
@@ -789,6 +790,20 @@
                 height: auto;
                 overflow: visible;
                 padding: 24px 20px 60px;
+            }
+            /* Same stack-to-full-width treatment as #sidebar-panel, placed after
+               #canvas-area in DOM order so on a narrow screen it reads as "your parts,
+               your results, then your saved lists" top to bottom instead of splitting
+               the results in half. */
+            #savedListsPanel {
+                position: static;
+                top: auto;
+                right: auto;
+                width: 100%;
+                height: auto;
+                max-height: 320px;
+                border-left: none;
+                border-top: 1px solid #cbd5e1;
             }
             .modal-box { width: 100%; max-width: 92vw; }
             .account-modal-box { width: 100%; max-width: 92vw; }
@@ -965,20 +980,6 @@
         </div>
     </div>
 
-    <div class="modal-overlay side-modal-overlay" id="savedCutListsOverlay" style="display:none;">
-        <div class="modal-box side-modal-box">
-            <div class="modal-title">Saved Parts Lists</div>
-            <div class="saved-cutlist-count" id="savedCutListsCount"></div>
-            <div class="saved-cutlist-list" id="savedCutListsList"></div>
-            <div class="saved-cutlist-save-row">
-                <input type="text" class="input-box" id="saveCutListNameInput" placeholder="Name this list&hellip;">
-                <button type="button" class="mini-btn modal-primary-btn" id="saveCutListBtn" style="flex-shrink:0;">Save Current</button>
-            </div>
-            <div class="saved-cutlist-limit-note" id="savedCutListsLimitNote" style="display:none;"></div>
-            <button type="button" class="mini-btn" id="closeSavedCutListsBtn" style="width:100%; margin-top:14px;">Close</button>
-        </div>
-    </div>
-
     <div id="sidebar-panel">
         <div class="sidebar-title">Parts</div>
         <div class="empty-hint" id="partListEmptyHint">No parts yet. Add parts here, or design a project on the Project Designer page and send its panels over.</div>
@@ -1074,7 +1075,6 @@
             <button type="button" id="optimizeBtn" class="quiet-btn" style="background-color:#1e3a8a; border-color:#1e3a8a; color:#ffffff;">Optimize Cut List</button>
             <button type="button" id="exportPdfBtnTop" class="quiet-btn">&#128196; Export PDF</button>
             <button type="button" id="sendToProjectDesignerBtn" class="quiet-btn">Send to Project Designer</button>
-            <button type="button" id="openSavedCutListsBtn" class="quiet-btn" style="font-weight:800; color:#1e3a8a; border-color:#93a5d8;">&#128190; Saved Parts Lists</button>
         </div>
 
         <div class="placeholder-box" id="emptyOptimizerState">
@@ -1084,6 +1084,17 @@
         </div>
 
         <div id="resultsWrap" style="display:none;"></div>
+    </div>
+
+    <div id="savedListsPanel">
+        <div class="sidebar-title">Saved Parts Lists</div>
+        <div class="saved-cutlist-count" id="savedCutListsCount"></div>
+        <div class="saved-cutlist-list" id="savedCutListsList"></div>
+        <div class="saved-cutlist-save-row">
+            <input type="text" class="input-box" id="saveCutListNameInput" placeholder="Name this list&hellip;">
+            <button type="button" class="mini-btn modal-primary-btn" id="saveCutListBtn" style="flex-shrink:0;">Save</button>
+        </div>
+        <div class="saved-cutlist-limit-note" id="savedCutListsLimitNote" style="display:none;"></div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.7/dist/umd/supabase.js"></script>
@@ -1832,19 +1843,20 @@
             if (!cachedSavedCutLists.length) {
                 listEl.innerHTML = '<div class="saved-cutlist-empty">No saved parts lists yet.</div>';
             } else {
+                // The whole row is the "open it to work on it" affordance (click anywhere ->
+                // load), not a separate Load button -- this is a persistent always-there panel
+                // now, not a modal you opened specifically to pick one. Delete stays a small
+                // dedicated control so it doesn't compete with the row's own click target.
                 listEl.innerHTML = cachedSavedCutLists.map(l => {
                     const partCount = (l.parts || []).reduce((sum, p) => sum + (p.qty || 1), 0);
                     const savedDate = l.savedAt ? new Date(l.savedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : '';
                     return `
-                        <div class="saved-cutlist-item" data-id="${l.id}">
+                        <div class="saved-cutlist-item" data-load-id="${l.id}" title="Click to open this list">
                             <div class="saved-cutlist-info">
                                 <div class="saved-cutlist-name" title="${escapeHtml(l.name)}">${escapeHtml(l.name)}</div>
                                 <div class="saved-cutlist-meta">${partCount} part${partCount === 1 ? '' : 's'} &middot; ${savedDate}</div>
                             </div>
-                            <div class="saved-cutlist-actions">
-                                <button type="button" class="mini-btn" data-load-id="${l.id}" style="padding:6px 10px;">Load</button>
-                                <button type="button" class="account-layout-del" data-delete-id="${l.id}" title="Delete">&#10005;</button>
-                            </div>
+                            <button type="button" class="account-layout-del" data-delete-id="${l.id}" title="Delete">&#10005;</button>
                         </div>
                     `;
                 }).join('');
@@ -1864,11 +1876,14 @@
                 limitNote.style.display = 'none';
             }
 
-            listEl.querySelectorAll('[data-load-id]').forEach(btn => {
-                btn.addEventListener('click', () => loadSavedCutList(btn.dataset.loadId));
+            listEl.querySelectorAll('[data-load-id]').forEach(row => {
+                row.addEventListener('click', () => loadSavedCutList(row.dataset.loadId));
             });
             listEl.querySelectorAll('[data-delete-id]').forEach(btn => {
-                btn.addEventListener('click', () => deleteSavedCutList(btn.dataset.deleteId));
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation(); // don't also trigger the row's own load-on-click
+                    deleteSavedCutList(btn.dataset.deleteId);
+                });
             });
         }
 
@@ -1891,7 +1906,6 @@
             parts = JSON.parse(JSON.stringify(list.parts || []));
             saveParts();
             renderPartList();
-            document.getElementById('savedCutListsOverlay').style.display = 'none';
             showToast(`Loaded "${list.name}".`);
         }
 
@@ -1903,15 +1917,6 @@
             renderSavedCutListsPanel();
         }
 
-        document.getElementById('openSavedCutListsBtn').addEventListener('click', () => {
-            document.getElementById('savedCutListsOverlay').style.display = 'flex';
-        });
-        document.getElementById('closeSavedCutListsBtn').addEventListener('click', () => {
-            document.getElementById('savedCutListsOverlay').style.display = 'none';
-        });
-        document.getElementById('savedCutListsOverlay').addEventListener('click', (e) => {
-            if (e.target.id === 'savedCutListsOverlay') e.currentTarget.style.display = 'none';
-        });
         document.getElementById('saveCutListBtn').addEventListener('click', saveCurrentAsNewList);
         document.getElementById('saveCutListNameInput').addEventListener('keydown', (e) => {
             if (e.key === 'Enter') saveCurrentAsNewList();
