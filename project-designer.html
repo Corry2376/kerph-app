@@ -2050,6 +2050,9 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
         */
         const PANELS_KEY = 'kerphProjectPanels';
         const CUTLIST_HANDOFF_KEY = 'kerphCutListHandoff';
+        // Reverse direction of the handoff above -- see cutlist-optimizer.html's own
+        // sendToProjectDesigner(). Keep this key in sync with that file's copy.
+        const PROJECT_DESIGNER_HANDOFF_KEY = 'kerphProjectDesignerHandoff';
 
         // Boundary-conversion pattern, same shape as workshop-planner.html's
         // inchesToDisplay/displayToInches (see that file for the established precedent).
@@ -4700,6 +4703,23 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
             hardware = liveState.hardware || [];
             joints = liveState.joints || [];
             initProjectNotes(liveState.notes);
+
+            // A cut list sent over from Cut List Optimizer intentionally REPLACES whatever
+            // panels were already here, same "fresh import wins" rule as the reverse handoff
+            // in cutlist-optimizer.html.
+            const incoming = localStorage.getItem(PROJECT_DESIGNER_HANDOFF_KEY);
+            if (incoming) {
+                try {
+                    const importedPanels = JSON.parse(incoming);
+                    if (Array.isArray(importedPanels) && importedPanels.length) {
+                        panels = importedPanels;
+                        savePanels();
+                        showToast(`Loaded ${panels.length} part${panels.length === 1 ? '' : 's'} from Cut List Optimizer.`);
+                    }
+                } catch (e) { /* malformed handoff -- ignore, keep whatever panels were already loaded */ }
+                localStorage.removeItem(PROJECT_DESIGNER_HANDOFF_KEY);
+            }
+
             cachedSavedProjects = (await kerphLoadSavedProjects()).data || [];
             renderAll();
             renderSavedProjectsPicker();
