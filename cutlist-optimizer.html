@@ -282,6 +282,17 @@
         }
         .mini-btn.danger:hover { background-color: #fef2f2; border-color: #b91c1c; }
 
+        /* One row, always -- every button divides the row evenly (flex:1) and truncates its
+           own label instead of wrapping, so 4 buttons of different natural widths (a longer
+           "Send to Project Designer →" next to short ones) still land as a single clean row
+           instead of 3-then-1. Lives in the main content area, above the diagrams/empty state,
+           not the left sidebar -- these are actions on the RESULT, not part-entry fields. */
+        .cutlist-toolbar { display: flex; flex-wrap: nowrap; gap: 8px; margin-bottom: 16px; }
+        .cutlist-toolbar > button {
+            flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            margin: 0; width: auto;
+        }
+
         .input-box { width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; font-weight: 600; }
         .select-box { width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; font-weight: 600; background: #f8fafc; }
 
@@ -637,7 +648,7 @@
         @media print {
             @page { size: portrait; margin: 0.5in; }
             body { background: #fff !important; }
-            header, #sidebar-panel, .upgrade-nudge, #optimizeBtn, #exportPdfBtn {
+            header, #sidebar-panel, .upgrade-nudge, #cutlistToolbar {
                 display: none !important;
             }
             .print-only-header {
@@ -961,8 +972,6 @@
         <div class="empty-hint" id="partListEmptyHint">No parts yet. Add parts here, or design a project on the Project Designer page and send its panels over.</div>
         <div id="partList"></div>
         <button type="button" class="mini-btn" id="addPartBtn" style="width:100%;">+ Add Part</button>
-        <button type="button" class="mini-btn" id="openSavedCutListsBtn" style="width:100%; margin-top:8px;">&#128190; Saved Parts Lists</button>
-        <button type="button" class="mini-btn" id="sendToProjectDesignerBtn" style="width:100%; margin-top:8px;">Send to Project Designer &rarr;</button>
 
         <div class="sidebar-title" style="margin-top:20px;">Stock Settings</div>
         <div class="settings-row">
@@ -1043,14 +1052,19 @@
             </div>
             <button type="button" class="mini-btn" id="addDefectBtn" style="width:100%;">+ Mark Defect</button>
         </div>
-
-        <button type="button" id="optimizeBtn" class="new-layout-btn" style="width:100%; margin-top:16px;">Optimize Cut List</button>
     </div>
 
     <div class="print-only-header" id="printOnlyHeader"></div>
     <div class="print-watermark" id="printWatermark">KERPH &mdash; FREE PLAN</div>
 
     <div id="canvas-area">
+        <div class="cutlist-toolbar" id="cutlistToolbar">
+            <button type="button" id="optimizeBtn" class="new-layout-btn">Optimize Cut List</button>
+            <button type="button" id="exportPdfBtnTop" class="mini-btn">&#128196; Export PDF</button>
+            <button type="button" id="sendToProjectDesignerBtn" class="mini-btn">Send to Project Designer &rarr;</button>
+            <button type="button" id="openSavedCutListsBtn" class="mini-btn">&#128190; Saved Parts Lists</button>
+        </div>
+
         <div class="placeholder-box" id="emptyOptimizerState">
             <div class="placeholder-icon">&#9986;&#65039;</div>
             <div class="placeholder-title">No cut list yet</div>
@@ -1653,6 +1667,19 @@
         }
         document.getElementById('sendToProjectDesignerBtn').addEventListener('click', sendToProjectDesigner);
 
+        // Was previously (re)created inside resultsWrap's own innerHTML every time
+        // optimization ran, since it only ever existed alongside real results. Now that it's
+        // part of the persistent above-the-diagrams toolbar, it needs its own guard for the
+        // case that used to be structurally impossible: being clicked before anything's been
+        // optimized yet.
+        document.getElementById('exportPdfBtnTop').addEventListener('click', () => {
+            if (document.getElementById('resultsWrap').style.display === 'none') {
+                showToast('Optimize your cut list first, then export.');
+                return;
+            }
+            exportCutListPdf();
+        });
+
         document.getElementById('addPartBtn').addEventListener('click', () => openPartModal(null));
         document.getElementById('partCancelBtn').addEventListener('click', closePartModal);
         document.getElementById('partSaveBtn').addEventListener('click', savePartFromModal);
@@ -2017,20 +2044,18 @@
                 return best;
             }
 
-            // A rotated placement only wins if it fits somewhere upright doesn't, or fits
-            // MEANINGFULLY better — not a fractional-inch BSSF margin. Scoring upright vs.
-            // rotated as pure equals let a wide-but-short part (e.g. a 34.5" x 12" shelf) get
-            // rotated onto its side for a sub-inch theoretical improvement, which reads as
-            // arbitrary in the actual diagram and often makes the *real* layout worse by
-            // leaving an oddly-shaped narrow column behind for everything placed after it.
-            const ROTATION_MARGIN_IN = 2;
+            // Rotation is a last resort, not a competing optimization -- only used when no
+            // upright placement exists anywhere on the sheet. An earlier version scored
+            // upright vs. rotated head-to-head and let rotation win on efficiency alone,
+            // which put parts like a 34.5" x 12" shelf on its side (as a 12" x 34.5" column)
+            // whenever that scored marginally better -- mathematically fine, but confusing on
+            // an actual diagram, and far more aggressive than this algorithm's predecessor
+            // (which only ever rotated a part when it was the only way to make it fit). This
+            // keeps every part in its given orientation unless flipping is the only way to
+            // place it at all -- the free-rectangle reuse that actually fixes wasted space
+            // doesn't depend on rotation aggressiveness, so this loses none of that fix.
             function tryPlace(sheet, item, allowRotate) {
-                const upright = bestFitFor(sheet, item, false);
-                const rotated = allowRotate ? bestFitFor(sheet, item, true) : null;
-                let best;
-                if (!upright) best = rotated;
-                else if (!rotated) best = upright;
-                else best = (upright.shortSide - rotated.shortSide > ROTATION_MARGIN_IN) ? rotated : upright;
+                const best = bestFitFor(sheet, item, false) || (allowRotate ? bestFitFor(sheet, item, true) : null);
                 if (!best) return false;
                 const leaf = sheet.freeLeaves[best.leafIndex];
                 sheet.parts.push({ label: item.label, x: leaf.x, y: leaf.y, w: best.w, h: best.h, rotated: best.rotated });
@@ -2575,9 +2600,6 @@
             const totalPartCount = parts.reduce((sum, p) => sum + p.qty, 0);
 
             document.getElementById('resultsWrap').innerHTML = `
-                <div style="display:flex; justify-content:flex-end; margin-bottom:14px;">
-                    <button type="button" id="exportPdfBtn" class="page-action-btn">&#128196; Export PDF</button>
-                </div>
                 <div class="preview-summary-grid">
                     <div class="summary-card">
                         <div class="summary-value">${totalPartCount}</div>
@@ -2596,9 +2618,6 @@
                 </div>
                 ${cardsHtml}
             `;
-            const exportBtn = document.getElementById('exportPdfBtn');
-            if (exportBtn) exportBtn.addEventListener('click', exportCutListPdf);
-
             document.getElementById('emptyOptimizerState').style.display = 'none';
             document.getElementById('resultsWrap').style.display = 'block';
 
