@@ -1724,9 +1724,8 @@
         /* ---------- PACKING ALGORITHMS ----------
            Real, functional heuristics (not a mockup) — not a globally-optimal nester (that's
            an NP-hard bin-packing problem), but a genuinely useful first pass:
-           - Sheet goods: shelf packing (sort by longest side descending, fill left-to-right
-             shelves, wrap to a new shelf/sheet when out of room), with a same-item 90°
-             rotation check when it helps a piece fit.
+           - Sheet goods: guillotine free-rectangle packing (Best Short Side Fit) — see the
+             long comment above packSheets for why this replaced the original shelf packer.
            - Linear stock: first-fit-decreasing along board length. */
         function expandParts(list) {
             const expanded = [];
@@ -1743,11 +1742,29 @@
 
         // stockIndex is 1-based ("sheet 1", "sheet 2"...) matching the order sheets are
         // opened in — defects[] entries are scoped to a specific stockIndex the same way
-        // a user would say "my third sheet has a knot here." Known limitation: a defect
-        // is only checked against EXISTING sheets/shelves at the moment a part is being
-        // placed — the very first shelf on a brand-new sheet always starts unconditionally
-        // (matches every other "not a certified optimizer, a genuinely useful first pass"
-        // heuristic already in this file).
+        // a user would say "my third sheet has a knot here."
+        //
+        // This used to be pure shelf packing: fill a left-to-right row, and when something
+        // doesn't fit, start a brand-new full-height row below it. That's simple and fast,
+        // but it means leftover width on the RIGHT of one row can never be reused by a
+        // different row, even when several rows each waste a similar-width strip that would
+        // easily combine into one useful column — exactly the case a user reported: four
+        // ~12"-wide leftover strips next to four separate shelves, each barely fitting one
+        // small offcut-sized part with the rest of that strip's height wasted, when the same
+        // small parts would nest far tighter stacked together in one shared column.
+        //
+        // Replaced with real guillotine free-rectangle packing: the sheet is a pool of free
+        // rectangles (starting as just the whole sheet), and every placement picks the best-
+        // fitting free rectangle from that whole pool — not just "the current row" — then
+        // splits it into up to two new free rectangles with a single straight cut. Still
+        // 100% guillotine-compatible (every split is a full straight cut across whatever
+        // piece it's cutting, same as a table saw actually has to work), it just isn't
+        // artificially constrained to uniform horizontal rows anymore. "Best Short Side Fit"
+        // picks, among every free rectangle a part fits into (in both orientations if
+        // rotation is allowed), whichever leaves the smallest leftover on its tighter side —
+        // a well-established heuristic for exactly this kind of mixed few-large/many-small
+        // part mix, since it tends to leave the *other* leftover dimension still large enough
+        // to be genuinely useful instead of every rectangle degrading into slivers.
         function packSheets(rectList, sheetW, sheetH, kerf, defects) {
             defects = defects || [];
             const items = rectList.slice().sort((a, b) => Math.max(b.widthIn, b.heightIn) - Math.max(a.widthIn, a.heightIn));
@@ -1758,9 +1775,11 @@
             function clear(stockIndex, x, y, w, h) {
                 return !defectsFor(stockIndex).some(d => rectsOverlap(x, y, w, h, d.x, d.y, d.w, d.h));
             }
-            // The first item on a brand-new shelf can't just assume x=0 — that's exactly
-            // where a corner defect usually sits. Walks x rightward past every defect it
-            // would land in until clear, or returns null if that pushes it off the sheet.
+            // Only applied to a brand-new sheet's very first placement (matches the previous
+            // implementation's fidelity level — walking every free rectangle's origin past a
+            // defect on every later placement would be a separate, larger feature). Walks x
+            // rightward past every defect it would land in until clear, or null if that pushes
+            // it off the sheet.
             function firstClearX(stockIndex, y, w, h) {
                 let x = 0, moved = true;
                 const ds = defectsFor(stockIndex);
@@ -1773,54 +1792,99 @@
                 return x + w <= sheetW ? x : null;
             }
 
-            function placeOnShelf(shelf, w, h, rotated, item) {
-                shelf.parts.push({ label: item.label, x: shelf.usedWidth, y: shelf.y, w, h, rotated });
-                shelf.usedWidth += w + kerf;
+            function newSheet(stockIndex) {
+                const root = { x: 0, y: 0, w: sheetW, h: sheetH };
+                return { parts: [], freeLeaves: [root], cuts: [], stockIndex };
+            }
+
+            // Splits free rectangle `leaf` around a part placed at its top-left corner into
+            // up to two new free rectangles, choosing whichever of the two valid guillotine
+            // splits leaves the larger single leftover rectangle (rather than always cutting
+            // the same way) — e.g. given a wide-but-short part, prefer keeping the tall
+            // leftover strip whole rather than pointlessly slicing it into two.
+            function splitLeaf(leaf, pw, ph, sheet) {
+                const rightW = leaf.w - pw - kerf, bottomH = leaf.h - ph - kerf;
+                const hasRight = rightW > 0, hasBottom = bottomH > 0;
+                // Nothing left in either direction — the part exactly filled this leaf, so
+                // there's no real cut to make or log (whatever cut produced this leaf already
+                // separated it from everything else).
+                if (!hasRight && !hasBottom) return;
+
+                let chosen;
+                if (!hasRight) {
+                    // Part spans the leaf's full width — the only real cut is horizontal,
+                    // splitting off the bottom remainder (also full width). A "vertical" cut
+                    // here would be at the leaf's own right edge, i.e. no cut at all.
+                    chosen = { bottom: { x: leaf.x, y: leaf.y + ph + kerf, w: leaf.w, h: bottomH }, axis: 'horizontal' };
+                } else if (!hasBottom) {
+                    // Symmetric case: part spans the full height, only a vertical cut is real.
+                    chosen = { right: { x: leaf.x + pw + kerf, y: leaf.y, w: rightW, h: leaf.h }, axis: 'vertical' };
+                } else {
+                    // Genuine two-way split -- choose whichever guillotine option (right
+                    // remainder full-height + bottom remainder part-width, or the reverse)
+                    // leaves the larger single leftover rectangle, rather than always
+                    // cutting the same way.
+                    const optA = { right: { x: leaf.x + pw + kerf, y: leaf.y, w: rightW, h: leaf.h },
+                                    bottom: { x: leaf.x, y: leaf.y + ph + kerf, w: pw, h: bottomH }, axis: 'vertical' };
+                    const optB = { right: { x: leaf.x + pw + kerf, y: leaf.y, w: rightW, h: ph },
+                                    bottom: { x: leaf.x, y: leaf.y + ph + kerf, w: leaf.w, h: bottomH }, axis: 'horizontal' };
+                    const areaA = Math.max(optA.right.w * optA.right.h, optA.bottom.w * optA.bottom.h);
+                    const areaB = Math.max(optB.right.w * optB.right.h, optB.bottom.w * optB.bottom.h);
+                    chosen = areaB > areaA ? optB : optA;
+                }
+                // Logged in placement order for buildSheetCutSequence — see that function for
+                // why placement order is always a physically valid (buildable) cut order.
+                sheet.cuts.push({ region: { x: leaf.x, y: leaf.y, w: leaf.w, h: leaf.h }, axis: chosen.axis,
+                                   at: chosen.axis === 'vertical' ? leaf.x + pw : leaf.y + ph });
+                if (chosen.right) sheet.freeLeaves.push(chosen.right);
+                if (chosen.bottom) sheet.freeLeaves.push(chosen.bottom);
+            }
+
+            // Scores every free leaf this orientation fits into and returns the single best
+            // (smallest leftover short side, tie-broken by long side) — or null if this
+            // orientation doesn't fit anywhere on this sheet.
+            function bestFitFor(sheet, item, rotated) {
+                const stockIndex = sheet.stockIndex;
+                const w = rotated ? item.heightIn : item.widthIn;
+                const h = rotated ? item.widthIn : item.heightIn;
+                let best = null;
+                sheet.freeLeaves.forEach((leaf, i) => {
+                    if (w > leaf.w || h > leaf.h) return;
+                    if (!clear(stockIndex, leaf.x, leaf.y, w, h)) return;
+                    const shortSide = Math.min(leaf.w - w, leaf.h - h);
+                    const longSide = Math.max(leaf.w - w, leaf.h - h);
+                    if (!best || shortSide < best.shortSide || (shortSide === best.shortSide && longSide < best.longSide)) {
+                        best = { leafIndex: i, w, h, rotated, shortSide, longSide };
+                    }
+                });
+                return best;
+            }
+
+            // A rotated placement only wins if it fits somewhere upright doesn't, or fits
+            // MEANINGFULLY better — not a fractional-inch BSSF margin. Scoring upright vs.
+            // rotated as pure equals let a wide-but-short part (e.g. a 34.5" x 12" shelf) get
+            // rotated onto its side for a sub-inch theoretical improvement, which reads as
+            // arbitrary in the actual diagram and often makes the *real* layout worse by
+            // leaving an oddly-shaped narrow column behind for everything placed after it.
+            const ROTATION_MARGIN_IN = 2;
+            function tryPlace(sheet, item, allowRotate) {
+                const upright = bestFitFor(sheet, item, false);
+                const rotated = allowRotate ? bestFitFor(sheet, item, true) : null;
+                let best;
+                if (!upright) best = rotated;
+                else if (!rotated) best = upright;
+                else best = (upright.shortSide - rotated.shortSide > ROTATION_MARGIN_IN) ? rotated : upright;
+                if (!best) return false;
+                const leaf = sheet.freeLeaves[best.leafIndex];
+                sheet.parts.push({ label: item.label, x: leaf.x, y: leaf.y, w: best.w, h: best.h, rotated: best.rotated });
+                splitLeaf(leaf, best.w, best.h, sheet);
+                sheet.freeLeaves.splice(best.leafIndex, 1);
+                return true;
             }
 
             items.forEach(item => {
-                let placed = false;
-                // A grain-locked part can't be laid the other way just to nest tighter —
-                // every rotated-placement branch below is skipped for it.
-                const allowRotate = !item.grainLocked;
-
-                for (let s = 0; s < sheets.length && !placed; s++) {
-                    const sheet = sheets[s];
-                    const stockIndex = s + 1;
-                    for (let sh = 0; sh < sheet.shelves.length && !placed; sh++) {
-                        const shelf = sheet.shelves[sh];
-                        const widthLeft = sheetW - shelf.usedWidth - (shelf.usedWidth > 0 ? kerf : 0);
-                        if (item.widthIn <= widthLeft && item.heightIn <= shelf.height && clear(stockIndex, shelf.usedWidth, shelf.y, item.widthIn, item.heightIn)) {
-                            placeOnShelf(shelf, item.widthIn, item.heightIn, false, item);
-                            placed = true;
-                        } else if (allowRotate && item.heightIn <= widthLeft && item.widthIn <= shelf.height && clear(stockIndex, shelf.usedWidth, shelf.y, item.heightIn, item.widthIn)) {
-                            placeOnShelf(shelf, item.heightIn, item.widthIn, true, item);
-                            placed = true;
-                        }
-                    }
-                    if (!placed) {
-                        const usedHeight = sheet.shelves.reduce((sum, s2) => sum + s2.height + kerf, 0);
-                        const heightLeft = sheetH - usedHeight;
-                        if (item.heightIn <= heightLeft && item.widthIn <= sheetW) {
-                            const startX = firstClearX(stockIndex, usedHeight, item.widthIn, item.heightIn);
-                            if (startX != null) {
-                                const shelf = { y: usedHeight, height: item.heightIn, usedWidth: startX, parts: [] };
-                                placeOnShelf(shelf, item.widthIn, item.heightIn, false, item);
-                                sheet.shelves.push(shelf);
-                                placed = true;
-                            }
-                        }
-                        if (!placed && allowRotate && item.widthIn <= heightLeft && item.heightIn <= sheetW) {
-                            const startX = firstClearX(stockIndex, usedHeight, item.heightIn, item.widthIn);
-                            if (startX != null) {
-                                const shelf = { y: usedHeight, height: item.widthIn, usedWidth: startX, parts: [] };
-                                placeOnShelf(shelf, item.heightIn, item.widthIn, true, item);
-                                sheet.shelves.push(shelf);
-                                placed = true;
-                            }
-                        }
-                    }
-                }
+                const allowRotate = !item.grainLocked; // grain-locked can't rotate just to nest tighter
+                let placed = sheets.some(sheet => tryPlace(sheet, item, allowRotate));
 
                 if (!placed) {
                     const fitsNormal = item.widthIn <= sheetW && item.heightIn <= sheetH;
@@ -1832,18 +1896,22 @@
                     const rotated = !fitsNormal && fitsRotated;
                     const w = rotated ? item.heightIn : item.widthIn;
                     const h = rotated ? item.widthIn : item.heightIn;
-                    // A fresh sheet's stockIndex is one past however many already exist —
-                    // computed before pushing, same numbering the user sees ("sheet 1",
-                    // "sheet 2"...) when marking a defect.
-                    const newStockIndex = sheets.length + 1;
+                    const newStockIndex = sheets.length + 1; // matches the "sheet N" numbering shown for defects
                     const startX = firstClearX(newStockIndex, 0, w, h);
                     if (startX == null) {
                         oversized.push(item);
                         return;
                     }
-                    const shelf = { y: 0, height: h, usedWidth: startX, parts: [] };
-                    placeOnShelf(shelf, w, h, rotated, item);
-                    sheets.push({ shelves: [shelf] });
+                    const sheet = newSheet(newStockIndex);
+                    if (startX > 0) {
+                        // Defect sits at the sheet's origin — shrink the initial free
+                        // rectangle so the part (and every later placement) starts past it.
+                        sheet.freeLeaves = [{ x: startX, y: 0, w: sheetW - startX, h: sheetH }];
+                    }
+                    sheet.parts.push({ label: item.label, x: startX, y: 0, w, h, rotated });
+                    splitLeaf(sheet.freeLeaves[0], w, h, sheet);
+                    sheet.freeLeaves.shift();
+                    sheets.push(sheet);
                 }
             });
 
@@ -1949,31 +2017,29 @@
             (sheetDefects || []).forEach(d => {
                 rects += `<rect x="${d.x}" y="${d.y}" width="${d.w}" height="${d.h}" fill="#dc2626" fill-opacity="0.25" stroke="#b91c1c" stroke-width="0.4" stroke-dasharray="1.2,0.8"><title>Marked defect — avoided</title></rect>`;
             });
-            sheet.shelves.forEach(shelf => {
-                shelf.parts.forEach(p => {
-                    const color = colorForLabel(p.label, labelColorMap);
-                    const dimsText = `${p.w.toFixed(1)}" x ${p.h.toFixed(1)}"`;
-                    rects += `<rect x="${p.x}" y="${p.y}" width="${p.w}" height="${p.h}" fill="${color}" fill-opacity="0.75" stroke="#0f172a" stroke-width="0.3"><title>${escapeHtml(p.label)} — ${dimsText}${p.rotated ? ' (rotated)' : ''}</title></rect>`;
+            sheet.parts.forEach(p => {
+                const color = colorForLabel(p.label, labelColorMap);
+                const dimsText = `${p.w.toFixed(1)}" x ${p.h.toFixed(1)}"`;
+                rects += `<rect x="${p.x}" y="${p.y}" width="${p.w}" height="${p.h}" fill="${color}" fill-opacity="0.75" stroke="#0f172a" stroke-width="0.3"><title>${escapeHtml(p.label)} — ${dimsText}${p.rotated ? ' (rotated)' : ''}</title></rect>`;
 
-                    // Label the piece with its part name + dimensions, not just its
-                    // color — skip entirely on pieces too small to hold legible text.
-                    const minDim = Math.min(p.w, p.h);
-                    if (minDim >= 3) {
-                        const fontSize = Math.max(1.6, Math.min(minDim * 0.22, 3.2));
-                        const dimFontSize = fontSize * 0.72;
-                        const maxTextWidth = p.w - fontSize * 0.6;
-                        const cx = p.x + p.w / 2, cy = p.y + p.h / 2;
-                        const showDims = p.h >= fontSize * 2.6 + dimFontSize * 1.4;
-                        const nameLine = truncateToWidth(p.label, fontSize, maxTextWidth, 700);
-                        if (nameLine) {
-                            rects += labelTextSvg(cx, showDims ? cy - dimFontSize * 0.6 : cy, fontSize, 700, nameLine);
-                        }
-                        if (showDims) {
-                            const dimsLine = truncateToWidth(dimsText, dimFontSize, maxTextWidth, 600);
-                            if (dimsLine) rects += labelTextSvg(cx, cy + fontSize * 0.75, dimFontSize, 600, dimsLine);
-                        }
+                // Label the piece with its part name + dimensions, not just its
+                // color — skip entirely on pieces too small to hold legible text.
+                const minDim = Math.min(p.w, p.h);
+                if (minDim >= 3) {
+                    const fontSize = Math.max(1.6, Math.min(minDim * 0.22, 3.2));
+                    const dimFontSize = fontSize * 0.72;
+                    const maxTextWidth = p.w - fontSize * 0.6;
+                    const cx = p.x + p.w / 2, cy = p.y + p.h / 2;
+                    const showDims = p.h >= fontSize * 2.6 + dimFontSize * 1.4;
+                    const nameLine = truncateToWidth(p.label, fontSize, maxTextWidth, 700);
+                    if (nameLine) {
+                        rects += labelTextSvg(cx, showDims ? cy - dimFontSize * 0.6 : cy, fontSize, 700, nameLine);
                     }
-                });
+                    if (showDims) {
+                        const dimsLine = truncateToWidth(dimsText, dimFontSize, maxTextWidth, 600);
+                        if (dimsLine) rects += labelTextSvg(cx, cy + fontSize * 0.75, dimFontSize, 600, dimsLine);
+                    }
+                }
             });
             return `<svg viewBox="0 0 ${sheetW} ${sheetH}" class="cut-diagram-svg"><rect x="0" y="0" width="${sheetW}" height="${sheetH}" fill="#f1f5f9" stroke="#94a3b8" stroke-width="0.5"/>${rects}</svg>`;
         }
@@ -2154,7 +2220,7 @@
         }
 
         function sheetWasteFraction(sheet, sheetW, sheetH) {
-            const used = sheet.shelves.reduce((sum, shelf) => sum + shelf.parts.reduce((s2, p) => s2 + p.w * p.h, 0), 0);
+            const used = sheet.parts.reduce((sum, p) => sum + p.w * p.h, 0);
             return 1 - (used / (sheetW * sheetH));
         }
 
@@ -2168,35 +2234,35 @@
         }
 
         /* ---------- CUT SEQUENCE ----------
-           A diagram alone doesn't tell you what to actually DO at the saw. This derives
-           a real guillotine order from the same shelf/board data the diagrams already
-           use — no separate algorithm, just a different read of the same placement:
-           for a sheet, each shelf IS a horizontal strip, so step 1 is always "rip the
-           sheet into strips" (one cut per shelf boundary), then step 2 crosscuts each
-           strip into its individual parts. You can't crosscut before ripping on a table
-           saw (there'd be nothing to run the crosscut sled through), so this order is
-           the one that's actually buildable, not just mathematically valid. */
-        function buildSheetCutSequence(sheet, sheetH) {
-            const steps = [];
-            const shelves = sheet.shelves;
-            if (shelves.length > 1) {
-                const ripPoints = [];
-                let y = 0;
-                for (let i = 0; i < shelves.length - 1; i++) { y += shelves[i].height; ripPoints.push(fmtIn(y)); }
-                steps.push(`Rip the sheet into ${shelves.length} strip${shelves.length === 1 ? '' : 's'} — crosscut straight across at ${ripPoints.join('", ')}" from the top edge.`);
+           A diagram alone doesn't tell you what to actually DO at the saw. Every part
+           placement in packSheets logs the exact guillotine split it made (sheet.cuts, in
+           the order it happened) — this just turns that log into plain English. Placement
+           order is always a physically buildable order: a cut can only ever be logged
+           against a region that itself either IS the whole sheet or was produced by an
+           earlier-logged cut (packSheets only ever cuts a free rectangle that currently
+           exists), so replaying sheet.cuts in order never asks you to cut a piece that
+           doesn't exist yet. */
+        function buildSheetCutSequence(sheet) {
+            // Which already-placed final parts end up inside a given (sub-)rectangle —
+            // used to describe what each cut actually separates, even for a cut made early
+            // that leaves multiple still-to-be-separated parts on one side.
+            function labelsWithin(rect) {
+                const EPS = 0.01;
+                return sheet.parts
+                    .filter(p => p.x >= rect.x - EPS && p.y >= rect.y - EPS && p.x + p.w <= rect.x + rect.w + EPS && p.y + p.h <= rect.y + rect.h + EPS)
+                    .map(p => p.label);
             }
-            shelves.forEach((shelf, i) => {
-                const stripLabel = shelves.length > 1 ? `Strip ${i + 1} (${fmtIn(shelf.height)}" tall)` : 'The sheet';
-                if (shelf.parts.length > 1) {
-                    const cutPoints = [];
-                    let x = 0;
-                    for (let j = 0; j < shelf.parts.length - 1; j++) { x += shelf.parts[j].w; cutPoints.push(fmtIn(x)); }
-                    steps.push(`${stripLabel}: crosscut at ${cutPoints.join('", ')}" from the left edge to separate ${shelf.parts.map(p => p.label).join(', ')}.`);
-                } else if (shelf.parts.length === 1 && shelves.length > 1) {
-                    steps.push(`${stripLabel} is already just ${shelf.parts[0].label} — no further cut needed.`);
-                }
+            return sheet.cuts.map((cut, i) => {
+                const { region, axis, at } = cut;
+                const pieceDesc = i === 0 ? 'the sheet' : `the ${fmtIn(region.w)}" x ${fmtIn(region.h)}" piece at (${fmtIn(region.x)}", ${fmtIn(region.y)}")`;
+                const vertical = axis === 'vertical';
+                const localAt = vertical ? at - region.x : at - region.y;
+                const before = vertical ? { x: region.x, y: region.y, w: at - region.x, h: region.h } : { x: region.x, y: region.y, w: region.w, h: at - region.y };
+                const after = vertical ? { x: at, y: region.y, w: region.x + region.w - at, h: region.h } : { x: region.x, y: at, w: region.w, h: region.y + region.h - at };
+                const beforeLabels = labelsWithin(before), afterLabels = labelsWithin(after);
+                const sep = (beforeLabels.length && afterLabels.length) ? ` — separates ${beforeLabels.join(', ')} from ${afterLabels.join(', ')}.` : '.';
+                return `Make a ${vertical ? 'vertical' : 'horizontal'} cut through ${pieceDesc} at ${fmtIn(localAt)}" from the ${vertical ? 'left' : 'top'} edge${sep}`;
             });
-            return steps;
         }
 
         function buildBoardCutSequence(board) {
@@ -2220,21 +2286,13 @@
         const MIN_OFFCUT_SHEET_IN = 12;
         const MIN_OFFCUT_LINEAR_IN = 12;
 
-        function findSheetOffcuts(sheet, sheetW, sheetH) {
-            const offcuts = [];
-            let usedHeight = 0;
-            sheet.shelves.forEach(shelf => {
-                const widthLeft = sheetW - shelf.usedWidth;
-                if (widthLeft >= MIN_OFFCUT_SHEET_IN && shelf.height >= MIN_OFFCUT_SHEET_IN) {
-                    offcuts.push({ w: widthLeft, h: shelf.height });
-                }
-                usedHeight += shelf.height;
-            });
-            const heightLeft = sheetH - usedHeight;
-            if (heightLeft >= MIN_OFFCUT_SHEET_IN && sheetW >= MIN_OFFCUT_SHEET_IN) {
-                offcuts.push({ w: sheetW, h: heightLeft });
-            }
-            return offcuts;
+        function findSheetOffcuts(sheet) {
+            // sheet.freeLeaves is already the exact list of unused rectangles left once
+            // packing finished — no separate reconstruction needed like the old shelf-width
+            // math required.
+            return sheet.freeLeaves
+                .filter(r => r.w >= MIN_OFFCUT_SHEET_IN && r.h >= MIN_OFFCUT_SHEET_IN)
+                .map(r => ({ w: r.w, h: r.h }));
         }
 
         function findBoardOffcut(board, boardLen) {
@@ -2299,8 +2357,8 @@
                     let diagramsHtml = sheets.map((sheet, i) => {
                         const stockIndex = i + 1;
                         const sheetDefects = materialDefects.filter(d => d.stockIndex === stockIndex);
-                        const sequence = buildSheetCutSequence(sheet, sheetH);
-                        const offcuts = findSheetOffcuts(sheet, sheetW, sheetH);
+                        const sequence = buildSheetCutSequence(sheet);
+                        const offcuts = findSheetOffcuts(sheet);
                         totalOffcuts += offcuts.length;
                         return `
                         <div class="cut-diagram-block">
