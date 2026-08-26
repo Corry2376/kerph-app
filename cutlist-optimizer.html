@@ -285,10 +285,9 @@
         /* A small, quiet utility row, NOT a big equal-width 4-button band spanning the page --
            lives in the main content area above the diagrams/empty state (these are actions on
            the RESULT, not part-entry fields, so they don't belong in the left sidebar form),
-           but sized to its own content and right-aligned rather than stretched full-width.
-           Saved Parts Lists is the one meant to stand out (it opens the actual full side
-           panel); the other three are deliberately quieter/smaller next to it. */
-        .cutlist-toolbar { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; margin-bottom: 16px; }
+           sized to its own content and left-aligned. Shares #resultsWrap/#emptyOptimizerState's
+           max-width+centering so its left edge lines up with the Total Parts card below it. */
+        .cutlist-toolbar { display: flex; flex-wrap: wrap; justify-content: flex-start; gap: 6px; max-width: 980px; margin: 0 auto 16px; }
         .cutlist-toolbar .quiet-btn {
             flex: none; padding: 6px 11px; font-size: 11.5px; font-weight: 600;
             border: 1px solid #e2e8f0; border-radius: 6px; background-color: #f8fafc;
@@ -516,7 +515,10 @@
             position: absolute;
             top: 150px;
             left: 300px;
-            width: calc(100vw - 600px);
+            /* Stops short of #savedListsPanel's left edge (viewport right - 320px) by 20px so
+               this element's own native scrollbar renders in that gap instead of underneath
+               the panel, which sits on top of it in stacking order. */
+            width: calc(100vw - 640px);
             height: calc(100vh - 150px);
             overflow-y: auto;
             padding: 40px;
