@@ -2067,22 +2067,39 @@
             // the same way) — e.g. given a wide-but-short part, prefer keeping the tall
             // leftover strip whole rather than pointlessly slicing it into two.
             function splitLeaf(leaf, pw, ph, sheet) {
-                const rightW = leaf.w - pw - kerf, bottomH = leaf.h - ph - kerf;
-                const hasRight = rightW > 0, hasBottom = bottomH > 0;
-                // Nothing left in either direction — the part exactly filled this leaf, so
-                // there's no real cut to make or log (whatever cut produced this leaf already
-                // separated it from everything else).
-                if (!hasRight && !hasBottom) return;
+                // "Is a cut needed on this axis" and "is what's left over big enough to track as
+                // its own reusable free leaf" are different questions, and this used to answer
+                // both with the same rightW>0/bottomH>0 check. That's wrong whenever a part's
+                // width or height lands within exactly one kerf of the leaf's own size: e.g. a
+                // 10.25"-wide leaf's worth of leaf that's really 10.375" wide still needs a
+                // trim cut to bring it down to 10.25" -- it's just that the resulting offcut
+                // (10.375 - 10.25 - kerf = 0) is nothing, not a reusable sliver. The old check
+                // (rightW > 0) treated that boundary case as "no cut needed at all," which
+                // silently dropped a cut the recorded part geometry actually depends on --
+                // confirmed by replaying the cut log against sheet.parts and finding a part
+                // that the logged cuts never actually isolate. EPS here is just float-noise
+                // tolerance for "the part's own size already matches the leaf's," not a
+                // meaningful physical threshold.
+                const EPS = 0.001;
+                const needsRightCut = (leaf.w - pw) > EPS, needsBottomCut = (leaf.h - ph) > EPS;
+                if (!needsRightCut && !needsBottomCut) return;
 
+                const rightW = leaf.w - pw - kerf, bottomH = leaf.h - ph - kerf;
                 let chosen;
-                if (!hasRight) {
-                    // Part spans the leaf's full width — the only real cut is horizontal,
-                    // splitting off the bottom remainder (also full width). A "vertical" cut
-                    // here would be at the leaf's own right edge, i.e. no cut at all.
-                    chosen = { bottom: { x: leaf.x, y: leaf.y + ph + kerf, w: leaf.w, h: bottomH }, axis: 'horizontal' };
-                } else if (!hasBottom) {
+                // A genuine two-way split's first (outer) cut only peels the big unused
+                // remainder off a strip that still has the placed part and its OWN smaller
+                // leftover stuck together -- see below, where this gets a second (inner) cut
+                // logged too.
+                let extraCut = null;
+                if (!needsRightCut) {
+                    // Part spans the leaf's full width (within EPS) — the only real cut is
+                    // horizontal, splitting off the bottom remainder (also full width). No
+                    // free leaf gets tracked if that remainder is too thin to be reusable
+                    // (bottomH <= 0), but the cut itself still happens regardless.
+                    chosen = { bottom: bottomH > 0 ? { x: leaf.x, y: leaf.y + ph + kerf, w: leaf.w, h: bottomH } : null, axis: 'horizontal' };
+                } else if (!needsBottomCut) {
                     // Symmetric case: part spans the full height, only a vertical cut is real.
-                    chosen = { right: { x: leaf.x + pw + kerf, y: leaf.y, w: rightW, h: leaf.h }, axis: 'vertical' };
+                    chosen = { right: rightW > 0 ? { x: leaf.x + pw + kerf, y: leaf.y, w: rightW, h: leaf.h } : null, axis: 'vertical' };
                 } else {
                     // Genuine two-way split: right remainder full-height + bottom remainder
                     // part-width (optA, a "rip cut" -- keeps a right-hand strip running the
@@ -2099,24 +2116,36 @@
                     // instead of one shared column, scattering small parts across several
                     // separate slivers instead of one clean stack. Only fall back to the
                     // area comparison when the right-hand strip would be too narrow to be
-                    // genuinely reusable on its own.
-                    const optA = { right: { x: leaf.x + pw + kerf, y: leaf.y, w: rightW, h: leaf.h },
-                                    bottom: { x: leaf.x, y: leaf.y + ph + kerf, w: pw, h: bottomH }, axis: 'vertical' };
-                    const optB = { right: { x: leaf.x + pw + kerf, y: leaf.y, w: rightW, h: ph },
-                                    bottom: { x: leaf.x, y: leaf.y + ph + kerf, w: leaf.w, h: bottomH }, axis: 'horizontal' };
+                    // genuinely reusable on its own. Either remainder may still end up too
+                    // thin to track (right/bottom null) even though a cut is still required.
+                    const optA = { right: rightW > 0 ? { x: leaf.x + pw + kerf, y: leaf.y, w: rightW, h: leaf.h } : null,
+                                    bottom: bottomH > 0 ? { x: leaf.x, y: leaf.y + ph + kerf, w: pw, h: bottomH } : null, axis: 'vertical' };
+                    const optB = { right: rightW > 0 ? { x: leaf.x + pw + kerf, y: leaf.y, w: rightW, h: ph } : null,
+                                    bottom: bottomH > 0 ? { x: leaf.x, y: leaf.y + ph + kerf, w: leaf.w, h: bottomH } : null, axis: 'horizontal' };
                     const MIN_RIP_STRIP_IN = 8;
                     if (rightW >= MIN_RIP_STRIP_IN) {
                         chosen = optA;
                     } else {
-                        const areaA = Math.max(optA.right.w * optA.right.h, optA.bottom.w * optA.bottom.h);
-                        const areaB = Math.max(optB.right.w * optB.right.h, optB.bottom.w * optB.bottom.h);
+                        const areaA = Math.max(optA.right ? optA.right.w * optA.right.h : 0, optA.bottom ? optA.bottom.w * optA.bottom.h : 0);
+                        const areaB = Math.max(optB.right ? optB.right.w * optB.right.h : 0, optB.bottom ? optB.bottom.w * optB.bottom.h : 0);
                         chosen = areaB > areaA ? optB : optA;
                     }
+                    // The outer cut below only separates the big unused remainder from a strip
+                    // that still has the part AND its own smaller leftover stuck together --
+                    // this inner cut is what actually frees the part. Its region is exactly the
+                    // "before" piece the outer cut produces (same formula buildSheetCutSequence
+                    // itself uses), so replaying the log in order stays physically buildable:
+                    // this second cut always acts on a piece the first cut, logged right before
+                    // it, just created.
+                    extraCut = chosen === optA
+                        ? { region: { x: leaf.x, y: leaf.y, w: pw, h: leaf.h }, axis: 'horizontal', at: leaf.y + ph }
+                        : { region: { x: leaf.x, y: leaf.y, w: leaf.w, h: ph }, axis: 'vertical', at: leaf.x + pw };
                 }
                 // Logged in placement order for buildSheetCutSequence — see that function for
                 // why placement order is always a physically valid (buildable) cut order.
                 sheet.cuts.push({ region: { x: leaf.x, y: leaf.y, w: leaf.w, h: leaf.h }, axis: chosen.axis,
                                    at: chosen.axis === 'vertical' ? leaf.x + pw : leaf.y + ph });
+                if (extraCut) sheet.cuts.push(extraCut);
                 if (chosen.right) sheet.freeLeaves.push(chosen.right);
                 if (chosen.bottom) sheet.freeLeaves.push(chosen.bottom);
             }
@@ -2270,7 +2299,24 @@
                     const sheet = newSheet(newStockIndex);
                     if (startX > 0) {
                         // Defect sits at the sheet's origin — shrink the initial free
-                        // rectangle so the part (and every later placement) starts past it.
+                        // rectangle so the part (and every later placement) starts past it, AND
+                        // log the trim cut that removes the defective strip. Without this, the
+                        // cut sequence would silently start from a leaf that's already narrower
+                        // than the actual sheet with no explanation of where that missing
+                        // material went -- the same "cut the printed sequence never mentions"
+                        // gap as splitLeaf's two-way-split fix above, just for a defect instead
+                        // of a leftover. `at` is startX minus one kerf, not startX itself, so the
+                        // blade's kerf is consumed INSIDE the discarded defective strip (the
+                        // same "before"/"after" convention every other logged cut uses, where
+                        // the piece after a cut begins at at+kerf) -- keeps the usable leaf
+                        // starting exactly at startX, matching the assignment right below,
+                        // instead of silently shifting it a further kerf-width past where
+                        // firstClearX already confirmed the part is clear. Skipped entirely if
+                        // the clearance is thinner than one kerf -- too fine a margin to log a
+                        // meaningful trim cut for.
+                        if (startX > kerf) {
+                            sheet.cuts.push({ region: { x: 0, y: 0, w: sheetW, h: sheetH }, axis: 'vertical', at: startX - kerf });
+                        }
                         sheet.freeLeaves = [{ x: startX, y: 0, w: sheetW - startX, h: sheetH }];
                     }
                     sheet.parts.push({ label: item.label, x: startX, y: 0, w, h, rotated });
