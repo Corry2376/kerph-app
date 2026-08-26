@@ -295,6 +295,10 @@
         }
         .cutlist-toolbar .quiet-btn:hover { background-color: #eef2ff; border-color: #cbd5e1; color: #1e3a8a; }
 
+        .optimize-for-row { display: flex; align-items: center; gap: 6px; margin-right: 4px; }
+        .optimize-for-row label { font-size: 11.5px; font-weight: 700; color: #6b7280; white-space: nowrap; }
+        .optimize-for-row .select-box { padding: 6px 9px; font-size: 11.5px; font-weight: 600; }
+
         .input-box { width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; font-weight: 600; }
         .select-box { width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; font-weight: 600; background: #f8fafc; }
 
@@ -1096,6 +1100,15 @@
 
     <div id="canvas-area">
         <div class="cutlist-toolbar" id="cutlistToolbar">
+            <div class="optimize-for-row">
+                <label for="optimizeForSelect">Optimize for</label>
+                <select class="select-box" id="optimizeForSelect" style="width:auto;">
+                    <option value="waste">Least Material Waste</option>
+                    <option value="sheets">Fewest Sheets/Boards</option>
+                    <option value="cuts">Fewest Cuts</option>
+                    <option value="simple">Simplest Layout</option>
+                </select>
+            </div>
             <button type="button" id="optimizeBtn" class="quiet-btn" style="background-color:#1e3a8a; border-color:#1e3a8a; color:#ffffff;">Optimize Cut List</button>
             <button type="button" id="exportPdfBtnTop" class="quiet-btn">&#128196; Export PDF</button>
             <button type="button" id="sendToProjectDesignerBtn" class="quiet-btn">Send to Project Designer</button>
@@ -1993,9 +2006,32 @@
         // a well-established heuristic for exactly this kind of mixed few-large/many-small
         // part mix, since it tends to leave the *other* leftover dimension still large enough
         // to be genuinely useful instead of every rectangle degrading into slivers.
-        function packSheets(rectList, sheetW, sheetH, kerf, defects) {
+        // Shared by packSheets/packLinear. 'waste' (default) and 'cuts' use the existing
+        // largest-first sort as-is -- 'cuts' differentiates itself in bestFitFor instead (see
+        // there). 'simple' regroups so identical-size parts are contiguous in processing order;
+        // since placement keeps reusing whichever free leaf still fits best, contiguous
+        // same-size items naturally land in one clean grid instead of scattering wherever the
+        // numeric best-fit happens to point sheet to sheet. 'sheets' keeps this same sort
+        // (still generally the strongest starting order) and instead changes the SEARCH
+        // strategy -- see the sheets.some(...) vs. findBestSheetFit(...) split below.
+        function sortItemsForMode(list, mode, sizeKey) {
+            if (mode !== 'simple') return list.slice().sort((a, b) => b.sortKey - a.sortKey);
+            const groupMax = {};
+            list.forEach(it => {
+                const s = sizeKey(it);
+                groupMax[s] = Math.max(groupMax[s] || 0, it.sortKey);
+            });
+            return list.slice().sort((a, b) => {
+                const sa = sizeKey(a), sb = sizeKey(b);
+                return sa === sb ? 0 : (groupMax[sb] - groupMax[sa] || (sa < sb ? 1 : -1));
+            });
+        }
+
+        function packSheets(rectList, sheetW, sheetH, kerf, defects, mode) {
             defects = defects || [];
-            const items = rectList.slice().sort((a, b) => Math.max(b.widthIn, b.heightIn) - Math.max(a.widthIn, a.heightIn));
+            mode = mode || 'waste';
+            const withKeys = rectList.map(r => Object.assign({ sortKey: Math.max(r.widthIn, r.heightIn) }, r));
+            const items = sortItemsForMode(withKeys, mode, it => `${it.widthIn.toFixed(3)}x${it.heightIn.toFixed(3)}`);
             const sheets = [];
             const oversized = [];
 
@@ -2068,9 +2104,26 @@
                 if (chosen.bottom) sheet.freeLeaves.push(chosen.bottom);
             }
 
-            // Scores every free leaf this orientation fits into and returns the single best
-            // (smallest leftover short side, tie-broken by long side) — or null if this
-            // orientation doesn't fit anywhere on this sheet.
+            // Scores every free leaf this orientation fits into and returns the single best, or
+            // null if this orientation doesn't fit anywhere on this sheet.
+            // - 'waste'/'sheets' (default scoring): Best Short Side Fit -- smallest leftover
+            //   short side, tie-broken by long side.
+            // - 'cuts': prefers the LARGEST available leaf (Worst Fit) instead. A leaf that
+            //   exactly matches the item's short side already always wins under best-short-side-
+            //   fit too (that leftover is 0, the minimum possible score), so a "prefer exact
+            //   matches" rule would never actually change anything -- it's mathematically
+            //   subsumed by best-fit already. Preferring the biggest open leaf is a genuinely
+            //   different heuristic: splits keep happening across large regions instead of
+            //   always carving the tightest sliver, so fewer small, awkward leftovers form that
+            //   would otherwise need their own later cut.
+            // - 'simple': prefers the MOST RECENTLY created leaf (highest index -- splitLeaf
+            //   always appends). Grouping identical parts earlier in the processing order (see
+            //   sortItemsForMode) doesn't by itself change where they land, since a plain
+            //   largest-first sort already ties and clusters identical sizes the same way. This
+            //   is the piece that actually matters: consistently reusing whichever region the
+            //   previous item just carved, instead of jumping to whatever scores best globally,
+            //   keeps a run of same/similar-size parts filling one growing area in one clean
+            //   grid rather than scattering across whichever leaf numerically fits tightest.
             function bestFitFor(sheet, item, rotated) {
                 const stockIndex = sheet.stockIndex;
                 const w = rotated ? item.heightIn : item.widthIn;
@@ -2081,11 +2134,35 @@
                     if (!clear(stockIndex, leaf.x, leaf.y, w, h)) return;
                     const shortSide = Math.min(leaf.w - w, leaf.h - h);
                     const longSide = Math.max(leaf.w - w, leaf.h - h);
-                    if (!best || shortSide < best.shortSide || (shortSide === best.shortSide && longSide < best.longSide)) {
-                        best = { leafIndex: i, w, h, rotated, shortSide, longSide };
-                    }
+                    const leafArea = leaf.w * leaf.h;
+                    const better = mode === 'cuts' ? (!best || leafArea > best.leafArea)
+                        : mode === 'simple' ? (!best || i > best.leafIndex)
+                        : (!best || shortSide < best.shortSide || (shortSide === best.shortSide && longSide < best.longSide));
+                    if (better) best = { leafIndex: i, w, h, rotated, shortSide, longSide, leafArea };
                 });
                 return best;
+            }
+
+            function commitPlacement(sheet, item, fit) {
+                const leaf = sheet.freeLeaves[fit.leafIndex];
+                sheet.parts.push({ label: item.label, x: leaf.x, y: leaf.y, w: fit.w, h: fit.h, rotated: fit.rotated });
+                splitLeaf(leaf, fit.w, fit.h, sheet);
+                sheet.freeLeaves.splice(fit.leafIndex, 1);
+            }
+
+            // 'sheets' mode only: search every open sheet instead of taking the first one (in
+            // creation order) that fits, and place on whichever gives the overall tightest fit.
+            // Directly targets fewer total sheets, rather than incidentally reducing waste on
+            // whichever sheet happens to be tried first.
+            function findBestSheetFit(item, allowRotate) {
+                let bestSheet = null, best = null;
+                sheets.forEach(sheet => {
+                    const fit = bestFitFor(sheet, item, false) || (allowRotate ? bestFitFor(sheet, item, true) : null);
+                    if (fit && (!best || fit.shortSide < best.shortSide || (fit.shortSide === best.shortSide && fit.longSide < best.longSide))) {
+                        best = fit; bestSheet = sheet;
+                    }
+                });
+                return bestSheet ? { sheet: bestSheet, fit: best } : null;
             }
 
             // Rotation is a last resort, not a competing optimization -- only used when no
@@ -2101,16 +2178,20 @@
             function tryPlace(sheet, item, allowRotate) {
                 const best = bestFitFor(sheet, item, false) || (allowRotate ? bestFitFor(sheet, item, true) : null);
                 if (!best) return false;
-                const leaf = sheet.freeLeaves[best.leafIndex];
-                sheet.parts.push({ label: item.label, x: leaf.x, y: leaf.y, w: best.w, h: best.h, rotated: best.rotated });
-                splitLeaf(leaf, best.w, best.h, sheet);
-                sheet.freeLeaves.splice(best.leafIndex, 1);
+                commitPlacement(sheet, item, best);
                 return true;
             }
 
             items.forEach(item => {
                 const allowRotate = !item.grainLocked; // grain-locked can't rotate just to nest tighter
-                let placed = sheets.some(sheet => tryPlace(sheet, item, allowRotate));
+                let placed;
+                if (mode === 'sheets') {
+                    const found = findBestSheetFit(item, allowRotate);
+                    placed = !!found;
+                    if (found) commitPlacement(found.sheet, item, found.fit);
+                } else {
+                    placed = sheets.some(sheet => tryPlace(sheet, item, allowRotate));
+                }
 
                 if (!placed) {
                     const fitsNormal = item.widthIn <= sheetW && item.heightIn <= sheetH;
@@ -2144,9 +2225,11 @@
             return { sheets, oversized };
         }
 
-        function packLinear(lenList, boardLen, kerf, defects) {
+        function packLinear(lenList, boardLen, kerf, defects, mode) {
             defects = defects || [];
-            const items = lenList.slice().sort((a, b) => b.lengthIn - a.lengthIn);
+            mode = mode || 'waste';
+            const withKeys = lenList.map(l => Object.assign({ sortKey: l.lengthIn }, l));
+            const items = sortItemsForMode(withKeys, mode, it => it.lengthIn.toFixed(3));
             const boards = [];
             const oversized = [];
 
@@ -2170,18 +2253,43 @@
             items.forEach(item => {
                 if (item.lengthIn > boardLen) { oversized.push(item); return; }
                 let placed = false;
-                for (let b = 0; b < boards.length && !placed; b++) {
-                    const board = boards[b];
-                    const stockIndex = b + 1;
-                    const used = board.parts.reduce((sum, p) => sum + p.lengthIn + kerf, 0);
-                    const start = nextClearStart(stockIndex, used, item.lengthIn);
-                    if (start + item.lengthIn <= boardLen) {
-                        // A defect was skipped over — record the skipped span as a
-                        // non-part "gap" so the diagram/sequence can show it as dead
-                        // material instead of silently vanishing from the length math.
-                        if (start > used) board.parts.push({ label: null, lengthIn: start - used, start: used, isGap: true });
-                        board.parts.push({ label: item.label, lengthIn: item.lengthIn, start });
+                if (mode === 'sheets') {
+                    // 'sheets' mode ("Fewest sheets/boards"): evaluate every open board and use
+                    // whichever leaves the smallest leftover length, instead of the first board
+                    // (in creation order) with room -- same best-fit-across-open-bins strategy
+                    // as packSheets' 'sheets' mode, aimed at fewer total boards bought/used.
+                    let bestB = -1, bestStart = 0, bestLeftover = null;
+                    for (let b = 0; b < boards.length; b++) {
+                        const used = boards[b].parts.reduce((sum, p) => sum + p.lengthIn + kerf, 0);
+                        const start = nextClearStart(b + 1, used, item.lengthIn);
+                        if (start + item.lengthIn <= boardLen) {
+                            const leftover = boardLen - (start + item.lengthIn);
+                            if (bestLeftover === null || leftover < bestLeftover) {
+                                bestLeftover = leftover; bestB = b; bestStart = start;
+                            }
+                        }
+                    }
+                    if (bestB !== -1) {
+                        const board = boards[bestB];
+                        const used = board.parts.reduce((sum, p) => sum + p.lengthIn + kerf, 0);
+                        if (bestStart > used) board.parts.push({ label: null, lengthIn: bestStart - used, start: used, isGap: true });
+                        board.parts.push({ label: item.label, lengthIn: item.lengthIn, start: bestStart });
                         placed = true;
+                    }
+                } else {
+                    for (let b = 0; b < boards.length && !placed; b++) {
+                        const board = boards[b];
+                        const stockIndex = b + 1;
+                        const used = board.parts.reduce((sum, p) => sum + p.lengthIn + kerf, 0);
+                        const start = nextClearStart(stockIndex, used, item.lengthIn);
+                        if (start + item.lengthIn <= boardLen) {
+                            // A defect was skipped over — record the skipped span as a
+                            // non-part "gap" so the diagram/sequence can show it as dead
+                            // material instead of silently vanishing from the length math.
+                            if (start > used) board.parts.push({ label: null, lengthIn: start - used, start: used, isGap: true });
+                            board.parts.push({ label: item.label, lengthIn: item.lengthIn, start });
+                            placed = true;
+                        }
                     }
                 }
                 if (!placed) {
@@ -2551,6 +2659,7 @@
             const kerf = parseFloat(document.getElementById('kerfInput').value) || 0.125;
             const sheetCost = parseFloat(document.getElementById('sheetCostInput').value) || 0;
             const boardCostPerFt = parseFloat(document.getElementById('boardCostInput').value) || 0;
+            const optimizeMode = document.getElementById('optimizeForSelect').value;
 
             const byMaterial = {};
             parts.forEach(p => {
@@ -2572,7 +2681,7 @@
 
                 if (mat.type === 'sheet') {
                     const rects = expandParts(group).map(p => ({ widthIn: p.widthIn, heightIn: p.heightIn, label: p.name, grainLocked: !!p.grainLocked }));
-                    const { sheets, oversized } = packSheets(rects, sheetW, sheetH, kerf, materialDefects);
+                    const { sheets, oversized } = packSheets(rects, sheetW, sheetH, kerf, materialDefects, optimizeMode);
                     totalSheets += sheets.length;
                     if (sheetCost > 0) totalCost += sheets.length * sheetCost;
 
@@ -2607,7 +2716,7 @@
                     `;
                 } else {
                     const lens = expandParts(group).map(p => ({ lengthIn: p.widthIn, label: p.name, grainLocked: !!p.grainLocked }));
-                    const { boards, oversized } = packLinear(lens, boardLenIn, kerf, materialDefects);
+                    const { boards, oversized } = packLinear(lens, boardLenIn, kerf, materialDefects, optimizeMode);
                     totalBoards += boards.length;
                     if (boardCostPerFt > 0) totalCost += boards.length * boardLenFt * boardCostPerFt;
 
