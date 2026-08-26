@@ -2167,21 +2167,6 @@
                 sheet.freeLeaves.splice(fit.leafIndex, 1);
             }
 
-            // 'sheets' mode only: search every open sheet instead of taking the first one (in
-            // creation order) that fits, and place on whichever gives the overall tightest fit.
-            // Directly targets fewer total sheets, rather than incidentally reducing waste on
-            // whichever sheet happens to be tried first.
-            function findBestSheetFit(item, allowRotate) {
-                let bestSheet = null, best = null;
-                sheets.forEach(sheet => {
-                    const fit = bestFitFor(sheet, item, false) || (allowRotate ? bestFitFor(sheet, item, true) : null);
-                    if (fit && (!best || fit.shortSide < best.shortSide || (fit.shortSide === best.shortSide && fit.longSide < best.longSide))) {
-                        best = fit; bestSheet = sheet;
-                    }
-                });
-                return bestSheet ? { sheet: bestSheet, fit: best } : null;
-            }
-
             // Rotation is a last resort, not a competing optimization -- only used when no
             // upright placement exists anywhere on the sheet. An earlier version scored
             // upright vs. rotated head-to-head and let rotation win on efficiency alone,
@@ -2192,8 +2177,42 @@
             // keeps every part in its given orientation unless flipping is the only way to
             // place it at all -- the free-rectangle reuse that actually fixes wasted space
             // doesn't depend on rotation aggressiveness, so this loses none of that fix.
+            //
+            // One narrow exception: a part whose rotated width exactly matches the sheet's own
+            // full width (e.g. a 36"x48" backer on a 48"-wide sheet) but whose AS-ENTERED width
+            // doesn't -- "does the as-entered orientation fit somewhere" isn't the same question
+            // as "does it fit WELL," and a part sized to exactly match the sheet should use that
+            // width rather than leave a permanent margin next to it just because the other
+            // orientation also happens to physically fit. This is deliberately narrow: it only
+            // fires when comparing against the sheet's true nominal width (not any arbitrary
+            // leftover leaf shape), so it can't reproduce the rejected "34.5x12 shelf tipped
+            // for a marginal score" behavior above -- neither of that shelf's dimensions is the
+            // sheet width, so this exception never applies to it.
+            function stockWidthFlush(dim) { return Math.abs(dim - sheetW) < 0.05; }
+            function pickOrientation(sheet, item, allowRotate) {
+                if (allowRotate && stockWidthFlush(item.heightIn) && !stockWidthFlush(item.widthIn)) {
+                    return bestFitFor(sheet, item, true) || bestFitFor(sheet, item, false);
+                }
+                return bestFitFor(sheet, item, false) || (allowRotate ? bestFitFor(sheet, item, true) : null);
+            }
+
+            // 'sheets' mode only: search every open sheet instead of taking the first one (in
+            // creation order) that fits, and place on whichever gives the overall tightest fit.
+            // Directly targets fewer total sheets, rather than incidentally reducing waste on
+            // whichever sheet happens to be tried first.
+            function findBestSheetFit(item, allowRotate) {
+                let bestSheet = null, best = null;
+                sheets.forEach(sheet => {
+                    const fit = pickOrientation(sheet, item, allowRotate);
+                    if (fit && (!best || fit.shortSide < best.shortSide || (fit.shortSide === best.shortSide && fit.longSide < best.longSide))) {
+                        best = fit; bestSheet = sheet;
+                    }
+                });
+                return bestSheet ? { sheet: bestSheet, fit: best } : null;
+            }
+
             function tryPlace(sheet, item, allowRotate) {
-                const best = bestFitFor(sheet, item, false) || (allowRotate ? bestFitFor(sheet, item, true) : null);
+                const best = pickOrientation(sheet, item, allowRotate);
                 if (!best) return false;
                 commitPlacement(sheet, item, best);
                 return true;
@@ -2211,13 +2230,21 @@
                 }
 
                 if (!placed) {
+                    // Brand-new sheet, so this is the item's first-ever placement attempt --
+                    // separate from pickOrientation above (nothing to compare against yet
+                    // beyond the sheet's own bare dimensions), but needs the same stock-width-
+                    // flush exception, since a part landing here still goes through this branch
+                    // whenever it's the very first item on a sheet (the common case for
+                    // something like a large backer panel) and would otherwise never get
+                    // reconsidered against tryPlace/findBestSheetFit's fix above at all.
                     const fitsNormal = item.widthIn <= sheetW && item.heightIn <= sheetH;
                     const fitsRotated = allowRotate && item.heightIn <= sheetW && item.widthIn <= sheetH;
                     if (!fitsNormal && !fitsRotated) {
                         oversized.push(item);
                         return;
                     }
-                    const rotated = !fitsNormal && fitsRotated;
+                    const preferFlush = fitsRotated && stockWidthFlush(item.heightIn) && !stockWidthFlush(item.widthIn);
+                    const rotated = (!fitsNormal && fitsRotated) || preferFlush;
                     const w = rotated ? item.heightIn : item.widthIn;
                     const h = rotated ? item.widthIn : item.heightIn;
                     const newStockIndex = sheets.length + 1; // matches the "sheet N" numbering shown for defects
