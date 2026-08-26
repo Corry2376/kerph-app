@@ -351,6 +351,15 @@
             display: flex; flex-direction: column;
         }
         .saved-cutlist-list { flex: 1; }
+        /* .panel-item's default sizing (built for the sidebar Parts list / quote-builder's
+           dashboard, both short lists) only fit ~6 rows in this panel's height. Scoped, leaner
+           override for just this list -- shared class, tighter here where more rows need to
+           show at once. */
+        #savedListsPanel .panel-item { padding: 6px 8px; margin-bottom: 5px; box-shadow: none; border-left-width: 3px; }
+        #savedListsPanel .panel-item-title { font-size: 11.5px; line-height: 1.2; }
+        #savedListsPanel .panel-item-dims { font-size: 10px; line-height: 1.2; margin-top: 1px; }
+        #savedListsPanel .panel-item-actions { margin-top: 5px; gap: 5px; }
+        #savedListsPanel .panel-item-actions .mini-btn { padding: 3px 6px; font-size: 10px; line-height: 1.3; }
         .saved-cutlist-num { font-variant-numeric: tabular-nums; color: #94a3b8; font-weight: 700; margin-right: 4px; }
         .saved-cutlist-empty { padding: 20px 12px; text-align: center; font-size: 12px; color: #9ca3af; font-style: italic; }
         .saved-cutlist-save-row { display: flex; gap: 8px; padding-top: 14px; border-top: 1px solid #e2e8f0; }
