@@ -1103,7 +1103,7 @@
             <div class="optimize-for-row">
                 <label for="optimizeForSelect">Optimize for</label>
                 <select class="select-box" id="optimizeForSelect" style="width:auto;">
-                    <option value="waste">Least Material Waste</option>
+                    <option value="waste" selected>Least Material Waste</option>
                     <option value="sheets">Fewest Sheets/Boards</option>
                     <option value="cuts">Fewest Cuts</option>
                     <option value="simple">Simplest Layout</option>
@@ -2084,17 +2084,34 @@
                     // Symmetric case: part spans the full height, only a vertical cut is real.
                     chosen = { right: { x: leaf.x + pw + kerf, y: leaf.y, w: rightW, h: leaf.h }, axis: 'vertical' };
                 } else {
-                    // Genuine two-way split -- choose whichever guillotine option (right
-                    // remainder full-height + bottom remainder part-width, or the reverse)
-                    // leaves the larger single leftover rectangle, rather than always
-                    // cutting the same way.
+                    // Genuine two-way split: right remainder full-height + bottom remainder
+                    // part-width (optA, a "rip cut" -- keeps a right-hand strip running the
+                    // full height of whatever's left), or the reverse (optB, a "crosscut" --
+                    // keeps a full-width strip below). Prefer optA whenever that right-hand
+                    // strip is wide enough to be worth keeping as its own standing piece --
+                    // matches how someone actually works at the saw: rip one strip off the
+                    // side first, then crosscut the rest, rather than re-deriving a fresh
+                    // sliver next to every single row. Comparing raw leftover AREA instead
+                    // (the previous rule) picks the full-width crosscut whenever the current
+                    // part is close to full sheet width, since that strip's area looks bigger
+                    // in isolation -- but do that on several same-width parts in a row (sides,
+                    // top, bottom, shelves) and each one regenerates its own narrow sliver
+                    // instead of one shared column, scattering small parts across several
+                    // separate slivers instead of one clean stack. Only fall back to the
+                    // area comparison when the right-hand strip would be too narrow to be
+                    // genuinely reusable on its own.
                     const optA = { right: { x: leaf.x + pw + kerf, y: leaf.y, w: rightW, h: leaf.h },
                                     bottom: { x: leaf.x, y: leaf.y + ph + kerf, w: pw, h: bottomH }, axis: 'vertical' };
                     const optB = { right: { x: leaf.x + pw + kerf, y: leaf.y, w: rightW, h: ph },
                                     bottom: { x: leaf.x, y: leaf.y + ph + kerf, w: leaf.w, h: bottomH }, axis: 'horizontal' };
-                    const areaA = Math.max(optA.right.w * optA.right.h, optA.bottom.w * optA.bottom.h);
-                    const areaB = Math.max(optB.right.w * optB.right.h, optB.bottom.w * optB.bottom.h);
-                    chosen = areaB > areaA ? optB : optA;
+                    const MIN_RIP_STRIP_IN = 8;
+                    if (rightW >= MIN_RIP_STRIP_IN) {
+                        chosen = optA;
+                    } else {
+                        const areaA = Math.max(optA.right.w * optA.right.h, optA.bottom.w * optA.bottom.h);
+                        const areaB = Math.max(optB.right.w * optB.right.h, optB.bottom.w * optB.bottom.h);
+                        chosen = areaB > areaA ? optB : optA;
+                    }
                 }
                 // Logged in placement order for buildSheetCutSequence — see that function for
                 // why placement order is always a physically valid (buildable) cut order.
