@@ -513,13 +513,16 @@
 
         #canvas-area {
             position: absolute;
-            top: 150px;
+            /* top/bottom match #savedListsPanel's own inset (top:170px; bottom:20px) instead of
+               running flush from the header to the viewport edge, so this element's scrollbar
+               is vertically even with that card instead of reading as part of the header. */
+            top: 170px;
             left: 300px;
+            bottom: 20px;
             /* Stops short of #savedListsPanel's left edge (viewport right - 320px) by 20px so
                this element's own native scrollbar renders in that gap instead of underneath
                the panel, which sits on top of it in stacking order. */
             width: calc(100vw - 640px);
-            height: calc(100vh - 150px);
             overflow-y: auto;
             padding: 40px;
         }
