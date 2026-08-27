@@ -1916,12 +1916,12 @@
     });
 
     // ---------- Real Lemon Squeezy subscription status ----------
-    // Nothing calls this yet — the plan/tier gating above is still the local-preview
-    // mechanism everywhere it's actually wired up. This exists so the moment real
-    // checkout is live, swapping the preview toggle for the real thing is a small,
-    // localized change instead of a from-scratch build. See sql/lemon-squeezy-
-    // subscriptions.sql and supabase/functions/lemon-squeezy-webhook for the rest of
-    // the pipeline this feeds from.
+    // This is the real, live entitlement source now (checkout is real -- see pricing.html's
+    // LS_CHECKOUT/launchLemonSqueezyCheckout()) -- kerphGetCachedEffectivePlan() and
+    // kerphEnforceRealTierGate() both drive off this for a signed-in user; the localStorage
+    // kerphPlan preview toggle only still applies signed-out or for admins previewing a tier.
+    // See sql/lemon-squeezy-subscriptions.sql and supabase/functions/lemon-squeezy-webhook for
+    // the rest of the pipeline this feeds from.
     //
     // Deliberately fails safe to 'free' on ANY error — not signed in, the
     // subscriptions table/view not existing yet (pre-migration), a network hiccup,
