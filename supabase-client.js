@@ -133,8 +133,18 @@
         return kerphSupabase.auth.signInWithPassword({ email, password });
     }
 
+    // Redirects to sign-out.html after the session actually clears, rather than just
+    // clearing the Supabase session and leaving the caller on whatever page they were on.
+    // The bug this fixes: every page holds its own live, signed-in-only data in page-level
+    // JS variables (parts lists, layouts, panels, quotes...) that auth.signOut() alone never
+    // touches -- the header correctly shows "signed out," but everything already rendered on
+    // screen stays exactly as it was. Patching every page's data-clearing individually would
+    // mean chasing down a different set of variables per page; navigating away is the one fix
+    // that actually guarantees zero stale signed-in data survives, since it destroys the old
+    // page's JS state entirely rather than trying to selectively reset it in place.
     async function kerphSignOut() {
         await kerphSupabase.auth.signOut();
+        window.location.href = 'sign-out.html';
     }
 
     // Sends a recovery-link email via Supabase Auth; the link lands the user on
