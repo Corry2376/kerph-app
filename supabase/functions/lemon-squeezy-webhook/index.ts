@@ -95,7 +95,7 @@ async function recordCancellationAndSendWinBack(
       <h2 style="color:#1e3a8a;">We'd love to have you back</h2>
       <p>We noticed you cancelled your Kerph ${escapeHtml(planLabel)} plan. Plans change, no hard feelings &mdash; but if you ever want to come back, here's ${escapeHtml(WINBACK_DISCOUNT_LABEL)} on us:</p>
       <p><a href="${resubUrl}" style="display:inline-block; background:#1e3a8a; color:#fff; padding:10px 18px; border-radius:6px; text-decoration:none;">Reactivate My Plan</a></p>
-      <p style="color:#6b7280; font-size:13px;">The discount applies automatically at checkout &mdash; nothing to type in. If there's anything we could've done better, just reply to this email and let us know.</p>
+      <p style="color:#6b7280; font-size:13px;">The discount applies automatically at checkout &mdash; nothing to type in.</p>
     </div>
   `;
 
