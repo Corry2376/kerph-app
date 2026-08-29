@@ -1340,9 +1340,18 @@
            JS as the exact center point; translate(-50%,-50%) does the rest. One pill-shaped
            card (matching .floating-panel's white/shadow look, just compact) rather than bare
            buttons floating in empty grid space — see the .measure-btn override below, which
-           strips each button's own border/shadow so they read as one widget, not three. */
+           strips each button's own border/shadow so they read as one widget, not three.
+           position:absolute (page-anchored, scrolls with the page), NOT position:fixed
+           (viewport-anchored, never moves) — same fix, same reasoning, as .measure-toolbar/
+           .layers-bar above: header and every floating toolbar on this page are page-anchored,
+           so a fixed pill drifts out of sync the instant the page scrolls (real page scroll,
+           not just the inner grid — this page has no overflow-y lock) and ends up rendering
+           behind both the toolbar and the header, whose z-index is higher than this pill's.
+           updateZoomControlBarPosition adds the live scroll offset to its getBoundingClientRect()
+           math so the pill still tracks the ruler/toolbar's actual screen position, just in
+           page coordinates instead of viewport coordinates. */
         .zoom-control-bar {
-            position: fixed;
+            position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
@@ -8762,18 +8771,23 @@
             const toolbar = document.getElementById('measureToolbar');
             const bar = document.getElementById('zoomControlBar');
             if (!ruler || !scrollArea || !toolbar || !bar) return;
+            // getBoundingClientRect() is always viewport-relative, but the bar itself is now
+            // position:absolute (page-relative) — see the CSS comment on .zoom-control-bar —
+            // so the live page scroll offset has to be added back in before writing top/left,
+            // or the pill would land at the right spot only when the page happens to be
+            // scrolled to the very top.
             const rulerRect = ruler.getBoundingClientRect();
             const viewportRect = scrollArea.getBoundingClientRect();
             const visibleLeft = Math.max(rulerRect.left, viewportRect.left);
             const visibleRight = Math.min(rulerRect.right, viewportRect.right);
             if (visibleRight > visibleLeft) {
-                bar.style.left = ((visibleLeft + visibleRight) / 2) + 'px';
+                bar.style.left = ((visibleLeft + visibleRight) / 2 + window.scrollX) + 'px';
             }
             // Vertically midway between the toolbar row and the ruler, not glued to either —
             // both are read live rather than hardcoded so this keeps working if either one's
             // height or position ever changes.
             const toolbarRect = toolbar.getBoundingClientRect();
-            bar.style.top = ((toolbarRect.bottom + rulerRect.top) / 2) + 'px';
+            bar.style.top = ((toolbarRect.bottom + rulerRect.top) / 2 + window.scrollY) + 'px';
         }
 
         /* ---------- ZOOM ----------
@@ -15980,6 +15994,11 @@
         initDragAndDropEngine();
         initGridPanning();
         document.getElementById('canvas-scroll-area').addEventListener('scroll', updateZoomControlBarPosition);
+        // The inner grid viewport scrolling isn't the only way the pill's screen position can
+        // go stale — this page has no overflow-y lock, so a tall floating panel (Electrical
+        // Load's amp table, Clearance Checker's conflict list, etc.) can force real page
+        // scroll too, and only .zoom-control-bar's own listener above ever caught that before.
+        window.addEventListener('scroll', updateZoomControlBarPosition, { passive: true });
         window.addEventListener('resize', updateZoomControlBarPosition);
         window.addEventListener('resize', () => arrangeFloatingPanels());
         updateZoomControlBarPosition();
