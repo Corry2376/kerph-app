@@ -2618,35 +2618,61 @@
                 });
             }
 
-            // Two-tier silhouette (wider bottom roller cabinet + narrower top chest stacked on
-            // it, side handle, corner casters) instead of one flat drawer-lined box -- the Tool
-            // Storage default bucket below, and reused by Mechanic Tool Storage with a bigger
+            // Two-tier silhouette (wider bottom roller cabinet + a chest stacked on it, side
+            // handle, corner casters) instead of one flat drawer-lined box -- the Tool Storage
+            // default bucket below, and reused by Mechanic Tool Storage with a bigger
             // drawerLineCount for the larger pro rolling boxes.
-            // Real drawer fronts (a proud panel + a bar pull, each occupying its own equal
-            // band of the drawer zone), not the previous flat 0.012ft-deep line painted on
-            // the face -- a line can't read as an actual drawer at any distance, it's just a
-            // seam mark. The panel physically stands proud of the body and the pull stands
-            // proud of the panel, so the cabinet actually has depth/shadowing at each drawer
-            // instead of a flat box with stripes.
+            // Real drawer fronts (a proud panel + a NEARLY FULL-WIDTH bar pull, each occupying
+            // its own equal band of the drawer zone). A short, centered pull was the single
+            // biggest thing that read as "not a real drawer" against actual reference photos
+            // (Craftsman/Husky combo units) -- every real drawer pull on one of these spans
+            // most of the drawer's own width, not a small centered nub.
             function addDrawerFront(bandCenterY, bandHeight, frontWFrac, pullWFrac) {
                 const panelDepth = 0.022;
-                addPart(group, wFt * frontWFrac, bandHeight * 0.8, panelDepth, 0, bandCenterY, hFt / 2 + panelDepth / 2, dark);
-                const pullDepth = 0.016;
-                addPart(group, wFt * pullWFrac, bandHeight * 0.14, pullDepth, 0, bandCenterY, hFt / 2 + panelDepth + pullDepth / 2, metal);
+                addPart(group, wFt * frontWFrac, bandHeight * 0.84, panelDepth, 0, bandCenterY, hFt / 2 + panelDepth / 2, dark);
+                const pullDepth = 0.018;
+                addPart(group, wFt * pullWFrac, bandHeight * 0.12, pullDepth, 0, bandCenterY, hFt / 2 + panelDepth + pullDepth / 2, metal);
             }
 
+            // Reworked against real Craftsman/Husky combo-unit reference photos -- the previous
+            // version (one shallow "till" drawer for the whole top chest, short centered pulls,
+            // the chest flush with the cabinet with no visible seam) didn't read as a standing
+            // tool box at any distance. Fixes, in order of how much they actually mattered:
+            // (1) the chest gets a real bank of 2 narrow drawers under a raised lid cap instead
+            // of one shallow drawer, (2) the chest is set back in depth from the cabinet so the
+            // step between them is actually visible instead of one flush slab, (3) drawer pulls
+            // are full-width bars (see addDrawerFront), (4) casters are bigger and visibly
+            // protrude below the cabinet instead of sitting flush with its bottom edge.
             function rollingCabinetShape(drawerLineCount) {
-                addPart(group, wFt * 0.95, boxH * 0.58, hFt * 0.95, 0, -boxH * 0.21, 0, body);
-                addPart(group, wFt * 0.8, boxH * 0.34, hFt * 0.82, 0, boxH * 0.33, 0, body);
-                const zoneTop = boxH * 0.08, zoneBottom = -boxH * 0.42, bandHeight = (zoneTop - zoneBottom) / drawerLineCount;
+                const cabinetTopY = boxH * 0.08, cabinetBottomY = -boxH * 0.5;
+                const cabinetH = cabinetTopY - cabinetBottomY;
+                addPart(group, wFt * 0.97, cabinetH, hFt * 0.97, 0, (cabinetTopY + cabinetBottomY) / 2, 0, body);
+
+                const chestBottomY = cabinetTopY, chestTopY = boxH * 0.5;
+                const chestH = chestTopY - chestBottomY;
+                const chestDepthFrac = 0.8; // set back from the cabinet's own depth -- the real "step"
+                addPart(group, wFt * 0.92, chestH * 0.92, hFt * chestDepthFrac, 0, chestBottomY + chestH * 0.46, 0, body);
+                // Raised lid cap along the very top edge -- reads as a hinged lid seam instead
+                // of the chest just stopping dead with a flat top.
+                addPart(group, wFt * 0.94, chestH * 0.08, hFt * (chestDepthFrac + 0.04), 0, chestTopY - chestH * 0.02, 0, dark);
+
+                // Cabinet: a real bank of drawers, not one or two oversized ones.
+                const cabZoneTop = cabinetTopY - 0.05, cabZoneBottom = cabinetBottomY + 0.16;
+                const cabBand = (cabZoneTop - cabZoneBottom) / drawerLineCount;
                 for (let i = 0; i < drawerLineCount; i++) {
-                    addDrawerFront(zoneBottom + bandHeight * (i + 0.5), bandHeight, 0.78, 0.45);
+                    addDrawerFront(cabZoneBottom + cabBand * (i + 0.5), cabBand, 0.86, 0.72);
                 }
-                addDrawerFront(boxH * 0.33, boxH * 0.34 * 0.7, 0.62, 0.35); // top till/lid drawer
-                addPart(group, 0.04, boxH * 0.12, 0.04, wFt / 2 + 0.02, boxH * 0.33, 0, metal); // side handle
-                const lx = wFt / 2 - 0.12, lz = hFt / 2 - 0.12;
+                // Chest: 2 narrow drawers under the lid, not a single shallow till.
+                const chestZoneTop = chestBottomY + chestH * 0.84, chestZoneBottom = chestBottomY + 0.04;
+                const chestBand = (chestZoneTop - chestZoneBottom) / 2;
+                for (let i = 0; i < 2; i++) {
+                    addDrawerFront(chestZoneBottom + chestBand * (i + 0.5), chestBand, 0.8, 0.65);
+                }
+
+                addPart(group, 0.045, cabinetH * 0.5, 0.05, wFt / 2 + 0.025, cabinetTopY - cabinetH * 0.3, 0, metal); // side handle
+                const lx = wFt / 2 - 0.15, lz = hFt / 2 - 0.15;
                 [[-lx, -lz], [lx, -lz], [-lx, lz], [lx, lz]].forEach(([x, z]) => {
-                    addCylinderPart(group, 0.06, 0.05, x, -boxH / 2, z, COLORS.toolAccentBlade, 'x');
+                    addCylinderPart(group, 0.09, 0.07, x, cabinetBottomY - 0.05, z, COLORS.toolAccentBlade, 'x');
                 });
             }
 
@@ -2664,7 +2690,7 @@
                     let cursor = zoneTop;
                     drawers.forEach(d => {
                         const bandHeight = ((d.heightIn || 8) / totalIn) * zoneHeight;
-                        addDrawerFront(cursor - bandHeight / 2, bandHeight, 0.88, 0.5);
+                        addDrawerFront(cursor - bandHeight / 2, bandHeight, 0.88, 0.72);
                         cursor -= bandHeight;
                     });
                 } else {
