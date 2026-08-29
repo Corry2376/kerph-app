@@ -637,6 +637,7 @@
             <label class="viewer-legend-row"><input type="checkbox" class="layer-visibility-checkbox" data-layer-key="dust-collection" checked><span class="viewer-legend-swatch" style="background:#94a3b8;"></span>Dust collection</label>
             <label class="viewer-legend-row"><input type="checkbox" class="layer-visibility-checkbox" data-layer-key="lighting" checked><span class="viewer-legend-swatch" style="background:#f2df8a;"></span>Lighting</label>
             <label class="viewer-legend-row"><input type="checkbox" class="layer-visibility-checkbox" data-layer-key="clearances"><span class="viewer-legend-swatch" style="background:#f59e0b;"></span>Tool clearances</label>
+            <label class="viewer-legend-row" title="Hides wall geometry only -- you still can't walk through where a wall actually is in Walk Mode, same as before."><input type="checkbox" class="layer-visibility-checkbox" data-layer-key="walls" checked><span class="viewer-legend-swatch" style="background:#e2e8f0;"></span>Walls</label>
         </div>
     </div>
 
@@ -1278,7 +1279,7 @@
         // four groups the legend already displayed. "Tools" and "Cabinets" are both stored
         // under sharedLayout layer 'tools', distinguished only by cabType, so they need a
         // small helper (getLayerVisibilityKey) rather than a direct layer-string lookup.
-        const layerVisibility = { tools: true, cabinets: true, 'dust-collection': true, lighting: true, clearances: false };
+        const layerVisibility = { tools: true, cabinets: true, 'dust-collection': true, lighting: true, clearances: false, walls: true };
 
         function getLayerVisibilityKey(t) {
             if (t.layer === 'dust-collection') return 'dust-collection';
@@ -3209,8 +3210,14 @@
 
             const doorWindowFeatures = (sharedLayout.wallFeatures || []).filter(f => f.type === 'door' || f.type === 'window');
             const exteriorSegments = getWallSegmentsFt(widthFt, lengthFt);
+            // allWallSegments is built unconditionally, regardless of the Walls layer toggle
+            // below -- it's what walk mode's collision (isBlockedByWall) reads, and hiding a
+            // wall so you can see better is not the same thing as being able to walk through
+            // where it actually is.
             allWallSegments = exteriorSegments.map(([a, b]) => ({ a, b, thicknessFt: wallThicknessFt }));
-            exteriorSegments.forEach(([a, b]) => addWallSegmentWithOpenings(a, b, wallThicknessFt, ceilingFt, COLORS.wall, doorWindowFeatures));
+            if (layerVisibility.walls) {
+                exteriorSegments.forEach(([a, b]) => addWallSegmentWithOpenings(a, b, wallThicknessFt, ceilingFt, COLORS.wall, doorWindowFeatures));
+            }
 
             // Overall-footprint dimension labels, offset just outside the exterior walls --
             // labels the room's real bounds (and sits just outside ITS edges), not the
@@ -3228,14 +3235,17 @@
                 const b = { x: ftFromPx(w.x2), y: ftFromPx(w.y2) };
                 const thicknessFt = w.thicknessFt || 0.35;
                 allWallSegments.push({ a, b, thicknessFt });
-                addWallSegmentWithOpenings(a, b, thicknessFt, ceilingFt, COLORS.innerWall, doorWindowFeatures);
+                if (layerVisibility.walls) addWallSegmentWithOpenings(a, b, thicknessFt, ceilingFt, COLORS.innerWall, doorWindowFeatures);
             });
 
             const stackElevations = computeStackElevations();
             (sharedLayout.tools || []).forEach((t, i) => {
                 if (isToolVisible(t)) addToolMesh(t, ceilingFt, i, stackElevations[i] || 0);
             });
-            (sharedLayout.wallFeatures || []).forEach(f => addWallFeatureMesh(f));
+            // Door/window meshes are mounted ON a wall -- hiding the wall but leaving them
+            // behind would show them floating with nothing around them, so they follow the
+            // same Walls toggle rather than getting their own.
+            if (layerVisibility.walls) (sharedLayout.wallFeatures || []).forEach(f => addWallFeatureMesh(f));
 
             // A second pass, after every floor item's mesh already exists — a zone's
             // violation coloring needs to check against ALL of them, not just whichever
