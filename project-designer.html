@@ -452,16 +452,16 @@
             width: calc(100vw - 300px);
             height: calc(100vh - var(--header-h, 150px));
             overflow-y: auto;
-            /* Extra right padding reserves clearance from .notes-panel, which is
-               position:fixed at right:24px/width:250px on every tab (not just 3D Preview) --
-               without it, #projectPreview3D's centered content (up to 900px wide) can extend
-               far enough right on a typical desktop window to run underneath the notes panel,
-               which sits at a higher z-index and isn't part of this element's own stacking
-               context (position:fixed panels aren't clipped by a plain-flow ancestor's
-               overflow either way). 300px clears the panel's 250px width + 24px offset with a
-               clean gap; reset back to a uniform padding in the <=900px media query below,
-               where .notes-panel itself drops out of fixed positioning entirely. */
-            padding: 40px 300px 40px 40px;
+            /* Extra right padding reserves clearance from the docked right column (Notes,
+               Joints below it), both position:fixed at right:24px/width:var(--dock-w) -- without
+               it, #projectPreview3D's centered content (up to 900px wide) can extend far enough
+               right on a typical desktop window to run underneath them, since they sit at a
+               higher z-index and aren't part of this element's own stacking context
+               (position:fixed panels aren't clipped by a plain-flow ancestor's overflow either
+               way). var(--dock-w) + 24px offset + a clean 20px gap; reset back to a uniform
+               padding in the <=900px media query below, where the docked column itself drops
+               out of fixed positioning entirely. */
+            padding: 40px calc(var(--dock-w) + 44px) 40px 40px;
         }
 
         #cutListPreview { max-width: 900px; margin: 0 auto; }
@@ -663,6 +663,12 @@
             pointer-events: none;
         }
 
+        /* Shared width for the right-hand docked column (Notes, and Joints below it) --
+           one place to keep them in sync, referenced by #canvas-area's own right-padding
+           reservation too so a future width change can't quietly reopen the "toolbar runs
+           underneath the docked panels" bug fixed elsewhere in this file. */
+        :root { --dock-w: 320px; }
+
         /* ---------- PROJECT NOTES (fixed to the empty space on the right, visible on
            either tab — not scoped to 3D Preview, since a note is just as relevant while
            looking at the cut list) ---------- */
@@ -675,15 +681,42 @@
                `right` take effect. */
             left: auto;
             right: 24px;
-            width: 250px;
+            width: var(--dock-w);
             z-index: 50;
         }
         .notes-textarea {
             width: 100%;
-            min-height: 340px;
+            min-height: 150px;
+            max-height: 280px;
             resize: vertical;
             font-family: inherit;
             line-height: 1.5;
+        }
+
+        /* ---------- JOINTS PANEL ----------
+           Docked in the same right-hand column as .notes-panel, directly below it, instead of
+           a centered .modal-overlay -- same reasoning as .notes-panel's own comment: this is
+           "pop up in the empty space," not a screen-blocking action. `top` is set from JS
+           (see jointsToolBtn's click handler) to sit right below .notes-panel's actual
+           rendered bottom edge, since that height varies (the textarea has resize:vertical,
+           and the toolbar row wraps at different widths) -- a static offset would either leave
+           a gap or overlap depending on how tall Notes currently is. Padding/radius/shadow
+           match .modal-box exactly (same visual weight as every other modal on this page,
+           which is what the earlier .modal-overlay conversion actually fixed) -- only the
+           positioning/backdrop behavior changed here, not the sizing that fixed the original
+           "disproportionately small" complaint. */
+        .joints-panel {
+            position: fixed;
+            left: auto;
+            right: 24px;
+            width: var(--dock-w);
+            z-index: 50;
+            background-color: #ffffff;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+            max-height: calc(100vh - 40px);
+            overflow-y: auto;
         }
 
 
@@ -910,11 +943,12 @@
             }
             #canvas-area { padding: 20px 14px 40px; }
             #projectDesignerPaywall { margin-top: var(--header-h, 150px); padding: 40px 16px; }
-            .notes-panel {
+            .notes-panel, .joints-panel {
                 position: static;
                 width: 100%;
                 right: auto;
                 margin: 16px 20px 0;
+                max-height: none;
             }
             .project-fields-group, .header-field-wide { width: 100%; }
             .header-compound-row { flex-wrap: wrap; }
@@ -1442,8 +1476,7 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
         <div class="notes-preview" id="notesPreview" style="display:none;"></div>
     </div>
 
-    <div class="modal-overlay" id="jointsPanel" style="display:none;">
-      <div class="modal-box" style="width:360px; max-height:calc(100vh - 40px); overflow-y:auto;">
+    <div class="joints-panel" id="jointsPanel" style="display:none;">
         <div class="modal-title" style="display:flex; align-items:center; justify-content:space-between;">Joints <button type="button" id="jointsPanelCloseBtn" class="mini-btn" style="font-weight:400; flex:none;">&#10005;</button></div>
         <p style="font-size:11.5px; color:#6b7280; line-height:1.5; margin:0 0 12px;">Connect two pieces with a real cut joint. Only works between axis-aligned pieces (rotation at 0&deg;/90&deg;/180&deg;/270&deg;) &mdash; anything else is skipped and shown as a plain butt joint.</p>
         <div class="form-row">
@@ -1472,7 +1505,6 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
         <button type="button" class="mini-btn modal-primary-btn" id="addJointBtn" style="width:100%; margin-top:4px;">Add Joint</button>
         <div id="jointsList" style="margin-top:10px;"></div>
         <div class="empty-hint" id="jointsEmptyHint">No joints yet &mdash; pieces just touch as plain boxes.</div>
-      </div>
     </div>
 
     <div id="canvas-area">
@@ -4675,7 +4707,15 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
             if (panels.length < 2) { showToast('Add at least two pieces first.'); return; }
             populateJointPanelSelects();
             renderJointsList();
-            document.getElementById('jointsPanel').style.display = 'flex';
+            // Positioned relative to Notes' actual rendered bottom edge (not a fixed guess) --
+            // its height varies with the resizable textarea and toolbar wrapping, so this is
+            // recomputed fresh every time Joints opens rather than baked into static CSS.
+            const jointsPanel = document.getElementById('jointsPanel');
+            const notesBottom = document.getElementById('notesPanel').getBoundingClientRect().bottom;
+            const top = notesBottom + 16;
+            jointsPanel.style.top = top + 'px';
+            jointsPanel.style.maxHeight = `calc(100vh - ${Math.round(top)}px - 20px)`;
+            jointsPanel.style.display = 'block';
         });
         document.getElementById('jointsPanelCloseBtn').addEventListener('click', () => {
             document.getElementById('jointsPanel').style.display = 'none';
