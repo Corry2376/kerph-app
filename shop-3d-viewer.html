@@ -663,6 +663,13 @@
             <button type="button" id="removeSelectedBtn" class="mini-btn danger" style="flex:1;">Remove</button>
         </div>
         <button type="button" id="freeRotateBtn" class="mini-btn" style="width:100%; margin-top:8px;">&#128260; Free Rotate</button>
+        <div id="colorEditRow" style="display:none; align-items:flex-end; gap:8px; margin-top:8px;">
+            <div style="flex:1;">
+                <label class="header-field-label" style="font-size:10px;">Color</label>
+                <input type="color" id="colorEditInput" style="width:100%; height:30px; padding:2px; border:1px solid #cbd5e1; border-radius:6px; cursor:pointer;">
+            </div>
+            <button type="button" class="mini-btn" id="colorResetBtn" style="flex:none;" title="Back to the brand/default color">Reset</button>
+        </div>
         <div id="dropAttachRow" style="display:none; gap:8px; margin-top:8px;">
             <button type="button" id="addBlastGateToDropBtn" class="mini-btn" style="flex:1;">+ Blast Gate</button>
             <button type="button" id="addYJointToDropBtn" class="mini-btn" style="flex:1;">+ Y-Joint</button>
@@ -1206,6 +1213,16 @@
             const n = (label || '').toLowerCase();
             for (const brand in BRAND_COLORS) if (n.includes(brand)) return BRAND_COLORS[brand];
             return null;
+        }
+
+        // Converts a numeric hex color (0x1a1a1a, the format every COLORS/BRAND_COLORS entry
+        // uses) to the "#1a1a1a" string form an <input type="color"> needs -- and back, for
+        // t.colorHex (see colorEditInput/addToolMesh's bodyColorHex).
+        function numToHexString(num) {
+            return '#' + (num >>> 0).toString(16).padStart(6, '0');
+        }
+        function hexStringToNum(str) {
+            return parseInt(String(str).replace('#', ''), 16);
         }
 
         // Real-world default heights for wall features that don't carry stored height
@@ -2254,8 +2271,13 @@
                 const geo = new THREE.BoxGeometry(wFt, boxH, hFt);
                 // Brand-flavored tint (see BRAND_COLORS) instead of the same flat blue for
                 // every tool -- cabType cabinets stay plain COLORS.cabinet always, since
-                // they're user-built, not a catalog brand item.
-                const bodyColorHex = t.cabType ? COLORS.cabinet : (getBrandColorForLabel(t.label) || COLORS.tool);
+                // they're user-built, not a catalog brand item. t.colorHex (see colorEditInput
+                // in the selection panel) overrides either one -- the catalog/brand guess is
+                // often just wrong for a specific real unit (e.g. a toolbox that's actually
+                // black, not the brand-red default).
+                const bodyColorHex = t.colorHex
+                    ? hexStringToNum(t.colorHex)
+                    : (t.cabType ? COLORS.cabinet : (getBrandColorForLabel(t.label) || COLORS.tool));
                 const mat = materialForColor(bodyColorHex);
                 mesh = new THREE.Mesh(geo, mat);
                 // Wall cabinets float at their set mount height (inches, floor to cabinet
@@ -3342,6 +3364,23 @@
                 document.getElementById('rotateSelectedBtn').style.display = isWallFeature ? 'none' : '';
                 const freeRotateBtn = document.getElementById('freeRotateBtn');
                 if (freeRotateBtn) freeRotateBtn.style.display = isWallFeature ? 'none' : '';
+                // Lets a tool/cabinet's rendered color be overridden -- e.g. a real toolbox
+                // that's actually black, not the brand-red the catalog default guesses at.
+                // Not offered for dust-collection/lighting, whose colors mean something
+                // specific (duct gray, a fixture's own accent) rather than standing in for
+                // "what color is this thing" the way a tool/cabinet body color does.
+                const colorEditRow = document.getElementById('colorEditRow');
+                if (colorEditRow) {
+                    const colorToolEntry = mesh.userData.toolIndex != null ? sharedLayout.tools[mesh.userData.toolIndex] : null;
+                    const showColor = !isWallFeature && colorToolEntry && colorToolEntry.layer !== 'dust-collection' && colorToolEntry.layer !== 'lighting';
+                    colorEditRow.style.display = showColor ? 'flex' : 'none';
+                    if (showColor) {
+                        const defaultColorHex = colorToolEntry.cabType
+                            ? COLORS.cabinet
+                            : (getBrandColorForLabel(colorToolEntry.label) || COLORS.tool);
+                        document.getElementById('colorEditInput').value = colorToolEntry.colorHex || numToHexString(defaultColorHex);
+                    }
+                }
                 // A drop is the one dust-collection piece worth a direct "attach here" shortcut
                 // in 3D — there's no real port-snapping engine in this view (see the plan), but
                 // a drop's top/bottom are two fixed, known elevations (see addToolMesh), so a
@@ -3894,6 +3933,29 @@
             document.getElementById('freeRotateBtn').addEventListener('click', toggleFreeRotate);
             document.getElementById('rotateSelectedBtn').addEventListener('click', rotateSelected90);
             document.getElementById('removeSelectedBtn').addEventListener('click', removeSelected);
+
+            // 'change' (fires once when the native color picker closes), not 'input' (fires
+            // continuously while dragging inside the picker) -- one clean undo snapshot per
+            // pick, matching every other Apply-style field in this panel, instead of flooding
+            // the undo stack with every intermediate color the user dragged through.
+            document.getElementById('colorEditInput').addEventListener('change', (e) => {
+                if (!selectedMesh || selectedMesh.userData.toolIndex == null) return;
+                const idx = selectedMesh.userData.toolIndex;
+                const t = sharedLayout.tools[idx];
+                if (!t) return;
+                pushUndoSnapshot3d();
+                t.colorHex = e.target.value;
+                persistAndRebuild(idx);
+            });
+            document.getElementById('colorResetBtn').addEventListener('click', () => {
+                if (!selectedMesh || selectedMesh.userData.toolIndex == null) return;
+                const idx = selectedMesh.userData.toolIndex;
+                const t = sharedLayout.tools[idx];
+                if (!t) return;
+                pushUndoSnapshot3d();
+                delete t.colorHex;
+                persistAndRebuild(idx);
+            });
 
             // "Attach" here means position, not a real port-snap (this view has no
             // port-snapping engine — see the plan) — a drop's top and bottom are two known
