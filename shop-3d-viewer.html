@@ -381,6 +381,30 @@
             border-bottom: 9px solid #1e3a8a;
         }
 
+        /* Dead-center over the 3D view while walk mode is active -- the only on-screen
+           indicator of which direction the camera is actually pointed once the mouse is
+           pointer-locked and no longer visible as a cursor. Toggled by enterWalkMode/
+           exitWalkMode alongside the mode itself, never shown in orbit mode. */
+        #walkCrosshair {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 22px;
+            height: 22px;
+            z-index: 1500;
+            pointer-events: none;
+            display: none;
+        }
+        #walkCrosshair::before, #walkCrosshair::after {
+            content: '';
+            position: absolute;
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 0 2px rgba(0, 0, 0, 0.6);
+        }
+        #walkCrosshair::before { top: 50%; left: 2px; right: 2px; height: 2px; transform: translateY(-50%); }
+        #walkCrosshair::after { left: 50%; top: 2px; bottom: 2px; width: 2px; transform: translateX(-50%); }
+
         .viewer-legend { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
         .viewer-legend-row { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #334155; cursor: pointer; }
         .viewer-legend-row input[type="checkbox"] { margin: 0; flex-shrink: 0; }
@@ -583,6 +607,8 @@
 
         <div id="viewer3dCanvas"></div>
     </div>
+
+    <div id="walkCrosshair"></div>
 
     <div id="compassWidget" style="display:none;">
         <div class="compass-forward-marker"></div>
@@ -1325,17 +1351,28 @@
         // PointerLockControls (the same official add-on class the OrbitControls import above
         // comes from): WASD moves at an ordinary walking pace, the mouse looks around via the
         // browser's real pointer-lock, and a simple point-in-polygon check against the shop's
-        // own outer wall (getWallSegmentsFt, already used elsewhere for wall placement) keeps
-        // you from walking through it.
+        // own outer wall (getWallSegmentsFt, already used elsewhere for wall placement) plus a
+        // real distance-to-segment check against every wall (interior included, see
+        // isBlockedByWall) keeps you from walking through anything solid.
         let walkControls = null;
         let walkModeActive = false;
         const walkKeys = { forward: false, back: false, left: false, right: false };
         const WALK_EYE_HEIGHT_FT = 5.5;
         const WALK_SPEED_FTPS = 4.5; // an unhurried human walking pace
+        // Rough shoulder-width buffer added on top of a wall's own half-thickness -- without
+        // it "not blocked" would still mean the camera's near-clip plane pokes into the wall
+        // mesh's face right at the moment you stop, which reads exactly like clipping through.
+        const WALK_CAMERA_RADIUS_FT = 0.35;
         let lastWalkFrameTime = null;
 
         // Standard ray-casting point-in-polygon test against the shop's own outer boundary
         // (rectangle or custom shape, same source getWallSegmentsFt already draws walls from).
+        // This alone only ever kept you inside the shop's overall footprint -- its boundary is
+        // the wall's own centerline, so you could still walk roughly half a wall's thickness
+        // into its geometry before this stopped you, and it said nothing at all about interior
+        // partition walls. isBlockedByWall (below) is the real per-wall collision check now
+        // combined with this one; this stays as a coarse backstop for the outer footprint,
+        // including non-rectangular custom shop shapes.
         function pointInShopPolygon(x, z) {
             if (!currentShopWidthFt || !currentShopLengthFt) return true;
             const segments = getWallSegmentsFt(currentShopWidthFt, currentShopLengthFt);
@@ -1346,6 +1383,50 @@
                 if (crosses) inside = !inside;
             });
             return inside;
+        }
+
+        // Real per-wall collision -- distance from (x,z) to every wall segment's own
+        // centerline (allWallSegments, built fresh each buildScene() and already covering
+        // BOTH the exterior walls and every interior partition wall), keeping out to half
+        // that wall's real thickness plus WALK_CAMERA_RADIUS_FT. A door/window opening along
+        // that same segment (found the same way addWallSegmentWithOpenings finds them to
+        // decide where to actually cut the wall mesh) is excluded from the keep-out zone, so
+        // a doorway you can see is also one you can walk through -- otherwise adding real wall
+        // collision would have made every doorway a dead end.
+        function isBlockedByWall(x, z) {
+            const doorWindowFeatures = ((sharedLayout && sharedLayout.wallFeatures) || [])
+                .filter(f => f.type === 'door' || f.type === 'window');
+            for (const seg of allWallSegments) {
+                const dx = seg.b.x - seg.a.x, dz = seg.b.y - seg.a.y;
+                const segLen = Math.hypot(dx, dz);
+                if (segLen < 0.05) continue;
+                const ux = dx / segLen, uz = dz / segLen;
+                const vx = x - seg.a.x, vz = z - seg.a.y;
+                const t = vx * ux + vz * uz;
+                const perp = Math.abs(vx * -uz + vz * ux);
+                const keepOut = seg.thicknessFt / 2 + WALK_CAMERA_RADIUS_FT;
+                if (t < -keepOut || t > segLen + keepOut || perp > keepOut) continue;
+                const openings = findFeaturesOnSegment(seg.a, seg.b, seg.thicknessFt, doorWindowFeatures);
+                const inOpening = openings.some(({ f, t: openT }) => {
+                    const halfLen = (f.lengthFt || 1) / 2;
+                    return t >= openT - halfLen && t <= openT + halfLen;
+                });
+                if (!inOpening) return true;
+            }
+            return false;
+        }
+
+        function canWalkTo(x, z) {
+            return pointInShopPolygon(x, z) && !isBlockedByWall(x, z);
+        }
+
+        // Keeps the walk-mode eye height from poking through a low ceiling (WALK_EYE_HEIGHT_FT
+        // is a plausible constant for a typical shop, but was never checked against the
+        // shop's own configured ceiling height, which is user-editable and defaults lower on
+        // some saved layouts).
+        function walkEyeHeightFt() {
+            const ceilingFt = lastCeilingFt || 10;
+            return Math.min(WALK_EYE_HEIGHT_FT, Math.max(3, ceilingFt - 0.5));
         }
 
         function initWalkControls() {
@@ -1377,10 +1458,10 @@
         function enterWalkMode() {
             if (!camera || !renderer) return;
             if (!walkControls) initWalkControls();
-            // Starts from wherever the orbit camera currently is (XZ), at a fixed eye height,
-            // so switching modes doesn't teleport you somewhere unrelated to what you were
-            // just looking at.
-            camera.position.y = WALK_EYE_HEIGHT_FT;
+            // Starts from wherever the orbit camera currently is (XZ), at a fixed eye height
+            // (clamped to the shop's own ceiling, see walkEyeHeightFt), so switching modes
+            // doesn't teleport you somewhere unrelated to what you were just looking at.
+            camera.position.y = walkEyeHeightFt();
             controls.enabled = false;
             walkModeActive = true;
             lastWalkFrameTime = null;
@@ -1388,6 +1469,8 @@
             if (btn) { btn.classList.add('active'); btn.textContent = '🚶 Exit Walk Mode (Esc)'; }
             const hint = document.getElementById('viewerHint');
             if (hint) hint.textContent = 'WASD to walk, mouse to look around, Esc to exit.';
+            const crosshair = document.getElementById('walkCrosshair');
+            if (crosshair) crosshair.style.display = 'block';
             walkControls.lock();
         }
 
@@ -1407,6 +1490,8 @@
             if (btn) { btn.classList.remove('active'); btn.textContent = '🚶 Walk Mode'; }
             const hint = document.getElementById('viewerHint');
             if (hint) hint.textContent = 'Drag empty space to orbit · right-drag to pan · scroll to zoom · wall features slide along their wall.';
+            const crosshair = document.getElementById('walkCrosshair');
+            if (crosshair) crosshair.style.display = 'none';
             // Gives the orbit camera's own target something sane to look at from here instead
             // of leaving it wherever it last was, often now far behind the camera after walking.
             if (controls && camera) {
@@ -1414,6 +1499,21 @@
                 camera.getWorldDirection(dir);
                 controls.target.copy(camera.position).addScaledVector(dir, 5);
             }
+        }
+
+        // resetViewBtn and performUndo3d both need to force walk mode off before doing their
+        // own camera work, but the browser's pointer-lock exit is asynchronous -- calling
+        // walkControls.unlock() alone and immediately continuing let exitWalkMode's own
+        // orbit-target recompute (see above) fire AFTER that other camera work already ran,
+        // silently overwriting it (e.g. Reset View's carefully-framed target, clobbered a tick
+        // later by exitWalkMode's generic "5ft in front of wherever the camera ended up").
+        // Calling exitWalkMode() directly makes the mode-exit itself synchronous; the real
+        // unlock() still happens right after for the browser-level pointer-lock cleanup, and
+        // exitWalkMode's own re-entry guard makes the later async 'unlock' event a no-op.
+        function forceExitWalkMode() {
+            if (!walkModeActive) return;
+            exitWalkMode();
+            if (walkControls) walkControls.unlock();
         }
 
         function updateWalkMovement(now) {
@@ -1432,12 +1532,14 @@
 
             if (moveZ) walkControls.moveForward((moveZ / len) * step);
             if (moveX) walkControls.moveRight((moveX / len) * step);
-            camera.position.y = WALK_EYE_HEIGHT_FT;
+            camera.position.y = walkEyeHeightFt();
 
             // Per-axis wall clamp, tested independently so walking diagonally toward a wall
-            // slides you along it instead of stopping dead the instant either axis touches it.
-            if (!pointInShopPolygon(camera.position.x, startZ)) camera.position.x = startX;
-            if (!pointInShopPolygon(camera.position.x, camera.position.z)) camera.position.z = startZ;
+            // slides you along it instead of stopping dead the instant either axis touches
+            // it -- canWalkTo combines the outer-footprint check with real per-wall collision
+            // (interior walls included) instead of just the outer boundary alone.
+            if (!canWalkTo(camera.position.x, startZ)) camera.position.x = startX;
+            if (!canWalkTo(camera.position.x, camera.position.z)) camera.position.z = startZ;
         }
 
         function animate(now) {
@@ -3136,7 +3238,7 @@
 
         function performUndo3d() {
             if (!undoStack3d.length) return;
-            if (walkModeActive) walkControls.unlock();
+            forceExitWalkMode();
             sharedLayout = JSON.parse(undoStack3d.pop());
             kerphSaveCurrentLayout(sharedLayout).catch(() => {});
             buildScene();
@@ -3857,7 +3959,7 @@
             // Re-uses whatever buildScene last computed rather than recomputing bounds here --
             // exiting Walk Mode already re-enables controls (see exitWalkMode), so this only
             // needs to snap the orbit camera itself back to a sane framing.
-            if (walkModeActive) walkControls.unlock();
+            forceExitWalkMode();
             if (lastSceneBounds) frameCamera(lastSceneBounds, lastCeilingFt);
         });
 
