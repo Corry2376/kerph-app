@@ -452,7 +452,16 @@
             width: calc(100vw - 300px);
             height: calc(100vh - var(--header-h, 150px));
             overflow-y: auto;
-            padding: 40px;
+            /* Extra right padding reserves clearance from .notes-panel, which is
+               position:fixed at right:24px/width:250px on every tab (not just 3D Preview) --
+               without it, #projectPreview3D's centered content (up to 900px wide) can extend
+               far enough right on a typical desktop window to run underneath the notes panel,
+               which sits at a higher z-index and isn't part of this element's own stacking
+               context (position:fixed panels aren't clipped by a plain-flow ancestor's
+               overflow either way). 300px clears the panel's 250px width + 24px offset with a
+               clean gap; reset back to a uniform padding in the <=900px media query below,
+               where .notes-panel itself drops out of fixed positioning entirely. */
+            padding: 40px 300px 40px 40px;
         }
 
         #cutListPreview { max-width: 900px; margin: 0 auto; }
@@ -675,6 +684,19 @@
             resize: vertical;
             font-family: inherit;
             line-height: 1.5;
+        }
+
+        /* #jointsPanel only carries the bare .floating-panel class, whose top:14px is meant
+           for the OTHER floating panels (#preview3DSelectionPanel etc.), which are nested
+           inside #preview3DCanvasWrap -- a container that itself starts below the header, so
+           14px from ITS top clears the header fine. #jointsPanel is a body-level sibling of
+           the header instead (same as .notes-panel above), so that same 14px is measured from
+           the page's own top and lands well inside the header's 150px band -- and since the
+           header sits at z-index:100 against this panel's z-index:10, the header visibly
+           covers whatever of the panel falls in that overlap. Same header-clearing offset
+           .notes-panel already uses, just on the left instead of the right. */
+        #jointsPanel {
+            top: calc(var(--header-h, 150px) + 20px);
         }
 
         /* ---------- PROJECT NOTES: formatting toolbar + preview ----------
