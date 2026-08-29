@@ -686,18 +686,6 @@
             line-height: 1.5;
         }
 
-        /* #jointsPanel only carries the bare .floating-panel class, whose top:14px is meant
-           for the OTHER floating panels (#preview3DSelectionPanel etc.), which are nested
-           inside #preview3DCanvasWrap -- a container that itself starts below the header, so
-           14px from ITS top clears the header fine. #jointsPanel is a body-level sibling of
-           the header instead (same as .notes-panel above), so that same 14px is measured from
-           the page's own top and lands well inside the header's 150px band -- and since the
-           header sits at z-index:100 against this panel's z-index:10, the header visibly
-           covers whatever of the panel falls in that overlap. Same header-clearing offset
-           .notes-panel already uses, just on the left instead of the right. */
-        #jointsPanel {
-            top: calc(var(--header-h, 150px) + 20px);
-        }
 
         /* ---------- PROJECT NOTES: formatting toolbar + preview ----------
            Notes stay a single plain-text string (same as before) — formatting is just
@@ -747,6 +735,7 @@
         /* ---------- 3D PREVIEW TOOLBAR (Add Label / Measure) ---------- */
         .preview3d-toolbar {
             display: flex;
+            flex-wrap: wrap;
             align-items: center;
             gap: 8px;
             margin-bottom: 10px;
@@ -1453,9 +1442,10 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
         <div class="notes-preview" id="notesPreview" style="display:none;"></div>
     </div>
 
-    <div class="floating-panel" id="jointsPanel" style="display:none; width:300px;">
-        <div class="floating-panel-title" style="display:flex; align-items:center; justify-content:space-between;">Joints <button type="button" id="jointsPanelCloseBtn" class="mini-btn" style="font-weight:400;">&#10005;</button></div>
-        <p style="font-size:11px; color:#6b7280; line-height:1.4; margin:0 0 8px;">Connect two pieces with a real cut joint. Only works between axis-aligned pieces (rotation at 0&deg;/90&deg;/180&deg;/270&deg;) &mdash; anything else is skipped and shown as a plain butt joint.</p>
+    <div class="modal-overlay" id="jointsPanel" style="display:none;">
+      <div class="modal-box" style="width:360px; max-height:calc(100vh - 40px); overflow-y:auto;">
+        <div class="modal-title" style="display:flex; align-items:center; justify-content:space-between;">Joints <button type="button" id="jointsPanelCloseBtn" class="mini-btn" style="font-weight:400; flex:none;">&#10005;</button></div>
+        <p style="font-size:11.5px; color:#6b7280; line-height:1.5; margin:0 0 12px;">Connect two pieces with a real cut joint. Only works between axis-aligned pieces (rotation at 0&deg;/90&deg;/180&deg;/270&deg;) &mdash; anything else is skipped and shown as a plain butt joint.</p>
         <div class="form-row">
             <label for="jointPanelASelect">Piece A (receives the cut)</label>
             <select class="select-box" id="jointPanelASelect"></select>
@@ -1470,7 +1460,10 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
                 <option value="butt">Butt (no cut, just touching)</option>
                 <option value="rabbet">Rabbet (step cut at an edge)</option>
                 <option value="dado">Dado (slot cut, receiving piece spans past it)</option>
+                <option value="pocket-hole">Pocket Hole (butt joint, screwed from inside)</option>
+                <option value="dovetail">Dovetail (interlocking pins)</option>
             </select>
+            <p id="jointGeometryNote" style="display:none; font-size:11px; color:#92400e; background:#fffbeb; border:1px solid #fde68a; border-radius:6px; padding:6px 8px; margin:6px 0 0; line-height:1.4;"></p>
         </div>
         <div class="form-row" id="jointDepthRow">
             <label for="jointDepthInput" id="jointDepthLabel">Cut depth (in)</label>
@@ -1479,6 +1472,7 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
         <button type="button" class="mini-btn modal-primary-btn" id="addJointBtn" style="width:100%; margin-top:4px;">Add Joint</button>
         <div id="jointsList" style="margin-top:10px;"></div>
         <div class="empty-hint" id="jointsEmptyHint">No joints yet &mdash; pieces just touch as plain boxes.</div>
+      </div>
     </div>
 
     <div id="canvas-area">
@@ -4280,9 +4274,22 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
             document.getElementById('planPackageJoints').innerHTML = realJoints.map(j => {
                 const a = panelsByIdForPrint.get(j.panelAId), b = panelsByIdForPrint.get(j.panelBId);
                 if (!a || !b) return '';
-                const verb = j.type === 'dado' ? 'a stopped dado' : 'a rabbet';
                 const su = dimUnitSuffix();
-                return `<div class="print-joint-row">Cut ${verb}, ${inchesToDisplay(j.depthIn)}${su} deep, into <strong>${escapeHtml(a.name)}</strong> to receive <strong>${escapeHtml(b.name)}</strong> (${inchesToDisplay(b.widthIn)}${su} x ${inchesToDisplay(b.heightIn)}${su} x ${inchesToDisplay(b.thicknessIn)}${su}).</div>`;
+                const bDesc = `<strong>${escapeHtml(b.name)}</strong> (${inchesToDisplay(b.widthIn)}${su} x ${inchesToDisplay(b.heightIn)}${su} x ${inchesToDisplay(b.thicknessIn)}${su})`;
+                // rabbet/dado are real box-shaped cuts with a meaningful depth; pocket-hole/
+                // dovetail aren't (see JOINT_TYPES_WITH_DEPTH) -- the printed instruction reads
+                // correctly for each instead of always describing a depth-cut notch.
+                if (j.type === 'dado' || j.type === 'rabbet') {
+                    const verb = j.type === 'dado' ? 'a stopped dado' : 'a rabbet';
+                    return `<div class="print-joint-row">Cut ${verb}, ${inchesToDisplay(j.depthIn)}${su} deep, into <strong>${escapeHtml(a.name)}</strong> to receive ${bDesc}.</div>`;
+                }
+                if (j.type === 'pocket-hole') {
+                    return `<div class="print-joint-row">Join <strong>${escapeHtml(a.name)}</strong> to ${bDesc} with pocket-hole screws driven from the inside face.</div>`;
+                }
+                if (j.type === 'dovetail') {
+                    return `<div class="print-joint-row">Cut interlocking dovetails between <strong>${escapeHtml(a.name)}</strong> and ${bDesc}.</div>`;
+                }
+                return '';
             }).join('');
 
             const notesText = document.getElementById('projectNotesInput').value.trim();
@@ -4633,28 +4640,49 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
             }
             updateJointSuggestion();
         }
+        // rabbet/dado are the only types that cut a real box-shaped notch (applyJointCuts) --
+        // "Cut depth" is a meaningless field for the other three, so it's hidden for all of
+        // them the same way it already was for plain butt.
+        const JOINT_TYPES_WITH_DEPTH = new Set(['rabbet', 'dado']);
+        // pocket-hole/dovetail are real, selectable, saved, and documented in the Joints list
+        // and Plan Package printout -- but neither has 3D cut geometry modeled yet (a true
+        // interlocking dovetail needs a multi-pin generator, a real pocket-hole needs angled
+        // screw-pilot cylinders; both are a substantially bigger lift than reusing the
+        // existing box-cutter). Surfacing that plainly here beats silently reusing the
+        // rabbet/dado box-cutter, which would show the WRONG shape -- a plain butt-looking
+        // joint (see applyJointCuts's filter) is honestly "not modeled yet," not wrong.
+        const JOINT_TYPES_WITHOUT_3D_GEOMETRY = {
+            'pocket-hole': 'Pieces will show touching (like a butt joint) in the 3D view -- pocket-hole screw geometry isn\'t modeled yet.',
+            dovetail: 'Pieces will show touching (like a butt joint) in the 3D view -- interlocking dovetail geometry isn\'t modeled yet.'
+        };
+        function updateJointTypeFieldVisibility() {
+            const type = document.getElementById('jointTypeSelect').value;
+            document.getElementById('jointDepthRow').style.display = JOINT_TYPES_WITH_DEPTH.has(type) ? 'flex' : 'none';
+            const note = document.getElementById('jointGeometryNote');
+            const noteText = JOINT_TYPES_WITHOUT_3D_GEOMETRY[type];
+            note.textContent = noteText || '';
+            note.style.display = noteText ? 'block' : 'none';
+        }
         function updateJointSuggestion() {
             const panelA = panels.find(p => p.id === document.getElementById('jointPanelASelect').value);
             const panelB = panels.find(p => p.id === document.getElementById('jointPanelBSelect').value);
             const suggested = suggestJointType(panelA, panelB);
             document.getElementById('jointTypeSelect').value = suggested;
             document.getElementById('jointSuggestedTag').textContent = panelA && panelB ? `(suggested: ${suggested})` : '';
-            document.getElementById('jointDepthRow').style.display = suggested === 'butt' ? 'none' : 'flex';
+            updateJointTypeFieldVisibility();
         }
         document.getElementById('jointsToolBtn').addEventListener('click', () => {
             if (panels.length < 2) { showToast('Add at least two pieces first.'); return; }
             populateJointPanelSelects();
             renderJointsList();
-            document.getElementById('jointsPanel').style.display = 'block';
+            document.getElementById('jointsPanel').style.display = 'flex';
         });
         document.getElementById('jointsPanelCloseBtn').addEventListener('click', () => {
             document.getElementById('jointsPanel').style.display = 'none';
         });
         document.getElementById('jointPanelASelect').addEventListener('change', updateJointSuggestion);
         document.getElementById('jointPanelBSelect').addEventListener('change', updateJointSuggestion);
-        document.getElementById('jointTypeSelect').addEventListener('change', () => {
-            document.getElementById('jointDepthRow').style.display = document.getElementById('jointTypeSelect').value === 'butt' ? 'none' : 'flex';
-        });
+        document.getElementById('jointTypeSelect').addEventListener('change', updateJointTypeFieldVisibility);
         document.getElementById('addJointBtn').addEventListener('click', () => {
             const panelAId = document.getElementById('jointPanelASelect').value;
             const panelBId = document.getElementById('jointPanelBSelect').value;
@@ -5463,7 +5491,11 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
         // mesh must be added at position (0,0,0) with no rotation, not positioned via p.xIn/etc.
         // the way every other panel mesh is.
         function applyJointCuts(panel, geo, allPanelsById, allJoints) {
-            const myJoints = allJoints.filter(j => j.panelAId === panel.id && j.type !== 'butt');
+            // Only rabbet/dado cut a real box-shaped notch -- pocket-hole/dovetail don't have
+            // 3D geometry modeled yet (see JOINT_TYPES_WITHOUT_3D_GEOMETRY), so they're
+            // excluded here the same as a plain butt joint rather than incorrectly reusing
+            // this box-cutter and showing the wrong shape.
+            const myJoints = allJoints.filter(j => j.panelAId === panel.id && (j.type === 'rabbet' || j.type === 'dado'));
             if (!myJoints.length) return null;
             const boxA = panelWorldAABB(panel);
             if (!boxA) return null;
