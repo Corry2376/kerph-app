@@ -1232,6 +1232,27 @@
                 </div>
             </div>
 
+            <div class="header-field" style="width:100%; margin-top:14px; border-top:1px solid #e5e7eb; padding-top:10px;">
+                <label class="header-field-label">Connectors &mdash; tag an edge with a number, then use the Assemble tool to snap any two pieces sharing a number together</label>
+                <div id="panelConnectorsList" style="margin-bottom:8px;"></div>
+                <div style="display:flex; gap:6px; align-items:flex-end;">
+                    <div style="flex:1;">
+                        <label class="header-field-label" style="font-size:10px;">Number</label>
+                        <input type="text" class="input-box" id="connectorNumberInput" placeholder="1">
+                    </div>
+                    <div style="flex:1.2;">
+                        <label class="header-field-label" style="font-size:10px;">Edge</label>
+                        <select class="select-box" id="connectorEdgeSelect">
+                            <option value="left">Left</option>
+                            <option value="right">Right</option>
+                            <option value="top">Top</option>
+                            <option value="bottom">Bottom</option>
+                        </select>
+                    </div>
+                    <button type="button" class="mini-btn" id="addConnectorBtn" style="flex:none;">+ Add</button>
+                </div>
+            </div>
+
             <div class="modal-actions">
                 <button type="button" id="panelCancelBtn" class="mini-btn">Cancel</button>
                 <button type="button" id="panelSaveBtn" class="mini-btn modal-primary-btn">Save Panel</button>
@@ -1524,6 +1545,7 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
                 <button type="button" class="mini-btn" id="addPieceToolBtn">&#10133; New Piece</button>
                 <button type="button" class="mini-btn" id="addLabelToolBtn">&#127991;&#65039; Add Label</button>
                 <button type="button" class="mini-btn" id="jointsToolBtn" title="Cut real rabbet/dado joints between two pieces">&#128295; Joints</button>
+                <button type="button" class="mini-btn" id="assembleToolBtn" title="Snap pieces together by matching connector numbers (set per-edge in each piece's Edit Piece modal)">&#129513; Assemble</button>
                 <button type="button" class="mini-btn" id="measureToolBtn">&#128207; Measure</button>
                 <button type="button" class="mini-btn" id="dimensionsToggleBtn" title="Show a size label next to every piece">&#128209; Dimensions</button>
                 <button type="button" class="mini-btn" id="explodeToggleBtn">&#128165; Exploded View</button>
@@ -3025,6 +3047,43 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
             document.getElementById('holeSizeBInput').value = '';
         }
 
+        // Same edit-session-local-array pattern as editingHoles above (see that variable's own
+        // comment) -- only written into the real panel on Save, so Cancel discards any
+        // connectors added/removed during this edit session too.
+        let editingConnectors = [];
+        const EDGE_LABELS = { left: 'Left', right: 'Right', top: 'Top', bottom: 'Bottom' };
+        function renderPanelConnectorsList() {
+            const container = document.getElementById('panelConnectorsList');
+            container.innerHTML = '';
+            editingConnectors.forEach(c => {
+                const row = document.createElement('div');
+                row.className = 'hardware-item';
+                const desc = document.createElement('span');
+                desc.className = 'hardware-item-name';
+                desc.textContent = `#${c.number} — ${EDGE_LABELS[c.edge] || c.edge} edge`;
+                const removeBtn = document.createElement('button');
+                removeBtn.className = 'hardware-item-remove';
+                removeBtn.textContent = '✕';
+                removeBtn.title = 'Remove';
+                removeBtn.addEventListener('click', () => {
+                    editingConnectors = editingConnectors.filter(x => x.id !== c.id);
+                    renderPanelConnectorsList();
+                });
+                row.appendChild(desc);
+                row.appendChild(removeBtn);
+                container.appendChild(row);
+            });
+        }
+        function addConnectorFromModalFields() {
+            const number = document.getElementById('connectorNumberInput').value.trim();
+            const edge = document.getElementById('connectorEdgeSelect').value;
+            if (!number) { showToast('Give the connector a number.'); return; }
+            const id = 'conn_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+            editingConnectors.push({ id, number, edge });
+            renderPanelConnectorsList();
+            document.getElementById('connectorNumberInput').value = '';
+        }
+
         // Non-rectangular panel presets — only these two need an extra numeric input (arch
         // rise / corner radius); half-round, quarter-round, and ellipse are fully derived from
         // the panel's own width/height, same bounding box every shape already uses for
@@ -3049,6 +3108,8 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
             editingPanelId = panel ? panel.id : null;
             editingHoles = (panel && panel.holes) ? JSON.parse(JSON.stringify(panel.holes)) : [];
             renderPanelHolesList();
+            editingConnectors = (panel && panel.connectors) ? JSON.parse(JSON.stringify(panel.connectors)) : [];
+            renderPanelConnectorsList();
             document.getElementById('holeShapeSelect').value = 'circle';
             updateHoleShapeFields();
             document.getElementById('panelModalTitle').textContent = panel ? 'Edit Panel' : 'Add Panel';
@@ -3126,16 +3187,17 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
             if (!widthIn || !heightIn || !thicknessIn) { showToast('Width, height, and thickness must be greater than 0.'); return; }
 
             const holes = editingHoles;
+            const connectors = editingConnectors;
             if (editingPanelId) {
                 const existing = panels.find(p => p.id === editingPanelId);
                 if (existing) {
-                    Object.assign(existing, { name, widthIn, heightIn, thicknessIn, material, qty, xIn, yIn, zIn, rotXDeg, rotYDeg, rotZDeg, holes, shapeType, archRiseIn, cornerRadiusIn, grainLocked });
+                    Object.assign(existing, { name, widthIn, heightIn, thicknessIn, material, qty, xIn, yIn, zIn, rotXDeg, rotYDeg, rotZDeg, holes, connectors, shapeType, archRiseIn, cornerRadiusIn, grainLocked });
                     if (groupName) existing.groupName = groupName; else delete existing.groupName;
                 }
             } else {
                 panels.push({
                     id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
-                    name, widthIn, heightIn, thicknessIn, material, qty, xIn, yIn, zIn, rotXDeg, rotYDeg, rotZDeg, holes, shapeType, archRiseIn, cornerRadiusIn, groupName, grainLocked
+                    name, widthIn, heightIn, thicknessIn, material, qty, xIn, yIn, zIn, rotXDeg, rotYDeg, rotZDeg, holes, connectors, shapeType, archRiseIn, cornerRadiusIn, groupName, grainLocked
                 });
             }
             savePanels();
@@ -4200,6 +4262,7 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
 
         document.getElementById('holeShapeSelect').addEventListener('change', updateHoleShapeFields);
         document.getElementById('addHoleBtn').addEventListener('click', addHoleFromModalFields);
+        document.getElementById('addConnectorBtn').addEventListener('click', addConnectorFromModalFields);
 
         // Quick-set convenience — writes a preset combo into the 3 real rotation fields
         // rather than being its own stored value (see savePanelFromModal/openPanelModal).
@@ -4720,6 +4783,27 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
         document.getElementById('jointsPanelCloseBtn').addEventListener('click', () => {
             document.getElementById('jointsPanel').style.display = 'none';
         });
+        document.getElementById('assembleToolBtn').addEventListener('click', () => {
+            if (panels.length < 2) { showToast('Add at least two pieces first.'); return; }
+            const hasAnyConnector = panels.some(p => Array.isArray(p.connectors) && p.connectors.length);
+            if (!hasAnyConnector) {
+                showToast('No connector numbers set yet — open a piece\'s Edit Piece modal and tag matching edges with the same number.');
+                return;
+            }
+            if (typeof window.assemblePanels !== 'function') { showToast('3D preview is still loading — try again in a moment.'); return; }
+            const { moved, unmatched } = window.assemblePanels(panels);
+            if (moved > 0) {
+                savePanels();
+                if (typeof window.rebuild3DPreviewMeshes === 'function') window.rebuild3DPreviewMeshes();
+            }
+            if (unmatched.length) {
+                showToast(`Assembled ${moved} piece${moved === 1 ? '' : 's'}. Connector number${unmatched.length === 1 ? '' : 's'} ${unmatched.join(', ')} ${unmatched.length === 1 ? "isn't" : "aren't"} matched on exactly two pieces, so ${unmatched.length === 1 ? 'it was' : 'they were'} skipped.`);
+            } else if (moved > 0) {
+                showToast(`Assembled ${moved} piece${moved === 1 ? '' : 's'} into position.`);
+            } else {
+                showToast('Nothing to assemble — connector numbers need to be on two different pieces, and at least one of them needs a placed anchor.');
+            }
+        });
         document.getElementById('jointPanelASelect').addEventListener('change', updateJointSuggestion);
         document.getElementById('jointPanelBSelect').addEventListener('change', updateJointSuggestion);
         document.getElementById('jointTypeSelect').addEventListener('change', updateJointTypeFieldVisibility);
@@ -5123,6 +5207,10 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
             return makeTextSprite(text, { bg: '#dbeafe', border: '#1e3a8a', ink: '#1e3a8a', fontSize: 22, worldHeight: 3.4, padding: 16 });
         }
 
+        function makeConnectorSprite(text) {
+            return makeTextSprite(String(text), { bg: '#dcfce7', border: '#15803d', ink: '#14532d', fontSize: 22, worldHeight: 3.6, padding: 16 });
+        }
+
         function makeDimensionSprite(text) {
             return makeTextSprite(text, { bg: 'rgba(255, 255, 255, 0.94)', border: '#475569', ink: '#0f172a', fontSize: 20, worldHeight: 3, padding: 14 });
         }
@@ -5203,6 +5291,7 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
         function clearPanelMeshes() {
             panelMeshes.forEach(({ mesh }) => {
                 if (mesh.userData.badge) scene.remove(mesh.userData.badge);
+                if (mesh.userData.connectorBadges) mesh.userData.connectorBadges.forEach(({ sprite }) => scene.remove(sprite));
                 // Hole markers are children of mesh (see addHoleMeshes), so scene.remove(mesh)
                 // already drops them from the render graph — but three.js never auto-frees GPU
                 // buffers, so their geometry/material still need explicit disposal here.
@@ -5459,6 +5548,109 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
             return box;
         }
 
+        /* ---------- ASSEMBLE BY CONNECTOR NUMBER ----------
+           A panel's connector tags (panel.connectors: [{id, number, edge}]) mark a point on
+           one of its 4 in-plane edges (left/right along local X, top/bottom along local Y --
+           same width/height axes panelWorldAABB above already treats as a panel's two in-plane
+           dimensions, thickness being the out-of-plane depth). Assemble matches every pair of
+           connectors sharing the same number across different panels and moves one of the two
+           so that point lands exactly on the other's.
+
+           Deliberately translate-only: rotation is left exactly as the user already set it
+           (via the Orientation preset or the raw rotation fields), never auto-solved. Guessing
+           the "correct" relative orientation between two arbitrary pieces is a much harder,
+           far more error-prone problem than positioning is -- the two pieces meeting at a
+           sensible angle already depends on the user having oriented each one correctly first,
+           the same as it does today without this feature. This handles the actual repetitive
+           part (dragging pieces into position by hand) without pretending to solve a problem
+           it doesn't actually solve. */
+        function connectorLocalPoint(panel, edge) {
+            const hw = (panel.widthIn || 0) / 2, hh = (panel.heightIn || 0) / 2;
+            if (edge === 'left') return new THREE.Vector3(-hw, 0, 0);
+            if (edge === 'right') return new THREE.Vector3(hw, 0, 0);
+            if (edge === 'top') return new THREE.Vector3(0, hh, 0);
+            return new THREE.Vector3(0, -hh, 0); // 'bottom'
+        }
+        // World position of a connector point, OR (if worldPosition is false) that same local
+        // point rotated by the panel's current orientation but NOT translated by its position --
+        // the piece this function is moving needs the latter (see assemblePanels below): the
+        // offset from ITS OWN center to its tagged edge, in world-aligned directions, so that
+        // subtracting it from the target world point gives the new center.
+        function connectorOffset(panel, edge, worldPosition) {
+            const obj = new THREE.Object3D();
+            if (worldPosition) obj.position.set(panel.xIn || 0, panel.yIn || 0, panel.zIn || 0);
+            obj.rotation.set(
+                THREE.MathUtils.degToRad(panel.rotXDeg || 0),
+                THREE.MathUtils.degToRad(panel.rotYDeg || 0),
+                THREE.MathUtils.degToRad(panel.rotZDeg || 0)
+            );
+            obj.updateMatrixWorld(true);
+            return connectorLocalPoint(panel, edge).applyMatrix4(obj.matrixWorld);
+        }
+
+        // Bridge for the assembleToolBtn click handler in the non-module script above (same
+        // pattern as window.rebuild3DPreviewMeshes) -- this module script's declarations aren't
+        // visible to that plain <script> block otherwise.
+        window.assemblePanels = function assemblePanels(allPanels) {
+            // number -> [{panel, edge}, ...], only counting panels that are actually placed
+            // (a panel with no xIn/yIn/zIn yet has nothing to anchor to or move from).
+            const byNumber = new Map();
+            allPanels.forEach(p => {
+                if (typeof p.xIn !== 'number' || !Array.isArray(p.connectors)) return;
+                p.connectors.forEach(c => {
+                    if (!c.number) return;
+                    if (!byNumber.has(c.number)) byNumber.set(c.number, []);
+                    byNumber.get(c.number).push({ panel: p, edge: c.edge });
+                });
+            });
+
+            const unmatched = [];
+            const pairsByPanelId = new Map(); // panelId -> [{ otherPanel, myEdge, otherEdge }, ...]
+            byNumber.forEach((entries, number) => {
+                if (entries.length !== 2) { unmatched.push(number); return; }
+                const [a, b] = entries;
+                if (a.panel.id === b.panel.id) { unmatched.push(number); return; } // same piece, nothing to solve
+                [[a, b], [b, a]].forEach(([mine, other]) => {
+                    if (!pairsByPanelId.has(mine.panel.id)) pairsByPanelId.set(mine.panel.id, []);
+                    pairsByPanelId.get(mine.panel.id).push({ otherPanel: other.panel, myEdge: mine.edge, otherEdge: other.edge });
+                });
+            });
+
+            if (!pairsByPanelId.size) return { moved: 0, unmatched };
+
+            // BFS from every already-connected panel outward, so a chain (A<->B<->C) resolves
+            // fully even though only A starts "placed" -- B is positioned relative to A, then
+            // C relative to B's NEW position, not its stale pre-assemble one.
+            const placed = new Set();
+            const queue = [];
+            // Anchor: the first panel (in panels[] order) that has any connector at all, so
+            // Assemble is deterministic across repeated clicks instead of picking differently
+            // each time.
+            const anchorId = allPanels.find(p => pairsByPanelId.has(p.id))?.id;
+            if (!anchorId) return { moved: 0, unmatched };
+            placed.add(anchorId);
+            queue.push(anchorId);
+
+            let moved = 0;
+            while (queue.length) {
+                const currentId = queue.shift();
+                const currentPanel = allPanels.find(p => p.id === currentId);
+                const links = pairsByPanelId.get(currentId) || [];
+                links.forEach(({ otherPanel, myEdge, otherEdge }) => {
+                    if (placed.has(otherPanel.id)) return; // already positioned this pass
+                    const targetWorld = connectorOffset(currentPanel, myEdge, true);
+                    const movingOffset = connectorOffset(otherPanel, otherEdge, false);
+                    otherPanel.xIn = targetWorld.x - movingOffset.x;
+                    otherPanel.yIn = targetWorld.y - movingOffset.y;
+                    otherPanel.zIn = targetWorld.z - movingOffset.z;
+                    placed.add(otherPanel.id);
+                    queue.push(otherPanel.id);
+                    moved++;
+                });
+            }
+            return { moved, unmatched };
+        }
+
         // Same formula produces both a corner notch (rabbet, when B only partially overlaps A
         // on the two non-adjacency axes) and a full slot (dado, when B spans A's whole extent
         // on those axes) — the rabbet/dado label is just a UI description of the two cases,
@@ -5669,6 +5861,19 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
                     scene.add(badge);
                     mesh.userData.badge = badge;
                     mesh.userData.badgeOffsetY = badgeOffsetY;
+                }
+
+                if (!isCut && Array.isArray(p.connectors) && p.connectors.length) {
+                    const connectorBadges = [];
+                    p.connectors.forEach(c => {
+                        if (!c.number) return;
+                        const localOffset = connectorLocalPoint(p, c.edge);
+                        const sprite = makeConnectorSprite(c.number);
+                        sprite.position.copy(localOffset.clone().applyQuaternion(mesh.quaternion).add(mesh.position));
+                        scene.add(sprite);
+                        connectorBadges.push({ sprite, localOffset });
+                    });
+                    if (connectorBadges.length) mesh.userData.connectorBadges = connectorBadges;
                 }
 
                 panelMeshes.push({ mesh, panelId: p.id });
@@ -5970,6 +6175,11 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
         function syncAttachments(mesh) {
             if (mesh.userData.badge) {
                 mesh.userData.badge.position.set(mesh.position.x, mesh.position.y + mesh.userData.badgeOffsetY, mesh.position.z);
+            }
+            if (mesh.userData.connectorBadges) {
+                mesh.userData.connectorBadges.forEach(({ sprite, localOffset }) => {
+                    sprite.position.copy(localOffset.clone().applyQuaternion(mesh.quaternion).add(mesh.position));
+                });
             }
             if (mesh.userData.dot) {
                 const anchor = mesh.position.clone().sub(mesh.userData.anchorOffset);
