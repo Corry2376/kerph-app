@@ -666,6 +666,26 @@
             <button type="button" id="addBlastGateToDropBtn" class="mini-btn" style="flex:1;">+ Blast Gate</button>
             <button type="button" id="addYJointToDropBtn" class="mini-btn" style="flex:1;">+ Y-Joint</button>
         </div>
+        <div id="dropBranchFields" style="display:none; margin-top:10px; padding-top:10px; border-top:1px solid #e2e8f0;">
+            <div class="header-field-label" style="margin-bottom:4px;">Branches to other tools — splits off partway down this drop's own pipe</div>
+            <div id="dropBranchList" style="margin-bottom:8px;"></div>
+            <div style="display:flex; gap:6px; align-items:flex-end;">
+                <div style="flex:1;">
+                    <label class="header-field-label" style="font-size:10px;">Length (in)</label>
+                    <input type="number" class="input-box" id="dropBranchLengthIn" min="1" value="24">
+                </div>
+                <div style="flex:1;">
+                    <label class="header-field-label" style="font-size:10px;">Angle (&deg;)</label>
+                    <input type="number" class="input-box" id="dropBranchAngleDeg" min="0" max="359" value="90">
+                </div>
+                <div style="flex:1;">
+                    <label class="header-field-label" style="font-size:10px;">Distance (in)</label>
+                    <input type="number" class="input-box" id="dropBranchDistanceIn" min="1" value="24">
+                </div>
+                <button type="button" class="mini-btn" id="addDropBranchBtn" style="flex:none;">+ Add</button>
+            </div>
+            <div class="viewer-hint" style="margin-top:6px;">For a drop that needs to feed two nearby tools — 0&deg; angle points along the shop's +X (right, on the 2D layout), 90&deg; points along +Z (down the layout). Distance is how far sideways the second tool sits from this drop.</div>
+        </div>
         <div id="cabinetEditFields" style="display:none; margin-top:10px; padding-top:10px; border-top:1px solid #e2e8f0;">
             <div class="header-field-label" style="margin-bottom:4px;">Cabinet Size (in)</div>
             <div style="display:flex; gap:6px;">
@@ -1994,30 +2014,127 @@
                     const topFt = getDropTopFt(ceilingFt);
                     const bottomFt = getDropBottomFt(pipeLen, ceilingFt);
                     const actualLen = topFt - bottomFt;
-                    const geo = new THREE.CylinderGeometry(pipeRadius, pipeRadius, actualLen, 12);
                     const mat = materialForColor(COLORS.dcDrop);
-                    mesh = new THREE.Mesh(geo, mat);
-                    mesh.position.set(centerX, bottomFt + actualLen / 2, centerZ);
-                    mesh.castShadow = true;
-                    mesh.receiveShadow = true;
+                    // A drop with no extra branches (the overwhelming common case) stays exactly
+                    // the simple single-pipe shape it always was -- mesh's own geometry IS the
+                    // real visible pipe, same as before this feature existed. Branches (below)
+                    // are a separate, opt-in path that only changes anything for a drop the user
+                    // has actually added one to.
+                    const branches = Array.isArray(t.branches) ? t.branches : [];
+                    if (!branches.length) {
+                        const geo = new THREE.CylinderGeometry(pipeRadius, pipeRadius, actualLen, 12);
+                        mesh = new THREE.Mesh(geo, mat);
+                        mesh.position.set(centerX, bottomFt + actualLen / 2, centerZ);
+                        mesh.castShadow = true;
+                        mesh.receiveShadow = true;
 
-                    // A 90-degree elbow at the top, where the drop actually meets the overhead
-                    // run — without it the pipe just dead-ends in mid-air with nothing showing
-                    // it connects to anything. Built from the same addDuctBranch/addDuctCollar
-                    // mitered-stub style every other duct fitting uses (a real coupling collar,
-                    // not a smooth sphere "knuckle" — the sphere was the one remaining rounded
-                    // holdout after every other fitting moved to this style). The stub is
-                    // rotated to the piece's own 2D-authored angle (t.rotation), matching
-                    // whichever way the overhead run it was snapped to actually runs; the
-                    // collar is oriented along the average of [stub direction, straight down
-                    // into the drop's own vertical pipe] so it reads as a real angled seam.
+                        // A 90-degree elbow at the top, where the drop actually meets the overhead
+                        // run — without it the pipe just dead-ends in mid-air with nothing showing
+                        // it connects to anything. Built from the same addDuctBranch/addDuctCollar
+                        // mitered-stub style every other duct fitting uses (a real coupling collar,
+                        // not a smooth sphere "knuckle" — the sphere was the one remaining rounded
+                        // holdout after every other fitting moved to this style). The stub is
+                        // rotated to the piece's own 2D-authored angle (t.rotation), matching
+                        // whichever way the overhead run it was snapped to actually runs; the
+                        // collar is oriented along the average of [stub direction, straight down
+                        // into the drop's own vertical pipe] so it reads as a real angled seam.
+                        const elbowGroup = new THREE.Group();
+                        elbowGroup.position.set(0, actualLen / 2, 0);
+                        elbowGroup.rotation.y = rotY;
+                        const stubTarget = new THREE.Vector3(pipeRadius * 5, 0, 0);
+                        addDuctBranch(elbowGroup, pipeRadius, mat, stubTarget);
+                        addDuctCollar(elbowGroup, pipeRadius, mat, stubTarget, new THREE.Vector3(0, -1, 0));
+                        mesh.add(elbowGroup);
+
+                        mesh.userData.draggable = true;
+                        mesh.userData.toolIndex = index;
+                        mesh.userData.name = formatToolDisplayName(t);
+                        mesh.userData.catalogName = t.label || t.displayName || 'Item';
+                        mesh.userData.dims = t.displayDims || '';
+                        scene.add(mesh);
+                        clickableMeshes.push(mesh);
+                        return;
+                    }
+
+                    // A drop with one or more branches — a real wye, not N independent pipes:
+                    // one shared trunk below the top elbow, then a single split point it fans
+                    // out from into the primary pipe (straight down, unchanged position) plus
+                    // one mitered stub+collar per branch, each continuing down at its own
+                    // configured angle/distance/length (see addDropBranchBtn). All parts are
+                    // real children of one invisible hit-target mesh (same pattern
+                    // buildDuctFittingMesh uses), positioned in LOCAL space relative to the
+                    // TOP elbow's own connection point, since that's the one point every branch
+                    // shares a path back to.
+                    //
+                    // The split point only depends on the PRIMARY pipe (a short fixed trunk
+                    // below the top, or less if the primary itself is shorter than that) — it
+                    // must be computed before any branch's own bottom, since each branch
+                    // descends its own configured length FROM the split point, not from the
+                    // top. (An earlier version measured a branch's length from the top instead,
+                    // which put a short branch's computed bottom ABOVE the split point it was
+                    // supposed to hang from, collapsing it to almost nothing.)
+                    const splitFt = Math.min(
+                        Math.max(topFt - 1.5, bottomFt + 0.5),
+                        topFt - 0.1
+                    );
+                    const branchBottoms = branches.map(b => Math.max(splitFt - Math.max(b.lengthFt || 2, 0.5), DROP_FLOOR_CLEARANCE_FT));
+                    const lowestFt = Math.min(bottomFt, ...branchBottoms);
+                    const hitGeo = new THREE.CylinderGeometry(pipeRadius * 1.5, pipeRadius * 1.5, Math.max(topFt - lowestFt, 0.5), 8);
+                    mesh = new THREE.Mesh(hitGeo, new THREE.MeshBasicMaterial());
+                    mesh.material.visible = false;
+                    const hitCenterFt = (topFt + lowestFt) / 2;
+                    mesh.position.set(centerX, hitCenterFt, centerZ);
+
+                    const group = new THREE.Group();
+                    // Group sits at the drop's own top elbow connection point; every child below
+                    // is positioned relative to THIS local origin, expressed as -distanceBelowTop.
+                    group.position.set(0, topFt - hitCenterFt, 0);
+                    mesh.add(group);
+
                     const elbowGroup = new THREE.Group();
-                    elbowGroup.position.set(0, actualLen / 2, 0);
                     elbowGroup.rotation.y = rotY;
                     const stubTarget = new THREE.Vector3(pipeRadius * 5, 0, 0);
                     addDuctBranch(elbowGroup, pipeRadius, mat, stubTarget);
                     addDuctCollar(elbowGroup, pipeRadius, mat, stubTarget, new THREE.Vector3(0, -1, 0));
-                    mesh.add(elbowGroup);
+                    group.add(elbowGroup);
+
+                    const trunkLen = topFt - splitFt;
+                    const trunk = new THREE.Mesh(new THREE.CylinderGeometry(pipeRadius, pipeRadius, trunkLen, 12), mat);
+                    trunk.position.set(0, -trunkLen / 2, 0);
+                    trunk.castShadow = true;
+                    trunk.receiveShadow = true;
+                    group.add(trunk);
+
+                    const primaryLen = splitFt - bottomFt;
+                    if (primaryLen > 0.05) {
+                        const primaryPipe = new THREE.Mesh(new THREE.CylinderGeometry(pipeRadius, pipeRadius, primaryLen, 12), mat);
+                        primaryPipe.position.set(0, -trunkLen - primaryLen / 2, 0);
+                        primaryPipe.castShadow = true;
+                        primaryPipe.receiveShadow = true;
+                        group.add(primaryPipe);
+                    }
+
+                    branches.forEach((b, bi) => {
+                        const angleRad = THREE.MathUtils.degToRad(b.angleDeg || 0);
+                        const distFt = Math.max(b.distanceFt || 2, 0.5);
+                        const branchBottomFt = branchBottoms[bi];
+                        const stubDrop = pipeRadius * 5;
+                        const offsetX = distFt * Math.cos(angleRad), offsetZ = distFt * Math.sin(angleRad);
+
+                        const wyeGroup = new THREE.Group();
+                        wyeGroup.position.set(0, -trunkLen, 0);
+                        const wyeTarget = new THREE.Vector3(offsetX, -stubDrop, offsetZ);
+                        addDuctBranch(wyeGroup, pipeRadius, mat, wyeTarget);
+                        addDuctCollar(wyeGroup, pipeRadius, mat, wyeTarget, new THREE.Vector3(0, -1, 0));
+                        group.add(wyeGroup);
+
+                        const branchPipeLen = Math.max((splitFt - stubDrop) - branchBottomFt, 0.1);
+                        const branchPipe = new THREE.Mesh(new THREE.CylinderGeometry(pipeRadius, pipeRadius, branchPipeLen, 12), mat);
+                        branchPipe.position.set(offsetX, -trunkLen - stubDrop - branchPipeLen / 2, offsetZ);
+                        branchPipe.castShadow = true;
+                        branchPipe.receiveShadow = true;
+                        group.add(branchPipe);
+                    });
 
                     mesh.userData.draggable = true;
                     mesh.userData.toolIndex = index;
@@ -3126,6 +3243,42 @@
             raycaster.setFromCamera(mouse, camera);
         }
 
+        // Lists a selected drop's own extra branches (see t.branches / addDropBranchBtn), each
+        // with a Remove button -- same list+remove convention as every other per-item editor
+        // list in this codebase (panelHolesList/panelConnectorsList in project-designer.html,
+        // jointsList here).
+        function renderDropBranchList(toolIndex) {
+            const list = document.getElementById('dropBranchList');
+            if (!list) return;
+            list.innerHTML = '';
+            const dropTool = sharedLayout && sharedLayout.tools[toolIndex];
+            const branches = (dropTool && dropTool.branches) || [];
+            if (!branches.length) {
+                list.innerHTML = '<div class="viewer-hint" style="margin:0;">No branches yet.</div>';
+                return;
+            }
+            branches.forEach((b, bi) => {
+                const row = document.createElement('div');
+                row.style.cssText = 'display:flex; align-items:center; justify-content:space-between; gap:8px; padding:4px 0; font-size:11.5px;';
+                const label = document.createElement('span');
+                const lengthIn = Math.round((b.lengthFt || 0) * 12);
+                const distanceIn = Math.round((b.distanceFt || 0) * 12);
+                label.textContent = `${lengthIn}"L @ ${Math.round(b.angleDeg || 0)}°, ${distanceIn}" over`;
+                const removeBtn = document.createElement('button');
+                removeBtn.type = 'button';
+                removeBtn.className = 'mini-btn danger';
+                removeBtn.textContent = 'Remove';
+                removeBtn.addEventListener('click', () => {
+                    pushUndoSnapshot3d();
+                    dropTool.branches.splice(bi, 1);
+                    persistAndRebuild(toolIndex);
+                });
+                row.appendChild(label);
+                row.appendChild(removeBtn);
+                list.appendChild(row);
+            });
+        }
+
         function selectMesh(mesh) {
             if (selectionHelper) { scene.remove(selectionHelper); selectionHelper = null; }
             // The free-rotate gizmo only ever makes sense attached to the current selection —
@@ -3151,9 +3304,18 @@
                 // a drop's top/bottom are two fixed, known elevations (see addToolMesh), so a
                 // Blast Gate/Y-Joint can be placed exactly on one of them without needing one.
                 const dropAttachRow = document.getElementById('dropAttachRow');
+                const isDrop = mesh.userData.toolIndex != null && (mesh.userData.name || '').includes('Duct Drop');
                 if (dropAttachRow) {
-                    const isDrop = mesh.userData.toolIndex != null && (mesh.userData.name || '').includes('Duct Drop');
                     dropAttachRow.style.display = isDrop ? 'flex' : 'none';
+                }
+                // A drop can split partway down into extra branches, each reaching toward a
+                // second nearby tool (see t.branches / renderDropBranchList) -- same "attach
+                // here" convenience-panel spirit as dropAttachRow above, since there's still no
+                // real port-snapping engine in this view for a genuine multi-way drop fitting.
+                const dropBranchFields = document.getElementById('dropBranchFields');
+                if (dropBranchFields) {
+                    dropBranchFields.style.display = isDrop ? 'block' : 'none';
+                    if (isDrop) renderDropBranchList(mesh.userData.toolIndex);
                 }
                 // Cabinet-only size/mount-height editor — same width/depth/height a cabinet
                 // gets in the Workshop Layout Planner's cabinet builder, plus (for wall
@@ -3725,6 +3887,30 @@
                 const sizeClass = (dropTool.label || '').startsWith('6in') ? '6in' : '4in';
                 const ceilingFt = parseFloat(sharedLayout.ceilingHeightFt) || 10;
                 addFittingAtDrop(sizeClass === '6in' ? '6in Duct Y-Joint' : '4in Duct Y-Joint', getDropTopFt(ceilingFt));
+            });
+
+            document.getElementById('addDropBranchBtn').addEventListener('click', () => {
+                if (!selectedMesh || selectedMesh.userData.toolIndex == null) return;
+                const idx = selectedMesh.userData.toolIndex;
+                const dropTool = sharedLayout.tools[idx];
+                if (!dropTool) return;
+                const lengthIn = parseFloat(document.getElementById('dropBranchLengthIn').value);
+                const angleDeg = parseFloat(document.getElementById('dropBranchAngleDeg').value);
+                const distanceIn = parseFloat(document.getElementById('dropBranchDistanceIn').value);
+                if (!lengthIn || lengthIn <= 0 || !distanceIn || distanceIn <= 0 || isNaN(angleDeg)) {
+                    showToast('Enter a positive length and distance, and an angle.');
+                    return;
+                }
+                pushUndoSnapshot3d();
+                dropTool.branches = dropTool.branches || [];
+                dropTool.branches.push({
+                    id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+                    lengthFt: lengthIn / 12,
+                    angleDeg: ((angleDeg % 360) + 360) % 360,
+                    distanceFt: distanceIn / 12
+                });
+                persistAndRebuild(idx);
+                showToast('Branch added.');
             });
 
             // The 3D equivalent of the Workshop Layout Planner's cabinet builder fields —

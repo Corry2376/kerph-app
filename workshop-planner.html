@@ -12446,6 +12446,11 @@
                 drawers: node.dataset.drawers ? JSON.parse(node.dataset.drawers) : [],
                 hasShelves: node.dataset.hasShelves === 'true',
                 shelfCount: node.dataset.shelfCount ? parseInt(node.dataset.shelfCount, 10) : 0,
+                // A Duct Drop's extra downward branches (added from the 3D viewer's own
+                // selection panel, not from anything in this 2D page) — carried through here
+                // purely so a save from THIS page doesn't silently wipe out branches a user
+                // added in 3D; nothing here ever creates or edits this field itself.
+                branches: node.dataset.branches ? JSON.parse(node.dataset.branches) : [],
                 layer: node.dataset.layer || 'tools',
                 estCost: node.dataset.estCost || '',
                 clearanceCategory: node.dataset.clearanceCategory || null,
@@ -12517,6 +12522,7 @@
                 toolNode.dataset.hasShelves = t.hasShelves ? 'true' : 'false';
                 toolNode.dataset.shelfCount = t.shelfCount || '';
             }
+            if (t.branches && t.branches.length) toolNode.dataset.branches = JSON.stringify(t.branches);
             toolNode.dataset.layer = t.layer || (t.cabType ? 'cabinets' : 'tools');
             toolNode.dataset.estCost = t.estCost || '';
             if (t.clearanceCategory) toolNode.dataset.clearanceCategory = t.clearanceCategory;
@@ -12564,6 +12570,11 @@
                 drawers: node.dataset.drawers ? JSON.parse(node.dataset.drawers) : [],
                 hasShelves: node.dataset.hasShelves === 'true',
                 shelfCount: node.dataset.shelfCount ? parseInt(node.dataset.shelfCount, 10) : 0,
+                // A Duct Drop's extra downward branches (added from the 3D viewer's own
+                // selection panel, not from anything in this 2D page) — carried through here
+                // purely so a save from THIS page doesn't silently wipe out branches a user
+                // added in 3D; nothing here ever creates or edits this field itself.
+                branches: node.dataset.branches ? JSON.parse(node.dataset.branches) : [],
                 layer: node.dataset.layer || 'tools',
                 estCost: node.dataset.estCost || '',
                 clearanceCategory: node.dataset.clearanceCategory || null,
