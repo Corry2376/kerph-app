@@ -10262,6 +10262,18 @@
             toolNode.dataset.layer = placement.cabType ? 'cabinets' : (placement.layer || 'tools');
             toolNode.dataset.height = placement.height || '';
             if (placement.cabType === 'wall') toolNode.dataset.mountHeightIn = mountHeightIn || '';
+            // A cabinet's drawer/shelf configuration was previously only ever turned into the
+            // "+3 drwrs"/"+4 shlvs" display-text suffix below (see displayDims) and then
+            // discarded — never written onto the node itself, so it never made it into
+            // serializeCurrentLayout() and the 3D viewer had no way to render real drawer
+            // fronts for a user-built cabinet even though the cabinet builder captured exactly
+            // that data. Persisting it here is what lets it survive to the 3D view.
+            if (placement.cabType) {
+                toolNode.dataset.hasDrawers = placement.hasDrawers ? 'true' : 'false';
+                toolNode.dataset.drawers = JSON.stringify(placement.drawers || []);
+                toolNode.dataset.hasShelves = placement.hasShelves ? 'true' : 'false';
+                toolNode.dataset.shelfCount = placement.shelfCount || '';
+            }
             toolNode.style.width = toolW + 'px';
             toolNode.style.height = toolH + 'px';
             toolNode.style.left = snapX + 'px';
@@ -12413,6 +12425,13 @@
                 // Only meaningful for wall cabinets — inches from floor to the cabinet's
                 // bottom, so the 3D viewer can render it mounted rather than floor-standing.
                 mountHeightIn: node.dataset.mountHeightIn || null,
+                // Cabinet drawer/shelf configuration from the cabinet builder — see
+                // placeToolNodeOnBoard's comment for why this needs to be serialized rather
+                // than only used for the "+3 drwrs" display-text suffix.
+                hasDrawers: node.dataset.hasDrawers === 'true',
+                drawers: node.dataset.drawers ? JSON.parse(node.dataset.drawers) : [],
+                hasShelves: node.dataset.hasShelves === 'true',
+                shelfCount: node.dataset.shelfCount ? parseInt(node.dataset.shelfCount, 10) : 0,
                 layer: node.dataset.layer || 'tools',
                 estCost: node.dataset.estCost || '',
                 clearanceCategory: node.dataset.clearanceCategory || null,
@@ -12478,6 +12497,12 @@
             applyDustCollectionNodeStyling(toolNode, t.label);
             toolNode.dataset.height = t.physicalHeight || '';
             if (t.cabType === 'wall' && t.mountHeightIn) toolNode.dataset.mountHeightIn = t.mountHeightIn;
+            if (t.cabType) {
+                toolNode.dataset.hasDrawers = t.hasDrawers ? 'true' : 'false';
+                toolNode.dataset.drawers = JSON.stringify(t.drawers || []);
+                toolNode.dataset.hasShelves = t.hasShelves ? 'true' : 'false';
+                toolNode.dataset.shelfCount = t.shelfCount || '';
+            }
             toolNode.dataset.layer = t.layer || (t.cabType ? 'cabinets' : 'tools');
             toolNode.dataset.estCost = t.estCost || '';
             if (t.clearanceCategory) toolNode.dataset.clearanceCategory = t.clearanceCategory;
@@ -12521,6 +12546,10 @@
                 projectId: node.dataset.projectId || null,
                 physicalHeight: node.dataset.height || null,
                 mountHeightIn: node.dataset.mountHeightIn || null,
+                hasDrawers: node.dataset.hasDrawers === 'true',
+                drawers: node.dataset.drawers ? JSON.parse(node.dataset.drawers) : [],
+                hasShelves: node.dataset.hasShelves === 'true',
+                shelfCount: node.dataset.shelfCount ? parseInt(node.dataset.shelfCount, 10) : 0,
                 layer: node.dataset.layer || 'tools',
                 estCost: node.dataset.estCost || '',
                 clearanceCategory: node.dataset.clearanceCategory || null,

@@ -701,20 +701,27 @@
         // every other overhead dust-collection run uses (see the `physFt || 7` fallback in
         // addToolMesh) — so it always terminates level with the run it's dropping from,
         // never poking up above it regardless of how long the drop itself is configured to
-        // be. The BOTTOM then hangs down from there by the drop's own length, clamped so it
-        // can't cross below DROP_BOTTOM_MIN_FT (floor clearance near the tool/blast gate).
+        // be. The BOTTOM then hangs down from there by the drop's own length, clamped only
+        // so it can't cross below the actual floor (DROP_FLOOR_CLEARANCE_FT is just enough
+        // to keep the pipe cap off the floor plane, not an aesthetic "blast gate height").
+        // A previous version clamped the bottom to a fixed 2ft floor-clearance regardless of
+        // configured length, which silently truncated the rendered pipe to ~5ft (topFt=7
+        // minus that 2ft) no matter what longer length the user actually typed into the
+        // catalog card's drop-length input (which allows up to 20ft) — this is why long
+        // drops "didn't respect the sizing." The only real physical constraint on a drop's
+        // length is the floor.
         // Shared between addToolMesh's own rendering and the "+ Blast Gate"/"+ Y-Joint"
         // attach shortcuts in the selection panel, which need the same numbers to line a new
         // fitting up with a specific drop's actual top/bottom.
         const DROP_TOP_ELEV_FT = 7;
-        const DROP_BOTTOM_MIN_FT = 2;
+        const DROP_FLOOR_CLEARANCE_FT = 0.15;
 
         function getDropTopFt(ceilingFt) {
             return Math.min(DROP_TOP_ELEV_FT, ceilingFt - 0.3);
         }
 
         function getDropBottomFt(pipeLenFt, ceilingFt) {
-            return Math.max(getDropTopFt(ceilingFt) - pipeLenFt, DROP_BOTTOM_MIN_FT);
+            return Math.max(getDropTopFt(ceilingFt) - pipeLenFt, DROP_FLOOR_CLEARANCE_FT);
         }
 
         function showToast(message) {
@@ -1729,6 +1736,37 @@
             return null;
         }
 
+        // A single straight pipe stub from a joint's local origin out to `target` -- shared
+        // by every fitting shape below AND by the Duct Drop's own top elbow (addToolMesh),
+        // so a drop's joint reads as the same mechanical part as every other duct fitting
+        // instead of its own bespoke (and more rounded) shape.
+        function addDuctBranch(group, pipeRadius, mat, target) {
+            const len = target.length();
+            const geo = new THREE.CylinderGeometry(pipeRadius, pipeRadius, len, 12);
+            const branchMesh = new THREE.Mesh(geo, mat);
+            // CylinderGeometry's native long-axis is +Y -- rotate it to point from the
+            // fitting's own center toward this port instead.
+            branchMesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), target.clone().normalize());
+            branchMesh.position.copy(target).multiplyScalar(0.5);
+            branchMesh.castShadow = true;
+            branchMesh.receiveShadow = true;
+            group.add(branchMesh);
+        }
+        // Sharp coupling collar at a joint -- a short, slightly-wider cylindrical band, the
+        // way a real snap-lock/socket duct fitting actually has a visible collar where pipes
+        // meet -- NOT a smooth sphere (a ball reads as a soft, molded blob, not sheet-metal
+        // ductwork). Oriented along the average of the joint's own branch directions so it
+        // reads as a deliberate mechanical part regardless of which fitting calls it.
+        function addDuctCollar(group, pipeRadius, mat, ...directions) {
+            const avg = directions.reduce((sum, d) => sum.add(d.clone().normalize()), new THREE.Vector3());
+            if (avg.lengthSq() < 0.001) avg.set(0, 1, 0);
+            const collar = new THREE.Mesh(new THREE.CylinderGeometry(pipeRadius * 1.22, pipeRadius * 1.22, pipeRadius * 0.9, 12), mat);
+            collar.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), avg.normalize());
+            collar.castShadow = true;
+            collar.receiveShadow = true;
+            group.add(collar);
+        }
+
         // Real geometry per fitting type instead of the one-size-fits-all straight cylinder
         // every dust-collection piece used to render as (an elbow, a Y-joint, and a straight
         // duct all looked identical -- just a squat pipe stub). Returns a Group built flat in
@@ -1756,34 +1794,8 @@
             group.material.visible = false;
             const ports = DUCT_FITTING_LOCAL_PORTS[fittingType];
             const toLocal = (p) => new THREE.Vector3((p.fx - 0.5) * sizeFt, 0, (p.fy - 0.5) * sizeFt);
-
-            function addBranch(target) {
-                const len = target.length();
-                const geo = new THREE.CylinderGeometry(pipeRadius, pipeRadius, len, 12);
-                const branchMesh = new THREE.Mesh(geo, mat);
-                // CylinderGeometry's native long-axis is +Y -- rotate it to point from the
-                // fitting's own center toward this port instead.
-                branchMesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), target.clone().normalize());
-                branchMesh.position.copy(target).multiplyScalar(0.5);
-                branchMesh.castShadow = true;
-                branchMesh.receiveShadow = true;
-                group.add(branchMesh);
-            }
-            // Sharp coupling collar at a joint -- a short, slightly-wider cylindrical band,
-            // the way a real snap-lock/socket duct fitting actually has a visible collar
-            // where pipes meet -- NOT a smooth sphere (a ball reads as a soft, molded blob,
-            // not sheet-metal ductwork, which was a real part of the "too rounded" problem).
-            // Oriented along the average of the joint's own branch directions so it reads as
-            // a deliberate mechanical part regardless of which fitting type calls it.
-            function addCollar(...directions) {
-                const avg = directions.reduce((sum, d) => sum.add(d.clone().normalize()), new THREE.Vector3());
-                if (avg.lengthSq() < 0.001) avg.set(0, 1, 0);
-                const collar = new THREE.Mesh(new THREE.CylinderGeometry(pipeRadius * 1.22, pipeRadius * 1.22, pipeRadius * 0.9, 12), mat);
-                collar.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), avg.normalize());
-                collar.castShadow = true;
-                collar.receiveShadow = true;
-                group.add(collar);
-            }
+            const addBranch = (target) => addDuctBranch(group, pipeRadius, mat, target);
+            const addCollar = (...directions) => addDuctCollar(group, pipeRadius, mat, ...directions);
 
             if (fittingType === 'reducer') {
                 // Bridges a real 4in port to a real 6in port (see DUCT_PORTS.reducer's own
@@ -1889,24 +1901,20 @@
 
                     // A 90-degree elbow at the top, where the drop actually meets the overhead
                     // run — without it the pipe just dead-ends in mid-air with nothing showing
-                    // it connects to anything. The knuckle is direction-agnostic (always reads
-                    // as "a fitting is here" from any angle); the stub is rotated to the piece's
-                    // own 2D-authored angle (t.rotation), matching whichever way the overhead
-                    // run it was snapped to in the 2D planner actually runs.
+                    // it connects to anything. Built from the same addDuctBranch/addDuctCollar
+                    // mitered-stub style every other duct fitting uses (a real coupling collar,
+                    // not a smooth sphere "knuckle" — the sphere was the one remaining rounded
+                    // holdout after every other fitting moved to this style). The stub is
+                    // rotated to the piece's own 2D-authored angle (t.rotation), matching
+                    // whichever way the overhead run it was snapped to actually runs; the
+                    // collar is oriented along the average of [stub direction, straight down
+                    // into the drop's own vertical pipe] so it reads as a real angled seam.
                     const elbowGroup = new THREE.Group();
-                    const knuckle = new THREE.Mesh(new THREE.SphereGeometry(pipeRadius * 1.35, 12, 10), mat);
-                    knuckle.position.set(0, actualLen / 2, 0);
-                    knuckle.castShadow = true;
-                    knuckle.receiveShadow = true;
-                    elbowGroup.add(knuckle);
-                    const stubLen = pipeRadius * 5;
-                    const stub = new THREE.Mesh(new THREE.CylinderGeometry(pipeRadius, pipeRadius, stubLen, 12), mat);
-                    stub.rotation.z = Math.PI / 2;
-                    stub.position.set(stubLen / 2, actualLen / 2, 0);
-                    stub.castShadow = true;
-                    stub.receiveShadow = true;
-                    elbowGroup.add(stub);
+                    elbowGroup.position.set(0, actualLen / 2, 0);
                     elbowGroup.rotation.y = rotY;
+                    const stubTarget = new THREE.Vector3(pipeRadius * 5, 0, 0);
+                    addDuctBranch(elbowGroup, pipeRadius, mat, stubTarget);
+                    addDuctCollar(elbowGroup, pipeRadius, mat, stubTarget, new THREE.Vector3(0, -1, 0));
                     mesh.add(elbowGroup);
 
                     mesh.userData.draggable = true;
@@ -2054,7 +2062,7 @@
                 const category = catalogEntry ? catalogEntry.category : null;
                 if (t.cabType || TOOL_CATEGORY_SHAPES.has(category)) {
                     const decoGroup = new THREE.Group();
-                    buildToolDecoration(decoGroup, category, !!t.cabType, wFt, hFt, boxH, bodyColorHex, t.label);
+                    buildToolDecoration(decoGroup, category, !!t.cabType, wFt, hFt, boxH, bodyColorHex, t.label, t.hasDrawers ? t.drawers : null);
                     mesh.add(decoGroup);
                     // Hide only this mesh's own material, not mesh.visible — three.js's
                     // renderer skips an object's entire child subtree when the object itself
@@ -2206,9 +2214,16 @@
         // default. Unmatched names (a handful of bare-SKU entries with no descriptive text)
         // fall to 'rolling-cabinet' -- still a strict upgrade over one shared shape for all 149
         // Tool Storage items.
+        // Split from a single 'tote' bucket: MAKPAC/L-BOXX/StackTech/VERSASTACK/TOUGHSYSTEM/
+        // "Toolbox"/"Case" are rigid click-stacking plastic cases (Milwaukee PACKOUT and its
+        // peers) -- a hard latching box with a molded handle and stacking ribs, not a fabric
+        // bag -- while Backpack/Tote/Bag/Trolley are genuinely soft-sided. Rendering every one
+        // of these identically as a soft rounded bag (the previous single 'tote' bucket) was
+        // itself why the actual "Toolbox"-named catalog items didn't look like toolboxes.
         function getToolStorageSubtype(label) {
             const n = label || '';
-            if (/Backpack|Tote|\bBag\b|\bCase\b|Trolley|Toolbox|MAKPAC|L-BOXX|MODbox|StackTech|VERSASTACK|TOUGHSYSTEM 2\.0 (Large|Small)|Modular Tool Box|Rolling Box|2-Wheel Cart/i.test(n)) return 'tote';
+            if (/\bCase\b|Toolbox|MAKPAC|L-BOXX|MODbox|StackTech|VERSASTACK|TOUGHSYSTEM 2\.0 (Large|Small)|Modular Tool Box|Rolling Box|2-Wheel Cart/i.test(n)) return 'hard-case';
+            if (/Backpack|Tote|\bBag\b|Trolley/i.test(n)) return 'tote';
             if (/Pegboard|GearWall|FastTrack|Slatwall|GearTrack|Wall Mount|Wall Cabinet|Wall Rack|Racking Kit|GearBox|PPE Storage Rack|Wire Shelf|Hose Reel|Cord Reel/i.test(n)) return 'wall-organizer';
             if (/Utility Cart|Welding Cart/i.test(n)) return 'utility-cart';
             if (/Shelving|Shelves/i.test(n)) return 'shelving';
@@ -2360,7 +2375,7 @@
         // the same two colors as the flat-box fallback (COLORS.tool / COLORS.cabinet) for the
         // body, plus a couple of shared neutral accents, so the Tools/Cabinets legend swatches
         // still mean the same thing at a glance.
-        function buildToolDecoration(group, category, cabType, wFt, hFt, boxH, bodyColorHex, label) {
+        function buildToolDecoration(group, category, cabType, wFt, hFt, boxH, bodyColorHex, label, drawers) {
             const body = cabType ? COLORS.cabinet : bodyColorHex;
             const dark = cabType ? COLORS.cabinetAccentDark : COLORS.toolAccentDark;
             const metal = COLORS.toolAccentMetal;
@@ -2411,10 +2426,27 @@
 
             if (cabType) {
                 addPart(group, wFt * 0.98, boxH * 0.98, hFt * 0.98, 0, 0, 0, body);
-                addPart(group, wFt * 0.85, boxH * 0.85, 0.02, 0, 0, hFt / 2 + 0.01, dark);
-                addPart(group, 0.04, boxH * 0.12, 0.03, wFt * 0.32, 0, hFt / 2 + 0.03, COLORS.cabinetHandle);
-                addPart(group, wFt * 0.85, 0.015, 0.01, 0, boxH * 0.15, hFt / 2 + 0.015, dark);
-                addPart(group, wFt * 0.85, 0.015, 0.01, 0, -boxH * 0.15, hFt / 2 + 0.015, dark);
+                if (drawers && drawers.length) {
+                    // Real drawer fronts (reusing the same addDrawerFront the catalog rolling
+                    // cabinets use), proportioned by each drawer's own configured height and
+                    // stacked top-to-bottom -- Drawer 1 first, matching the cabinet builder's
+                    // own row order -- instead of the single flat door panel below, which
+                    // rendered identically whether or not the user had configured any drawers
+                    // at all (the actual bug: this data reached here but was never used).
+                    const totalIn = drawers.reduce((sum, d) => sum + (d.heightIn || 8), 0) || 1;
+                    const zoneTop = boxH * 0.46, zoneBottom = -boxH * 0.46, zoneHeight = zoneTop - zoneBottom;
+                    let cursor = zoneTop;
+                    drawers.forEach(d => {
+                        const bandHeight = ((d.heightIn || 8) / totalIn) * zoneHeight;
+                        addDrawerFront(cursor - bandHeight / 2, bandHeight, 0.88, 0.5);
+                        cursor -= bandHeight;
+                    });
+                } else {
+                    addPart(group, wFt * 0.85, boxH * 0.85, 0.02, 0, 0, hFt / 2 + 0.01, dark);
+                    addPart(group, 0.04, boxH * 0.12, 0.03, wFt * 0.32, 0, hFt / 2 + 0.03, COLORS.cabinetHandle);
+                    addPart(group, wFt * 0.85, 0.015, 0.01, 0, boxH * 0.15, hFt / 2 + 0.015, dark);
+                    addPart(group, wFt * 0.85, 0.015, 0.01, 0, -boxH * 0.15, hFt / 2 + 0.015, dark);
+                }
                 return;
             }
 
@@ -2496,13 +2528,31 @@
                 addCylinderPart(group, 0.08, boxH * 0.15, 0, boxH * 0.5, 0, dark);
                 addPart(group, wFt * 0.85, 0.08, 0.06, 0, boxH * 0.46, hFt * 0.25, metal);
             } else if (category === 'Crosscut & Miter') {
-                addPart(group, wFt * 0.95, boxH * 0.08, hFt * 0.6, 0, -boxH * 0.05, 0, body);
-                addPart(group, wFt * 0.95, boxH * 0.25, 0.06, 0, boxH * 0.13, -hFt * 0.28, metal);
-                addPart(group, wFt * 0.12, boxH * 0.35, hFt * 0.15, 0, boxH * 0.25, -hFt * 0.15, dark);
+                // Stand first, all the way to the floor (matches the jobsite Table Saw's
+                // folding-stand treatment -- most saws in this catalog's height range are
+                // sold on their own rolling stand, not a bare benchtop unit). Every earlier
+                // version of this branch had nothing below the table itself, leaving a gap of
+                // roughly 40% of the tool's own configured height between the model and
+                // whatever floor or cabinet top it was actually placed on -- this is the
+                // direct cause of it visibly floating.
+                const standTopY = -boxH * 0.32;
+                addLegs(0.1, 0.06, standTopY, -boxH / 2);
+                addPart(group, wFt * 0.55, 0.03, hFt * 0.5, 0, standTopY - 0.015, 0, dark); // stand shelf/tray
+
+                // Saw unit sits directly on the stand: turntable base, rear fence, a real
+                // support column carrying the pivot arm up to the head instead of the head
+                // hovering with nothing connecting it to the table, and a handle -- the old
+                // 3-box version (table slab + fence + a lone motor block) read as sparse and
+                // disconnected, not as a machine with a pivoting cutting head.
+                const tableY = standTopY + boxH * 0.03;
+                addPart(group, wFt * 0.95, boxH * 0.06, hFt * 0.62, 0, tableY, 0, body); // table/turntable
+                addPart(group, wFt * 0.95, boxH * 0.2, 0.06, 0, tableY + boxH * 0.1, -hFt * 0.28, metal); // rear fence
+                addCylinderPart(group, 0.045, boxH * 0.16, 0, tableY + boxH * 0.08, -hFt * 0.22, dark, 'y', 10); // support column up to the pivot
+                addPart(group, wFt * 0.2, boxH * 0.2, hFt * 0.2, 0, tableY + boxH * 0.26, -hFt * 0.18, dark); // head/motor housing
+                addPart(group, 0.04, boxH * 0.13, 0.05, wFt * 0.17, tableY + boxH * 0.3, -hFt * 0.08, dark); // handle
                 // A real disc, same axis convention as the table saw blade (kerf runs along
-                // the fence direction, flat face visible from the side) instead of the old
-                // flat-facing-front disc, at a higher segment count for a clean circular edge.
-                addCylinderPart(group, hFt * 0.18, 0.04, 0, boxH * 0.42, -hFt * 0.1, COLORS.toolAccentBlade, 'x', 24);
+                // the fence direction, flat face visible from the side).
+                addCylinderPart(group, hFt * 0.17, 0.04, 0, tableY + boxH * 0.22, -hFt * 0.14, COLORS.toolAccentBlade, 'x', 24);
             } else if (category === 'CNC & Digital Fab') {
                 addPart(group, wFt * 0.92, boxH * 0.6, hFt * 0.92, 0, -boxH * 0.05, 0, body);
                 addPart(group, wFt * 0.92, 0.06, hFt * 0.15, 0, boxH * 0.42, -hFt * 0.35, metal);
@@ -2524,6 +2574,19 @@
                     addPart(group, wFt * 0.44, 0.03, 0.03, 0, boxH * 0.52, 0, metal); // carry handle
                     addCylinderPart(group, 0.025, 0.04, -wFt * 0.28, 0, hFt / 2 + 0.01, dark, 'z');
                     addCylinderPart(group, 0.025, 0.04, wFt * 0.28, 0, hFt / 2 + 0.01, dark, 'z');
+                } else if (subtype === 'hard-case') {
+                    // A rigid click-stacking plastic case (PACKOUT/TOUGHSYSTEM/L-BOXX/
+                    // VERSASTACK and peers) -- a lid-parting seam instead of a fabric flap,
+                    // stacking ribs across the top (the actual point of this whole product
+                    // line -- these exist to click onto each other), a recessed molded handle,
+                    // and two latch clasps at the seam instead of a strap/zipper.
+                    addPart(group, wFt * 0.94, boxH * 0.94, hFt * 0.94, 0, 0, 0, body);
+                    addPart(group, wFt * 0.96, 0.015, hFt * 0.96, 0, boxH * 0.2, 0, dark); // lid parting seam
+                    for (let i = -1; i <= 1; i++) addPart(group, wFt * 0.06, 0.02, hFt * 0.8, i * wFt * 0.28, boxH / 2 + 0.005, 0, dark); // stacking ribs
+                    addPart(group, wFt * 0.3, boxH * 0.07, 0.02, 0, boxH * 0.42, hFt / 2 + 0.01, dark); // recessed molded handle
+                    [[-wFt * 0.28, boxH * 0.2], [wFt * 0.28, boxH * 0.2]].forEach(([x, y]) => {
+                        addPart(group, wFt * 0.08, boxH * 0.12, 0.025, x, y, hFt / 2 + 0.015, metal); // latch clasps at the seam
+                    });
                 } else if (subtype === 'wall-organizer') {
                     // Thin panel, no real depth -- a pegboard/hose reel/rack has nothing a saw
                     // could ever sit on, matching isFloorSurfaceCandidate excluding this bucket.
@@ -3722,7 +3785,14 @@
                         displayDims,
                         physicalHeight: template.heightFeet,
                         cabType: template.type,
-                        mountHeightIn: template.type === 'wall' ? 54 : null
+                        mountHeightIn: template.type === 'wall' ? 54 : null,
+                        // Previously only read for the "+3 drwrs" text above and then
+                        // dropped -- addToolMesh/buildToolDecoration need the real data to
+                        // render actual drawer fronts instead of the plain single-door look.
+                        hasDrawers: !!template.hasDrawers,
+                        drawers: template.drawers || [],
+                        hasShelves: !!template.hasShelves,
+                        shelfCount: template.shelfCount || 0
                     });
                     const newIndex = sharedLayout.tools.length - 1;
                     persistAndRebuild(newIndex);
