@@ -1081,7 +1081,8 @@
             toolAccentMetal: 0xb8c0c9,
             toolAccentBlade: 0x1c2a38,
             cabinetAccentDark: 0x8a6440,
-            cabinetHandle: 0xe8ddc8
+            cabinetHandle: 0xe8ddc8,
+            dcFilterBag: 0xe4ddc8
         };
 
         // Per-accent-color PBR hints (roughness/metalness) so the same handful of reused
@@ -1096,6 +1097,7 @@
             [COLORS.toolAccentDark]: { roughness: 0.55, metalness: 0.4 },     // painted steel legs/frame
             [COLORS.cabinetAccentDark]: { roughness: 0.72, metalness: 0.04 }, // darker wood trim
             [COLORS.cabinetHandle]: { roughness: 0.35, metalness: 0.7 },      // brushed pull handle
+            [COLORS.dcFilterBag]: { roughness: 0.95, metalness: 0 },          // matte felt/cloth filter bag
             [COLORS.tool]: { roughness: 0.7, metalness: 0.12 },               // painted sheet-metal body
             [COLORS.cabinet]: { roughness: 0.82, metalness: 0.03 },           // wood/laminate body
             // COLORS.duct is intentionally NOT keyed here — it's the same 0x94a3b8 value as
@@ -1767,11 +1769,20 @@
                 branchMesh.receiveShadow = true;
                 group.add(branchMesh);
             }
-            function addKnuckle() {
-                const knuckle = new THREE.Mesh(new THREE.SphereGeometry(pipeRadius * 1.25, 12, 10), mat);
-                knuckle.castShadow = true;
-                knuckle.receiveShadow = true;
-                group.add(knuckle);
+            // Sharp coupling collar at a joint -- a short, slightly-wider cylindrical band,
+            // the way a real snap-lock/socket duct fitting actually has a visible collar
+            // where pipes meet -- NOT a smooth sphere (a ball reads as a soft, molded blob,
+            // not sheet-metal ductwork, which was a real part of the "too rounded" problem).
+            // Oriented along the average of the joint's own branch directions so it reads as
+            // a deliberate mechanical part regardless of which fitting type calls it.
+            function addCollar(...directions) {
+                const avg = directions.reduce((sum, d) => sum.add(d.clone().normalize()), new THREE.Vector3());
+                if (avg.lengthSq() < 0.001) avg.set(0, 1, 0);
+                const collar = new THREE.Mesh(new THREE.CylinderGeometry(pipeRadius * 1.22, pipeRadius * 1.22, pipeRadius * 0.9, 12), mat);
+                collar.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), avg.normalize());
+                collar.castShadow = true;
+                collar.receiveShadow = true;
+                group.add(collar);
             }
 
             if (fittingType === 'reducer') {
@@ -1792,17 +1803,18 @@
             }
 
             if (fittingType === 'elbow' || fittingType === 'elbow45') {
-                // A smooth bend: quadratic curve from port0 through the fitting's own center
-                // (the control point) to port1 -- identical construction for both angles, just
-                // different port positions, so a future custom-angle elbow needs no new code,
-                // only a new DUCT_FITTING_LOCAL_PORTS entry.
+                // A real mitered elbow: two straight pipe stubs meeting at a sharp angle at
+                // the fitting's own center -- same construction as the multi-way joints
+                // below -- instead of one continuous smooth curve (the previous
+                // QuadraticBezierCurve3 + TubeGeometry). A real duct elbow is a mitered seam
+                // or, at best, a segmented sweep; it is never a seamless rubber-hose bend.
+                // The two straight cylinders visibly overlap at their shared angle, which
+                // already reads as a mitered joint on its own; the collar cleans up the seam
+                // the way a real coupling band would.
                 const [pA, pB] = ports.map(toLocal);
-                const curve = new THREE.QuadraticBezierCurve3(pA, new THREE.Vector3(0, 0, 0), pB);
-                const geo = new THREE.TubeGeometry(curve, 16, pipeRadius, 12, false);
-                const mesh = new THREE.Mesh(geo, mat);
-                mesh.castShadow = true;
-                mesh.receiveShadow = true;
-                group.add(mesh);
+                addBranch(pA);
+                addBranch(pB);
+                addCollar(pA, pB);
                 return group;
             }
 
@@ -1820,15 +1832,16 @@
                 throughMesh.receiveShadow = true;
                 group.add(throughMesh);
                 addBranch(pBranch);
-                addKnuckle();
+                addCollar(pBranch);
                 return group;
             }
 
             // yjoint: all 3 arms genuinely diverge from the center (no two ports are
             // opposite), so unlike the T-joint above there's no single "through" pair to
-            // treat as one piece -- three independent stubs plus a knuckle.
-            ports.map(toLocal).forEach(addBranch);
-            addKnuckle();
+            // treat as one piece -- three independent stubs plus a collar.
+            const localPorts = ports.map(toLocal);
+            localPorts.forEach(addBranch);
+            addCollar(...localPorts);
             return group;
         }
 
@@ -2368,14 +2381,27 @@
             // it, side handle, corner casters) instead of one flat drawer-lined box -- the Tool
             // Storage default bucket below, and reused by Mechanic Tool Storage with a bigger
             // drawerLineCount for the larger pro rolling boxes.
+            // Real drawer fronts (a proud panel + a bar pull, each occupying its own equal
+            // band of the drawer zone), not the previous flat 0.012ft-deep line painted on
+            // the face -- a line can't read as an actual drawer at any distance, it's just a
+            // seam mark. The panel physically stands proud of the body and the pull stands
+            // proud of the panel, so the cabinet actually has depth/shadowing at each drawer
+            // instead of a flat box with stripes.
+            function addDrawerFront(bandCenterY, bandHeight, frontWFrac, pullWFrac) {
+                const panelDepth = 0.022;
+                addPart(group, wFt * frontWFrac, bandHeight * 0.8, panelDepth, 0, bandCenterY, hFt / 2 + panelDepth / 2, dark);
+                const pullDepth = 0.016;
+                addPart(group, wFt * pullWFrac, bandHeight * 0.14, pullDepth, 0, bandCenterY, hFt / 2 + panelDepth + pullDepth / 2, metal);
+            }
+
             function rollingCabinetShape(drawerLineCount) {
                 addPart(group, wFt * 0.95, boxH * 0.58, hFt * 0.95, 0, -boxH * 0.21, 0, body);
                 addPart(group, wFt * 0.8, boxH * 0.34, hFt * 0.82, 0, boxH * 0.33, 0, body);
+                const zoneTop = boxH * 0.08, zoneBottom = -boxH * 0.42, bandHeight = (zoneTop - zoneBottom) / drawerLineCount;
                 for (let i = 0; i < drawerLineCount; i++) {
-                    const f = drawerLineCount > 1 ? i / (drawerLineCount - 1) : 0.5;
-                    addPart(group, wFt * 0.8, 0.012, 0.01, 0, -boxH * 0.42 + f * boxH * 0.5, hFt / 2 + 0.01, dark);
+                    addDrawerFront(zoneBottom + bandHeight * (i + 0.5), bandHeight, 0.78, 0.45);
                 }
-                addPart(group, wFt * 0.65, 0.012, 0.01, 0, boxH * 0.42, hFt / 2 + 0.005, dark);
+                addDrawerFront(boxH * 0.33, boxH * 0.34 * 0.7, 0.62, 0.35); // top till/lid drawer
                 addPart(group, 0.04, boxH * 0.12, 0.04, wFt / 2 + 0.02, boxH * 0.33, 0, metal); // side handle
                 const lx = wFt / 2 - 0.12, lz = hFt / 2 - 0.12;
                 [[-lx, -lz], [lx, -lz], [-lx, lz], [lx, lz]].forEach(([x, z]) => {
@@ -2539,14 +2565,50 @@
                     rollingCabinetShape(3);
                 }
             } else if (category === 'Dust Collection') {
-                // Collector units (JET DC-1100VX, Oneida Super Dust Deputy XL) — a standing
-                // drum with a smaller motor/filter housing on top and a side inlet stub where
-                // the ductwork connects in, so they read as a collector rather than a plain box.
+                // A single generic drum used to stand in for two genuinely different real
+                // products: JET DC-1100VX (a tall single-stage bag collector -- felt filter
+                // bag over a collection bag, on a leg stand) and Oneida Super Dust Deputy XL
+                // (a short, distinctly conical passive cyclone separator sitting on a
+                // bucket). Their real heights are already far apart in the catalog (7.2ft vs
+                // 2.8ft) -- split on boxH, same bimodal-by-height pattern already used for
+                // Air Compressors/Vehicle Lifts above, instead of forcing one silhouette to
+                // cover both.
                 const r = Math.min(wFt, hFt) * 0.42;
-                addCylinderPart(group, r, boxH * 0.62, 0, -boxH * 0.19, 0, body, 'y', 22);
-                addCylinderPart(group, r * 0.62, boxH * 0.34, 0, boxH * 0.29, 0, dark, 'y', 22);
-                const stubLen = Math.min(wFt, hFt) * 0.3;
-                addCylinderPart(group, r * 0.16, stubLen, r + stubLen / 2, -boxH * 0.05, 0, metal, 'x');
+                function addTaperedCylinderPart(radiusTop, radiusBottom, h, x, y, z, color) {
+                    const mesh = new THREE.Mesh(new THREE.CylinderGeometry(radiusTop, radiusBottom, Math.max(h, 0.01), 20), materialForColor(color));
+                    mesh.position.set(x, y, z);
+                    mesh.castShadow = true;
+                    mesh.receiveShadow = true;
+                    group.add(mesh);
+                    return mesh;
+                }
+                if (boxH >= 4) {
+                    // Bag-style single-stage collector: leg stand, a wider lower collection
+                    // bag, a narrower upper felt filter bag cinched in above it, and a
+                    // squirrel-cage blower housing on top -- four distinct, differently-
+                    // shaped/colored tiers instead of two plain stacked drums.
+                    const legY = -boxH * 0.5 + boxH * 0.04, lx = r * 0.75, lz = r * 0.75;
+                    [[-lx, -lz], [lx, -lz], [-lx, lz], [lx, lz]].forEach(([x, z]) => {
+                        addPart(group, 0.035, boxH * 0.08, 0.035, x, legY, z, dark);
+                    });
+                    addCylinderPart(group, r, boxH * 0.32, 0, -boxH * 0.28, 0, COLORS.dcFilterBag, 'y', 20); // lower collection bag
+                    addTaperedCylinderPart(r * 0.7, r * 0.9, boxH * 0.06, 0, -boxH * 0.09, 0, COLORS.dcFilterBag); // cinch where the bags meet
+                    addCylinderPart(group, r * 0.68, boxH * 0.36, 0, boxH * 0.08, 0, COLORS.dcFilterBag, 'y', 20); // upper felt filter bag
+                    addPart(group, r * 1.15, boxH * 0.16, r * 1.15, 0, boxH * 0.38, 0, dark); // blower/motor housing
+                    const stubLen = Math.min(wFt, hFt) * 0.3;
+                    addCylinderPart(group, r * 0.16, stubLen, r + stubLen / 2, -boxH * 0.14, 0, metal, 'x');
+                } else {
+                    // Passive cyclone separator: cylindrical upper body tapering into a sharp
+                    // cone (the actual shape that separates dust by centrifugal force, and
+                    // the single most recognizable feature of this product), a flat lid, and
+                    // a collection bucket underneath the cone's tip.
+                    addCylinderPart(group, r, boxH * 0.42, 0, boxH * 0.08, 0, body, 'y', 20); // upper cylinder
+                    addTaperedCylinderPart(r, r * 0.1, boxH * 0.38, 0, -boxH * 0.32, 0, body); // tapered cone
+                    addCylinderPart(group, r * 0.9, 0.03, 0, boxH * 0.3, 0, dark, 'y', 20); // lid
+                    addCylinderPart(group, r * 0.55, boxH * 0.14, 0, -boxH * 0.43, 0, dark, 'y', 16); // collection bucket
+                    const stubLen = Math.min(wFt, hFt) * 0.3;
+                    addCylinderPart(group, r * 0.16, stubLen, r + stubLen / 2, boxH * 0.14, 0, metal, 'x');
+                }
             } else if (category === 'Mini-Splits') {
                 // Outdoor condenser unit -- distinct from the wall-mounted indoor head, which
                 // already has its own correct decoration elsewhere (the 'minisplit' wall
