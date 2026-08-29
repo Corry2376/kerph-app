@@ -666,6 +666,13 @@
             <button type="button" id="addBlastGateToDropBtn" class="mini-btn" style="flex:1;">+ Blast Gate</button>
             <button type="button" id="addYJointToDropBtn" class="mini-btn" style="flex:1;">+ Y-Joint</button>
         </div>
+        <div id="dropLengthFields" style="display:none; margin-top:10px; padding-top:10px; border-top:1px solid #e2e8f0;">
+            <div class="header-field-label" style="margin-bottom:4px;">Drop Length (in) — top stays level with the overhead run, the bottom moves</div>
+            <div style="display:flex; gap:6px;">
+                <input type="number" class="input-box" id="dropLengthEditIn" min="12" step="1" style="flex:1;">
+                <button type="button" class="mini-btn" id="dropLengthApplyBtn" style="flex:none;">Apply</button>
+            </div>
+        </div>
         <div id="dropBranchFields" style="display:none; margin-top:10px; padding-top:10px; border-top:1px solid #e2e8f0;">
             <div class="header-field-label" style="margin-bottom:4px;">Branches to other tools — splits off partway down this drop's own pipe</div>
             <div id="dropBranchList" style="margin-bottom:8px;"></div>
@@ -3308,6 +3315,19 @@
                 if (dropAttachRow) {
                     dropAttachRow.style.display = isDrop ? 'flex' : 'none';
                 }
+                // A drop's own length was previously only settable at placement time, via the
+                // catalog card's inline input before it was ever dragged onto the board -- once
+                // placed there was no way back to it. Same "Selected Item" panel editor pattern
+                // as the cabinet size fields below.
+                const dropLengthFields = document.getElementById('dropLengthFields');
+                if (dropLengthFields) {
+                    dropLengthFields.style.display = isDrop ? 'block' : 'none';
+                    if (isDrop) {
+                        const dropTool = sharedLayout.tools[mesh.userData.toolIndex];
+                        const lengthIn = Math.round((parseFloat(dropTool && dropTool.physicalHeight) || 5) * 12);
+                        document.getElementById('dropLengthEditIn').value = lengthIn;
+                    }
+                }
                 // A drop can split partway down into extra branches, each reaching toward a
                 // second nearby tool (see t.branches / renderDropBranchList) -- same "attach
                 // here" convenience-panel spirit as dropAttachRow above, since there's still no
@@ -3887,6 +3907,29 @@
                 const sizeClass = (dropTool.label || '').startsWith('6in') ? '6in' : '4in';
                 const ceilingFt = parseFloat(sharedLayout.ceilingHeightFt) || 10;
                 addFittingAtDrop(sizeClass === '6in' ? '6in Duct Y-Joint' : '4in Duct Y-Joint', getDropTopFt(ceilingFt));
+            });
+
+            // Edits an already-placed drop's own length -- previously the only place to set
+            // this was the catalog card's inline input, before the drop was ever dragged onto
+            // the board (see custom-drop-length-input in workshop-planner.html); there was no
+            // way back to it once placed. physicalHeight on a drop means its own length (see
+            // addToolMesh's comment on the isDrop branch), not a mount elevation, so this is a
+            // plain, direct edit -- no unit-conversion surprises, same field every other part
+            // of the drop-rendering code already reads.
+            document.getElementById('dropLengthApplyBtn').addEventListener('click', () => {
+                if (!selectedMesh || selectedMesh.userData.toolIndex == null) return;
+                const idx = selectedMesh.userData.toolIndex;
+                const dropTool = sharedLayout.tools[idx];
+                if (!dropTool) return;
+                const lengthIn = parseFloat(document.getElementById('dropLengthEditIn').value);
+                if (!lengthIn || lengthIn <= 0) {
+                    showToast('Enter a positive length.');
+                    return;
+                }
+                pushUndoSnapshot3d();
+                dropTool.physicalHeight = lengthIn / 12;
+                persistAndRebuild(idx);
+                showToast('Drop length updated.');
             });
 
             document.getElementById('addDropBranchBtn').addEventListener('click', () => {
