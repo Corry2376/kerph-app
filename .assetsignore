@@ -12,3 +12,15 @@ wrangler.jsonc
 *.md
 sql
 Articles
+
+# Business/working documents that live in the repo root but are NOT part of the
+# site. assets.directory is "." and reads the FILESYSTEM, not git -- so untracked
+# files here would be uploaded and served publicly by any local `wrangler deploy`
+# or `wrangler versions upload`, even though Workers Builds (which builds from a
+# clean clone) never sees them. That includes financial and internal planning
+# documents. No page references a local file of these types.
+*.pdf
+*.xlsx
+*.xlsb
+*.docx
+*.csv
