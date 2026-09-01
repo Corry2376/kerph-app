@@ -750,6 +750,7 @@
         import { TransformControls } from 'three/addons/controls/TransformControls.js';
         import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
         import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+        import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 
         /* ---------- SHARED HEADER / ACCOUNT (same pattern as every other page) ---------- */
         const PLAN_KEY = 'kerphPlan';
@@ -1404,6 +1405,19 @@
         const walkKeys = { forward: false, back: false, left: false, right: false };
         const WALK_EYE_HEIGHT_FT = 5.5;
         const WALK_SPEED_FTPS = 4.5; // an unhurried human walking pace
+        // Walking used to be binary: the instant a key went down the camera was at full pace,
+        // and the instant it came up the camera stopped dead. Nothing physical starts or stops
+        // that way, and at 4.5 ft/s the discontinuity is big enough to read as the camera
+        // stuttering rather than as the walk being abrupt -- which is most of what made walk
+        // mode feel clunky, since the frame timing underneath it was already correct.
+        //
+        // These ramp velocity instead: roughly 0.17s to reach walking pace and 0.13s to come
+        // to rest. Stopping slightly harder than starting keeps it feeling responsive rather
+        // than floaty -- a walkthrough that coasts feels like ice skating.
+        const WALK_ACCEL_FTPS2 = 26;
+        const WALK_DECEL_FTPS2 = 34;
+        let walkVelForward = 0;
+        let walkVelRight = 0;
         // Rough shoulder-width buffer added on top of a wall's own half-thickness -- without
         // it "not blocked" would still mean the camera's near-clip plane pokes into the wall
         // mesh's face right at the moment you stop, which reads exactly like clipping through.
@@ -1510,6 +1524,9 @@
             controls.enabled = false;
             walkModeActive = true;
             lastWalkFrameTime = null;
+            walkVelForward = walkVelRight = 0;
+            // Standing inside the shop, walls need to be real walls -- see applyWallMaterialMode.
+            setWallsSolid(true);
             const btn = document.getElementById('walkModeBtn');
             if (btn) { btn.classList.add('active'); btn.textContent = '🚶 Exit Walk Mode (Esc)'; }
             const hint = document.getElementById('viewerHint');
@@ -1530,6 +1547,10 @@
             if (!walkModeActive) return;
             walkModeActive = false;
             walkKeys.forward = walkKeys.back = walkKeys.left = walkKeys.right = false;
+            walkVelForward = walkVelRight = 0;
+            // Back to the overhead view, where seeing into the shop matters more than walls
+            // looking solid.
+            setWallsSolid(false);
             if (controls) controls.enabled = true;
             const btn = document.getElementById('walkModeBtn');
             if (btn) { btn.classList.remove('active'); btn.textContent = '🚶 Walk Mode'; }
@@ -1561,6 +1582,13 @@
             if (walkControls) walkControls.unlock();
         }
 
+        // Moves `current` toward `target` by at most `maxStep`, without overshooting past it.
+        function approachValue(current, target, maxStep) {
+            if (current < target) return Math.min(current + maxStep, target);
+            if (current > target) return Math.max(current - maxStep, target);
+            return target;
+        }
+
         function updateWalkMovement(now) {
             if (!walkModeActive || !walkControls || !walkControls.isLocked) return;
             if (lastWalkFrameTime == null) { lastWalkFrameTime = now; return; }
@@ -1569,14 +1597,31 @@
 
             const moveZ = (walkKeys.forward ? 1 : 0) - (walkKeys.back ? 1 : 0);
             const moveX = (walkKeys.right ? 1 : 0) - (walkKeys.left ? 1 : 0);
-            if (!moveZ && !moveX) return;
             // Normalized so diagonal movement isn't faster than moving straight.
             const len = Math.hypot(moveZ, moveX) || 1;
-            const step = WALK_SPEED_FTPS * delta;
+            const targetForward = (moveZ / len) * WALK_SPEED_FTPS;
+            const targetRight = (moveX / len) * WALK_SPEED_FTPS;
+
+            // Ramp toward the target rather than snapping to it. Note this deliberately does
+            // NOT bail out when no key is held -- that's the frame where the deceleration ramp
+            // actually runs, and returning early there is what made releasing a key stop the
+            // camera dead.
+            const rate = (moveZ || moveX) ? WALK_ACCEL_FTPS2 : WALK_DECEL_FTPS2;
+            const maxStep = rate * delta;
+            walkVelForward = approachValue(walkVelForward, targetForward, maxStep);
+            walkVelRight = approachValue(walkVelRight, targetRight, maxStep);
+
+            // Below about a quarter inch per second there's nothing left to render; snapping
+            // to zero here stops the ramp from trailing off into denormal-small float steps.
+            if (Math.abs(walkVelForward) < 0.02 && Math.abs(walkVelRight) < 0.02) {
+                walkVelForward = walkVelRight = 0;
+                return;
+            }
+
             const startX = camera.position.x, startZ = camera.position.z;
 
-            if (moveZ) walkControls.moveForward((moveZ / len) * step);
-            if (moveX) walkControls.moveRight((moveX / len) * step);
+            if (walkVelForward) walkControls.moveForward(walkVelForward * delta);
+            if (walkVelRight) walkControls.moveRight(walkVelRight * delta);
             camera.position.y = walkEyeHeightFt();
 
             // Per-axis wall clamp, tested independently so walking diagonally toward a wall
@@ -1639,21 +1684,49 @@
             if (len < 0.03 || h < 0.03) return;
             const midT = (tStart + tEnd) / 2;
             const geo = new THREE.BoxGeometry(len, h, thicknessFt);
-            // depthWrite: false keeps this transparent — overlapping wall boxes (they intentionally
-            // overlap at corners to avoid gaps) otherwise write to the depth buffer and occlude
-            // whatever's behind them before blending happens, which reads as solid instead of
-            // translucent no matter how low the opacity is.
-            const mat = new THREE.MeshStandardMaterial({ color, transparent: true, opacity: 0.65, roughness: 0.92, metalness: 0, depthWrite: false });
+            // roughnessMap is attached in both modes (unlike materialForColor, which skips maps
+            // on transparent parts) because a wall's material toggles between see-through and
+            // solid at runtime — see applyWallMaterialMode. Swapping maps on every toggle would
+            // force a shader recompile mid-session for no visual gain while it's ghosted.
+            const mat = new THREE.MeshStandardMaterial({
+                color, roughness: 0.92, metalness: 0, roughnessMap: getMicroRoughnessTexture()
+            });
             const mesh = new THREE.Mesh(geo, mat);
             mesh.position.set(ax + dirX * midT, yBottom + h / 2, az + dirZ * midT);
             mesh.rotation.y = -Math.atan2(dirZ, dirX);
-            // Receives shadows from tools/fixtures near it (a floor lamp's shadow climbing
-            // the wall behind it, etc.) but doesn't cast its own — a translucent wall casting
-            // a fully opaque shadow (three.js shadow maps ignore material opacity) would look
-            // like a solid slab, undercutting the whole point of making walls see-through.
-            mesh.castShadow = false;
             mesh.receiveShadow = true;
+            mesh.userData.isWall = true;
+            applyWallMaterialMode(mesh, walkModeActive);
             scene.add(mesh);
+        }
+
+        // Walls exist in two genuinely different jobs, and until now they only did the first
+        // one. Orbiting overhead you need to see INTO the shop, so walls are ghosted. Standing
+        // inside it in walk mode you need the opposite: a translucent wall with the outdoors
+        // showing through it is precisely the unfinished-CGI look — you're walking around
+        // inside an architectural diagram rather than a room.
+        //
+        // Ghosted: depthWrite off, because the wall boxes deliberately overlap at corners to
+        // avoid gaps, and overlapping transparent boxes that write depth occlude whatever is
+        // behind them before blending, reading as solid at any opacity. Solid mode wants depth
+        // writing back on for exactly the same reason inverted — and wants the wall casting a
+        // real shadow, which is most of what makes an interior feel enclosed and lit rather
+        // than like a set with no ceiling.
+        function applyWallMaterialMode(mesh, solid) {
+            const mat = mesh.material;
+            if (!mat) return;
+            mat.transparent = !solid;
+            mat.opacity = solid ? 1 : 0.65;
+            mat.depthWrite = solid;
+            mat.needsUpdate = true;
+            mesh.castShadow = solid;
+        }
+
+        function setWallsSolid(solid) {
+            if (!scene) return;
+            scene.traverse(obj => {
+                if (obj.userData && obj.userData.isWall) applyWallMaterialMode(obj, solid);
+            });
         }
 
         function addWallSegment(a, b, thicknessFt, heightFt, color) {
@@ -1779,6 +1852,120 @@
             }
             floorTextureCache.repeat.set(Math.max(widthFt / 4, 1), Math.max(lengthFt / 4, 1));
             return floorTextureCache;
+        }
+
+        /* ---------- PROCEDURAL SURFACE DETAIL ----------
+           Every non-floor surface used to be one flat solid color, which is the single most
+           reliable way to make a real-time render read as "untextured CG" — a perfectly
+           uniform surface returns a perfectly uniform highlight, and eyes read that as fake
+           long before they can say why. These three canvas-generated textures fix that
+           without shipping a single image asset or adding a network request, following the
+           same generate-once-and-cache pattern getFloorTexture above already uses.
+
+           They're deliberately subtle. The goal is to break up uniformity, not to make a
+           plywood cabinet look photographed. */
+        let grainTextureCache = null;
+        let microRoughTextureCache = null;
+        let contactShadowTextureCache = null;
+
+        // Near-white streaked texture used as a `map` on wood-ish surfaces. Because `map`
+        // MULTIPLIES the material's base color, keeping this close to white means it reads as
+        // grain over whatever color the user picked instead of overriding it with a wood photo.
+        function getGrainTexture() {
+            if (grainTextureCache) return grainTextureCache;
+            const size = 512;
+            const canvas = document.createElement('canvas');
+            canvas.width = canvas.height = size;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, size, size);
+            // Long, slightly wavering streaks along one axis read as grain; straight lines
+            // read as stripes, so each streak walks a little as it crosses.
+            for (let i = 0; i < 190; i++) {
+                const y = Math.random() * size;
+                const alpha = 0.03 + Math.random() * 0.11;
+                ctx.strokeStyle = `rgba(122, 94, 62, ${alpha})`;
+                ctx.lineWidth = 0.6 + Math.random() * 2.2;
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                let cy = y;
+                for (let x = 0; x <= size; x += 32) {
+                    cy += (Math.random() - 0.5) * 3.2;
+                    ctx.lineTo(x, cy);
+                }
+                ctx.stroke();
+            }
+            // A few darker knots/figure marks so the grain isn't perfectly regular.
+            for (let i = 0; i < 7; i++) {
+                const x = Math.random() * size, y = Math.random() * size;
+                const r = 5 + Math.random() * 16;
+                const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+                g.addColorStop(0, 'rgba(104, 78, 50, 0.20)');
+                g.addColorStop(1, 'rgba(104, 78, 50, 0)');
+                ctx.fillStyle = g;
+                ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+            }
+            grainTextureCache = new THREE.CanvasTexture(canvas);
+            grainTextureCache.wrapS = grainTextureCache.wrapT = THREE.RepeatWrapping;
+            grainTextureCache.colorSpace = THREE.SRGBColorSpace;
+            // Set once on the shared texture rather than per-material: every part samples the
+            // same instance, so a per-part repeat would just be the last writer winning.
+            grainTextureCache.repeat.set(2, 2);
+            return grainTextureCache;
+        }
+
+        // Fine noise used as a `roughnessMap` on everything. roughnessMap MULTIPLIES the
+        // material's own roughness (sampling the green channel), so this stays in the
+        // 0.86-1.0 range: enough to make a highlight vary across a surface instead of
+        // sitting on it as one even sheen, without meaningfully changing how rough the
+        // material reads overall. Left in the default (non-sRGB) color space — it's data,
+        // not color, and tagging it sRGB would skew every value it feeds back.
+        function getMicroRoughnessTexture() {
+            if (microRoughTextureCache) return microRoughTextureCache;
+            const size = 256;
+            const canvas = document.createElement('canvas');
+            canvas.width = canvas.height = size;
+            const ctx = canvas.getContext('2d');
+            const img = ctx.createImageData(size, size);
+            for (let i = 0; i < img.data.length; i += 4) {
+                const v = 220 + Math.floor(Math.random() * 36); // 220-255
+                img.data[i] = img.data[i + 1] = img.data[i + 2] = v;
+                img.data[i + 3] = 255;
+            }
+            ctx.putImageData(img, 0, 0);
+            microRoughTextureCache = new THREE.CanvasTexture(canvas);
+            microRoughTextureCache.wrapS = microRoughTextureCache.wrapT = THREE.RepeatWrapping;
+            microRoughTextureCache.repeat.set(4, 4);
+            return microRoughTextureCache;
+        }
+
+        // Soft radial blob laid flat under each floor-standing item. The scene's directional
+        // key light already casts a real shadow, but it casts it off to one SIDE — nothing
+        // darkens the floor directly beneath an object, which is exactly what makes rendered
+        // objects read as hovering a half-inch above the ground. This is the cheap stand-in
+        // for the ambient occlusion a real-time scene doesn't otherwise get.
+        function getContactShadowTexture() {
+            if (contactShadowTextureCache) return contactShadowTextureCache;
+            const size = 128;
+            const canvas = document.createElement('canvas');
+            canvas.width = canvas.height = size;
+            const ctx = canvas.getContext('2d');
+            const g = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
+            g.addColorStop(0, 'rgba(28, 24, 18, 0.46)');
+            g.addColorStop(0.55, 'rgba(28, 24, 18, 0.22)');
+            g.addColorStop(1, 'rgba(28, 24, 18, 0)');
+            ctx.fillStyle = g;
+            ctx.fillRect(0, 0, size, size);
+            contactShadowTextureCache = new THREE.CanvasTexture(canvas);
+            contactShadowTextureCache.colorSpace = THREE.SRGBColorSpace;
+            return contactShadowTextureCache;
+        }
+
+        // Wood-ish colors get the grain map; painted steel, glass and plastic don't. Keyed off
+        // the same COLORS entries MATERIAL_HINTS uses so the two stay in step.
+        function isWoodySurface(color) {
+            return color === COLORS.cabinet || color === COLORS.cabinetAccentDark ||
+                   color === COLORS.doorPanel || color === COLORS.doorFrame;
         }
 
         // Custom rectangular grid (instead of THREE.GridHelper, which is always square)
@@ -2002,6 +2189,51 @@
             localPorts.forEach(addBranch);
             addCollar(...localPorts);
             return group;
+        }
+
+        // Lays a soft dark blob on the floor directly under a floor-standing item.
+        //
+        // The scene already casts real shadows from its directional key light, but a key light
+        // is by definition off to one side, so the shadow it throws lands beside the object,
+        // not beneath it. The floor immediately under a machine stays fully lit -- and that
+        // missing darkness at the contact point is exactly what makes a rendered object read
+        // as hovering just above the ground rather than standing on it. Real scenes get this
+        // for free from ambient occlusion, which a browser render at this budget doesn't have.
+        //
+        // Rather than reason about each branch's own elevation math (mount heights, stacking,
+        // overhead duct runs), this measures the finished object's world bounding box and only
+        // acts when its underside is genuinely at floor level. Overhead runs and wall-mounted
+        // fixtures fall out on their own, with no per-branch special-casing to keep in sync.
+        const CONTACT_SHADOW_MAX_BASE_FT = 0.25;
+        function addContactShadow(obj) {
+            const box = new THREE.Box3().setFromObject(obj);
+            if (!isFinite(box.min.y) || box.min.y > CONTACT_SHADOW_MAX_BASE_FT) return;
+            const sizeX = box.max.x - box.min.x;
+            const sizeZ = box.max.z - box.min.z;
+            if (!(sizeX > 0.05) || !(sizeZ > 0.05)) return;
+            // A contact shadow spreads slightly wider than the object that casts it, and the
+            // texture's own falloff is transparent at the edges, so the plane has to be bigger
+            // than the footprint or the darkening stops short of the object's own outline.
+            const geo = new THREE.PlaneGeometry(sizeX * 1.45, sizeZ * 1.45);
+            const mat = new THREE.MeshBasicMaterial({
+                map: getContactShadowTexture(),
+                transparent: true,
+                depthWrite: false,
+                // Unlit on purpose: this stands in for absent ambient occlusion, so it must not
+                // pick up the key light that would brighten it back out exactly where it matters.
+                fog: false
+            });
+            const blob = new THREE.Mesh(geo, mat);
+            blob.rotation.x = -Math.PI / 2;
+            // Above the floor grid (y=0.01) rather than between grid and floor -- a contact
+            // shadow that grid lines punch through reads as a decal instead of as shading.
+            blob.position.set((box.min.x + box.max.x) / 2, 0.012, (box.min.z + box.max.z) / 2);
+            blob.renderOrder = 1;
+            blob.castShadow = false;
+            blob.receiveShadow = false;
+            // Not pushed to clickableMeshes: it's shading, and picking it would let a click
+            // near a machine's feet select the shadow instead of the machine.
+            scene.add(blob);
         }
 
         function addToolMesh(t, ceilingFt, index, stackElevationFt) {
@@ -2340,6 +2572,8 @@
             mesh.userData.dims = t.displayDims || '';
             scene.add(mesh);
             clickableMeshes.push(mesh);
+            // After scene.add so the bounding box it measures is in final world space.
+            addContactShadow(mesh);
         }
 
         // Lightens (positive percent) or darkens (negative) a 0xRRGGBB color number — used to
@@ -2358,12 +2592,40 @@
             const hint = hintOverride || MATERIAL_HINTS[color] || DEFAULT_MATERIAL_HINT;
             const opts = { color, roughness: hint.roughness, metalness: hint.metalness };
             if (opacity != null) { opts.transparent = true; opts.opacity = opacity; }
+            // Surface detail (see getGrainTexture/getMicroRoughnessTexture). Transparent parts
+            // are skipped deliberately: the only ones are glass panes and clearance ghosts,
+            // and grain on a window reads as a dirty pane rather than as detail.
+            if (opacity == null) {
+                opts.roughnessMap = getMicroRoughnessTexture();
+                if (isWoodySurface(color)) opts.map = getGrainTexture();
+            }
             return new THREE.MeshStandardMaterial(opts);
+        }
+
+        // Nothing in the physical world has a mathematically sharp edge. A real corner —
+        // milled, cast, sanded or extruded — carries a small chamfer that catches a thin
+        // line of highlight, and that highlight is most of what tells an eye it's looking at
+        // an object rather than a diagram. Every part here was a plain BoxGeometry, so every
+        // edge in the shop was perfectly sharp and every one of them read as CG.
+        //
+        // The bevel is deliberately tiny (about an eighth of an inch at shop scale) and is
+        // clamped hard: RoundedBoxGeometry needs its radius under half the smallest dimension
+        // or it self-intersects, and a part thin enough for that to bite (a saw blade, a
+        // sheet-metal shroud) has no visible chamfer in real life either. Those fall back to
+        // a plain box, which also keeps the vertex count off parts too small to benefit.
+        const BEVEL_RADIUS_FT = 0.012;
+        function beveledBox(w, h, d) {
+            const sw = Math.max(w, 0.01), sh = Math.max(h, 0.01), sd = Math.max(d, 0.01);
+            const radius = Math.min(BEVEL_RADIUS_FT, Math.min(sw, sh, sd) * 0.3);
+            if (radius < 0.004) return new THREE.BoxGeometry(sw, sh, sd);
+            // segments:1 is one subdivision per rounded corner — enough to catch the highlight,
+            // and cheap enough to apply to every part in a fully-kitted shop.
+            return new RoundedBoxGeometry(sw, sh, sd, 1, radius);
         }
 
         function addPart(group, w, h, d, x, y, z, color, opacity) {
             const mat = materialForColor(color, opacity);
-            const mesh = new THREE.Mesh(new THREE.BoxGeometry(Math.max(w, 0.01), Math.max(h, 0.01), Math.max(d, 0.01)), mat);
+            const mesh = new THREE.Mesh(beveledBox(w, h, d), mat);
             mesh.position.set(x, y, z);
             // Glass panes (transparent, near-zero roughness) skip shadow casting — a
             // window "casting" an opaque shadow reads worse than the small realism loss
@@ -3092,12 +3354,25 @@
         // is a synthetic shop model, so it exists purely to make orbiting/walking read as "which
         // way am I facing" instead of an abstract camera drifting around a model.
         const compassDirVec = new THREE.Vector3();
+        // Called from the render loop, so this runs 60x a second whether or not the view has
+        // actually turned. It used to do a getElementById plus a style write every one of
+        // those frames; writing to style.transform dirties layout, so the browser was being
+        // made to re-resolve style every frame purely to redraw a compass that usually hadn't
+        // moved. Caching the element and skipping sub-quarter-degree changes drops that to
+        // only the frames where the needle genuinely turns.
+        let compassDialEl = null;
+        let lastCompassYawDeg = null;
         function updateCompass() {
-            const dial = document.getElementById('compassDial');
-            if (!dial || !camera) return;
+            if (!camera) return;
+            if (!compassDialEl) {
+                compassDialEl = document.getElementById('compassDial');
+                if (!compassDialEl) return;
+            }
             camera.getWorldDirection(compassDirVec);
             const yawDeg = Math.atan2(compassDirVec.x, -compassDirVec.z) * 180 / Math.PI;
-            dial.style.transform = `rotate(${-yawDeg}deg)`;
+            if (lastCompassYawDeg != null && Math.abs(yawDeg - lastCompassYawDeg) < 0.25) return;
+            lastCompassYawDeg = yawDeg;
+            compassDialEl.style.transform = `rotate(${-yawDeg}deg)`;
         }
 
         // Derives a Y-elevation (feet) per sharedLayout.tools[] index from nothing but the
