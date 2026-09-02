@@ -14777,31 +14777,47 @@
         // Drag-to-reposition (slides along, or transfers to, the nearest wall) plus
         // click-to-remove, sharing a single "did this mousedown turn into a drag" flag so a
         // drag-release doesn't also fire the delete-on-click handler.
-        function attachWallFeatureInteractions(el, f) {
-            let dragging = false;
-            let moved = false;
-            let dragPointerId = null;
-            let startClientX = 0, startClientY = 0;
+        /* ---------- SHARED WALL-FEATURE GESTURE HANDLING ----------
+           Same fix, and for the same reason, as the shared activeNodeInteraction record used
+           for placed nodes above — wall features were simply missed when that change was made.
 
-            el.addEventListener('pointerdown', (e) => {
-                if (e.target.classList.contains('wf-resize-handle')) return;
-                pushUndoSnapshot();
-                dragging = true;
-                moved = false;
-                dragPointerId = e.pointerId;
-                startClientX = e.clientX;
-                startClientY = e.clientY;
-                el.setPointerCapture(e.pointerId);
-                e.stopPropagation();
-            });
+           attachWallFeatureInteractions and attachWfResizeHandle each used to call
+           document.addEventListener for their own element: 3 listeners per feature, plus 3
+           per resize handle (so 9 for a door or window, 3 for an outlet). Nothing ever removed
+           them. renderWallFeatures() removes the feature's DOM nodes, but these listeners live
+           on `document`, not on the element, so they survive it — and renderWallFeatures runs
+           on every zoom step (applyZoom), every layout load (applyLayoutState, which fires on
+           each tab-visibility regain), every imperial/metric toggle (applyUnitLabels), every
+           shop-dimension change and every feature placed. Zooming in and out twenty times in a
+           shop with a few doors and outlets left hundreds of dead handlers on document, each
+           one running on every pointermove for the life of the tab.
 
-            document.addEventListener('pointermove', (e) => {
-                if (!dragging || e.pointerId !== dragPointerId) return;
-                if (isMultiTouch()) return;
-                const dx = e.clientX - startClientX;
-                const dy = e.clientY - startClientY;
-                if (Math.abs(dx) > 3 || Math.abs(dy) > 3) moved = true;
-                if (!moved) return;
+           The second failure mode is the one that actually corrupts state rather than just
+           costing frames: each dead closure kept its own `dragging`/`resizing` flag, and
+           Chrome reports pointerId 1 for every mouse gesture, so a stale closure's pointerId
+           check passes for any later mouse drag anywhere on the page — moving or resizing a
+           wall feature that no longer exists in the DOM.
+
+           One shared record makes a stuck gesture impossible: there is only ever one, starting
+           a new gesture replaces it, and these three listeners are registered exactly once. */
+        let activeWallFeatureInteraction = null;
+        // Set to the element whose drag actually moved, so that gesture's trailing click is
+        // swallowed instead of being read as "click to remove". Keyed by element rather than a
+        // bare boolean to preserve the old per-element behaviour: a drag of one feature must
+        // never suppress a genuine click on a different one.
+        let wfSuppressClickFor = null;
+
+        document.addEventListener('pointermove', (e) => {
+            const ix = activeWallFeatureInteraction;
+            if (!ix || e.pointerId !== ix.pointerId) return;
+            if (isMultiTouch()) return;
+            const el = ix.el, f = ix.f;
+
+            if (ix.kind === 'move') {
+                const dx = e.clientX - ix.startClientX;
+                const dy = e.clientY - ix.startClientY;
+                if (Math.abs(dx) > 3 || Math.abs(dy) > 3) ix.moved = true;
+                if (!ix.moved) return;
 
                 const rect = board.getBoundingClientRect();
                 const x = e.clientX - rect.left - board.clientLeft;
@@ -14830,53 +14846,17 @@
                 f.y = resolved.y;
                 f.angle = resolved.angle;
                 positionWallFeatureEl(el, f);
-            });
-
-            function endWfDrag(e) {
-                if (e.pointerId !== dragPointerId) return;
-                dragging = false;
+                return;
             }
-            document.addEventListener('pointerup', endWfDrag);
-            document.addEventListener('pointercancel', endWfDrag);
 
-            el.addEventListener('click', (e) => {
-                e.stopPropagation();
-                if (moved) { moved = false; return; }
-                if (!confirm(`Remove this ${f.type}?`)) return;
-                wallFeatures = wallFeatures.filter(x => x.id !== f.id);
-                renderWallFeatures();
-            });
-
-            el.title = wallFeatureLabelText(f) + ' — drag to move, click to remove';
-        }
-
-        // Grabbing an end of a door/window bar and dragging changes its length while the
-        // opposite end stays put, clamped so it can never extend past the wall it's on.
-        function attachWfResizeHandle(handleEl, el, f, endSide) {
-            let resizing = false;
-            let resizePointerId = null;
-            let anchor = null;
-            let seg = null;
-
-            handleEl.addEventListener('pointerdown', (e) => {
-                pushUndoSnapshot();
-                resizing = true;
-                resizePointerId = e.pointerId;
-                const rad = f.angle * Math.PI / 180;
-                const dirX = Math.cos(rad), dirY = Math.sin(rad);
-                const half = (f.lengthFt * ppi) / 2;
-                const startPt = { x: f.x - dirX * half, y: f.y - dirY * half };
-                const endPt = { x: f.x + dirX * half, y: f.y + dirY * half };
-                anchor = endSide === 'end' ? startPt : endPt;
-                seg = snapToNearestWall(anchor.x, anchor.y);
-                handleEl.setPointerCapture(e.pointerId);
-                e.preventDefault();
-                e.stopPropagation();
-            });
-
-            document.addEventListener('pointermove', (e) => {
-                if (!resizing || e.pointerId !== resizePointerId) return;
-                if (isMultiTouch()) return;
+            if (ix.kind === 'resize') {
+                const anchor = ix.anchor, seg = ix.seg;
+                // snapToNearestWall returns null when it can't find a wall to snap to (the
+                // anchored end is always on one, so this is a can't-happen in practice) —
+                // guarded because an exception thrown here would escape into the shared
+                // pointermove listener and take every other gesture down with it, which the
+                // old per-element handlers, being separate listeners, would not have done.
+                if (!seg) return;
                 const rect = board.getBoundingClientRect();
                 const mx = e.clientX - rect.left - board.clientLeft;
                 const my = e.clientY - rect.top - board.clientTop;
@@ -14911,14 +14891,63 @@
                 f.lengthFt = newLenPx / ppi;
                 f.widthIn = Math.round(f.lengthFt * 12);
                 positionWallFeatureEl(el, f);
+            }
+        });
+
+        function endWallFeatureInteraction(e) {
+            const ix = activeWallFeatureInteraction;
+            if (!ix || e.pointerId !== ix.pointerId) return;
+            if (ix.kind === 'move' && ix.moved) wfSuppressClickFor = ix.el;
+            activeWallFeatureInteraction = null;
+        }
+        document.addEventListener('pointerup', endWallFeatureInteraction);
+        document.addEventListener('pointercancel', endWallFeatureInteraction);
+
+        function attachWallFeatureInteractions(el, f) {
+
+            el.addEventListener('pointerdown', (e) => {
+                if (e.target.classList.contains('wf-resize-handle')) return;
+                pushUndoSnapshot();
+                activeWallFeatureInteraction = {
+                    kind: 'move', pointerId: e.pointerId, el, f,
+                    moved: false, startClientX: e.clientX, startClientY: e.clientY
+                };
+                el.setPointerCapture(e.pointerId);
+                e.stopPropagation();
             });
 
-            function endWfResize(e) {
-                if (e.pointerId !== resizePointerId) return;
-                resizing = false;
-            }
-            document.addEventListener('pointerup', endWfResize);
-            document.addEventListener('pointercancel', endWfResize);
+            el.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (wfSuppressClickFor === el) { wfSuppressClickFor = null; return; }
+                if (!confirm(`Remove this ${f.type}?`)) return;
+                wallFeatures = wallFeatures.filter(x => x.id !== f.id);
+                renderWallFeatures();
+            });
+
+            el.title = wallFeatureLabelText(f) + ' — drag to move, click to remove';
+        }
+
+        // Grabbing an end of a door/window bar and dragging changes its length while the
+        // opposite end stays put, clamped so it can never extend past the wall it's on.
+        function attachWfResizeHandle(handleEl, el, f, endSide) {
+            handleEl.addEventListener('pointerdown', (e) => {
+                pushUndoSnapshot();
+                const rad = f.angle * Math.PI / 180;
+                const dirX = Math.cos(rad), dirY = Math.sin(rad);
+                const half = (f.lengthFt * ppi) / 2;
+                const startPt = { x: f.x - dirX * half, y: f.y - dirY * half };
+                const endPt = { x: f.x + dirX * half, y: f.y + dirY * half };
+                const anchor = endSide === 'end' ? startPt : endPt;
+                // The wall segment is resolved once, at grab time, from the anchored end —
+                // the moving end travels along that same segment for the rest of the gesture.
+                activeWallFeatureInteraction = {
+                    kind: 'resize', pointerId: e.pointerId, el, f,
+                    anchor, seg: snapToNearestWall(anchor.x, anchor.y)
+                };
+                handleEl.setPointerCapture(e.pointerId);
+                e.preventDefault();
+                e.stopPropagation();
+            });
         }
 
         function initWallFeatures() {
