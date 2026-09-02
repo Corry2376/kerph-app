@@ -1684,8 +1684,21 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
     <script src="supabase-client.js"></script>
     <!-- Google's <model-viewer> web component — gives us AR Quick Look (iOS) / Scene Viewer
          (Android) for free from a plain GLB, no native app needed. Only used by the "View in
-         Your Space" button below. -->
-    <script type="module" src="https://unpkg.com/@google/model-viewer@3.5.0/dist/model-viewer.min.js"></script>
+         Your Space" button below, so it is NOT loaded here: it is 246KB compressed and ships
+         its own copy of three.js, which meant every visitor downloaded a second three.js for a
+         Premier-only button most of them never press. loadModelViewer() (see openArViewer)
+         imports it on first use instead. -->
+    <script type="module">
+        // Exposed as a promise-returning function rather than a bare import so the classic
+        // script below can await it; the promise is cached so repeated AR opens don't re-import.
+        let modelViewerPromise = null;
+        window.loadModelViewer = function loadModelViewer() {
+            if (!modelViewerPromise) {
+                modelViewerPromise = import('https://unpkg.com/@google/model-viewer@3.5.0/dist/model-viewer.min.js');
+            }
+            return modelViewerPromise;
+        };
+    </script>
     <script>
         /* ---------- SHARED STATE KEYS (must match workshop-planner.html / index.html exactly) ---------- */
         const PLAN_KEY = 'kerphPlan';
@@ -4396,17 +4409,33 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
         }
         document.getElementById('printPlanPackageBtn').addEventListener('click', printPlanPackage);
 
-        // <model-viewer> (loaded via CDN script tag near the top of <body>) wants a real
-        // object URL, not raw bytes — a fresh <model-viewer> element is built each time rather
-        // than reused, since there's no supported way to swap its GLB after AR session state
-        // has been established once. The previous blob URL is revoked on close so repeated
-        // opens don't leak memory.
+        // <model-viewer> wants a real object URL, not raw bytes — a fresh <model-viewer>
+        // element is built each time rather than reused, since there's no supported way to
+        // swap its GLB after AR session state has been established once. The previous blob URL
+        // is revoked on close so repeated opens don't leak memory.
+        //
+        // The component itself is imported on demand here (window.loadModelViewer, defined in
+        // the module script near the top of <body>) rather than loaded with the page. It is
+        // 246KB and bundles its own three.js, and this is the only thing that uses it — so
+        // loading it eagerly made every visitor pay for a second three.js to support a
+        // Premier-only button. The import is awaited after the plan and panel checks so a user
+        // who can't open AR never fetches it at all.
         let arObjectUrl = null;
         async function openArViewer() {
             if (getPlan() !== 'premier') { showToast('AR view is a Premier feature -- upgrade to unlock it.'); return; }
             if (!panels.length) { showToast('Add some panels first.'); return; }
             const glb = (typeof window.exportProjectGLB === 'function') ? await window.exportProjectGLB() : null;
             if (!glb) { showToast('Could not export the 3D model — open the 3D Preview tab first.'); return; }
+
+            // First AR open in a session fetches the component; later ones reuse the cached
+            // promise. Failure here is a network problem, not a bug, so it reports rather than
+            // leaving the button looking dead.
+            try {
+                await window.loadModelViewer();
+            } catch (e) {
+                showToast('Could not load the AR viewer — check your connection and try again.');
+                return;
+            }
 
             if (arObjectUrl) URL.revokeObjectURL(arObjectUrl);
             arObjectUrl = URL.createObjectURL(new Blob([glb], { type: 'model/gltf-binary' }));
