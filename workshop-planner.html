@@ -10460,6 +10460,57 @@
             return !(a.right <= b.left || a.left >= b.right || a.bottom <= b.top || a.top >= b.bottom);
         }
 
+        /* ---------- ORIENTED BOXES ----------
+           rectFromCenter above deliberately returns the axis-aligned BOUNDING box of a rotated
+           item, which is the right, cheap answer for drag collision: it errs toward "blocked",
+           and while dragging, erring toward blocked just means the item stops a little early.
+
+           Operating-clearance checking is the one place that tradeoff reads as a bug rather
+           than caution. There it compounds twice -- the tool's own zone is bounded, and so is
+           every obstacle tested against it -- and the result is shown to the user as a specific
+           claim ("X is intruding on Y's clearance"). A tool at 45 degrees has a bounding box
+           about 1.41x its true footprint on each side, so two machines with real clearance
+           between them get reported as conflicting. Warnings a user learns to dismiss are worse
+           than no warnings, because the real ones stop registering too.
+
+           An oriented box is {cx, cy, halfW, halfH, angle} in degrees. Overlap is the
+           separating axis theorem: two convex shapes are disjoint if and only if some axis
+           exists on which their projections don't overlap, and for two rectangles only four
+           axes can possibly separate them -- each box's own two edge normals. */
+        function obbCorners(o) {
+            const rad = o.angle * Math.PI / 180;
+            const cos = Math.cos(rad), sin = Math.sin(rad);
+            return [
+                { x: -o.halfW, y: -o.halfH }, { x: o.halfW, y: -o.halfH },
+                { x: o.halfW, y: o.halfH }, { x: -o.halfW, y: o.halfH }
+            ].map(p => ({ x: o.cx + p.x * cos - p.y * sin, y: o.cy + p.x * sin + p.y * cos }));
+        }
+
+        function obbsOverlap(a, b) {
+            const cornersA = obbCorners(a), cornersB = obbCorners(b);
+            for (const box of [a, b]) {
+                const rad = box.angle * Math.PI / 180;
+                const cos = Math.cos(rad), sin = Math.sin(rad);
+                for (const axis of [{ x: cos, y: sin }, { x: -sin, y: cos }]) {
+                    let aMin = Infinity, aMax = -Infinity, bMin = Infinity, bMax = -Infinity;
+                    for (const p of cornersA) {
+                        const d = p.x * axis.x + p.y * axis.y;
+                        if (d < aMin) aMin = d;
+                        if (d > aMax) aMax = d;
+                    }
+                    for (const p of cornersB) {
+                        const d = p.x * axis.x + p.y * axis.y;
+                        if (d < bMin) bMin = d;
+                        if (d > bMax) bMax = d;
+                    }
+                    // Touching exactly counts as clear, matching rectsOverlap's use of <= /
+                    // >= -- two machines whose clearance zones share an edge aren't in conflict.
+                    if (aMax <= bMin || bMax <= aMin) return false;
+                }
+            }
+            return true;
+        }
+
         function getProtectedRects(excludeCabinetEl, excludeWallFeatureId) {
             const rects = [];
             document.querySelectorAll('.placed-cabinet-node').forEach(n => {
@@ -13390,33 +13441,42 @@
             return { x: cx + (dx * cos - dy * sin), y: cy + (dx * sin + dy * cos) };
         }
 
-        // Builds the rotated-AABB zone rect for one obstacle, extended by its category's
-        // clearance profile — same asymmetric-rect-rotated-around-a-pivot approach as
-        // getRotatedAabb, just generalized since a clearance zone isn't centered on the tool
-        // when left/right or top/bottom differ.
-        function getToolClearanceZoneRect(obstacle) {
+        // Builds the clearance zone for one obstacle as an ORIENTED box (see obbsOverlap):
+        // the tool's own footprint grown by its category's clearance profile, rotated with the
+        // tool. This used to return the axis-aligned bounding box of that shape, which on a
+        // rotated tool is materially larger than the zone itself and produced conflict warnings
+        // where real clearance existed.
+        //
+        // The zone isn't centred on the tool when left/right or top/bottom differ, so its
+        // centre is offset in the tool's LOCAL frame and then rotated into place.
+        function getToolClearanceZoneObb(obstacle) {
             const profile = obstacle.clearanceCategory ? getClearanceProfile(obstacle.clearanceCategory) : null;
             if (!profile) return null;
             const { rect, angle } = obstacle;
-            // Center is the same regardless of rotation, so it's safe to read off the
-            // (possibly already-rotated) obstacle rect — but the half-extents must come from
-            // the tool's raw, un-rotated footprint (wPx/hPx), not from rect's already-rotated
-            // AABB, or a rotated tool's zone gets rotated a second time on top of that.
+            // Centre is rotation-invariant, so reading it off the (already-rotated) obstacle
+            // rect is safe — but the half-extents must come from the tool's raw, un-rotated
+            // footprint (wPx/hPx), never from rect's bounding box, or the rotation gets
+            // applied twice.
             const cx = (rect.left + rect.right) / 2;
             const cy = (rect.top + rect.bottom) / 2;
             const halfW = obstacle.wPx / 2;
             const halfH = obstacle.hPx / 2;
             const leftPx = profile.left * ppi, rightPx = profile.right * ppi;
             const topPx = profile.top * ppi, bottomPx = profile.bottom * ppi;
-            const localCorners = [
-                { x: -halfW - leftPx, y: -halfH - topPx },
-                { x: halfW + rightPx, y: -halfH - topPx },
-                { x: halfW + rightPx, y: halfH + bottomPx },
-                { x: -halfW - leftPx, y: halfH + bottomPx }
-            ];
-            const rotated = localCorners.map(p => rotatePointAroundPx(cx + p.x, cy + p.y, cx, cy, angle));
-            const xs = rotated.map(p => p.x), ys = rotated.map(p => p.y);
-            return { left: Math.min(...xs), right: Math.max(...xs), top: Math.min(...ys), bottom: Math.max(...ys) };
+
+            // Local extents run from -(halfW+left) to +(halfW+right) across, and
+            // -(halfH+top) to +(halfH+bottom) down. An asymmetric profile therefore shifts the
+            // zone's centre by half the difference between opposing sides.
+            const offsetX = (rightPx - leftPx) / 2;
+            const offsetY = (bottomPx - topPx) / 2;
+            const rad = angle * Math.PI / 180;
+            return {
+                cx: cx + offsetX * Math.cos(rad) - offsetY * Math.sin(rad),
+                cy: cy + offsetX * Math.sin(rad) + offsetY * Math.cos(rad),
+                halfW: halfW + (leftPx + rightPx) / 2,
+                halfH: halfH + (topPx + bottomPx) / 2,
+                angle
+            };
         }
 
         function clearToolClearanceZones() {
@@ -13449,20 +13509,34 @@
             const flaggedEls = new Set();
 
             zoned.forEach(owner => {
-                const zoneRect = getToolClearanceZoneRect(owner);
-                if (!zoneRect) return;
+                const zoneObb = getToolClearanceZoneObb(owner);
+                if (!zoneObb) return;
                 let intrudedBy = [];
                 obstacles.forEach(other => {
                     if (other === owner) return;
-                    if (rectsOverlap(zoneRect, other.rect)) intrudedBy.push(other.label);
+                    // Built from the obstacle's raw footprint and angle rather than reusing
+                    // other.rect, which is a bounding box — testing against that would put the
+                    // same false positives back on the obstacle's side of the comparison.
+                    if (obbsOverlap(zoneObb, {
+                        cx: (other.rect.left + other.rect.right) / 2,
+                        cy: (other.rect.top + other.rect.bottom) / 2,
+                        halfW: other.wPx / 2,
+                        halfH: other.hPx / 2,
+                        angle: other.angle
+                    })) intrudedBy.push(other.label);
                 });
                 const isIgnored = owner.el.dataset.clearanceIgnored === 'true';
                 const zone = document.createElement('div');
                 zone.className = 'clearance-zone-overlay' + (intrudedBy.length && !isIgnored ? ' violated' : '');
-                zone.style.left = zoneRect.left + 'px';
-                zone.style.top = zoneRect.top + 'px';
-                zone.style.width = (zoneRect.right - zoneRect.left) + 'px';
-                zone.style.height = (zoneRect.bottom - zoneRect.top) + 'px';
+                // Positioned by its un-rotated box then rotated about its own centre (the
+                // default transform-origin), so what's drawn is exactly the shape that was
+                // tested. Previously the overlay was the bounding box, meaning a rotated tool
+                // showed a zone visibly larger than the one the check actually used.
+                zone.style.left = (zoneObb.cx - zoneObb.halfW) + 'px';
+                zone.style.top = (zoneObb.cy - zoneObb.halfH) + 'px';
+                zone.style.width = (zoneObb.halfW * 2) + 'px';
+                zone.style.height = (zoneObb.halfH * 2) + 'px';
+                zone.style.transform = `rotate(${zoneObb.angle}deg)`;
                 board.insertBefore(zone, board.firstChild);
                 if (intrudedBy.length) {
                     if (!isIgnored) flaggedEls.add(owner.el);
