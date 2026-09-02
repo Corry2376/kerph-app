@@ -44,3 +44,28 @@ and confirm before:
 When in doubt on something not covered above, a brief one-line heads-up
 in the response (not a blocking question) is better than silently doing it
 *and* better than stopping to ask — say what you did and why, and keep going.
+
+## Never stage files by wildcard
+
+**Always `git add` explicit file paths.** Never `git add -A`, `git add .`,
+`git add -u`, or a glob like `git add -- '*.html'`.
+
+The repo root is a working directory as much as a source tree: it holds
+launch reports, financial documents, beta plans, scripts, spreadsheets and
+scratch HTML alongside the actual site, and Cloudflare's `assets.directory`
+is `"."` — so anything that lands in git lands on kerphplans.com. On
+2026-09-01 a `git add -A -- '*.html'`, run to commit a one-line change across
+29 pages, also swept in four untracked working documents (an internal domain
+checklist, an overnight change report, a plan-comparison doc and a video
+script) and published them on the newly-public site.
+
+`.assetsignore` already excludes business documents by extension (`*.pdf`,
+`*.xlsx`, `*.docx`, `*.csv`), but that cannot save you for `.html` — `*.html`
+*is* the site. Individually-named internal HTML files are listed at the
+bottom of `.assetsignore` and in `.gitignore`; add to both when a new one
+appears.
+
+Before committing, run `git status --porcelain` and confirm every staged path
+is one you meant. If a change genuinely spans many files, list them
+explicitly (`git add a.html b.html c.html`) or stage them in a loop over a
+filtered list you have actually read — never a bare wildcard.
