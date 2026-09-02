@@ -352,9 +352,9 @@
             <div class="header-field" style="width:100%; margin-top:14px;">
                 <label class="header-field-label">Gallery Photos (up to 15)</label>
                 <div style="font-size:11px; color:#6b7280; margin-bottom:4px; line-height:1.4;">Didn't build this in Project Designer? Add build photos here &mdash; or snap a photo/scan of plans from a book, magazine, or another site and drop them in too.</div>
-                <input type="file" id="galleryPhotoInput" accept="image/*" style="display:none;">
+                <input type="file" id="galleryPhotoInput" accept="image/*" multiple style="display:none;">
                 <div class="gallery-upload-row" id="galleryThumbs"></div>
-                <button type="button" class="mini-btn" id="galleryPhotoBtn" style="margin-top:8px;">+ Add Gallery Photo</button>
+                <button type="button" class="mini-btn" id="galleryPhotoBtn" style="margin-top:8px;">+ Add Gallery Photos</button>
             </div>
 
             <div class="header-field" style="width:100%; margin-top:14px;">
@@ -918,14 +918,49 @@
         });
         document.getElementById('galleryPhotoBtn').addEventListener('click', () => document.getElementById('galleryPhotoInput').click());
         document.getElementById('galleryPhotoInput').addEventListener('change', async () => {
-            if (pendingGalleryPaths.length >= 15) { showToast('Up to 15 gallery photos per project.'); return; }
-            const file = document.getElementById('galleryPhotoInput').files[0];
-            if (!file) return;
-            const { data, error } = await kerphUploadPortfolioPhoto(file);
-            if (error) { showToast(error.message || 'Could not upload photo.'); return; }
-            pendingGalleryPaths.push(data.path);
-            renderGalleryThumbs();
-            document.getElementById('galleryPhotoInput').value = '';
+            const input = document.getElementById('galleryPhotoInput');
+            const btn = document.getElementById('galleryPhotoBtn');
+            // Snapshot the FileList before clearing the input. Clearing it up front (rather
+            // than at the end, as this did when it handled one file) means picking the very
+            // same photos again still fires 'change' — otherwise a failed upload couldn't be
+            // retried without choosing a different file first.
+            const files = Array.from(input.files || []);
+            input.value = '';
+            if (!files.length) return;
+
+            const remaining = 15 - pendingGalleryPaths.length;
+            if (remaining <= 0) { showToast('Up to 15 gallery photos per project.'); return; }
+            // Take what fits rather than rejecting the whole selection — picking 20 photos
+            // with 10 slots left should add 5, not make you start over.
+            const batch = files.slice(0, remaining);
+            const skipped = files.length - batch.length;
+
+            const originalLabel = btn.textContent;
+            btn.disabled = true;
+            let added = 0, failed = 0;
+            for (let i = 0; i < batch.length; i++) {
+                // Each upload downscales on a canvas before sending (see
+                // kerphUploadPortfolioPhoto), so a batch is slow enough to need a progress
+                // label — a button that sits dead for thirty seconds reads as broken.
+                btn.textContent = batch.length > 1 ? `Uploading ${i + 1} of ${batch.length}…` : 'Uploading…';
+                const { data, error } = await kerphUploadPortfolioPhoto(batch[i]);
+                if (error) { failed++; continue; }
+                pendingGalleryPaths.push(data.path);
+                added++;
+                // Rendered per photo, not once at the end, so thumbnails appear as they land.
+                renderGalleryThumbs();
+            }
+            btn.disabled = false;
+            btn.textContent = originalLabel;
+
+            // One summary rather than a toast per photo, which would bury the screen on a
+            // large batch. Sequential (not parallel) uploads keep this honest: a partial
+            // failure reports exactly how many made it.
+            const parts = [];
+            if (added) parts.push(`${added} photo${added === 1 ? '' : 's'} added`);
+            if (failed) parts.push(`${failed} failed`);
+            if (skipped) parts.push(`${skipped} skipped (15 max)`);
+            if (parts.length) showToast(parts.join(' · ') + '.');
         });
 
         document.getElementById('projectSaveBtn').addEventListener('click', async () => {
