@@ -172,6 +172,16 @@
         .admin-stat.tier-free .admin-stat-value { color: #16a34a; }
         .admin-stat.tier-pro .admin-stat-value { color: #2563eb; }
         .admin-stat.tier-premier .admin-stat-value { color: #ca8a04; }
+        /* The stats row at the top of the page stands alone and wants its full margin; the
+           same row nested inside a section is already inside that section's padding, so it
+           only needs enough space to separate it from the chart below. */
+        .admin-stats-row.in-section { margin: 0 0 16px; }
+        .admin-stat-sub { font-size: 10px; font-weight: 600; color: #94a3b8; margin-top: 2px; font-variant-numeric: tabular-nums; }
+        .admin-visitor-split { margin-top: 14px; padding-top: 12px; border-top: 1px solid #e2e8f0; display: flex; flex-wrap: wrap; gap: 8px 22px; font-size: 12px; color: #6b7280; }
+        .admin-visitor-split b { color: #1e3a8a; font-variant-numeric: tabular-nums; }
+        /* flex-basis:100% forces the caveat onto its own line — it lives inside the flex row
+           above, and without this it would sit inline beside the visitor counts. */
+        .admin-visitor-note { flex-basis: 100%; font-size: 11px; color: #94a3b8; margin-top: 4px; line-height: 1.5; }
 
         .admin-section { margin-bottom: 34px; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 18px 20px; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04); }
         .admin-section-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 14px; flex-wrap: wrap; gap: 6px; }
@@ -329,6 +339,16 @@
                     <span class="admin-section-note" id="adminErrorCount">Last 30 days</span>
                 </div>
                 <div id="adminErrorList"></div>
+            </div>
+
+            <div class="admin-section">
+                <div class="admin-section-head">
+                    <div class="admin-section-title"><span class="emoji">&#127760;</span> Site Visitors</div>
+                    <span class="admin-section-note">Everyone who loaded a page &mdash; signed in or not</span>
+                </div>
+                <div class="admin-stats-row in-section" id="adminVisitorStats"></div>
+                <div id="adminVisitorsChart"></div>
+                <div class="admin-visitor-split" id="adminVisitorSplit"></div>
             </div>
 
             <div class="admin-section">
@@ -877,6 +897,7 @@
 
             renderTierStats(profiles.length, currentSubs);
             renderErrorList(errors);
+            renderVisitorsWidget(events);
             renderActiveUsersChart(events);
             renderPageUsageTable(events);
             renderReferralStats(profiles);
@@ -1083,6 +1104,126 @@
                     <div class="admin-bar-row-value">${value}</div>
                 </div>
             `;
+        }
+
+        // Identity for "one visitor". Signed-in pageviews carry BOTH a user_id and the
+        // browser's session_id, so user_id has to win — otherwise the same person on a laptop
+        // and a phone counts as two visitors, and their anonymous browsing before signing in
+        // counts as a third. Anonymous visitors fall back to session_id, which is a UUID kept
+        // in localStorage (see kerphGetAnonSessionId) and therefore identifies a BROWSER, not
+        // a visit: it persists across days until storage is cleared. That is why everything
+        // below says "visitors" and never "sessions" or "visits" — those would be wrong.
+        function visitorKey(e) {
+            if (e.user_id) return 'u:' + e.user_id;
+            return e.session_id ? 's:' + e.session_id : null;
+        }
+
+        // Site Visitors: the top-of-funnel number, and the one thing the dashboard could not
+        // previously answer. "Active Users Per Day" below counts login events, so it only ever
+        // sees people who already have an account; "Where Time Is Spent" breaks down by page
+        // but has no time axis. Neither answers "how many people came to the site today",
+        // which is the number that matters once traffic starts arriving from marketing.
+        function renderVisitorsWidget(events) {
+            const statsEl = document.getElementById('adminVisitorStats');
+            const chartEl = document.getElementById('adminVisitorsChart');
+            const splitEl = document.getElementById('adminVisitorSplit');
+            if (!statsEl || !chartEl || !splitEl) return;
+
+            const views = (events || []).filter(e => e.event_type === 'pageview' && e.created_at);
+            if (!views.length) {
+                statsEl.innerHTML = '';
+                splitEl.innerHTML = '';
+                chartEl.innerHTML = '<div class="admin-empty">No visitor data in the last 30 days yet. This fills in as people load pages — every page reports a view automatically.</div>';
+                return;
+            }
+
+            // Days are bucketed in UTC, matching renderActiveUsersChart above, so the two
+            // charts line up rather than disagreeing by a few hours near midnight.
+            const byDay = {};
+            const allVisitors = new Set();
+            let signedInViews = 0;
+            // Views with no identity at all (localStorage blocked, so no session id could be
+            // stored) are counted separately rather than silently folded in: they can't be
+            // attributed to a visitor, so including them in the numerator of pages-per-visitor
+            // while they're absent from the denominator would overstate engagement.
+            let identifiedViews = 0;
+            views.forEach(e => {
+                const key = visitorKey(e);
+                if (!key) return;
+                const day = e.created_at.slice(0, 10);
+                if (!byDay[day]) byDay[day] = new Set();
+                byDay[day].add(key);
+                allVisitors.add(key);
+                identifiedViews++;
+                if (e.user_id) signedInViews++;
+            });
+
+            const dayOffset = n => new Date(Date.now() - n * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+            const distinctOver = n => {
+                const s = new Set();
+                for (let i = 0; i < n; i++) {
+                    const d = byDay[dayOffset(i)];
+                    if (d) d.forEach(k => s.add(k));
+                }
+                return s.size;
+            };
+
+            const today = byDay[dayOffset(0)] ? byDay[dayOffset(0)].size : 0;
+            const last7 = distinctOver(7);
+            const last30 = allVisitors.size;
+            const viewsPer = last30 ? (identifiedViews / last30) : 0;
+
+            // Yesterday is shown under today's number for a sense of direction — a bare
+            // "12 visitors" says nothing without knowing whether yesterday was 4 or 40.
+            const yesterday = byDay[dayOffset(1)] ? byDay[dayOffset(1)].size : 0;
+
+            statsEl.innerHTML = `
+                <div class="admin-stat">
+                    <div class="admin-stat-value">${today}</div>
+                    <div class="admin-stat-label">Visitors Today</div>
+                    <div class="admin-stat-sub">${yesterday} yesterday</div>
+                </div>
+                <div class="admin-stat">
+                    <div class="admin-stat-value">${last7}</div>
+                    <div class="admin-stat-label">Last 7 Days</div>
+                </div>
+                <div class="admin-stat">
+                    <div class="admin-stat-value">${last30}</div>
+                    <div class="admin-stat-label">Last 30 Days</div>
+                </div>
+                <div class="admin-stat">
+                    <div class="admin-stat-value">${viewsPer.toFixed(1)}</div>
+                    <div class="admin-stat-label">Pages Per Visitor</div>
+                    <div class="admin-stat-sub">${identifiedViews} view${identifiedViews === 1 ? '' : 's'} total</div>
+                </div>
+            `;
+
+            const days = [];
+            for (let i = 13; i >= 0; i--) {
+                const d = dayOffset(i);
+                days.push({ date: d, count: byDay[d] ? byDay[d].size : 0 });
+            }
+            const maxCount = Math.max(1, ...days.map(d => d.count));
+            chartEl.innerHTML = days.map(d => {
+                const label = new Date(d.date + 'T00:00:00Z').toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+                return barRow(label, d.count, maxCount);
+            }).join('');
+
+            const signedInVisitors = [...allVisitors].filter(k => k.charAt(0) === 'u').length;
+            const anonVisitors = last30 - signedInVisitors;
+            const signedInPct = last30 ? Math.round((signedInVisitors / last30) * 100) : 0;
+            splitEl.innerHTML = `
+                <span>Signed in: <b>${signedInVisitors}</b> (${signedInPct}%)</span>
+                <span>Anonymous: <b>${anonVisitors}</b></span>
+                <span>Signed-in page views: <b>${signedInViews}</b> of ${identifiedViews}</span>
+            `;
+
+            const note = document.createElement('div');
+            note.className = 'admin-visitor-note';
+            // Stated plainly because an analytics number with unstated caveats gets trusted
+            // more than it deserves — and these caveats all push the count DOWNWARD.
+            note.textContent = 'Counted per browser via a stored id, so the same person on a phone and a laptop counts twice until they sign in, and clearing site data or using a private window starts a new count. Ad blockers may suppress reporting entirely. Treat these as a floor, not an exact figure.';
+            splitEl.appendChild(note);
         }
 
         function renderActiveUsersChart(events) {
