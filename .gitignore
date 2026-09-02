@@ -11,3 +11,10 @@ supabase/.temp/
 !.dev.vars.example
 .env*
 !.env.example
+
+# Internal working documents that live in the repo root but are not part of the
+# site. Kept out of git so a clean-clone build (Workers Builds) never serves them.
+domain-checklist.html
+kerph-plan-comparison.html
+overnight-report-*.html
+shop-jigs-script.html

@@ -24,3 +24,12 @@ Articles
 *.xlsb
 *.docx
 *.csv
+
+# Internal working HTML that must not be served. Unlike the document types above
+# these cannot be excluded by extension -- *.html IS the site -- so they are named
+# individually. Keeps a local `wrangler deploy` (which reads the filesystem, not
+# git) from publishing them even though they are gitignored.
+domain-checklist.html
+kerph-plan-comparison.html
+overnight-report-*.html
+shop-jigs-script.html
