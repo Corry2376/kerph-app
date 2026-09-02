@@ -7018,12 +7018,30 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
 
         function animate() {
             requestAnimationFrame(animate);
+
+            // switchTab('cutlist') hides the 3D preview with display:none but has no way to
+            // stop this loop, so once a user had opened the 3D tab even once, the page went on
+            // rendering a hidden canvas every frame for the rest of the session while they
+            // worked in the cut list -- full GPU cost, nothing on screen.
+            //
+            // Testing the canvas's own measured size rather than reading activeTab keeps this
+            // decoupled from the classic script's state (they're separate scopes) and stays
+            // correct no matter what hides the preview -- a display:none ancestor, a collapsed
+            // panel, a zero-height container mid-layout. Deliberately not offsetParent, which
+            // is also null for position:fixed elements that are perfectly visible.
+            //
+            // The rAF chain keeps running so the loop resumes on its own when the tab comes
+            // back; only the per-frame work is skipped.
+            if (!renderer) return;
+            const canvas = renderer.domElement;
+            if (document.hidden || !canvas.clientWidth || !canvas.clientHeight) return;
+
             if (controls) controls.update();
             // Keeps the outline glued to the mesh through both drag and the free-rotate
             // gizmo — simplest correct way to track a box that can change every frame from
             // either interaction, rather than trying to hook both individually.
             if (selectionHelper) selectionHelper.update();
-            if (renderer && scene && camera) renderer.render(scene, camera);
+            if (scene && camera) renderer.render(scene, camera);
         }
 
         window.init3DPreviewScene = function init3DPreviewScene() {
