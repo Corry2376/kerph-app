@@ -10,9 +10,12 @@ name: smoke-tests
 
 on:
   push:
+    # `release` is deliberately absent: deploy.yml runs this same suite as the gate before
+    # publishing, so listing it here too would run everything twice on every promote and put
+    # two near-identical results in the Actions tab.
     # ci/** so a change to the tests or the workflow itself can be proven green on a branch
-    # before it reaches either deploy branch — the same reason this suite exists at all.
-    branches: [main, release, 'ci/**']
+    # before it reaches a deploy branch — the same reason this suite exists at all.
+    branches: [main, 'ci/**']
   pull_request:
     branches: [main, release]
   workflow_dispatch: {}

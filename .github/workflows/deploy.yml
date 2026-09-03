@@ -1,0 +1,86 @@
+name: deploy
+
+# Publishes kerphplans.com. This file IS the deploy rule -- the thing that decides when the
+# live site changes -- deliberately kept here in the repo rather than in a Cloudflare dashboard
+# setting, so it can be read, reviewed and tested.
+#
+# Only a push to `release` publishes. A push to `main` does not, which is the whole point:
+# work lands on main, gets tested, and only goes live when it is deliberately promoted.
+#
+# The smoke tests run FIRST and the deploy only happens if they pass. Cloudflare's own Git
+# integration cannot do this -- it deploys regardless of whether any test passed -- and it is
+# the main reason the deploy moved in here.
+
+on:
+  push:
+    branches: [release]
+  # Lets a deploy be triggered by hand from the Actions tab, e.g. to re-publish after a
+  # rollback without having to make an empty commit.
+  workflow_dispatch: {}
+
+# Never let two deploys of the same site overlap. cancel-in-progress is false on purpose: a
+# half-finished deploy that gets cancelled is worse than waiting for it to finish.
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Gate: the same smoke suite that runs on every push, run once more against the
+  # exact commit about to go live.
+  # ---------------------------------------------------------------------------
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install test dependencies
+        run: npm install
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Run smoke tests
+        run: npx playwright test
+        env:
+          CI: 'true'
+      - name: Upload report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: deploy-smoke-report-${{ github.run_id }}
+          path: playwright-report/
+          retention-days: 14
+          if-no-files-found: ignore
+
+  # ---------------------------------------------------------------------------
+  # Publish. `needs: smoke` is the gate -- if the suite above fails, this job never
+  # starts and the live site is untouched.
+  # ---------------------------------------------------------------------------
+  publish:
+    needs: smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # wrangler is Cloudflare's command-line tool. Pinned to major version 4 so a future
+      # breaking release cannot change deploy behaviour without an explicit edit here.
+      # The two secrets are set in GitHub under Settings -> Secrets and variables -> Actions;
+      # their values are never printed in the log.
+      - name: Publish to Cloudflare
+        run: npx --yes wrangler@4 deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      - name: Confirm the site is answering
+        run: |
+          sleep 15
+          code=$(curl -s -o /dev/null -w "%{http_code}" -L --max-time 30 https://kerphplans.com/)
+          echo "kerphplans.com returned HTTP $code"
+          test "$code" = "200"
