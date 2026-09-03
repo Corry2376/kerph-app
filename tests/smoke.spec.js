@@ -133,22 +133,32 @@ test.describe('plan gate', () => {
 //    real lumber.
 // ---------------------------------------------------------------------------
 test.describe('calculators', () => {
-  test('board feet: 1in x 6in x 8ft = 4 board feet', async ({ page }) => {
-    const errors = watchForErrors(page);
-    await page.goto('/shop-jigs-board-feet.html', { waitUntil: 'load' });
+  // Two cases rather than one, so a bug that happens to produce the right answer for a
+  // single input can't pass. Asserted against the labelled total rather than "a 4 appears
+  // somewhere" -- the results grid renders as "Total board feet4 bf1 board" with no word
+  // boundary before the number, which is what made the first version of this test fail.
+  const BOARD_FEET_CASES = [
+    { thickness: '1', width: '6', length: '8', expected: 4 },   // (1 x 6 x 96) / 144
+    { thickness: '2', width: '12', length: '10', expected: 20 }, // (2 x 12 x 120) / 144
+  ];
 
-    await page.fill('#bfThickness', '1');
-    await page.fill('#bfWidth', '6');
-    await page.fill('#bfLength', '8');
-    // Nudge any change-driven recalculation.
-    await page.locator('#bfLength').blur();
+  for (const c of BOARD_FEET_CASES) {
+    test(`board feet: ${c.thickness}in x ${c.width}in x ${c.length}ft = ${c.expected} bf`, async ({ page }) => {
+      const errors = watchForErrors(page);
+      await page.goto('/shop-jigs-board-feet.html', { waitUntil: 'load' });
 
-    const results = page.locator('#bfResults');
-    await expect(results).not.toBeEmpty();
-    // (1 x 6 x 96) / 144 = 4
-    await expect(results).toContainText(/\b4(\.0+)?\b/);
-    expect(errors, errors.join('\n')).toEqual([]);
-  });
+      await page.fill('#bfThickness', c.thickness);
+      await page.fill('#bfWidth', c.width);
+      await page.fill('#bfLength', c.length);
+      // Nudge any change-driven recalculation.
+      await page.locator('#bfLength').blur();
+
+      const results = page.locator('#bfResults');
+      await expect(results).not.toBeEmpty();
+      await expect(results).toContainText(new RegExp(`Total board feet\\s*${c.expected}(\\.0+)?\\s*bf`));
+      expect(errors, errors.join('\n')).toEqual([]);
+    });
+  }
 });
 
 // ---------------------------------------------------------------------------

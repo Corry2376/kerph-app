@@ -4,6 +4,25 @@
     <script>(function(){var r={free:0,pro:1,premier:2};if((r[localStorage.getItem('kerphPlan')||'free']||0)<r.pro){location.replace('pricing.html?locked=project-designer.html');}})();</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- MUST stay in <head>, ahead of every <script type="module"> on the page. An import map
+         only applies to module scripts whose loading begins after it is parsed; add one later
+         and the browser reports "An import map is added after module script load was
+         triggered" and every bare specifier below fails with "Failed to resolve module
+         specifier". This block used to sit near the bottom, after two module scripts, which
+         made the 3D preview and the CSG joinery a RACE -- it resolved favourably on a fast
+         local machine and failed in CI, where the smoke suite caught it. -->
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+            "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/",
+            "three-mesh-bvh": "https://unpkg.com/three-mesh-bvh@0.6.8/build/index.module.js",
+            "three-bvh-csg": "https://unpkg.com/three-bvh-csg@0.0.15/build/index.module.js"
+        }
+    }
+    </script>
+
     <meta name="description" content="Design a build panel by panel, see it in 3D with real joinery, and get a cut list and hardware list you can take straight to the shop.">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="Kerph">
@@ -4946,16 +4965,6 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
         });
     </script>
 
-    <script type="importmap">
-    {
-        "imports": {
-            "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-            "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/",
-            "three-mesh-bvh": "https://unpkg.com/three-mesh-bvh@0.6.8/build/index.module.js",
-            "three-bvh-csg": "https://unpkg.com/three-bvh-csg@0.0.15/build/index.module.js"
-        }
-    }
-    </script>
 
     <script type="module">
         import * as THREE from 'three';
