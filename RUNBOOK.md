@@ -35,6 +35,30 @@ forward — otherwise the next unrelated push silently reintroduces the problem.
 
 ---
 
+## Staging
+
+**https://kerph-app-staging.cjstalcup.workers.dev**
+
+A complete second copy of the site, republished automatically on every push to `main`. Use it
+to look at changes before anyone else can. It is a separate Cloudflare Worker
+(`wrangler.staging.jsonc`, deployed by `.github/workflows/staging.yml`) and cannot affect
+kerphplans.com.
+
+Not gated on the smoke tests, on purpose — staging is where you go to look at work in
+progress, and waiting two minutes for tests would defeat that. The suite still runs on the
+same push in parallel, so the result is there when you want it.
+
+**Staging shares the production database.** Anything that writes is writing real data: a
+project saved on staging is a real project, a showcase post is a real post. Fine for layout,
+wording and visual work. When testing something that changes how data is *stored* rather than
+how it *looks*, give staging its own Supabase project first.
+
+The normal loop:
+
+1. Work on `main`, push. Staging updates in about a minute.
+2. Look at staging, keep iterating.
+3. Happy with it? Promote to `release` (below). That is what reaches customers.
+
 ## How a deploy happens
 
 Cloudflare Workers Builds watches one branch and deploys every push to it. There is no build
