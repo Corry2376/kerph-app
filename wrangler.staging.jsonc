@@ -1,0 +1,31 @@
+// Staging copy of the site. Identical content to production, deployed to a SEPARATE Cloudflare
+// Worker with its own URL, so changes can be looked at before anyone else sees them.
+//
+// Deployed automatically from `main` by .github/workflows/staging.yml. Production is a
+// different Worker entirely (see wrangler.jsonc) and is only ever published from `release`,
+// so nothing here can affect the live site.
+//
+// IMPORTANT: staging talks to the SAME Supabase database as production. That is a deliberate
+// trade for simplicity -- it means staging is genuinely useful for layout, copy and visual
+// work with zero setup, but anything that WRITES data is writing real data. A project saved
+// on staging is a real project; a showcase post on staging is a real post. When the work
+// being tested changes how data is stored rather than how it looks, staging should get its
+// own Supabase project first.
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "kerph-app-staging",
+  "compatibility_date": "2026-07-28",
+  "observability": {
+    "enabled": true
+  },
+  "assets": {
+    "directory": "."
+  },
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  // Gives this Worker a public *.workers.dev address. Production deliberately does not set
+  // this -- it is served on the real domain instead -- but staging needs somewhere to live
+  // that is not kerphplans.com and that needs no DNS setup.
+  "workers_dev": true
+}

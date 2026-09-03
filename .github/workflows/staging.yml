@@ -1,0 +1,74 @@
+name: staging
+
+# Publishes a preview copy of the site on every push to `main`, so changes can be looked at
+# and iterated on before they are promoted to the live site.
+#
+# Deliberately NOT gated on the smoke tests. Production is gated (see deploy.yml) because a
+# broken deploy there reaches customers; staging is the place you go specifically to look at
+# work in progress, and making every preview wait two minutes for a test run would defeat the
+# point. The smoke suite still runs on the same push via smoke-tests.yml, in parallel -- so
+# the result is there when you want it without holding the preview up.
+#
+# Target is the kerph-app-staging Worker (wrangler.staging.jsonc), which is a completely
+# separate Worker from production. Nothing in this file can touch kerphplans.com.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+concurrency:
+  group: deploy-staging
+  cancel-in-progress: true
+
+jobs:
+  publish-staging:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # wrangler prints the deployed *.workers.dev address on success. It is captured here and
+      # written to the run summary so the staging URL is findable from the Actions tab without
+      # digging through log output.
+      - name: Publish to staging
+        id: publish
+        run: |
+          set -o pipefail
+          npx --yes wrangler@4 deploy --config wrangler.staging.jsonc 2>&1 | tee /tmp/deploy.log
+          url=$(grep -oE 'https://[a-z0-9._-]+\.workers\.dev' /tmp/deploy.log | head -1)
+          if [ -z "$url" ]; then
+            echo "Could not determine the staging URL from wrangler output." >&2
+            exit 1
+          fi
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+          echo "STAGING_URL=$url"
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      # Fails the run if staging deployed but does not actually answer, so a broken preview is
+      # reported rather than sitting there quietly returning errors.
+      - name: Confirm staging is answering
+        run: |
+          url="${{ steps.publish.outputs.url }}"
+          sleep 10
+          code=$(curl -s -o /dev/null -w "%{http_code}" -L --max-time 30 "$url/index.html")
+          echo "$url/index.html returned HTTP $code"
+          test "$code" = "200"
+
+      - name: Write the staging URL to the run summary
+        if: ${{ !cancelled() }}
+        run: |
+          {
+            echo "## Staging"
+            echo ""
+            echo "**${{ steps.publish.outputs.url }}**"
+            echo ""
+            echo "Deployed from \`main\` @ \`${{ github.sha }}\`."
+            echo ""
+            echo "This is a separate Worker from production and shares the live database."
+          } >> "$GITHUB_STEP_SUMMARY"

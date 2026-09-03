@@ -8,6 +8,7 @@
 .github
 .claude
 wrangler.jsonc
+wrangler.staging.jsonc
 .assetsignore
 *.md
 sql
