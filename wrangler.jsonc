@@ -6,7 +6,11 @@
     "enabled": true
   },
   "assets": {
-    "directory": "."
+    "directory": ".",
+    // Serves 404.html for any path that does not match a file, instead of Cloudflare's bare
+    // built-in 404. Still returns a real 404 status code -- the page is branded, not a soft
+    // 200, so search engines are not told a dead URL is valid content.
+    "not_found_handling": "404-page"
   },
   "compatibility_flags": [
     "nodejs_compat"

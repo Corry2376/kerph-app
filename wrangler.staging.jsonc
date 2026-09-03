@@ -19,7 +19,9 @@
     "enabled": true
   },
   "assets": {
-    "directory": "."
+    "directory": ".",
+    // Matches production so the 404 page can be checked on staging before it ships.
+    "not_found_handling": "404-page"
   },
   "compatibility_flags": [
     "nodejs_compat"

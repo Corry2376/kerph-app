@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kerph - Page Not Found</title>
+    <!-- Deliberately kept out of search results: a 404 is not content, and letting it be
+         indexed puts a dead end in front of someone who searched for something real. -->
+    <meta name="robots" content="noindex, follow">
+    <meta name="description" content="That page could not be found. Here are the Kerph tools you were probably looking for.">
+
+    <!-- Intentionally self-contained: no shared header script, no external stylesheet, no
+         fonts. This is the page that renders when something has already gone wrong, so it
+         should not depend on anything else loading correctly to be useful. -->
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { background-color: #eef1f6; color: #0f172a; min-height: 100vh; display: flex; flex-direction: column; }
+        header {
+            background-color: #ffffff;
+            background-image: linear-gradient(135deg, #ffffff 0%, #eef2ff 60%, #e0e7ff 100%);
+            border-bottom: 2px solid #1e3a8a;
+            border-top: 3px solid #b23b3b;
+            padding: 14px 20px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .logo-image { width: 260px; max-width: 70vw; height: auto; display: block; }
+        main { flex: 1; display: flex; align-items: center; justify-content: center; padding: 40px 20px 64px; }
+        .box { width: 100%; max-width: 680px; text-align: center; }
+        .code { font-size: 13px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: #b23b3b; margin-bottom: 10px; }
+        h1 { font-size: 30px; font-weight: 800; color: #0f172a; margin-bottom: 10px; line-height: 1.2; }
+        .lede { font-size: 15.5px; color: #5c6880; line-height: 1.6; max-width: 52ch; margin: 0 auto 26px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 10px; text-align: left; margin-bottom: 24px; }
+        .card {
+            display: block; background-color: #ffffff; border: 1px solid #cbd5e1; border-radius: 10px;
+            padding: 13px 15px; text-decoration: none; transition: border-color 0.15s ease, background-color 0.15s ease;
+        }
+        .card:hover, .card:focus-visible { border-color: #1e3a8a; background-color: #f8faff; }
+        .card-title { font-size: 14.5px; font-weight: 700; color: #1e3a8a; margin-bottom: 2px; }
+        .card-sub { font-size: 12.5px; color: #6b7280; line-height: 1.45; }
+        .home { display: inline-block; background-color: #1e3a8a; color: #ffffff; text-decoration: none; font-size: 14px; font-weight: 700; padding: 11px 22px; border-radius: 8px; }
+        .home:hover, .home:focus-visible { background-color: #16306e; }
+        .fine { font-size: 12.5px; color: #94a3b8; margin-top: 22px; line-height: 1.5; }
+        .fine a { color: #1e3a8a; }
+        :focus-visible { outline: 2px solid #1e3a8a; outline-offset: 2px; }
+        footer { padding: 16px 20px; text-align: center; font-size: 12px; color: #94a3b8; }
+        footer a { color: #6b7280; }
+        @media (max-width: 520px) { h1 { font-size: 24px; } }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="/"><img src="logo.png" alt="Kerph" class="logo-image"></a>
+    </header>
+
+    <main>
+        <div class="box">
+            <div class="code">Error 404</div>
+            <h1>That page isn't here</h1>
+            <p class="lede">Either the link was wrong, or the page moved. Nothing's broken on your end &mdash; here's where most people were headed.</p>
+
+            <div class="grid">
+                <a class="card" href="/workshop-planner">
+                    <div class="card-title">Workshop Layout Planner</div>
+                    <div class="card-sub">Lay your shop out to scale and check clearances before you move a machine.</div>
+                </a>
+                <a class="card" href="/project-designer">
+                    <div class="card-title">Project Designer</div>
+                    <div class="card-sub">Design a build panel by panel and get a cut list out of it.</div>
+                </a>
+                <a class="card" href="/cutlist-optimizer">
+                    <div class="card-title">Cut List Optimizer</div>
+                    <div class="card-sub">Turn a parts list into a sheet layout with less waste.</div>
+                </a>
+                <a class="card" href="/shop-jigs">
+                    <div class="card-title">Shop Jigs</div>
+                    <div class="card-sub">Board feet, fractions, wood movement, speeds and feeds.</div>
+                </a>
+                <a class="card" href="/tool-catalog">
+                    <div class="card-title">Tool Catalog &amp; Reviews</div>
+                    <div class="card-sub">Specs, real footprints and reviews for shop machines.</div>
+                </a>
+                <a class="card" href="/garage-tips">
+                    <div class="card-title">Shop Tricks &amp; How-To's</div>
+                    <div class="card-sub">Technique, tool care, and the things nobody tells you.</div>
+                </a>
+            </div>
+
+            <a class="home" href="/">Back to the home page</a>
+
+            <p class="fine">Followed a link from inside Kerph to get here? That's a bug on our side and we'd like to know &mdash; <a href="/help">let us know on the help page</a>.</p>
+        </div>
+    </main>
+
+    <footer>
+        <a href="/terms">Terms &amp; Privacy</a> &middot; &copy; 2026 Kerph
+    </footer>
+</body>
+</html>
