@@ -18,14 +18,40 @@
 // wins over both the page's own CSS and this file's, for the handful of selectors both touch).
 document.write(`
 <style>
+/* Header layout. Each page's own <style> sets "header { display: flex; justify-content:
+   space-between }"; this block lands later in document order at the same specificity, so it
+   wins without !important and without editing 29 pages.
+
+   Grid rather than flex because Shop Jigs has to be centred on the HEADER, not sitting
+   between two flex siblings. With space-between it would land wherever the leftover space
+   put it -- which moves every time the right-hand side changes width (signed out shows an
+   email and password field; signed in shows a short account button). 1fr auto 1fr pins the
+   middle column to the true centre of the header regardless of what either side weighs. */
+header {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 12px;
+}
+.brand-assembly { justify-self: start; }
+/* margin-left:0 matters. Each page still carries ".jigs-dropdown { margin-left: 30px }" from
+   when this sat inside .brand-assembly and needed separating from the page dropdown. Left in
+   place it offsets the element inside its own grid column, putting the visual centre 15px
+   right of the header's -- close enough to look intentional and be wrong. */
+.jigs-dropdown { justify-self: center; margin-left: 0; }
+.plan-badge-group { justify-self: end; }
+
 @media (max-width: 1100px) {
+    /* Single column stacks the three groups, reproducing the old flex-direction: column. */
     header {
         height: auto;
-        flex-direction: column;
+        grid-template-columns: 1fr;
         align-items: stretch;
         gap: 10px;
         padding: 12px 14px;
     }
+    .brand-assembly,
+    .jigs-dropdown,
+    .plan-badge-group { justify-self: stretch; }
     .brand-assembly {
         height: auto;
         flex-wrap: wrap;
@@ -35,8 +61,8 @@ document.write(`
     .logo-spotlight { width: 150px; height: 41px; }
     .logo-image { width: 150px; height: 41px; }
     .page-title-select { flex: 1 1 160px; min-width: 0; }
-    .jigs-dropdown { margin-left: 0; }
-    .jigs-dropdown-menu { left: auto; right: 0; }
+    .jigs-dropdown { margin-left: 0; text-align: center; }
+    .jigs-dropdown-menu { left: 50%; right: auto; transform: translateX(-50%); }
 }
 </style>
 `);
@@ -62,20 +88,26 @@ document.write(`
         <option value="portfolio.html">Portfolio</option>
         <option value="print-library.html">3D Print Library</option>
     </select>
-    <div class="jigs-dropdown" id="jigsDropdown">
-        <button type="button" class="jigs-dropdown-btn" id="jigsDropdownBtn">Shop Jigs <span class="jigs-dropdown-caret">&#9662;</span></button>
-        <div class="jigs-dropdown-menu">
-            <a href="shop-jigs-fraction-converter.html">Measurement Converter</a>
-            <a href="shop-jigs-add-fractions.html">Add &amp; Subtract Fractions</a>
-            <a href="shop-jigs-board-feet.html">Board Foot Calculator</a>
-            <a href="shop-jigs-angle-chart.html">Polygon Angle Chart</a>
-            <a href="shop-jigs-wood-movement.html">Wood Movement Calculator</a>
-            <a href="shop-jigs-speeds-feeds.html">Speeds &amp; Feeds</a>
-            <a href="shop-jigs-sharpening-angles.html">Sharpening Angle Chart</a>
-            <a href="shop-jigs-table-saw-setup.html">Table Saw Setup Checklist</a>
-            <div class="jigs-dropdown-menu-sep"></div>
-            <a href="shop-jigs.html">All Shop Jigs &rarr;</a>
-        </div>
+</div>
+`);
+
+// Deliberately a SIBLING of .brand-assembly rather than a child of it: it is the header's
+// centre grid column (see the layout block above), so it has to be a direct child of
+// <header>. Nested inside .brand-assembly it could only ever sit next to the logo.
+document.write(`
+<div class="jigs-dropdown" id="jigsDropdown">
+    <button type="button" class="jigs-dropdown-btn" id="jigsDropdownBtn">Shop Jigs <span class="jigs-dropdown-caret">&#9662;</span></button>
+    <div class="jigs-dropdown-menu">
+        <a href="shop-jigs-fraction-converter.html">Measurement Converter</a>
+        <a href="shop-jigs-add-fractions.html">Add &amp; Subtract Fractions</a>
+        <a href="shop-jigs-board-feet.html">Board Foot Calculator</a>
+        <a href="shop-jigs-angle-chart.html">Polygon Angle Chart</a>
+        <a href="shop-jigs-wood-movement.html">Wood Movement Calculator</a>
+        <a href="shop-jigs-speeds-feeds.html">Speeds &amp; Feeds</a>
+        <a href="shop-jigs-sharpening-angles.html">Sharpening Angle Chart</a>
+        <a href="shop-jigs-table-saw-setup.html">Table Saw Setup Checklist</a>
+        <div class="jigs-dropdown-menu-sep"></div>
+        <a href="shop-jigs.html">All Shop Jigs &rarr;</a>
     </div>
 </div>
 `);
