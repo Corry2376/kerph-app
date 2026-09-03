@@ -10,7 +10,9 @@ name: smoke-tests
 
 on:
   push:
-    branches: [main, release]
+    # ci/** so a change to the tests or the workflow itself can be proven green on a branch
+    # before it reaches either deploy branch — the same reason this suite exists at all.
+    branches: [main, release, 'ci/**']
   pull_request:
     branches: [main, release]
   workflow_dispatch: {}
