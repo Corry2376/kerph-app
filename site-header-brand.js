@@ -34,7 +34,6 @@ document.write(`
     }
     .logo-spotlight { width: 150px; height: 41px; }
     .logo-image { width: 150px; height: 41px; }
-    .logo-tm { display: none; }
     .page-title-select { flex: 1 1 160px; min-width: 0; }
     .jigs-dropdown { margin-left: 0; }
     .jigs-dropdown-menu { left: auto; right: 0; }
@@ -48,7 +47,6 @@ document.write(`
         <a href="index.html" class="logo-link" title="Kerph Home">
             <img src="logo.png" alt="Kerph Logo" class="logo-image">
         </a>
-        <span class="logo-tm">&trade;</span>
     </div>
     <select class="page-title-select" id="pageNavSelect">
         <option value="index.html">Home</option>
