@@ -18,3 +18,11 @@ domain-checklist.html
 kerph-plan-comparison.html
 overnight-report-*.html
 shop-jigs-script.html
+
+# Test tooling. node_modules is only ever installed by CI (and locally if you choose to);
+# the site itself has no build step and no runtime dependencies.
+node_modules/
+playwright-report/
+test-results/
+blob-report/
+.playwright/

@@ -33,3 +33,16 @@ domain-checklist.html
 kerph-plan-comparison.html
 overnight-report-*.html
 shop-jigs-script.html
+
+# Test tooling. assets.directory is "." and reads the FILESYSTEM, so without these a local
+# `wrangler deploy` run after an `npm install` would upload the whole of node_modules to the
+# live site. Workers Builds never sees them (clean clone + gitignored), but a local deploy
+# would, which is exactly how four internal documents reached production on 2026-09-01.
+node_modules
+playwright-report
+test-results
+blob-report
+package.json
+package-lock.json
+playwright.config.js
+tests

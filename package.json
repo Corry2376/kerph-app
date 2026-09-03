@@ -1,0 +1,13 @@
+{
+  "name": "kerph-app",
+  "private": true,
+  "description": "Kerph — static multi-page site. This file exists only so CI can install Playwright for the smoke tests; the site itself has no build step and ships the files in this repo as-is.",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:report": "playwright show-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.47.2"
+  }
+}

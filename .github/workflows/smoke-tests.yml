@@ -1,0 +1,60 @@
+name: smoke-tests
+
+# The point of this workflow is that a broken build is caught BEFORE it is promoted to
+# production. Cloudflare deploys from a branch, so running on both main and release means a
+# red check is visible on whichever branch is currently the deploy source.
+#
+# It does not block a deploy on its own — Cloudflare Workers Builds does not gate on a GitHub
+# check — so treat a red run as "do not promote", and see RUNBOOK.md for the rollback if
+# something reaches production anyway.
+
+on:
+  push:
+    branches: [main, release]
+  pull_request:
+    branches: [main, release]
+  workflow_dispatch: {}
+
+# A newer push supersedes an in-flight run on the same branch; no value in testing a commit
+# that has already been replaced.
+concurrency:
+  group: smoke-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # No package-lock.json is committed (the site itself has no build and no runtime
+      # dependencies), so this is `npm install` rather than `npm ci`. Determinism comes from
+      # the exact, un-caretted Playwright version pinned in package.json.
+      - name: Install test dependencies
+        run: npm install
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      # playwright.config.js starts `python3 -m http.server` itself and waits for it, so the
+      # static site is served exactly as Cloudflare Workers Assets serves it: files from the
+      # repo root, no build step in between.
+      - name: Run smoke tests
+        run: npx playwright test
+        env:
+          CI: 'true'
+
+      - name: Upload report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-${{ github.run_id }}
+          path: playwright-report/
+          retention-days: 14
+          if-no-files-found: ignore
