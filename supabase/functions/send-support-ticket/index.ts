@@ -9,7 +9,10 @@ const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')!;
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const FROM_ADDRESS = 'Kerph Support <support@kerphplans.com>';
-const SUPPORT_INBOX = 'support@kerphplans.com';
+// Where support tickets land. Set SUPPORT_INBOX_EMAIL in the function secrets to change it
+// without a redeploy -- worth having as a setting rather than a constant, because this is the
+// address that has to move first the day anyone else starts answering tickets.
+const SUPPORT_INBOX = Deno.env.get('SUPPORT_INBOX_EMAIL') ?? 'support@kerphplans.com';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',

@@ -9,7 +9,9 @@ const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')!;
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const FROM_ADDRESS = 'Kerph Contact <contactus@kerphplans.com>';
-const CONTACT_INBOX = 'cjstalcup@kerphplans.com';
+// Same pattern as the support inbox: a setting rather than a constant, so it can move without
+// a redeploy. Default preserves the address this has always used.
+const CONTACT_INBOX = Deno.env.get('CONTACT_INBOX_EMAIL') ?? 'cjstalcup@kerphplans.com';
 
 const REASONS = [
   'Suggest a feature',
