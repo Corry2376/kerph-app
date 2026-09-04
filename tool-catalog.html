@@ -291,6 +291,25 @@
             border-radius: 8px;
             margin-bottom: 10px;
         }
+        /* Stands in when a tool has no image, or when its hotlinked manufacturer image fails
+           to load. Deliberately the same box as .review-model-card-photo -- same height,
+           background, border and radius -- so a card without a photo lines up with the cards
+           around it instead of being visibly shorter. Before this, a missing image rendered
+           nothing at all and the grid came out ragged. */
+        .review-model-card-photo-placeholder {
+            width: 100%;
+            height: 130px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            font-size: 26px;
+            color: #cbd5e1;
+            user-select: none;
+        }
         .review-model-card-name { font-size: 13px; font-weight: 700; color: #0f172a; margin-bottom: 4px; }
         .review-model-card-category { font-size: 10.5px; font-weight: 700; color: #1e3a8a; text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 4px; }
         .review-model-card-specs { font-size: 11.5px; color: #6b7280; margin-bottom: 6px; }
@@ -1185,9 +1204,19 @@
             const buyLink = m.specs && m.specs.buyUrl
                 ? `<a href="${escapeHtml(m.specs.buyUrl)}" target="_blank" rel="noopener" class="review-model-card-buy" onclick="event.stopPropagation()">Buy &rarr;</a>`
                 : `<a href="${escapeHtml(shopSearchUrl(m.name))}" target="_blank" rel="noopener" class="review-model-card-buy" onclick="event.stopPropagation()">Shop on Amazon &rarr;</a>`;
+            // Every card gets a photo-sized box whether or not it has a photo. The onerror
+            // swaps in the placeholder rather than removing the image: these are hotlinks to
+            // manufacturer CDNs, and when one rots, `this.remove()` made the card look exactly
+            // like one that never had an image -- so a broken link was indistinguishable from
+            // a missing one, and silently made the grid ragged.
+            const placeholderHtml = '<div class="review-model-card-photo-placeholder">&#128736;</div>';
+            // The onerror version needs its quotes as &quot; -- it sits inside a double-quoted
+            // HTML attribute, so a literal class="..." inside it closes the attribute early and
+            // spills raw markup onto the card. Same escaping the detail view already uses.
+            const placeholderAttr = placeholderHtml.replace(/"/g, '&quot;');
             const photo = m.specs && m.specs.image
-                ? `<img class="review-model-card-photo" src="${escapeHtml(m.specs.image)}" alt="" loading="lazy" onerror="this.remove()">`
-                : '';
+                ? `<img class="review-model-card-photo" src="${escapeHtml(m.specs.image)}" alt="" loading="lazy" onerror="this.outerHTML='${placeholderAttr}'">`
+                : placeholderHtml;
             return `
                 <div class="review-model-card" data-name="${escapeHtml(m.name)}">
                     ${photo}
