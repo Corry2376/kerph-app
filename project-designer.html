@@ -17,10 +17,10 @@
     <script type="importmap">
     {
         "imports": {
-            "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-            "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/",
-            "three-mesh-bvh": "https://unpkg.com/three-mesh-bvh@0.6.8/build/index.module.js",
-            "three-bvh-csg": "https://unpkg.com/three-bvh-csg@0.0.15/build/index.module.js"
+            "three": "/vendor/three-0.160.0/three.module.js",
+            "three/addons/": "/vendor/three-0.160.0/addons/",
+            "three-mesh-bvh": "/vendor/three-mesh-bvh-0.6.8/index.module.js",
+            "three-bvh-csg": "/vendor/three-bvh-csg-0.0.15/index.module.js"
         }
     }
     </script>
@@ -1709,7 +1709,7 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.7/dist/umd/supabase.js"></script>
+    <script src="/vendor/supabase-js-2.110.7/supabase.js"></script>
     <script src="supabase-client.js"></script>
     <!-- Google's <model-viewer> web component — gives us AR Quick Look (iOS) / Scene Viewer
          (Android) for free from a plain GLB, no native app needed. Only used by the "View in
@@ -1723,7 +1723,7 @@ Use the toolbar above for bold, italic, headings, and lists — or type markdown
         let modelViewerPromise = null;
         window.loadModelViewer = function loadModelViewer() {
             if (!modelViewerPromise) {
-                modelViewerPromise = import('https://unpkg.com/@google/model-viewer@3.5.0/dist/model-viewer.min.js');
+                modelViewerPromise = import('/vendor/model-viewer-3.5.0/model-viewer.min.js');
             }
             return modelViewerPromise;
         };
