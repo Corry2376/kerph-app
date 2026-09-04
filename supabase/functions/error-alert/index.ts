@@ -7,6 +7,13 @@
 //
 // Runs hourly from pg_cron -- same pattern as free-tier-nurture (see sql/error-alerting.sql).
 //
+// MUST be deployed with --no-verify-jwt:
+//     supabase functions deploy error-alert --no-verify-jwt
+// The caller is a pg_cron -> pg_net HTTP POST with no Authorization header, exactly like
+// free-tier-nurture. Deploy it with JWT verification on and every hourly run is rejected with
+// a 401 before this code executes -- meaning the alerting system fails silently, which is the
+// single worst way for an alerting system to fail.
+//
 // Deliberately stateless: rather than keeping a table of "already alerted" signatures, a NEW
 // error is defined as one whose EARLIEST occurrence in client_errors falls inside the window.
 // Nothing to keep in sync, nothing to get stuck, and re-running it is harmless.
