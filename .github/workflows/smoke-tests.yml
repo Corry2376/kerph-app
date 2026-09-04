@@ -38,6 +38,13 @@ jobs:
         with:
           node-version: '20'
 
+      # Catalog data integrity. Runs ahead of the browser suite because it needs nothing
+      # but node, finishes in under a second, and catches the class of defect the smoke
+      # tests structurally cannot see: a catalog card with no product behind it, an Amazon
+      # link that lost its affiliate tag, an ASIN that no longer matches its own buy link.
+      - name: Check catalog integrity
+        run: node scripts/check-catalog.js
+
       # No package-lock.json is committed (the site itself has no build and no runtime
       # dependencies), so this is `npm install` rather than `npm ci`. Determinism comes from
       # the exact, un-caretted Playwright version pinned in package.json.

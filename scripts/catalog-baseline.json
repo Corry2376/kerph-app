@@ -1,0 +1,6 @@
+{
+  "_note": "Known catalog backlog at the time the integrity check was added (2026-09-04). check-catalog.js fails the build if any count rises above its baseline, so the gap can be closed at any pace but never silently reopens. Lower these numbers as entries are completed.",
+  "noimg": 237,
+  "noid": 64,
+  "nobuy": 8
+}
