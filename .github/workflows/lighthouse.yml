@@ -1,0 +1,92 @@
+name: lighthouse
+
+# Records Lighthouse scores for the main pages so performance regressions are visible.
+#
+# The smoke suite catches a page that BREAKS. It cannot catch a page that gets slower --
+# and performance degrades gradually, a library at a time, with every individual change
+# feeling fine. This turns "the site feels sluggish" into a number that can be compared
+# against last week's number.
+#
+# Runs weekly and on demand rather than on every push: a Lighthouse run takes a couple of
+# minutes per page, the numbers move around by a few points run to run anyway, and nobody
+# needs that noise attached to every commit. Weekly is enough to catch a real slide.
+#
+# Reports only -- it does not fail the build on a low score. Scores vary between runs for
+# reasons that have nothing to do with the code (network, runner load), so a hard threshold
+# would produce false failures and get ignored. Read the trend, not a single run.
+
+on:
+  schedule:
+    - cron: '23 8 * * 1'   # Mondays, 08:23 UTC
+  workflow_dispatch: {}
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # GitHub's Ubuntu runners ship with Google Chrome preinstalled; this fails loudly rather
+      # than silently auditing nothing if that ever stops being true.
+      - name: Locate Chrome
+        run: |
+          CHROME=$(which google-chrome || which google-chrome-stable || true)
+          if [ -z "$CHROME" ]; then echo "No Chrome on the runner." >&2; exit 1; fi
+          echo "CHROME_PATH=$CHROME" >> "$GITHUB_ENV"
+          "$CHROME" --version
+
+      - name: Run Lighthouse
+        run: |
+          set -o pipefail
+          mkdir -p lh
+          {
+            echo "## Lighthouse — $(date -u '+%Y-%m-%d %H:%M UTC')"
+            echo ""
+            echo "Mobile, simulated slow 4G. Scores are 0-100."
+            echo ""
+            echo "| Page | Perf | A11y | Best Prac | SEO | LCP | TBT | CLS |"
+            echo "|---|---|---|---|---|---|---|---|"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          for path in "" "workshop-planner" "project-designer" "cutlist-optimizer" "shop-jigs-board-feet"; do
+            url="https://kerphplans.com/${path}"
+            name="/${path}"
+            out="lh/$(echo "${path:-home}" | tr '/' '_').json"
+
+            npx --yes lighthouse "$url" \
+              --quiet --output=json --output-path="$out" \
+              --only-categories=performance,accessibility,best-practices,seo \
+              --chrome-flags="--headless=new --no-sandbox --disable-gpu" || { echo "audit failed for $url" >&2; continue; }
+
+            node -e '
+              const fs = require("fs");
+              const r = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
+              const pct = (c) => r.categories[c] ? Math.round(r.categories[c].score * 100) : "-";
+              const av  = (a) => r.audits[a] ? r.audits[a].displayValue || "-" : "-";
+              const row = `| ${process.argv[2]} | ${pct("performance")} | ${pct("accessibility")} | ${pct("best-practices")} | ${pct("seo")} | ${av("largest-contentful-paint")} | ${av("total-blocking-time")} | ${av("cumulative-layout-shift")} |`;
+              fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, row + "\n");
+              console.log(row);
+            ' "$out" "$name"
+          done
+
+          {
+            echo ""
+            echo "**Total Blocking Time** is the one to watch for the planner — it measures how long"
+            echo "the page is visibly loaded but unresponsive to taps. Under 200ms is good, over 600ms"
+            echo "is what a visitor reads as \"frozen\"."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload full reports
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-${{ github.run_id }}
+          path: lh/
+          retention-days: 90
+          if-no-files-found: warn
