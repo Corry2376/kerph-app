@@ -117,16 +117,17 @@ export function computeState(input: EngineInput): EngineState {
       x.gameNight = config.xp.gameNight
       gnStreak += 1
     } else if (!isLast) gnStreak = 0
+    let lanesUnder = 0
     for (const l of lanes) {
       const spent = laneSpent.get(c.id)?.get(l.id) ?? 0
       const under = done && spent < l.budgetPerCycle
-      if (under) x.lanes += config.xp.laneUnderBudget
+      if (under) { x.lanes += config.xp.laneUnderBudget; lanesUnder += 1 }
       if (done) laneStreaks.set(l.id, under ? laneStreaks.get(l.id)! + 1 : 0)
       else if (!isLast) laneStreaks.set(l.id, 0)
     }
     const base = Object.values(x).reduce((a, b) => a + b, 0)
     const multiplier = done ? multiplierFor(config, gnStreak) : 1
-    return { cycleId: c.id, completed: done, base, breakdown: x, streak: gnStreak, multiplier, xp: Math.round(base * multiplier) }
+    return { cycleId: c.id, completed: done, lanesUnder, base, breakdown: x, streak: gnStreak, multiplier, xp: Math.round(base * multiplier) }
   })
 
   // Queue: first boss that isn't defeated is the active one.

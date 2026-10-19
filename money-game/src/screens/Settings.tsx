@@ -2,6 +2,9 @@ import { useRef, useState } from 'react'
 import { useGame } from '../store'
 import { Btn, Card, Field, H } from '../components/ui'
 import { downloadBackup, parseBackup } from '../data/backup'
+import Celebration from './Celebration'
+import { sampleMoments } from '../fx/sampleMoments'
+import { sfx } from '../fx/sound'
 import type { XpConfig } from '../engine/types'
 
 const XP_LABELS: Record<keyof XpConfig, string> = {
@@ -11,7 +14,8 @@ const XP_LABELS: Record<keyof XpConfig, string> = {
 }
 
 export default function Settings({ onSetup }: { onSetup: () => void }) {
-  const { data, setConfig, replaceGame, resetToDemo } = useGame()
+  const { data, state, setConfig, replaceGame, resetToDemo } = useGame()
+  const [preview, setPreview] = useState(false)
   const file = useRef<HTMLInputElement>(null)
   const [msg, setMsg] = useState('')
 
@@ -28,9 +32,16 @@ export default function Settings({ onSetup }: { onSetup: () => void }) {
 
   return (
     <>
+      {preview && <Celebration moments={sampleMoments(data, state)} bosses={data.bosses} quests={data.quests} onDone={() => setPreview(false)} />}
+      <Card>
+        <H>Effects</H>
+        <p className="mb-3 text-sm text-zinc-600 dark:text-zinc-300">Plays every reaction (boss hit and heal, level up, streak, boss defeat, achievement, score) with sample numbers. Nothing is saved.</p>
+        <Btn variant="ghost" onClick={() => { sfx('tick'); setPreview(true) }}>Preview celebrations</Btn>
+      </Card>
+
       <Card>
         <H>Backup</H>
-        <p className="mb-3 text-sm text-slate-600 dark:text-slate-300">Your game lives only in this browser. Export a backup after each game night.</p>
+        <p className="mb-3 text-sm text-zinc-600 dark:text-zinc-300">Your game lives only in this browser. Export a backup after each game night.</p>
         <div className="flex flex-wrap gap-2">
           <Btn onClick={() => downloadBackup(data)}>Export JSON</Btn>
           <Btn variant="ghost" onClick={() => file.current?.click()}>Import JSON</Btn>
@@ -44,16 +55,16 @@ export default function Settings({ onSetup }: { onSetup: () => void }) {
         <div className="grid grid-cols-2 gap-3">
           <label className="text-sm"><span className="mb-1 block font-medium">Pay cycle</span>
             <select value={data.config.payCycle} onChange={e => setConfig({ ...data.config, payCycle: e.target.value as 'weekly' | 'biweekly' })}
-              className="min-h-11 w-full rounded-xl border border-slate-300 bg-white px-2 dark:border-slate-600 dark:bg-slate-900">
+              className="min-h-11 w-full rounded-md border border-zinc-300 bg-white px-2 dark:border-zinc-600 dark:bg-zinc-900">
               <option value="weekly">Every Friday</option><option value="biweekly">Every other Friday</option>
             </select></label>
           <label className="text-sm"><span className="mb-1 block font-medium">Boss order</span>
             <select value={data.config.bossOrder} onChange={e => setConfig({ ...data.config, bossOrder: e.target.value as 'snowball' | 'avalanche' })}
-              className="min-h-11 w-full rounded-xl border border-slate-300 bg-white px-2 dark:border-slate-600 dark:bg-slate-900">
+              className="min-h-11 w-full rounded-md border border-zinc-300 bg-white px-2 dark:border-zinc-600 dark:bg-zinc-900">
               <option value="snowball">Snowball (smallest first)</option><option value="avalanche">Avalanche (highest rate)</option>
             </select></label>
         </div>
-        <p className="mt-1 text-xs text-slate-500">Boss order applies to new setups; reorder the live queue in the Boss tab. Cycle length applies from the next cycle.</p>
+        <p className="mt-1 text-xs text-zinc-500">Boss order applies to new setups; reorder the live queue in the Boss tab. Cycle length applies from the next cycle.</p>
         <h3 className="mb-2 mt-4 font-bold">XP values</h3>
         <div className="grid grid-cols-2 gap-3">
           {(Object.keys(XP_LABELS) as (keyof XpConfig)[]).map(k => (
@@ -61,7 +72,7 @@ export default function Settings({ onSetup }: { onSetup: () => void }) {
               onChange={e => setConfig({ ...data.config, xp: { ...data.config.xp, [k]: Math.max(0, Number(e.target.value) || 0) } })} />
           ))}
         </div>
-        <p className="mt-2 text-xs text-slate-500">Changing XP values re-scores the whole history. Players: {data.players.map(p => p.name).join(' & ')}.</p>
+        <p className="mt-2 text-xs text-zinc-500">Changing XP values re-scores the whole history. Players: {data.players.map(p => p.name).join(' & ')}.</p>
       </Card>
 
       <Card>
@@ -70,7 +81,7 @@ export default function Settings({ onSetup }: { onSetup: () => void }) {
           <Btn variant="ghost" onClick={onSetup}>Run setup wizard</Btn>
           <Btn variant="danger" onClick={() => { if (confirm('Replace everything with fake demo data?')) resetToDemo() }}>Reset to demo</Btn>
         </div>
-        <p className="mt-2 text-xs text-slate-500">Cards are stored by nickname and last four digits only. No bank logins or account numbers, ever.</p>
+        <p className="mt-2 text-xs text-zinc-500">Cards are stored by nickname and last four digits only. No bank logins or account numbers, ever.</p>
       </Card>
     </>
   )

@@ -1,5 +1,6 @@
 import { useGame } from '../store'
 import { Btn, Card, H, ProgressBar, money } from '../components/ui'
+import { Icon } from '../components/Icon'
 import type { Tab } from '../App'
 
 export default function HQ({ go }: { go: (t: Tab) => void }) {
@@ -15,13 +16,13 @@ export default function HQ({ go }: { go: (t: Tab) => void }) {
       <Card>
         <div className="flex items-baseline justify-between">
           <H>Team score</H>
-          <span className="text-2xl font-black text-indigo-600 dark:text-indigo-400">{state.totalXp.toLocaleString()} XP</span>
+          <span className="text-2xl font-black text-amber-700 dark:text-amber-400">{state.totalXp.toLocaleString()} XP</span>
         </div>
         <p className="text-sm">
-          🔥 <b>{state.gameNightStreak}</b> week streak · multiplier <b>{state.multiplier}x</b>
-          {state.nextMultiplier > state.multiplier && <span className="text-slate-500"> (next: {state.nextMultiplier}x)</span>}
+          <Icon name="flame" size={16} className="mr-1 inline text-amber-600" /><b>{state.gameNightStreak}</b> week streak · multiplier <b>{state.multiplier}x</b>
+          {state.nextMultiplier > state.multiplier && <span className="text-zinc-500"> (next: {state.nextMultiplier}x)</span>}
         </p>
-        <p className="mt-1 text-xs text-slate-500">Cycle {cycle.startDate} to {cycle.endDate}</p>
+        <p className="mt-1 text-xs text-zinc-500">Cycle {cycle.startDate} to {cycle.endDate}</p>
       </Card>
 
       <Card>
@@ -32,7 +33,7 @@ export default function HQ({ go }: { go: (t: Tab) => void }) {
             <p className="mt-2 text-sm"><b>{money(bossState.currentBalance)}</b> left of {money(boss.startingBalance)} · attack {money(state.attackPower)}/cycle</p>
           </>
         ) : <p>Every card is paid off. Time to celebrate.</p>}
-        <p className="mt-2 text-xs text-slate-500">All cards: {money(debtLeft)} left of {money(debtStart)}</p>
+        <p className="mt-2 text-xs text-zinc-500">All cards: {money(debtLeft)} left of {money(debtStart)}</p>
       </Card>
 
       <Card>
@@ -44,14 +45,14 @@ export default function HQ({ go }: { go: (t: Tab) => void }) {
               <li key={q.id}>
                 <div className="flex justify-between text-sm"><span className="font-semibold">{q.name}</span><span>Level {qs.levelsCleared}/{q.levelCount}</span></div>
                 <ProgressBar value={qs.currentAmount} max={q.targetAmount} color="#10b981" label={q.name} />
-                <p className="text-xs text-slate-500">{money(qs.currentAmount)} of {money(q.targetAmount)} by {q.targetDate}</p>
+                <p className="text-xs text-zinc-500">{money(qs.currentAmount)} of {money(q.targetAmount)} by {q.targetDate}</p>
               </li>
             )
           })}
         </ul>
       </Card>
 
-      <Btn className="w-full py-4 text-lg" onClick={() => go('night')}>🎲 Start game night</Btn>
+      <Btn className="w-full py-4 text-lg" onClick={() => go('night')}>Start game night</Btn>
     </>
   )
 }

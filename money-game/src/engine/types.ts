@@ -135,6 +135,8 @@ export interface XpBreakdown {
 export interface CycleScore {
   cycleId: string
   completed: boolean
+  /** Lanes that finished under budget (only counted once the game night is done). */
+  lanesUnder: number
   base: number
   breakdown: XpBreakdown
   /** Game-night streak after this cycle. */

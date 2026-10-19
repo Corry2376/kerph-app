@@ -43,14 +43,14 @@ export function nextCycle(prev: Cycle, config: Config): Cycle {
 }
 
 const LANE_STYLE: Record<string, { color: string; icon: string }> = {
-  Kids: { color: '#f43f5e', icon: '🧒' },
-  Tools: { color: '#3b82f6', icon: '🔧' },
-  Travel: { color: '#10b981', icon: '✈️' },
-  Everyday: { color: '#f59e0b', icon: '🛒' },
-  Rewards: { color: '#a855f7', icon: '🎁' },
+  Kids: { color: '#b4574d', icon: 'K' },
+  Tools: { color: '#4a6f8f', icon: 'T' },
+  Travel: { color: '#5f8a6e', icon: 'V' },
+  Everyday: { color: '#c8963e', icon: 'E' },
+  Rewards: { color: '#7d6a99', icon: 'R' },
 }
 export const laneStyle = (name: string, i: number) =>
-  LANE_STYLE[name] ?? { color: ['#06b6d4', '#84cc16', '#ec4899'][i % 3], icon: '⭐' }
+  LANE_STYLE[name] ?? { color: ['#4f8a8b', '#8a8f4a', '#a05f7d'][i % 3], icon: '•' }
 
 export interface SetupInput {
   players: { name: string }[]
@@ -66,7 +66,7 @@ export function buildGame(s: SetupInput, isDemo = false): GameData {
   return {
     version: 1,
     isDemo,
-    players: s.players.map((p, i) => ({ id: uid(), name: p.name || `Player ${i + 1}`, avatar: i === 0 ? '🦊' : '🐼' })),
+    players: s.players.map((p, i) => ({ id: uid(), name: p.name || `Player ${i + 1}`, avatar: (p.name || `P${i + 1}`).slice(0, 1).toUpperCase() })),
     config: s.config,
     quests: s.quests.map((q, i) => ({ ...q, id: uid(), order: i, status: 'active' })),
     bosses: sortBossQueue(bosses, s.config.bossOrder),

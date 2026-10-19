@@ -69,7 +69,7 @@ export default function Setup({ onDone, onCancel }: { onDone: () => void; onCanc
   return (
     <div className="mx-auto min-h-dvh max-w-xl space-y-4 p-4 pb-16">
       <header className="flex items-center justify-between">
-        <h1 className="text-xl font-black">Setup · {STEPS[step]} <span className="text-sm font-normal text-slate-500">({step + 1}/{STEPS.length})</span></h1>
+        <h1 className="text-xl font-black">Setup · {STEPS[step]} <span className="text-sm font-normal text-zinc-500">({step + 1}/{STEPS.length})</span></h1>
         <Btn variant="ghost" className="min-h-9 text-sm" onClick={onCancel}>Cancel</Btn>
       </header>
 
@@ -79,11 +79,11 @@ export default function Setup({ onDone, onCancel }: { onDone: () => void; onCanc
 
       {step === 1 && <Card className="space-y-3"><H>Pay cycle</H>
         <label className="block text-sm font-medium">How often do you get paid?
-          <select value={payCycle} onChange={e => setPayCycle(e.target.value as 'weekly' | 'biweekly')} className="mt-1 min-h-11 w-full rounded-xl border border-slate-300 bg-white px-2 dark:border-slate-600 dark:bg-slate-900">
+          <select value={payCycle} onChange={e => setPayCycle(e.target.value as 'weekly' | 'biweekly')} className="mt-1 min-h-11 w-full rounded-md border border-zinc-300 bg-white px-2 dark:border-zinc-600 dark:bg-zinc-900">
             <option value="weekly">Every Friday</option><option value="biweekly">Every other Friday</option></select></label>
         <Field label="First payday of the game" type="date" value={firstPayday} onChange={e => setFirstPayday(e.target.value)} />
         <label className="block text-sm font-medium">Which card do you attack first?
-          <select value={bossOrder} onChange={e => setBossOrder(e.target.value as 'snowball' | 'avalanche')} className="mt-1 min-h-11 w-full rounded-xl border border-slate-300 bg-white px-2 dark:border-slate-600 dark:bg-slate-900">
+          <select value={bossOrder} onChange={e => setBossOrder(e.target.value as 'snowball' | 'avalanche')} className="mt-1 min-h-11 w-full rounded-md border border-zinc-300 bg-white px-2 dark:border-zinc-600 dark:bg-zinc-900">
             <option value="snowball">Snowball: smallest balance first</option><option value="avalanche">Avalanche: highest rate first</option></select></label>
       </Card>}
 
@@ -102,7 +102,7 @@ export default function Setup({ onDone, onCancel }: { onDone: () => void; onCanc
       </>}
 
       {step === 3 && <>
-        <p className="text-sm text-slate-600 dark:text-slate-300">Each card is a boss. Nickname and last four digits only; never a full card number.</p>
+        <p className="text-sm text-zinc-600 dark:text-zinc-300">Each card is a boss. Nickname and last four digits only; never a full card number.</p>
         {bosses.map((b, i) => <Card key={i} className="space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <Field label="Card nickname" value={b.name} onChange={e => patch(setBosses, i, { name: e.target.value })} />
