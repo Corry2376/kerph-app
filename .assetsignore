@@ -51,3 +51,6 @@ tests
 # Repo tooling, not site content. assets.directory is "." so anything here would
 # otherwise be served at kerphplans.com/scripts/.
 scripts
+
+# Money Game: separate private app that lives in this repo; never part of the public site.
+money-game
