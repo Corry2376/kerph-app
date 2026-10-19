@@ -52,7 +52,9 @@ describe('moments', () => {
   it('every behaviour in the points table produces a reaction with a message', () => {
     const f = seasonFixture()
     const e = (i: number, p: Partial<GameEvent> & Pick<GameEvent, 'type' | 'amount'>): GameEvent => ({ id: `p${i}`, timestamp: i, cycleId: 'c1', ...p })
-    const input: EngineInput = { ...f, cycles: f.cycles.slice(0, 1), events: [
+    const input: EngineInput = { ...f, plans: [{ id: 'P', name: 'Birthday', month: '2026-10', budget: 100, yearly: false }], cycles: f.cycles.slice(0, 1), events: [
+      e(0, { type: 'planSpend', planId: 'P', amount: 80 }),
+      e(9, { type: 'planClose', planId: 'P', amount: 0 }),
       e(1, { type: 'laneSpend', laneId: 'kids', amount: 40 }),
       e(2, { type: 'sweep', laneId: 'kids', bossId: 'A', amount: 20 }),
       e(3, { type: 'payment', bossId: 'A', amount: 500, extra: true }),
@@ -69,7 +71,7 @@ describe('moments', () => {
       achievementsBefore: [], achievementsAfter: Object.keys(computeAchievements(input, as)),
       pick: createPicker(() => 0.5),
     })
-    for (const k of ['gameNight', 'laneUnder', 'sweep', 'extraDamage', 'levelUp', 'bossDefeated', 'noSpendDay', 'bonusSplit', 'bossHit'])
+    for (const k of ['gameNight', 'laneUnder', 'sweep', 'extraDamage', 'levelUp', 'bossDefeated', 'noSpendDay', 'bonusSplit', 'bossHit', 'planClosed'])
       expect(kinds(m), k).toContain(k)
     for (const x of m) { expect(x.message.length).toBeGreaterThan(10); expect(x.message).not.toMatch(/[{}]/) }
   })

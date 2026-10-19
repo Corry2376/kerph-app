@@ -3,14 +3,14 @@ import type { EngineInput, EngineState } from './types'
 export interface AchievementDef { key: string; name: string; description: string; needsSeasons?: boolean }
 
 export const ACHIEVEMENTS: AchievementDef[] = [
-  { key: 'firstBlood', name: 'First Blood', description: 'Log your first payment against a boss.' },
-  { key: 'bossSlayer', name: 'Boss Slayer', description: 'Defeat your first boss.' },
-  { key: 'ironStreak', name: 'Iron Streak', description: 'Hold a 10-cycle game-night streak.' },
-  { key: 'cleanSweep', name: 'Clean Sweep', description: 'Finish every lane under budget in one cycle.' },
-  { key: 'levelUp', name: 'Level Up', description: 'Clear your first quest level.' },
-  { key: 'comebackKid', name: 'Comeback Kid', description: 'Complete a game night after a broken streak.' },
-  { key: 'seasonChamp', name: 'Season Champ', description: 'Beat a season target.', needsSeasons: true },
-  { key: 'windfallWizard', name: 'Windfall Wizard', description: 'Handle a windfall exactly per the agreed split.' },
+  { key: 'firstBlood', name: 'First Payment', description: 'Log your first payment toward a debt.' },
+  { key: 'bossSlayer', name: 'First Debt Cleared', description: 'Pay off your first card.' },
+  { key: 'ironStreak', name: 'Ten-Week Streak', description: 'Complete ten reviews in a row.' },
+  { key: 'cleanSweep', name: 'Full Marks', description: 'Finish every budget under its limit in one cycle.' },
+  { key: 'levelUp', name: 'First Milestone', description: 'Reach your first goal milestone.' },
+  { key: 'comebackKid', name: 'Back on Track', description: 'Complete a review after a broken streak.' },
+  { key: 'seasonChamp', name: 'Season Target Met', description: 'Beat a season target.', needsSeasons: true },
+  { key: 'windfallWizard', name: 'Windfall, Handled', description: 'Handle a windfall exactly per the agreed split.' },
 ]
 
 /** Derived from the log: which achievements are unlocked, and in which cycle. */

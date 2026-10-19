@@ -8,7 +8,7 @@ describe('message pools', () => {
   it('covers every event type with at least 10 unique templates', () => {
     expect(types.sort()).toEqual([
       'achievement', 'bonusSplit', 'bossDefeated', 'bossHeal', 'bossHit', 'extraDamage', 'gameNight', 'laneUnder',
-      'levelUp', 'missedWeek', 'noSpendDay', 'seasonFinale', 'streakMilestone', 'sweep',
+      'levelUp', 'missedWeek', 'noSpendDay', 'planClosed', 'seasonFinale', 'streakMilestone', 'sweep',
     ])
     for (const t of types) {
       expect(MESSAGE_POOLS[t].length, t).toBeGreaterThanOrEqual(10)

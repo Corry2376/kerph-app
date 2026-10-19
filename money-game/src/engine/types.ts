@@ -25,6 +25,9 @@ export interface Boss {
 
 export interface Lane { id: string; name: string; budgetPerCycle: number; color: string; icon: string }
 
+/** A budgeted event in a given month: Christmas, a birthday, a trip. */
+export interface Plan { id: string; name: string; month: string; budget: number; yearly: boolean }
+
 export interface Cycle { id: string; startDate: string; endDate: string; payday: string }
 
 export type EventType =
@@ -35,6 +38,9 @@ export type EventType =
   | 'sweep'
   | 'windfall'
   | 'noSpendDay'
+  | 'planFund'
+  | 'planSpend'
+  | 'planClose'
   | 'gameNight'
 
 /**
@@ -51,6 +57,7 @@ export interface GameEvent {
   bossId?: string
   questId?: string
   laneId?: string
+  planId?: string
   playerId?: string
   /** payment: damage beyond autopilot (earns extra-damage XP). */
   extra?: boolean
@@ -67,6 +74,8 @@ export interface XpConfig {
   bossDefeated: number
   noSpendDay: number
   bonusSplitFollowed: number
+  /** Closing a planned event at or under its budget. */
+  planUnderBudget: number
 }
 
 export interface Config {
@@ -86,6 +95,7 @@ export interface EngineInput {
   /** Array order is the boss queue. */
   bosses: Boss[]
   lanes: Lane[]
+  plans?: Plan[]
   /** Chronological. The last cycle is the one in progress. */
   cycles: Cycle[]
   events: GameEvent[]
@@ -119,6 +129,15 @@ export interface LaneState {
   streak: number
 }
 
+export interface PlanState {
+  id: string
+  /** Set aside so far. */
+  funded: number
+  spent: number
+  closed: boolean
+  closedCycleId?: string
+}
+
 export interface LevelUp { cycleId: string; questId: string; level: number }
 
 export interface XpBreakdown {
@@ -128,6 +147,7 @@ export interface XpBreakdown {
   extraBoss: number
   noSpend: number
   bonusSplit: number
+  plans: number
   levelUp: number
   bossDefeated: number
 }
@@ -159,6 +179,7 @@ export interface EngineState {
   multiplier: number
   /** Multiplier the next completed game night would earn. */
   nextMultiplier: number
+  plans: PlanState[]
   levelUps: LevelUp[]
   bossDefeats: { cycleId: string; bossId: string }[]
 }

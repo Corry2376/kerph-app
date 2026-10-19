@@ -4,17 +4,17 @@ import { Btn } from './components/ui'
 import { Icon, type IconName } from './components/Icon'
 import { isMuted, setMuted } from './fx/sound'
 import HQ from './screens/HQ'
-import GameNight from './screens/GameNight'
-import BossArena from './screens/BossArena'
-import Lanes from './screens/Lanes'
-import MapScreen from './screens/MapScreen'
-import Trophies from './screens/Trophies'
+import Review from './screens/Review'
+import Debts from './screens/Debts'
+import Budgets from './screens/Budgets'
+import Roadmap from './screens/Roadmap'
+import Record from './screens/Record'
 import Settings from './screens/Settings'
 import Setup from './screens/Setup'
 
 export type Tab = 'hq' | 'night' | 'boss' | 'map' | 'lanes' | 'trophies' | 'settings'
 const TABS: [Exclude<Tab, 'settings'>, IconName, string][] = [
-  ['hq', 'hq', 'HQ'], ['night', 'night', 'Game night'], ['boss', 'boss', 'Boss'], ['map', 'map', 'Map'], ['lanes', 'lanes', 'Lanes'], ['trophies', 'trophy', 'Trophies'],
+  ['hq', 'hq', 'Overview'], ['night', 'night', 'Review'], ['boss', 'boss', 'Debts'], ['map', 'map', 'Roadmap'], ['lanes', 'lanes', 'Budgets'], ['trophies', 'trophy', 'Record'],
 ]
 
 export default function App() {
@@ -32,7 +32,7 @@ export default function App() {
         <div className="flex gap-1">
           <button onClick={() => { setMuted(!muted); setMutedState(!muted) }} aria-pressed={muted} aria-label={muted ? 'Unmute sound' : 'Mute sound'}
             className="flex size-10 items-center justify-center rounded-md text-zinc-500 hover:bg-stone-200 dark:hover:bg-zinc-800"><Icon name={muted ? 'soundOff' : 'soundOn'} /></button>
-          <button onClick={() => setTab('settings')} aria-label="Commissioner settings" aria-current={tab === 'settings' ? 'page' : undefined}
+          <button onClick={() => setTab('settings')} aria-label="Settings" aria-current={tab === 'settings' ? 'page' : undefined}
             className={`flex size-10 items-center justify-center rounded-md hover:bg-stone-200 dark:hover:bg-zinc-800 ${tab === 'settings' ? 'text-amber-600' : 'text-zinc-500'}`}><Icon name="settings" /></button>
         </div>
       </header>
@@ -44,11 +44,11 @@ export default function App() {
       )}
       <main className="space-y-4 p-4">
         {tab === 'hq' && <HQ go={setTab} />}
-        {tab === 'night' && <GameNight go={setTab} />}
-        {tab === 'boss' && <BossArena />}
-        {tab === 'map' && <MapScreen />}
-        {tab === 'lanes' && <Lanes />}
-        {tab === 'trophies' && <Trophies />}
+        {tab === 'night' && <Review go={setTab} />}
+        {tab === 'boss' && <Debts />}
+        {tab === 'map' && <Roadmap />}
+        {tab === 'lanes' && <Budgets />}
+        {tab === 'trophies' && <Record />}
         {tab === 'settings' && <Settings onSetup={() => setSetup(true)} />}
       </main>
       <nav className="fixed inset-x-0 bottom-0 border-t border-stone-200 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/95">

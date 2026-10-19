@@ -1,5 +1,5 @@
 import { DEFAULT_CONFIG, sortBossQueue } from '../engine/config'
-import type { Boss, Config, Cycle, GameEvent, Lane, Player, Quest } from '../engine/types'
+import type { Boss, Config, Cycle, GameEvent, Lane, Plan, Player, Quest } from '../engine/types'
 
 /** Everything the app persists, and exactly what export/import round-trips. */
 export interface GameData {
@@ -10,12 +10,21 @@ export interface GameData {
   quests: Quest[]
   bosses: Boss[]
   lanes: Lane[]
+  plans: Plan[]
   cycles: Cycle[]
   events: GameEvent[]
 }
 
 export const uid = () =>
   globalThis.crypto?.randomUUID?.() ?? `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`
+
+/** 'YYYY-MM' this many months from now, or that calendar month of this year when `month` is given. */
+export function monthOffset(months: number, month?: number): string {
+  const d = new Date()
+  const y = d.getUTCFullYear(), m = month ?? d.getUTCMonth() + 1 + months
+  const t = new Date(Date.UTC(y, m - 1, 1))
+  return `${t.getUTCFullYear()}-${String(t.getUTCMonth() + 1).padStart(2, '0')}`
+}
 
 export const todayIso = () => new Date().toISOString().slice(0, 10)
 
@@ -59,6 +68,7 @@ export interface SetupInput {
   quests: Omit<Quest, 'id' | 'order' | 'status'>[]
   bosses: Omit<Boss, 'id' | 'artSeed'>[]
   lanes: { name: string; budgetPerCycle: number }[]
+  plans?: Omit<Plan, 'id'>[]
 }
 
 export function buildGame(s: SetupInput, isDemo = false): GameData {
@@ -71,6 +81,7 @@ export function buildGame(s: SetupInput, isDemo = false): GameData {
     quests: s.quests.map((q, i) => ({ ...q, id: uid(), order: i, status: 'active' })),
     bosses: sortBossQueue(bosses, s.config.bossOrder),
     lanes: s.lanes.map((l, i) => ({ id: uid(), ...l, ...laneStyle(l.name, i) })),
+    plans: (s.plans ?? []).map(p => ({ ...p, id: uid() })),
     cycles: [makeCycle(s.firstPayday, s.config)],
     events: [],
   }
@@ -89,13 +100,18 @@ export function demoGame(): GameData {
       { name: 'DEMO Family Trip', targetAmount: 5000, targetDate: '2027-06-30', levelCount: 10, autopilotDeposit: 75 },
     ],
     bosses: [
-      { cardNickname: 'DEMO Visa Viper', last4: '0000', rate: 24.9, startingBalance: 2400, minPayment: 60, autopilotAttack: 140 },
-      { cardNickname: 'DEMO Store Card Golem', last4: '1111', rate: 29.9, startingBalance: 1100, minPayment: 35, autopilotAttack: 65 },
-      { cardNickname: 'DEMO Mastercard Kraken', last4: '2222', rate: 19.9, startingBalance: 5200, minPayment: 120, autopilotAttack: 0 },
+      { cardNickname: 'DEMO Visa', last4: '0000', rate: 24.9, startingBalance: 2400, minPayment: 60, autopilotAttack: 140 },
+      { cardNickname: 'DEMO Store Card', last4: '1111', rate: 29.9, startingBalance: 1100, minPayment: 35, autopilotAttack: 65 },
+      { cardNickname: 'DEMO Mastercard', last4: '2222', rate: 19.9, startingBalance: 5200, minPayment: 120, autopilotAttack: 0 },
     ],
     lanes: [
       { name: 'Kids', budgetPerCycle: 60 }, { name: 'Tools', budgetPerCycle: 50 },
       { name: 'Travel', budgetPerCycle: 40 }, { name: 'Everyday', budgetPerCycle: 150 }, { name: 'Rewards', budgetPerCycle: 20 },
+    ],
+    plans: [
+      { name: 'DEMO Christmas', month: monthOffset(0, 12), budget: 900, yearly: true },
+      { name: 'DEMO Birthday party', month: monthOffset(1), budget: 250, yearly: true },
+      { name: 'DEMO Lake trip', month: monthOffset(8), budget: 1800, yearly: false },
     ],
   }, true)
 
@@ -111,10 +127,22 @@ export function demoGame(): GameData {
     push(cycle.id, { type: 'interest', bossId: boss.id, amount: 38 - i * 4 })
     push(cycle.id, { type: 'interest', bossId: game.bosses[2].id, amount: 60 })
     game.quests.forEach(q => push(cycle.id, { type: 'deposit', questId: q.id, amount: q.autopilotDeposit }))
+    push(cycle.id, { type: 'planFund', planId: game.plans[0].id, amount: 75 })
+    push(cycle.id, { type: 'planFund', planId: game.plans[2].id, amount: 40 })
     game.lanes.forEach(l => push(cycle.id, { type: 'laneSpend', laneId: l.id, amount: Math.round(l.budgetPerCycle * (i === 1 ? 1.1 : 0.7)) }))
     push(cycle.id, { type: 'gameNight', amount: 0 })
     game.cycles.push(nextCycle(cycle, config))
     cycle = game.cycles[game.cycles.length - 1]
   }
   return game
+}
+
+/** Fill in anything an older save lacks, so past games keep loading as the app grows. */
+export function normalizeGame(d: GameData): GameData {
+  if (d.isDemo && !d.plans) return demoGame()
+  return {
+    ...d,
+    plans: d.plans ?? [],
+    config: { ...DEFAULT_CONFIG, ...d.config, xp: { ...DEFAULT_CONFIG.xp, ...d.config.xp } },
+  }
 }

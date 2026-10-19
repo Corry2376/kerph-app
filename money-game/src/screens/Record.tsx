@@ -2,11 +2,11 @@ import { useMemo } from 'react'
 import { useGame } from '../store'
 import { ACHIEVEMENTS, computeAchievements } from '../engine/achievements'
 import { lifetimeStats } from '../engine/stats'
-import { BossArt } from '../components/BossArt'
+import { DebtMark } from '../components/DebtMark'
 import { Icon } from '../components/Icon'
 import { Card, H, money } from '../components/ui'
 
-export default function Trophies() {
+export default function Record() {
   const { data, state } = useGame()
   const unlocked = useMemo(() => computeAchievements(data, state), [data, state])
   const stats = useMemo(() => lifetimeStats(data, state), [data, state])
@@ -15,11 +15,11 @@ export default function Trophies() {
 
   const rows: [string, string][] = [
     ['Career XP', stats.careerXp.toLocaleString('en-US')],
-    ['Bosses defeated', String(stats.bossesDefeated)],
-    ['Total damage dealt', money(stats.totalDamage)],
-    ['Total swept', money(stats.totalSwept)],
-    ['Quest levels cleared', String(stats.levelsCleared)],
-    ['Game nights played', String(stats.gameNights)],
+    ['Debts paid off', String(stats.bossesDefeated)],
+    ['Paid toward debt', money(stats.totalDamage)],
+    ['Total allocated', money(stats.totalSwept)],
+    ['Goal milestones reached', String(stats.levelsCleared)],
+    ['Reviews completed', String(stats.gameNights)],
     ['Longest streak', `${stats.longestStreak} weeks`],
   ]
 
@@ -45,14 +45,14 @@ export default function Trophies() {
       </Card>
 
       <Card>
-        <H>Defeated bosses</H>
-        {defeated.length === 0 && <p className="text-sm text-zinc-500">No bosses down yet. The first one earns a place here.</p>}
+        <H>Debts paid off</H>
+        {defeated.length === 0 && <p className="text-sm text-zinc-500">Nothing paid off yet. The first card to reach zero is recorded here.</p>}
         <ul className="grid grid-cols-3 gap-3">
           {defeated.map(s => {
             const b = data.bosses.find(x => x.id === s.id)!
             return (
               <li key={s.id} className="text-center">
-                <div className="opacity-60 grayscale"><BossArt seed={b.artSeed} size={84} label={b.cardNickname} /></div>
+                <div className="opacity-60 grayscale"><DebtMark seed={b.artSeed} size={84} label={b.cardNickname} /></div>
                 <p className="truncate text-xs font-semibold">{b.cardNickname}</p>
                 <p className="text-xs text-zinc-500">{s.defeatedInCycle ? when(s.defeatedInCycle) : ''}</p>
               </li>
@@ -62,7 +62,7 @@ export default function Trophies() {
       </Card>
 
       <Card>
-        <H>Lifetime stats</H>
+        <H>Lifetime totals</H>
         <dl className="text-sm">
           {rows.map(([k, v]) => <div key={k} className="flex justify-between border-b border-stone-100 py-1.5 last:border-0 dark:border-zinc-800"><dt className="text-zinc-500">{k}</dt><dd className="font-semibold">{v}</dd></div>)}
         </dl>

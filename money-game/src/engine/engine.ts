@@ -1,10 +1,10 @@
 import type {
-  BossState, Config, CycleScore, EngineInput, EngineState, GameEvent, LaneState, LevelUp, QuestState, XpBreakdown,
+  BossState, Config, CycleScore, EngineInput, EngineState, GameEvent, LaneState, LevelUp, PlanState, QuestState, XpBreakdown,
 } from './types'
 
 const round2 = (n: number) => Math.round(n * 100) / 100
 const emptyBreakdown = (): XpBreakdown => ({
-  gameNight: 0, lanes: 0, sweep: 0, extraBoss: 0, noSpend: 0, bonusSplit: 0, levelUp: 0, bossDefeated: 0,
+  gameNight: 0, lanes: 0, sweep: 0, extraBoss: 0, noSpend: 0, bonusSplit: 0, plans: 0, levelUp: 0, bossDefeated: 0,
 })
 
 export function multiplierFor(config: Config, streak: number): number {
@@ -44,6 +44,7 @@ export function computeState(input: EngineInput): EngineState {
   const questState = new Map<string, QuestState>(quests.map(q => [q.id, {
     id: q.id, currentAmount: 0, levelSize: q.targetAmount / q.levelCount, levelsCleared: 0, complete: false,
   }]))
+  const planState = new Map<string, PlanState>((input.plans ?? []).map(p => [p.id, { id: p.id, funded: 0, spent: 0, closed: false }]))
   const levelUps: LevelUp[] = []
   const bossDefeats: EngineState['bossDefeats'] = []
 
@@ -102,6 +103,18 @@ export function computeState(input: EngineInput): EngineState {
         break
       case 'noSpendDay': x.noSpend += e.amount * config.xp.noSpendDay; break
       case 'windfall': if (e.followedSplit) x.bonusSplit += config.xp.bonusSplitFollowed; break
+      case 'planFund': case 'planSpend': case 'planClose': {
+        const ps = planState.get(e.planId!)
+        if (!ps) throw new Error(`Unknown plan ${e.planId}`)
+        if (e.type === 'planFund') ps.funded = round2(ps.funded + e.amount)
+        else if (e.type === 'planSpend') ps.spent = round2(ps.spent + e.amount)
+        else if (!ps.closed) {
+          ps.closed = true
+          ps.closedCycleId = e.cycleId
+          if (ps.spent <= input.plans!.find(p => p.id === e.planId)!.budget) x.plans += config.xp.planUnderBudget ?? 0
+        }
+        break
+      }
       case 'gameNight': completed.add(e.cycleId); break
     }
   }
@@ -154,6 +167,7 @@ export function computeState(input: EngineInput): EngineState {
     activeBossId: active?.id ?? null,
     attackPower,
     quests: quests.map(q => questState.get(q.id)!),
+    plans: [...planState.values()],
     lanes: laneStates,
     cycles: scores,
     totalXp: scores.reduce((a, s) => a + s.xp, 0),

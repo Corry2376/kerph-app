@@ -3,14 +3,14 @@ import { useEffect, useRef, useState } from 'react'
 import type { Boss, Quest } from '../engine/types'
 import type { Moment } from '../engine/moments'
 import { ACHIEVEMENTS } from '../engine/achievements'
-import { BossArt, type BossPose } from '../components/BossArt'
+import { DebtMark, type MarkPose } from '../components/DebtMark'
 import { Icon, type IconName } from '../components/Icon'
 import { Btn, ProgressBar, money } from '../components/ui'
 import { burst } from '../fx/confetti'
 import { sfx } from '../fx/sound'
 
 const ICON: Partial<Record<Moment['kind'], IconName>> = {
-  laneUnder: 'coin', sweep: 'coin', extraDamage: 'boss', noSpendDay: 'calendar', bonusSplit: 'star',
+  laneUnder: 'coin', sweep: 'coin', extraDamage: 'boss', planClosed: 'calendar', noSpendDay: 'calendar', bonusSplit: 'star',
   streakMilestone: 'flame', missedWeek: 'up', achievement: 'trophy', levelUp: 'up', gameNight: 'check',
 }
 
@@ -32,21 +32,21 @@ function CountUp({ to }: { to: number }) {
 
 function Stage({ m, group, boss, quest }: { m: Moment; group: Moment[]; boss?: Boss; quest?: Quest }) {
   const [hp, setHp] = useState(m.hpBefore ?? 0)
-  const [pose, setPose] = useState<BossPose>('idle')
-  const [shake, setShake] = useState(0)
+  const [pose, setPose] = useState<MarkPose>('idle')
 
   useEffect(() => {
     const timers: ReturnType<typeof setTimeout>[] = []
     const at = (ms: number, fn: () => void) => { timers.push(setTimeout(fn, ms)) }
     switch (m.kind) {
-      case 'bossHit': sfx('hit'); at(350, () => { setHp(m.hpAfter ?? 0); setPose('hit'); setShake(s => s + 1) }); break
-      case 'bossHeal': sfx('heal'); at(300, () => { setHp(m.hpAfter ?? 0); setPose('heal') }); break
-      case 'bossDefeated': at(300, () => { setPose('defeated'); sfx('victory'); burst('large') }); break
+      case 'bossHit': sfx('hit'); at(350, () => { setHp(m.hpAfter ?? 0); setPose('payment') }); break
+      case 'bossHeal': sfx('heal'); at(300, () => { setHp(m.hpAfter ?? 0); setPose('interest') }); break
+      case 'bossDefeated': at(300, () => { setPose('cleared'); sfx('victory'); burst('medium') }); break
       case 'levelUp': sfx('level'); burst('medium'); break
       case 'achievement': sfx('achievement'); burst('small'); break
       case 'streakMilestone': sfx('streak'); break
       case 'laneUnder': case 'sweep': case 'bonusSplit': sfx('coin'); break
-      case 'extraDamage': sfx('hit'); break
+      case 'extraDamage': sfx('coin'); break
+      case 'planClosed': sfx('achievement'); break
       case 'gameNight': sfx('achievement'); if ((m.multiplier ?? 1) > 1) burst('small'); break
       default: sfx('tick')
     }
@@ -58,23 +58,23 @@ function Stage({ m, group, boss, quest }: { m: Moment; group: Moment[]; boss?: B
   const heal = m.kind === 'bossHeal'
 
   return (
-    <motion.div key={shake} animate={shake ? { x: [0, -10, 8, -5, 3, 0] } : undefined} transition={{ duration: 0.45 }} className="flex flex-col items-center text-center">
+    <div className="flex flex-col items-center text-center">
       <div className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-amber-400">{m.label}</div>
 
       {isBoss && boss && (
         <div className="relative w-full max-w-xs">
-          <div className="flex justify-center"><BossArt seed={boss.artSeed} size={190} pose={pose} label={boss.cardNickname} /></div>
+          <div className="flex justify-center"><DebtMark seed={boss.artSeed} size={170} pose={pose} label={boss.cardNickname} /></div>
           {m.kind !== 'bossDefeated' && (
-            <motion.div className={`absolute left-1/2 top-6 text-3xl font-bold ${heal ? 'text-emerald-400' : 'text-rose-400'}`}
+            <motion.div className={`absolute left-1/2 top-4 text-3xl font-semibold ${heal ? 'text-rose-400' : 'text-emerald-400'}`}
               initial={{ opacity: 0, y: 10, x: '-50%' }} animate={{ opacity: [0, 1, 1, 0], y: -34 }} transition={{ delay: heal ? 0.3 : 0.35, duration: 1.4 }}>
               {heal ? '+' : '-'}{money(m.amount ?? 0)}
             </motion.div>
           )}
           <p className="mt-2 text-lg font-semibold">{boss.cardNickname}</p>
           {m.kind === 'bossDefeated'
-            ? <p className="text-sm uppercase tracking-[0.25em] text-emerald-400">Defeated</p>
-            : <div className="mx-auto mt-2 max-w-64"><ProgressBar value={hp} max={m.hpMax ?? 1} color={heal ? '#5aa883' : '#b4443c'} label="Boss health" height={16} />
-              <p className="mt-1 text-sm text-zinc-300">{money(hp)} left</p></div>}
+            ? <p className="text-sm uppercase tracking-[0.25em] text-emerald-400">Paid off</p>
+            : <div className="mx-auto mt-2 max-w-64"><ProgressBar value={hp} max={m.hpMax ?? 1} color="#a8514a" label="Remaining balance" height={14} />
+              <p className="mt-1 text-sm text-zinc-300">{money(hp)} remaining</p></div>}
         </div>
       )}
 
@@ -84,7 +84,7 @@ function Stage({ m, group, boss, quest }: { m: Moment; group: Moment[]; boss?: B
             <span className="font-serif text-5xl font-bold text-amber-300">{m.level}</span>
           </div>
           <p className="mt-3 text-lg font-semibold">{quest?.name ?? 'Quest'}</p>
-          <p className="text-xs uppercase tracking-[0.25em] text-zinc-400">Level cleared</p>
+          <p className="text-xs uppercase tracking-[0.25em] text-zinc-400">Milestone reached</p>
         </motion.div>
       )}
 
@@ -100,21 +100,21 @@ function Stage({ m, group, boss, quest }: { m: Moment; group: Moment[]; boss?: B
       {m.kind === 'streakMilestone' && (
         <div className="flex flex-col items-center">
           <motion.div initial={{ scale: 0.7 }} animate={{ scale: [0.7, 1.25, 1.1] }} transition={{ duration: 0.7 }} className="text-amber-400"><Icon name="flame" size={72} /></motion.div>
-          <motion.div animate={{ scale: [1, 1.12, 1] }} transition={{ repeat: 2, duration: 0.6, delay: 0.5 }}
-            className="mt-3 rounded-md border border-amber-400 px-4 py-1 text-2xl font-bold text-amber-300">{m.multiplier}x</motion.div>
-          <p className="mt-2 text-sm text-zinc-400">{m.streak} week streak</p>
+          <motion.div animate={{ scale: [1, 1.08, 1] }} transition={{ repeat: 1, duration: 0.6, delay: 0.5 }}
+            className="mt-3 rounded-md border border-amber-400 px-4 py-1 text-2xl font-semibold text-amber-300">{m.multiplier}x</motion.div>
+          <p className="mt-2 text-sm text-zinc-400">{m.streak} week streak · bonus</p>
         </div>
       )}
 
       {m.kind === 'gameNight' && (
         <div className="w-full max-w-xs">
           <div className="font-serif text-6xl font-bold text-amber-300">+<CountUp to={m.xp ?? 0} /></div>
-          <p className="text-xs uppercase tracking-[0.25em] text-zinc-400">XP earned</p>
-          <p className="mt-2 flex items-center justify-center gap-1 text-sm"><Icon name="flame" size={16} className="text-amber-400" /> Streak {m.streak} · {m.multiplier}x</p>
+          <p className="text-xs uppercase tracking-[0.25em] text-zinc-400">Points earned</p>
+          <p className="mt-2 flex items-center justify-center gap-1 text-sm"><Icon name="flame" size={16} className="text-amber-400" /> Streak {m.streak} · bonus {m.multiplier}x</p>
           <ul className="mt-4 space-y-1 text-left text-sm text-zinc-300">
             {Object.entries(m.breakdown ?? {}).filter(([, v]) => v > 0).map(([k, v]) => (
               <li key={k} className="flex justify-between border-b border-zinc-800 pb-1">
-                <span>{({ gameNight: 'Game night', lanes: 'Lanes under budget', sweep: 'Swept', extraBoss: 'Extra damage', noSpend: 'No-spend days', bonusSplit: 'Bonus split', levelUp: 'Quest levels', bossDefeated: 'Boss defeated' } as Record<string, string>)[k]}</span>
+                <span>{({ gameNight: 'Review completed', lanes: 'Budgets under limit', sweep: 'Allocated', extraBoss: 'Extra payments', noSpend: 'No-spend days', bonusSplit: 'Windfall split', plans: 'Event closed on budget', levelUp: 'Goal milestones', bossDefeated: 'Debts paid off' } as Record<string, string>)[k]}</span>
                 <span>{v}</span>
               </li>
             ))}
@@ -150,7 +150,7 @@ function Stage({ m, group, boss, quest }: { m: Moment; group: Moment[]; boss?: B
       )}
 
       <p aria-live="polite" className="mt-5 max-w-sm text-base leading-snug text-zinc-100">{m.message}</p>
-    </motion.div>
+    </div>
   )
 }
 
@@ -180,11 +180,11 @@ export default function Celebration({ moments, bosses, quests, onDone }: { momen
   if (!m) return null
   return (
     <MotionConfig reducedMotion="user">
-      <div role="dialog" aria-modal="true" aria-label="Game night results" onClick={next}
+      <div role="dialog" aria-modal="true" aria-label="Review results" onClick={next}
         className="fixed inset-0 z-50 flex flex-col bg-zinc-950 text-zinc-100">
         <div className="flex items-center justify-between p-4 text-xs text-zinc-500">
           <span>{i + 1} / {groups.length}</span>
-          {i < last && <Btn variant="ghost" className="min-h-9 !px-3 !py-1 text-xs text-zinc-300" onClick={e => { e.stopPropagation(); setI(last) }}>Skip to score</Btn>}
+          {i < last && <Btn variant="ghost" className="min-h-9 !px-3 !py-1 text-xs text-zinc-300" onClick={e => { e.stopPropagation(); setI(last) }}>Skip to summary</Btn>}
         </div>
         <div className="flex flex-1 items-center justify-center px-6">
           <AnimatePresence mode="wait">

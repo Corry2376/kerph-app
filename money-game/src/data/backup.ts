@@ -1,4 +1,4 @@
-import type { GameData } from './model'
+import { normalizeGame, type GameData } from './model'
 
 export function exportJson(data: GameData): string {
   return JSON.stringify(data, null, 2)
@@ -24,5 +24,7 @@ export function parseBackup(text: string): GameData {
   if (d.cycles.length === 0) throw new Error('Backup has no cycles.')
   const cycleIds = new Set(d.cycles.map((c: any) => c.id))
   if (d.events.some((e: any) => !cycleIds.has(e.cycleId))) throw new Error('Backup has events for unknown cycles.')
-  return d as GameData
+  const plans = new Set((d.plans ?? []).map((p: any) => p.id))
+  if (d.events.some((e: any) => e.planId && !plans.has(e.planId))) throw new Error('Backup has events for unknown planned events.')
+  return normalizeGame(d as GameData)
 }

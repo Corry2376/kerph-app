@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion'
 import { useGame } from '../store'
-import { BossArt } from '../components/BossArt'
+import { DebtMark } from '../components/DebtMark'
 import { Icon } from '../components/Icon'
 import { Card, H, ProgressBar, money } from '../components/ui'
 
@@ -45,12 +45,12 @@ function QuestPath({ name, levels, cleared, fraction, complete }: { name: string
   )
 }
 
-export default function MapScreen() {
+export default function Roadmap() {
   const { data, state } = useGame()
   return (
     <>
       <Card>
-        <H>The road: bosses</H>
+        <H>Debts, in payoff order</H>
         <ol className="relative ml-3 space-y-4 border-l border-stone-300 pl-6 dark:border-zinc-700">
           {data.bosses.map(b => {
             const s = state.bosses.find(x => x.id === b.id)!
@@ -62,13 +62,13 @@ export default function MapScreen() {
                   <Icon name={defeated ? 'check' : active ? 'boss' : 'lock'} size={12} />
                 </span>
                 <div className="flex items-center gap-3">
-                  <div className={defeated ? 'opacity-30 grayscale' : active ? '' : 'opacity-60'}><BossArt seed={b.artSeed} size={52} label={b.cardNickname} /></div>
+                  <div className={defeated ? 'opacity-30 grayscale' : active ? '' : 'opacity-60'}><DebtMark seed={b.artSeed} size={52} label={b.cardNickname} /></div>
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-semibold">{b.cardNickname} <span className="font-normal text-zinc-500">{b.rate}%</span></p>
                     {defeated
-                      ? <p className="text-xs text-emerald-600">Gate open: defeated</p>
-                      : <><ProgressBar value={s.currentBalance} max={b.startingBalance} color="#b4443c" label={b.cardNickname} height={8} />
-                        <p className="mt-1 text-xs text-zinc-500">{money(s.currentBalance)} left{active ? ' · fighting now' : ''}</p></>}
+                      ? <p className="text-xs text-emerald-600">Paid off</p>
+                      : <><ProgressBar value={s.currentBalance} max={b.startingBalance} color="#a8514a" label={b.cardNickname} height={8} />
+                        <p className="mt-1 text-xs text-zinc-500">{money(s.currentBalance)} left{active ? ' · current focus' : ''}</p></>}
                   </div>
                 </div>
               </li>
@@ -84,12 +84,12 @@ export default function MapScreen() {
           <Card key={q.id}>
             <div className="flex items-baseline justify-between">
               <H>{q.name}</H>
-              <span className="text-sm text-zinc-500">Level {qs.levelsCleared} / {q.levelCount}</span>
+              <span className="text-sm text-zinc-500">Milestone {qs.levelsCleared} / {q.levelCount}</span>
             </div>
             <div className="text-zinc-700 dark:text-zinc-200">
               <QuestPath name={q.name} levels={q.levelCount} cleared={qs.levelsCleared} fraction={qs.levelsCleared >= q.levelCount ? 1 : Math.max(0, Math.min(1, into / qs.levelSize))} complete={qs.complete} />
             </div>
-            <p className="text-xs text-zinc-500">{money(qs.currentAmount)} of {money(q.targetAmount)} · {money(qs.levelSize)} per level · target {q.targetDate}</p>
+            <p className="text-xs text-zinc-500">{money(qs.currentAmount)} of {money(q.targetAmount)} · {money(qs.levelSize)} per milestone · target {q.targetDate}</p>
           </Card>
         )
       })}

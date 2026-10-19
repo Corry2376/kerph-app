@@ -14,6 +14,7 @@ export const DEFAULT_CONFIG: Config = {
     bossDefeated: 1000,
     noSpendDay: 10,
     bonusSplitFollowed: 100,
+    planUnderBudget: 50,
   },
   streakMultipliers: [
     { min: 3, x: 1.25 },
